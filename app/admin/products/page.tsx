@@ -14,6 +14,11 @@ import {
   BlockStack,
   InlineStack,
   Button,
+  Modal,
+  ChoiceList,
+  DropZone,
+  Link,
+  Select,
 } from "@shopify/polaris";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -30,7 +35,141 @@ function statusBadge(status: Product["status"]) {
   }
 }
 
-function ProductsEmptyState({ onAddProduct }: { onAddProduct: () => void }) {
+function ImportModal({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [step, setStep] = useState<"choose" | "csv" | "platform">("choose");
+  const [importType, setImportType] = useState<string[]>(["csv"]);
+  const [platform, setPlatform] = useState("");
+
+  const handleNext = useCallback(() => {
+    if (importType[0] === "csv") {
+      setStep("csv");
+    } else {
+      setStep("platform");
+    }
+  }, [importType]);
+
+  const handleClose = useCallback(() => {
+    setStep("choose");
+    setImportType(["csv"]);
+    setPlatform("");
+    onClose();
+  }, [onClose]);
+
+  if (step === "platform") {
+    const platforms = [
+      "Etsy", "Facebook Marketplace", "Square", "Amazon", "Instagram",
+      "eBay", "TikTok", "Wix", "Cash Register", "WooCommerce", "WordPress",
+      "Squarespace", "GoDaddy", "Clover", "Walmart", "Lightspeed",
+      "Big Cartel", "BigCommerce", "ShopKeep", "OpenCart", "Magento",
+      "PrestaShop",
+    ];
+    return (
+      <Modal open={open} onClose={handleClose} title="Import from another platform">
+        <Modal.Section>
+          <BlockStack gap="300">
+            <Text as="p" variant="bodyMd">
+              Where are you importing data from?
+            </Text>
+            <Select
+              label="Platform"
+              labelHidden
+              placeholder="Choose your platform"
+              options={platforms.map((p) => ({ label: p, value: p }))}
+              value={platform}
+              onChange={setPlatform}
+            />
+          </BlockStack>
+        </Modal.Section>
+      </Modal>
+    );
+  }
+
+  if (step === "csv") {
+    return (
+      <Modal open={open} onClose={handleClose} title="Import products by CSV">
+        <Modal.Section>
+          <DropZone onDrop={() => {}} label="Upload CSV file">
+            <DropZone.FileUpload actionTitle="Add file" />
+          </DropZone>
+        </Modal.Section>
+        <Modal.Section>
+          <InlineStack align="space-between" blockAlign="center">
+            <Link>Download sample CSV</Link>
+            <InlineStack gap="200">
+              <Button onClick={handleClose}>Cancel</Button>
+              <Button variant="primary" disabled>
+                Upload and preview
+              </Button>
+            </InlineStack>
+          </InlineStack>
+        </Modal.Section>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal open={open} onClose={handleClose} title="Import products">
+      <Modal.Section>
+        <BlockStack gap="300">
+          <Text as="p" variant="bodyMd">
+            How do you want to import your products?
+          </Text>
+          <ChoiceList
+            title="Import method"
+            titleHidden
+            choices={[
+              {
+                label: "Upload a Shopify-formatted CSV file",
+                value: "csv",
+                helpText: (
+                  <Text as="span" variant="bodySm" tone="subdued">
+                    Import a CSV file that&apos;s already formatted to fit
+                    Shopify&apos;s template.{" "}
+                    <Link>Download sample CSV</Link>
+                  </Text>
+                ),
+              },
+              {
+                label: "Import data from another platform",
+                value: "platform",
+                helpText: (
+                  <Text as="span" variant="bodySm" tone="subdued">
+                    Import a copy of your data from another platform using one of
+                    our recommended apps.
+                  </Text>
+                ),
+              },
+            ]}
+            selected={importType}
+            onChange={setImportType}
+          />
+        </BlockStack>
+      </Modal.Section>
+      <Modal.Section>
+        <InlineStack align="end" gap="200">
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button variant="primary" onClick={handleNext}>
+            Next
+          </Button>
+        </InlineStack>
+      </Modal.Section>
+    </Modal>
+  );
+}
+
+function ProductsEmptyState({
+  onAddProduct,
+  onImport,
+}: {
+  onAddProduct: () => void;
+  onImport: () => void;
+}) {
   return (
     <BlockStack gap="400">
       <Card>
@@ -45,7 +184,7 @@ function ProductsEmptyState({ onAddProduct }: { onAddProduct: () => void }) {
             <Button variant="primary" onClick={onAddProduct}>
               Add product
             </Button>
-            <Button>Import</Button>
+            <Button onClick={onImport}>Import</Button>
           </InlineStack>
         </BlockStack>
       </Card>
@@ -73,6 +212,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [queryValue, setQueryValue] = useState("");
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [importOpen, setImportOpen] = useState(false);
   const { mode, setMode } = useSetIndexFiltersMode(IndexFiltersMode.Default);
 
   useEffect(() => {
@@ -115,11 +255,17 @@ export default function ProductsPage() {
     );
   }
 
-  // Show empty state when no products exist
   if (products.length === 0) {
     return (
       <Page title="Products">
-        <ProductsEmptyState onAddProduct={() => router.push("/admin/products/new")} />
+        <ProductsEmptyState
+          onAddProduct={() => router.push("/admin/products/new")}
+          onImport={() => setImportOpen(true)}
+        />
+        <ImportModal
+          open={importOpen}
+          onClose={() => setImportOpen(false)}
+        />
       </Page>
     );
   }
@@ -160,7 +306,10 @@ export default function ProductsPage() {
         content: "Add product",
         onAction: () => router.push("/admin/products/new"),
       }}
-      secondaryActions={[{ content: "Export" }, { content: "Import" }]}
+      secondaryActions={[
+        { content: "Export" },
+        { content: "Import", onAction: () => setImportOpen(true) },
+      ]}
     >
       <Card padding="0">
         <IndexFilters
@@ -195,6 +344,7 @@ export default function ProductsPage() {
           {rowMarkup}
         </IndexTable>
       </Card>
+      <ImportModal open={importOpen} onClose={() => setImportOpen(false)} />
     </Page>
   );
 }
