@@ -24,10 +24,11 @@ export default function MarketsPage() {
       title="Markets"
       primaryAction={{ content: "Create market" }}
       secondaryActions={[{ content: "Graph view" }]}
+      fullWidth
     >
       <div style={{ display: "flex", gap: 16 }}>
         {/* Left sidebar */}
-        <div style={{ width: 240, flexShrink: 0 }}>
+        <div style={{ width: 200, flexShrink: 0 }}>
           <Card padding="300">
             <BlockStack gap="200">
               <InlineStack gap="200" blockAlign="center">
@@ -46,8 +47,8 @@ export default function MarketsPage() {
           </Card>
         </div>
 
-        {/* Right content */}
-        <div style={{ flexGrow: 1 }}>
+        {/* Right content — full width */}
+        <div style={{ flexGrow: 1, minWidth: 0 }}>
           <Card padding="0">
             <Box padding="300">
               <TextField
