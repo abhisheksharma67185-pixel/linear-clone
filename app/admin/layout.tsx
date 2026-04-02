@@ -239,6 +239,23 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             label: "Online Store",
             icon: StoreOnlineIcon,
             onClick: () => router.push("/admin/online-store"),
+            subNavigationItems: [
+              {
+                url: "/admin/online-store/themes",
+                label: "Themes",
+                onClick: () => router.push("/admin/online-store/themes"),
+              },
+              {
+                url: "/admin/online-store/pages",
+                label: "Pages",
+                onClick: () => router.push("/admin/online-store/pages"),
+              },
+              {
+                url: "/admin/online-store/preferences",
+                label: "Preferences",
+                onClick: () => router.push("/admin/online-store/preferences"),
+              },
+            ],
           },
         ]}
         separator
