@@ -14,7 +14,6 @@ import { useState } from "react";
 export default function PreferencesPage() {
   const [title, setTitle] = useState("My Store");
   const [metaDescription, setMetaDescription] = useState("");
-  const [socialImage, setSocialImage] = useState("");
   const [gaAccount, setGaAccount] = useState("");
   const [fbPixel, setFbPixel] = useState("");
   const [password, setPassword] = useState("");
