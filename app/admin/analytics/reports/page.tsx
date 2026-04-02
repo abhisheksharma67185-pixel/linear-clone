@@ -9,7 +9,6 @@ import {
   Box,
   InlineStack,
   Button,
-  Text,
 } from "@shopify/polaris";
 import { SearchIcon } from "@shopify/polaris-icons";
 import { useState } from "react";
