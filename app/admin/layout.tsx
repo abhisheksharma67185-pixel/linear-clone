@@ -215,6 +215,18 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             label: "Analytics",
             icon: ChartVerticalFilledIcon,
             onClick: () => router.push("/admin/analytics"),
+            subNavigationItems: [
+              {
+                url: "/admin/analytics/reports",
+                label: "Reports",
+                onClick: () => router.push("/admin/analytics/reports"),
+              },
+              {
+                url: "/admin/analytics/live-view",
+                label: "Live View",
+                onClick: () => router.push("/admin/analytics/live-view"),
+              },
+            ],
           },
         ]}
         separator
