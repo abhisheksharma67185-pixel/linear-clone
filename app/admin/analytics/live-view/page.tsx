@@ -6,7 +6,6 @@ import {
   Text,
   BlockStack,
   InlineStack,
-  InlineGrid,
   Box,
   TextField,
   Icon,
