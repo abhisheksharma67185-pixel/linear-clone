@@ -2,19 +2,34 @@
   "name": "@simbench/core",
   "version": "0.1.0",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
-    ".": "./src/index.ts",
-    "./snapshot": "./src/snapshot.ts",
-    "./episode": "./src/episode.ts",
-    "./evaluator": "./src/evaluator.ts",
-    "./predicates": "./src/predicates.ts",
-    "./llm-judge": "./src/llm-judge.ts",
-    "./config": "./src/config.ts",
-    "./types": "./src/types.ts",
-    "./tasks/types": "./src/tasks/types.ts",
-    "./tasks/registry": "./src/tasks/registry.ts",
-    "./tasks/curriculum": "./src/tasks/curriculum.ts"
-  }
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vp pack",
+    "check": "vp check",
+    "test": "vp test",
+    "dev": "vp pack --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "vite-plus": "latest"
+  },
+  "packageManager": "pnpm@10.33.0"
 }

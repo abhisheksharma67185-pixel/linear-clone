@@ -14,11 +14,7 @@ export type TaskDomain =
 
 export type TaskDifficulty = "easy" | "medium" | "hard" | "expert";
 
-export type TaskType =
-  | "action"
-  | "retrieval"
-  | "action_retrieval"
-  | "no_action";
+export type TaskType = "action" | "retrieval" | "action_retrieval" | "no_action";
 
 // ---------------------------------------------------------------------------
 // Evaluation checks
