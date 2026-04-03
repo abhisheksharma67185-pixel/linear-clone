@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as store from "../../lib/store";
+import {
+  getActiveEpisode,
+  hasActiveEpisode,
+  logAction,
+  getStepReward,
+} from "../../lib/episode";
 
 // ---------------------------------------------------------------------------
 // Mutable RL session state
@@ -15,8 +21,9 @@ let stepCount = 0;
 // ---------------------------------------------------------------------------
 
 function getContextData(): Record<string, unknown> {
-  // Return detailed data for the entity currently being viewed
-  const match = currentPage.match(/^\/admin\/(products|orders|customers|discounts)\/(\d+)$/);
+  const match = currentPage.match(
+    /^\/admin\/(products|orders|customers|discounts)\/(\d+)$/,
+  );
   if (match) {
     const [, entity, id] = match;
     switch (entity) {
@@ -36,7 +43,10 @@ function getContextData(): Record<string, unknown> {
 function getAvailableActions(): string[] {
   const base = ["navigate", "search", "select"];
 
-  if (currentPage === "/admin/products" || currentPage === "/admin/products/new") {
+  if (
+    currentPage === "/admin/products" ||
+    currentPage === "/admin/products/new"
+  ) {
     return [...base, "create_product"];
   }
   if (currentPage.match(/^\/admin\/products\/\d+$/)) {
@@ -51,13 +61,19 @@ function getAvailableActions(): string[] {
     if (order?.paymentStatus === "paid") actions.push("refund_order");
     return actions;
   }
-  if (currentPage === "/admin/customers" || currentPage === "/admin/customers/new") {
+  if (
+    currentPage === "/admin/customers" ||
+    currentPage === "/admin/customers/new"
+  ) {
     return [...base, "create_customer"];
   }
   if (currentPage.match(/^\/admin\/customers\/\d+$/)) {
     return [...base, "update_customer"];
   }
-  if (currentPage === "/admin/discounts" || currentPage === "/admin/discounts/new") {
+  if (
+    currentPage === "/admin/discounts" ||
+    currentPage === "/admin/discounts/new"
+  ) {
     return [...base, "create_discount"];
   }
   if (currentPage === "/admin/settings") {
@@ -74,6 +90,8 @@ function getObservation() {
   const discounts = store.getDiscounts();
   const settings = store.getSettings();
 
+  const episode = getActiveEpisode();
+
   return {
     currentPage,
     stepCount,
@@ -81,55 +99,84 @@ function getObservation() {
     selectedIds,
     availableActions: getAvailableActions(),
     currentPageData: getContextData(),
+    episode: episode
+      ? {
+          id: episode.id,
+          taskId: episode.task.id,
+          taskGoal: episode.task.goal,
+          status: episode.status,
+          stepsRemaining: episode.task.maxSteps - episode.stepCount,
+        }
+      : null,
     summary: {
       totalProducts: products.length,
       activeProducts: products.filter((p) => p.status === "active").length,
       totalOrders: orders.length,
-      unfulfilledOrders: orders.filter((o) => o.fulfillmentStatus === "unfulfilled").length,
-      pendingPayments: orders.filter((o) => o.paymentStatus === "pending").length,
+      unfulfilledOrders: orders.filter(
+        (o) => o.fulfillmentStatus === "unfulfilled",
+      ).length,
+      pendingPayments: orders.filter((o) => o.paymentStatus === "pending")
+        .length,
       totalCustomers: customers.length,
       activeDiscounts: discounts.filter((d) => d.status === "active").length,
       storeName: settings.storeName,
     },
     data: {
       products: products.map((p) => ({
-        id: p.id, title: p.title, status: p.status,
-        inventory: p.inventory, price: p.price,
+        id: p.id,
+        title: p.title,
+        status: p.status,
+        inventory: p.inventory,
+        price: p.price,
       })),
       orders: orders.map((o) => ({
-        id: o.id, orderNumber: o.orderNumber, customer: o.customer,
-        total: o.total, paymentStatus: o.paymentStatus,
+        id: o.id,
+        orderNumber: o.orderNumber,
+        customer: o.customer,
+        total: o.total,
+        paymentStatus: o.paymentStatus,
         fulfillmentStatus: o.fulfillmentStatus,
       })),
       customers: customers.map((c) => ({
-        id: c.id, name: c.name, orders: c.orders, totalSpent: c.totalSpent,
+        id: c.id,
+        name: c.name,
+        orders: c.orders,
+        totalSpent: c.totalSpent,
       })),
       discounts: discounts.map((d) => ({
-        id: d.id, title: d.title, type: d.type, status: d.status,
-        value: d.value, valueType: d.valueType,
+        id: d.id,
+        title: d.title,
+        type: d.type,
+        status: d.status,
+        value: d.value,
+        valueType: d.valueType,
       })),
     },
   };
 }
 
 // ---------------------------------------------------------------------------
-// Reward computation
+// Execute action and compute reward
 // ---------------------------------------------------------------------------
 
-function computeReward(action: Record<string, unknown>): number {
-  let reward = -0.01; // small step penalty
+function executeAction(action: Record<string, unknown>): {
+  reward: number;
+  success: boolean;
+} {
+  let reward = -0.01;
+  let success = true;
 
   switch (action.action) {
-    // -- Navigation --
     case "navigate": {
-      if (typeof action.target === "string" && action.target !== currentPage) {
+      if (
+        typeof action.target === "string" &&
+        action.target !== currentPage
+      ) {
         currentPage = action.target;
         reward = 0.0;
       }
       break;
     }
-
-    // -- Search & Select --
     case "search":
       reward = 0.05;
       break;
@@ -139,15 +186,17 @@ function computeReward(action: Record<string, unknown>): number {
         reward = 0.02;
       }
       break;
-
-    // -- Products --
     case "create_product": {
       const fields = action.fields as Record<string, unknown> | undefined;
       if (fields) {
-        const result = store.createProduct(fields as Parameters<typeof store.createProduct>[0]);
+        const result = store.createProduct(
+          fields as Parameters<typeof store.createProduct>[0],
+        );
         reward = result.success ? 0.5 : -0.5;
+        success = result.success;
       } else {
         reward = -0.5;
+        success = false;
       }
       break;
     }
@@ -157,28 +206,31 @@ function computeReward(action: Record<string, unknown>): number {
         (action.fields ?? {}) as Parameters<typeof store.updateProduct>[1],
       );
       reward = result.success ? 0.5 : -0.5;
+      success = result.success;
       break;
     }
     case "delete_product": {
       const result = store.deleteProduct(action.productId as string);
       reward = result.success ? 0.3 : -0.5;
+      success = result.success;
       break;
     }
-
-    // -- Orders --
     case "fulfill_order": {
       const result = store.fulfillOrder(action.orderId as string);
       reward = result.success ? 1.0 : -0.5;
+      success = result.success;
       break;
     }
     case "capture_payment": {
       const result = store.capturePayment(action.orderId as string);
       reward = result.success ? 1.0 : -0.5;
+      success = result.success;
       break;
     }
     case "refund_order": {
       const result = store.refundOrder(action.orderId as string);
       reward = result.success ? 0.8 : -0.5;
+      success = result.success;
       break;
     }
     case "add_order_note": {
@@ -187,17 +239,20 @@ function computeReward(action: Record<string, unknown>): number {
         action.message as string,
       );
       reward = result.success ? 0.1 : -0.5;
+      success = result.success;
       break;
     }
-
-    // -- Customers --
     case "create_customer": {
       const fields = action.fields as Record<string, unknown> | undefined;
       if (fields) {
-        const result = store.createCustomer(fields as Parameters<typeof store.createCustomer>[0]);
+        const result = store.createCustomer(
+          fields as Parameters<typeof store.createCustomer>[0],
+        );
         reward = result.success ? 0.5 : -0.5;
+        success = result.success;
       } else {
         reward = -0.5;
+        success = false;
       }
       break;
     }
@@ -207,35 +262,37 @@ function computeReward(action: Record<string, unknown>): number {
         (action.fields ?? {}) as Parameters<typeof store.updateCustomer>[1],
       );
       reward = result.success ? 0.3 : -0.5;
+      success = result.success;
       break;
     }
-
-    // -- Discounts --
     case "create_discount": {
       const fields = action.fields as Record<string, unknown> | undefined;
       if (fields) {
-        const result = store.createDiscount(fields as Parameters<typeof store.createDiscount>[0]);
+        const result = store.createDiscount(
+          fields as Parameters<typeof store.createDiscount>[0],
+        );
         reward = result.success ? 0.5 : -0.5;
+        success = result.success;
       } else {
         reward = -0.5;
+        success = false;
       }
       break;
     }
-
-    // -- Settings --
     case "update_settings": {
       const result = store.updateSettings(
         (action.fields ?? {}) as Parameters<typeof store.updateSettings>[0],
       );
       reward = result.success ? 0.3 : -0.5;
+      success = result.success;
       break;
     }
-
     default:
       reward = -0.1;
+      success = false;
   }
 
-  return reward;
+  return { reward, success };
 }
 
 // ---------------------------------------------------------------------------
@@ -246,8 +303,9 @@ export async function GET() {
   return NextResponse.json({
     observation: getObservation(),
     info: {
-      description: "Shopify Admin RL Environment",
-      version: "2.0",
+      description: "SimBench Shopify Admin RL Environment",
+      version: "3.0",
+      episodeActive: hasActiveEpisode(),
     },
   });
 }
@@ -255,22 +313,64 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const action = body as Record<string, unknown>;
+  const actionName = action.action as string;
 
   stepCount++;
-  lastAction = action.action as string;
-  const reward = computeReward(action);
+  lastAction = actionName;
+
+  // Execute the action
+  const { reward: baseReward, success } = executeAction(action);
+
+  // If episode is active, use shaped rewards and log action
+  let finalReward = baseReward;
+  const episode = getActiveEpisode();
+
+  if (episode && episode.status === "active") {
+    // Shape reward using task's reward profile
+    const stepReward = getStepReward(success);
+    finalReward = success ? baseReward + stepReward : stepReward;
+
+    // Log action to episode
+    logAction(
+      actionName,
+      action as Record<string, unknown>,
+      finalReward,
+      success,
+    );
+  }
+
   const observation = getObservation();
 
-  // Episode done when all orders fulfilled and all payments captured
-  const orders = store.getOrders();
-  const done =
-    orders.filter((o) => o.fulfillmentStatus === "unfulfilled").length === 0 &&
-    orders.filter((o) => o.paymentStatus === "pending").length === 0;
+  // Determine if done
+  let done = false;
+  if (episode) {
+    // Episode mode: done when episode status changes
+    done =
+      episode.status === "timeout" ||
+      episode.status === "completed" ||
+      episode.status === "failed";
+  } else {
+    // Legacy mode: done when all orders fulfilled + payments captured
+    const orders = store.getOrders();
+    done =
+      orders.filter((o) => o.fulfillmentStatus === "unfulfilled").length ===
+        0 &&
+      orders.filter((o) => o.paymentStatus === "pending").length === 0;
+  }
 
   return NextResponse.json({
     observation,
-    reward,
+    reward: finalReward,
     done,
-    info: { stepCount, lastAction: action.action },
+    truncated: episode ? episode.status === "timeout" : false,
+    info: {
+      stepCount,
+      lastAction: actionName,
+      success,
+      episodeActive: hasActiveEpisode(),
+      episodeStepsRemaining: episode
+        ? episode.task.maxSteps - episode.stepCount
+        : null,
+    },
   });
 }
