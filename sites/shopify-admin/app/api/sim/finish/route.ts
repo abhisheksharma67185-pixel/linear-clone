@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import "../../../lib/init-sim";
-import { finishEpisode, hasActiveEpisode } from "@simbench/core";
+import { finishEpisode, hasActiveEpisode, getActiveEpisode } from "@simbench/core";
 
 export async function POST(request: NextRequest) {
   if (!hasActiveEpisode()) {
@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
     // No body is fine for action-only tasks
   }
 
+  const activeEp = getActiveEpisode();
   try {
     const episode = finishEpisode(agentResponse);
     return NextResponse.json({
@@ -32,6 +33,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to finish episode";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json(
+      {
+        error: message,
+        episode_id: activeEp?.id ?? null,
+        task_id: activeEp?.task.id ?? null,
+      },
+      { status: 400 },
+    );
   }
 }

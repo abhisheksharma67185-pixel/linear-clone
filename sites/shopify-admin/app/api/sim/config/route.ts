@@ -11,16 +11,27 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Invalid JSON in request body" }, { status: 400 });
   }
 
+  const taskId = body.task_id ?? body.taskId;
+  if (!taskId || typeof taskId !== "string") {
+    return NextResponse.json({ error: "task_id (string) is required" }, { status: 400 });
+  }
+
+  const mode = body.mode ?? "rest";
+  if (mode !== "rest" && mode !== "browser") {
+    return NextResponse.json({ error: "mode must be 'rest' or 'browser'" }, { status: 400 });
+  }
+
+  const seed = body.seed !== undefined ? Number(body.seed) : undefined;
+  if (seed !== undefined && (!isFinite(seed) || seed < 0)) {
+    return NextResponse.json({ error: "seed must be a non-negative finite number" }, { status: 400 });
+  }
+
   const config: EpisodeConfig = {
-    taskId: body.task_id ?? body.taskId,
-    seed: body.seed,
-    mode: body.mode ?? "rest",
+    taskId,
+    seed,
+    mode,
     configOverrides: body.config_overrides ?? body.configOverrides,
   };
-
-  if (!config.taskId) {
-    return NextResponse.json({ error: "task_id is required" }, { status: 400 });
-  }
 
   try {
     const episode = startEpisode(config);

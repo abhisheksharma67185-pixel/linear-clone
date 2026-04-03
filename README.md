@@ -9,7 +9,7 @@ simbench/
 ├── packages/
 │   └── simbench-core/       # Shared simulation engine (site-agnostic)
 ├── sites/
-│   ├── shopify-admin/       # Shopify Admin simulation (111 tasks)
+│   ├── shopify-admin/       # Shopify Admin simulation (104 tasks)
 │   └── linear/              # Linear simulation (in progress)
 ├── sdk/                     # Python SDK (pip install simbench)
 └── paper/                   # Research paper

@@ -4,20 +4,38 @@ import "../../lib/init-sim";
 import { getActiveEpisode, hasActiveEpisode, logAction, getStepReward } from "@simbench/core";
 
 // ---------------------------------------------------------------------------
-// Mutable RL session state
+// Per-episode RL session state (isolated by episode, not module-level)
 // ---------------------------------------------------------------------------
 
-let currentPage = "/admin";
-let selectedIds: string[] = [];
-let lastAction: string | null = null;
-let stepCount = 0;
+interface RLSessionState {
+  currentPage: string;
+  selectedIds: string[];
+  lastAction: string | null;
+  stepCount: number;
+}
+
+let _rlState: RLSessionState = {
+  currentPage: "/admin",
+  selectedIds: [],
+  lastAction: null,
+  stepCount: 0,
+};
+
+export function resetRLState(): void {
+  _rlState = {
+    currentPage: "/admin",
+    selectedIds: [],
+    lastAction: null,
+    stepCount: 0,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Observation
 // ---------------------------------------------------------------------------
 
 function getContextData(): Record<string, unknown> {
-  const match = currentPage.match(/^\/admin\/(products|orders|customers|discounts)\/(\d+)$/);
+  const match = _rlState.currentPage.match(/^\/admin\/(products|orders|customers|discounts)\/(\d+)$/);
   if (match) {
     const [, entity, id] = match;
     switch (entity) {
@@ -37,14 +55,14 @@ function getContextData(): Record<string, unknown> {
 function getAvailableActions(): string[] {
   const base = ["navigate", "search", "select"];
 
-  if (currentPage === "/admin/products" || currentPage === "/admin/products/new") {
+  if (_rlState.currentPage === "/admin/products" || _rlState.currentPage === "/admin/products/new") {
     return [...base, "create_product"];
   }
-  if (currentPage.match(/^\/admin\/products\/\d+$/)) {
+  if (_rlState.currentPage.match(/^\/admin\/products\/\d+$/)) {
     return [...base, "update_product", "delete_product"];
   }
-  if (currentPage.match(/^\/admin\/orders\/\d+$/)) {
-    const id = currentPage.split("/").pop()!;
+  if (_rlState.currentPage.match(/^\/admin\/orders\/\d+$/)) {
+    const id = _rlState.currentPage.split("/").pop()!;
     const order = store.getOrderById(id);
     const actions = [...base, "add_order_note"];
     if (order?.fulfillmentStatus !== "fulfilled") actions.push("fulfill_order");
@@ -52,16 +70,19 @@ function getAvailableActions(): string[] {
     if (order?.paymentStatus === "paid") actions.push("refund_order");
     return actions;
   }
-  if (currentPage === "/admin/customers" || currentPage === "/admin/customers/new") {
+  if (_rlState.currentPage === "/admin/customers" || _rlState.currentPage === "/admin/customers/new") {
     return [...base, "create_customer"];
   }
-  if (currentPage.match(/^\/admin\/customers\/\d+$/)) {
+  if (_rlState.currentPage.match(/^\/admin\/customers\/\d+$/)) {
     return [...base, "update_customer"];
   }
-  if (currentPage === "/admin/discounts" || currentPage === "/admin/discounts/new") {
+  if (_rlState.currentPage === "/admin/discounts" || _rlState.currentPage === "/admin/discounts/new") {
     return [...base, "create_discount"];
   }
-  if (currentPage === "/admin/settings") {
+  if (_rlState.currentPage.match(/^\/admin\/discounts\/\d+$/)) {
+    return [...base, "update_discount", "delete_discount"];
+  }
+  if (_rlState.currentPage === "/admin/settings") {
     return [...base, "update_settings"];
   }
 
@@ -78,10 +99,10 @@ function getObservation() {
   const episode = getActiveEpisode();
 
   return {
-    currentPage,
-    stepCount,
-    lastAction,
-    selectedIds,
+    currentPage: _rlState.currentPage,
+    stepCount: _rlState.stepCount,
+    lastAction: _rlState.lastAction,
+    selectedIds: _rlState.selectedIds,
     availableActions: getAvailableActions(),
     currentPageData: getContextData(),
     episode: episode
@@ -150,8 +171,8 @@ function executeAction(action: Record<string, unknown>): {
 
   switch (action.action) {
     case "navigate": {
-      if (typeof action.target === "string" && action.target !== currentPage) {
-        currentPage = action.target;
+      if (typeof action.target === "string" && action.target !== _rlState.currentPage) {
+        _rlState.currentPage = action.target;
         reward = 0.0;
       }
       break;
@@ -161,7 +182,7 @@ function executeAction(action: Record<string, unknown>): {
       break;
     case "select":
       if (Array.isArray(action.ids)) {
-        selectedIds = action.ids as string[];
+        _rlState.selectedIds = action.ids as string[];
         reward = 0.02;
       }
       break;
@@ -249,6 +270,21 @@ function executeAction(action: Record<string, unknown>): {
       }
       break;
     }
+    case "update_discount": {
+      const result = store.updateDiscount(
+        action.discountId as string,
+        (action.fields ?? {}) as Parameters<typeof store.updateDiscount>[1],
+      );
+      reward = result.success ? 0.3 : -0.5;
+      success = result.success;
+      break;
+    }
+    case "delete_discount": {
+      const result = store.deleteDiscount(action.discountId as string);
+      reward = result.success ? 0.3 : -0.5;
+      success = result.success;
+      break;
+    }
     case "update_settings": {
       const result = store.updateSettings(
         (action.fields ?? {}) as Parameters<typeof store.updateSettings>[0],
@@ -291,8 +327,8 @@ export async function POST(request: NextRequest) {
   const action = body as Record<string, unknown>;
   const actionName = action.action as string;
 
-  stepCount++;
-  lastAction = actionName;
+  _rlState.stepCount++;
+  _rlState.lastAction = actionName;
 
   // Execute the action
   const { reward: baseReward, success } = executeAction(action);
@@ -332,7 +368,7 @@ export async function POST(request: NextRequest) {
     done,
     truncated: episode ? episode.status === "timeout" : false,
     info: {
-      stepCount,
+      stepCount: _rlState.stepCount,
       lastAction: actionName,
       success,
       episodeActive: hasActiveEpisode(),

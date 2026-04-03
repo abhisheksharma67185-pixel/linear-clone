@@ -32,7 +32,7 @@ You train models to interact with websites (computer use, browsing, form filling
 ### Install
 
 ```bash
-pip install simbench
+pip install ./sdk
 ```
 
 ### Write Your Agent (the only code you write)

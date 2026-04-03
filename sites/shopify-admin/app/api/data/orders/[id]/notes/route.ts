@@ -3,7 +3,13 @@ import * as store from "../../../../../lib/store";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { message } = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON in request body" }, { status: 400 });
+  }
+  const { message } = body;
   if (typeof message !== "string") {
     return NextResponse.json({ error: "Message is required" }, { status: 400 });
   }

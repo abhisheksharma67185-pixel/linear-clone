@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import * as store from "../../../lib/store";
+import { resetRLState } from "../route";
 
 export async function POST() {
   store.reset();
+  resetRLState();
 
   const orders = store.getOrders();
   return NextResponse.json({

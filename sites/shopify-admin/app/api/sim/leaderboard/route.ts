@@ -28,8 +28,25 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Invalid JSON in request body" }, { status: 400 });
   }
 
-  if (!body.agent_name || !body.results) {
-    return NextResponse.json({ error: "agent_name and results are required" }, { status: 400 });
+  if (!body.agent_name || typeof body.agent_name !== "string") {
+    return NextResponse.json({ error: "agent_name (string) is required" }, { status: 400 });
+  }
+  if (!body.results || typeof body.results !== "object") {
+    return NextResponse.json({ error: "results (object) is required" }, { status: 400 });
+  }
+
+  const totalTasks = Number(body.results.total_tasks) || 0;
+  const tasksPassed = Number(body.results.tasks_passed) || 0;
+  const avgScore = Number(body.results.avg_score) || 0;
+  const avgSteps = Number(body.results.avg_steps) || 0;
+  const avgReward = Number(body.results.avg_reward) || 0;
+  const highestStage = Number(body.results.highest_stage) || 0;
+
+  if (totalTasks < 0 || tasksPassed < 0 || tasksPassed > totalTasks) {
+    return NextResponse.json({ error: "Invalid result values" }, { status: 400 });
+  }
+  if (avgScore < 0 || avgScore > 1) {
+    return NextResponse.json({ error: "avg_score must be between 0 and 1" }, { status: 400 });
   }
 
   const entry = submitToLeaderboard({
@@ -37,12 +54,12 @@ export async function POST(request: NextRequest) {
     modelName: body.model_name ?? "unknown",
     mode: body.mode ?? "rest",
     results: {
-      totalTasks: body.results.total_tasks ?? 0,
-      tasksPassed: body.results.tasks_passed ?? 0,
-      avgScore: body.results.avg_score ?? 0,
-      avgSteps: body.results.avg_steps ?? 0,
-      avgReward: body.results.avg_reward ?? 0,
-      highestStage: body.results.highest_stage ?? 0,
+      totalTasks,
+      tasksPassed,
+      avgScore,
+      avgSteps,
+      avgReward,
+      highestStage,
       perDomain: body.results.per_domain ?? {},
     },
   });

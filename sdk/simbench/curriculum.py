@@ -40,7 +40,7 @@ class CurriculumRunner:
         self,
         task_id: str,
         agent_step_fn: Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]],
-        agent_response_fn: Optional[Callable[[dict[str, Any]], Optional[str]]] = None,
+        agent_response_fn: Optional[Callable[[dict[str, Any], dict[str, Any]], Optional[str]]] = None,
     ) -> dict[str, Any]:
         """Run a single task. Returns the finish result."""
         env = SimBenchEnv(
@@ -61,7 +61,7 @@ class CurriculumRunner:
         # Get agent response for retrieval/impossible tasks
         agent_response = None
         if agent_response_fn:
-            agent_response = agent_response_fn(obs)
+            agent_response = agent_response_fn(obs, info)
 
         result = env.finish(agent_response)
         env.close()
@@ -73,7 +73,7 @@ class CurriculumRunner:
         self,
         stage: int,
         agent_step_fn: Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]],
-        agent_response_fn: Optional[Callable[[dict[str, Any]], Optional[str]]] = None,
+        agent_response_fn: Optional[Callable[[dict[str, Any], dict[str, Any]], Optional[str]]] = None,
     ) -> dict[str, Any]:
         """Run all tasks in a curriculum stage. Returns aggregate stats."""
         curriculum = self.get_curriculum()
@@ -104,7 +104,7 @@ class CurriculumRunner:
     def run(
         self,
         agent_step_fn: Callable[[dict[str, Any], dict[str, Any]], dict[str, Any]],
-        agent_response_fn: Optional[Callable[[dict[str, Any]], Optional[str]]] = None,
+        agent_response_fn: Optional[Callable[[dict[str, Any], dict[str, Any]], Optional[str]]] = None,
         start_stage: int = 1,
     ):
         """Generator that yields stage results, advancing on mastery.

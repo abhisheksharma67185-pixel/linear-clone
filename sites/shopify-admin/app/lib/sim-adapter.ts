@@ -42,7 +42,7 @@ const shopifyAdapter: SiteAdapter = {
     settings: store.getSettings(),
   }),
 
-  reset: () => store.reset(),
+  reset: (seed?: number) => store.reset(seed),
 
   executeMutation: (name: string, args: unknown[]) => {
     const fn = (store as unknown as Record<string, (...a: unknown[]) => unknown>)[name];
@@ -87,8 +87,14 @@ registerTasks([
 registerPredicate("product_has_fields", (snapshot: GenericSnapshot, check: EvalCheck) => {
   const expected = check.expected as Record<string, unknown> | undefined;
   if (!expected) return false;
-  const products = snapshot.products as { id: string }[];
-  const product = products?.find((p) => p.id === check.id);
+  const products = snapshot.products as { id: string; title?: string }[];
+  // Find by ID first, then fall back to title match for newly created products
+  let product = check.id ? products?.find((p) => p.id === check.id) : undefined;
+  if (!product && expected.title) {
+    product = products?.find(
+      (p) => p.title?.toLowerCase() === String(expected.title).toLowerCase(),
+    );
+  }
   if (!product) return false;
   return Object.entries(expected).every(
     ([key, val]) => JSON.stringify(getNestedField(product, key)) === JSON.stringify(val),

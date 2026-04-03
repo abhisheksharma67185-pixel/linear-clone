@@ -26,13 +26,46 @@ function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }
 
+// ---------------------------------------------------------------------------
+// Deterministic timestamps — use dateOverride when set (seeded episodes)
+// ---------------------------------------------------------------------------
+
+let _dateOverride: string | null = null;
+let _dateCounter = 0;
+
+export function setDateOverride(date: string | null): void {
+  _dateOverride = date;
+  _dateCounter = 0;
+}
+
+function now(): string {
+  if (_dateOverride) {
+    const base = new Date(_dateOverride);
+    base.setSeconds(base.getSeconds() + _dateCounter++);
+    return base.toISOString();
+  }
+  return new Date().toISOString();
+}
+
+function today(): string {
+  return now().slice(0, 10);
+}
+
+// ---------------------------------------------------------------------------
+// Enum validators
+// ---------------------------------------------------------------------------
+
+const VALID_PRODUCT_STATUS = new Set<string>(["active", "draft", "archived"]);
+const VALID_DISCOUNT_TYPE = new Set<string>(["code", "automatic"]);
+const VALID_DISCOUNT_VALUE_TYPE = new Set<string>(["percentage", "fixed_amount", "free_shipping"]);
+const VALID_DISCOUNT_STATUS = new Set<string>(["active", "expired", "scheduled"]);
+
 let _products: Product[] = deepClone(initialProducts);
 let _orders: Order[] = deepClone(initialOrders);
 let _customers: Customer[] = deepClone(initialCustomers);
 let _discounts: Discount[] = deepClone(initialDiscounts);
 let _settings: StoreSettings = deepClone(initialSettings);
 let _nextProductId = 13;
-// _nextOrderId reserved for future order creation
 let _nextOrderId = 11; // eslint-disable-line @typescript-eslint/no-unused-vars
 let _nextCustomerId = 11;
 let _nextDiscountId = 7;
@@ -62,8 +95,14 @@ export function createProduct(fields: {
   tags?: string[];
   images?: string[];
 }): Result<Product> {
-  if (!fields.title || fields.title.trim() === "") {
+  if (!fields.title || String(fields.title).trim() === "") {
     return { success: false, error: "Title is required" };
+  }
+  if (fields.inventory !== undefined && (typeof fields.inventory !== "number" || !isFinite(fields.inventory))) {
+    return { success: false, error: "Inventory must be a finite number" };
+  }
+  if (fields.status !== undefined && !VALID_PRODUCT_STATUS.has(fields.status)) {
+    return { success: false, error: `Invalid status: ${fields.status}` };
   }
   const product: Product = {
     id: String(_nextProductId++),
@@ -77,7 +116,7 @@ export function createProduct(fields: {
     type: fields.type ?? "",
     tags: fields.tags ?? [],
     images: fields.images ?? [],
-    createdAt: new Date().toISOString().slice(0, 10),
+    createdAt: today(),
   };
   _products.push(product);
   return { success: true, data: product };
@@ -103,8 +142,18 @@ export function updateProduct(
 
   if (fields.title !== undefined) product.title = fields.title;
   if (fields.description !== undefined) product.description = fields.description;
-  if (fields.status !== undefined) product.status = fields.status;
-  if (fields.inventory !== undefined) product.inventory = fields.inventory;
+  if (fields.status !== undefined) {
+    if (!VALID_PRODUCT_STATUS.has(fields.status)) {
+      return { success: false, error: `Invalid status: ${fields.status}` };
+    }
+    product.status = fields.status;
+  }
+  if (fields.inventory !== undefined) {
+    if (typeof fields.inventory !== "number" || !isFinite(fields.inventory)) {
+      return { success: false, error: "Inventory must be a finite number" };
+    }
+    product.inventory = fields.inventory;
+  }
   if (fields.price !== undefined) product.price = fields.price;
   if (fields.compareAtPrice !== undefined) product.compareAtPrice = fields.compareAtPrice;
   if (fields.vendor !== undefined) product.vendor = fields.vendor;
@@ -140,11 +189,14 @@ export function fulfillOrder(id: string): Result<Order> {
   if (order.fulfillmentStatus === "fulfilled") {
     return { success: false, error: "Order already fulfilled" };
   }
+  if (order.paymentStatus === "pending") {
+    return { success: false, error: "Cannot fulfill order with pending payment" };
+  }
   order.fulfillmentStatus = "fulfilled";
   order.timeline.push({
     id: `t${_nextTimelineId++}`,
     message: "Order fulfilled",
-    date: new Date().toISOString(),
+    date: now(),
     type: "system",
   });
   return { success: true, data: order };
@@ -160,7 +212,7 @@ export function capturePayment(id: string): Result<Order> {
   order.timeline.push({
     id: `t${_nextTimelineId++}`,
     message: `Payment captured — $${order.total}`,
-    date: new Date().toISOString(),
+    date: now(),
     type: "system",
   });
   return { success: true, data: order };
@@ -176,7 +228,7 @@ export function refundOrder(id: string): Result<Order> {
   order.timeline.push({
     id: `t${_nextTimelineId++}`,
     message: `Refund issued — $${order.total}`,
-    date: new Date().toISOString(),
+    date: now(),
     type: "system",
   });
   return { success: true, data: order };
@@ -189,7 +241,7 @@ export function addOrderNote(id: string, message: string): Result<Order> {
   order.timeline.push({
     id: `t${_nextTimelineId++}`,
     message: message.trim(),
-    date: new Date().toISOString(),
+    date: now(),
     type: "comment",
   });
   return { success: true, data: order };
@@ -241,7 +293,7 @@ export function createCustomer(fields: {
     },
     tags: fields.tags ?? [],
     notes: fields.notes ?? "",
-    createdAt: new Date().toISOString().slice(0, 10),
+    createdAt: today(),
   };
   _customers.push(customer);
   return { success: true, data: customer };
@@ -266,7 +318,7 @@ export function updateCustomer(
   if (fields.firstName !== undefined) customer.firstName = fields.firstName;
   if (fields.lastName !== undefined) customer.lastName = fields.lastName;
   if (fields.firstName !== undefined || fields.lastName !== undefined) {
-    customer.name = `${customer.firstName} ${customer.lastName}`;
+    customer.name = `${customer.firstName} ${customer.lastName}`.trim();
   }
   if (fields.email !== undefined) customer.email = fields.email;
   if (fields.phone !== undefined) customer.phone = fields.phone;
@@ -307,6 +359,15 @@ export function createDiscount(fields: {
   if (!fields.type) {
     return { success: false, error: "Discount type is required" };
   }
+  if (!VALID_DISCOUNT_TYPE.has(fields.type)) {
+    return { success: false, error: `Invalid discount type: ${fields.type}` };
+  }
+  if (fields.valueType && !VALID_DISCOUNT_VALUE_TYPE.has(fields.valueType)) {
+    return { success: false, error: `Invalid value type: ${fields.valueType}` };
+  }
+  if (fields.status && !VALID_DISCOUNT_STATUS.has(fields.status)) {
+    return { success: false, error: `Invalid status: ${fields.status}` };
+  }
   const discount: Discount = {
     id: String(_nextDiscountId++),
     title: fields.title.trim(),
@@ -317,9 +378,9 @@ export function createDiscount(fields: {
     status: fields.status ?? "active",
     usageCount: 0,
     usageLimit: fields.usageLimit,
-    startsAt: fields.startsAt ?? new Date().toISOString().slice(0, 10),
+    startsAt: fields.startsAt ?? today(),
     endsAt: fields.endsAt,
-    createdAt: new Date().toISOString().slice(0, 10),
+    createdAt: today(),
   };
   _discounts.push(discount);
   return { success: true, data: discount };
@@ -387,7 +448,7 @@ export function updateSettings(fields: Partial<StoreSettings>): Result<StoreSett
 // Reset — restores everything to initial state
 // ---------------------------------------------------------------------------
 
-export function reset(): void {
+export function reset(seed?: number): void {
   _products = deepClone(initialProducts);
   _orders = deepClone(initialOrders);
   _customers = deepClone(initialCustomers);
@@ -398,4 +459,14 @@ export function reset(): void {
   _nextCustomerId = 11;
   _nextDiscountId = 7;
   _nextTimelineId = 18;
+
+  // Deterministic timestamps when seed is provided
+  if (seed !== undefined) {
+    const base = new Date("2025-06-01T12:00:00.000Z");
+    base.setMinutes(base.getMinutes() + (seed % 1440));
+    _dateOverride = base.toISOString();
+  } else {
+    _dateOverride = null;
+  }
+  _dateCounter = 0;
 }

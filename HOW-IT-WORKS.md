@@ -15,7 +15,7 @@ SimBench is a **benchmark environment** for training and evaluating autonomous w
 ## Quick Start (Client Perspective)
 
 ```python
-pip install simbench
+pip install ./sdk
 
 import simbench
 
@@ -83,7 +83,7 @@ obs, reward, done, trunc, info = env.step({
 
 ### SimBench provides:
 - Simulated websites (Shopify Admin, Linear, and more)
-- 111 tasks across 8 domains and 10 difficulty stages
+- 104 tasks across 8 domains and 10 difficulty stages
 - Deterministic evaluation with ground-truth scoring
 - Gymnasium-compatible Python SDK
 - REST API for programmatic access
@@ -117,7 +117,7 @@ HTTP API (/api/sim/*, /api/rl/*)
     +-- LLM Judge (retrieval + impossibility detection)
     +-- Config System (universal + site-specific)
     +-- Curriculum (10-stage progression)
-    +-- Task Registry (111 tasks, filterable)
+    +-- Task Registry (104 tasks, filterable)
     |
     v
 Site Plugin (e.g. Shopify Admin)
@@ -180,29 +180,29 @@ Each new site follows the same pattern:
 3. Register tasks and predicates
 4. The SDK, API, curriculum, and scoring all work automatically
 
-## Roadmap to Production Launch
+## Roadmap
 
-### Must Have (before labs take it seriously)
+### Done
 
-| Item | Why | Status |
-|------|-----|--------|
-| **5+ sites** | 1 site = demo, 5+ = benchmark. Labs need diversity to prove generalization. | 1 done, 1 scaffolded |
-| **Baseline results** | "Here's how GPT-4o / Claude / Gemini score." Without this, no reference point. | Not started |
-| **Deterministic seeding** | `seed` param must guarantee identical state across runs. Critical for reproducible research. | Partial |
-| **Published PyPI package** | `pip install simbench` from PyPI, not `pip install ./sdk`. | Not started |
+| Item | Details |
+|------|---------|
+| **Deterministic seeding** | `seed` param guarantees identical timestamps and state across runs. |
+| **Docker self-hosting** | `docker build -t simbench . && docker run -p 3000:3000 simbench` with healthcheck. |
+| **Batch evaluation CLI** | `simbench eval --agent my_agent.py --output results.json` runs all 104 tasks. |
+| **Standardized results format** | JSON output with per-domain and per-stage breakdowns. |
+| **Input validation** | All API routes validate JSON, enums, numeric types. Leaderboard validates submissions. |
+| **RL episode isolation** | Per-episode state prevents concurrent agent interference. |
+| **Evaluation with initial state** | Eval errors show before/after values for debugging. |
+| **LLM judge improvements** | Multi-word impossibility phrases, tiered retrieval thresholds. |
+| **SDK context manager** | `with SimBenchEnv(...) as env:` for automatic Playwright cleanup. |
 
-### Should Have
-
-| Item | Why | Status |
-|------|-----|--------|
-| **Docker self-hosting** | `docker run -p 3000:3000 simbench/shopify-admin`. Labs need local speed for training loops. | Not started |
-| **Batch evaluation CLI** | `simbench eval --agent my_agent.py --suite shopify-all --output results.json` | Not started |
-| **Standardized results format** | JSON output that labs can upload to leaderboard or include in papers. | Not started |
-
-### Nice to Have
+### Remaining (before labs take it seriously)
 
 | Item | Why | Status |
 |------|-----|--------|
-| **Public leaderboard website** | Like HELM or Chatbot Arena — labs submit scores, public ranking. | Not started |
+| **Baseline results** | "Here's how GPT-4o / Claude / Gemini score." Without this, no reference point. Requires API keys. | Not started |
+| **Published PyPI package** | `pip install simbench` from PyPI, not `pip install ./sdk`. Requires PyPI credentials. | Not started |
+| **5+ sites** | 1 site = demo, 5+ = benchmark. Labs need diversity to prove generalization. | 1 done |
 | **Paper on arXiv** | Draft exists, needs baseline numbers to publish. | Draft done |
-| **Multi-agent support** | Concurrent episodes for parallel evaluation. | Not started |
+| **Leaderboard signing** | HMAC-signed submissions to prevent spoofing. Requires secret key setup. | Not started |
+| **Multi-agent support** | Concurrent episodes for parallel evaluation at scale. | Not started |

@@ -6,7 +6,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const fields = await request.json();
+  let fields;
+  try {
+    fields = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON in request body" }, { status: 400 });
+  }
   const result = store.createCustomer(fields);
   if (!result.success) {
     return NextResponse.json({ error: result.error }, { status: 400 });

@@ -10,14 +10,14 @@ import { getPredicate } from "./predicates";
 
 export function evaluate(
   task: TaskDefinition,
-  _initial: GenericSnapshot, // eslint-disable-line @typescript-eslint/no-unused-vars
+  initial: GenericSnapshot,
   final: GenericSnapshot,
-  _diff: StateDiff, // eslint-disable-line @typescript-eslint/no-unused-vars
+  diff: StateDiff,
 ): EvalResult {
   const results: CheckResult[] = [];
 
   for (const check of task.evalChecks) {
-    results.push(evaluateCheck(check, final));
+    results.push(evaluateCheck(check, final, initial, diff));
   }
 
   const totalWeight = results.reduce((sum, r) => sum + (r.weight ?? 1), 0);
@@ -35,10 +35,15 @@ export function evaluate(
 // Individual check evaluation
 // ---------------------------------------------------------------------------
 
-function evaluateCheck(check: EvalCheck, final: GenericSnapshot): CheckResult {
+function evaluateCheck(
+  check: EvalCheck,
+  final: GenericSnapshot,
+  initial: GenericSnapshot,
+  _diff: StateDiff,
+): CheckResult {
   switch (check.type) {
     case "state_diff":
-      return evaluateStateDiff(check, final);
+      return evaluateStateDiff(check, final, initial);
     case "state_exists":
       return evaluateStateExists(check, final);
     case "state_absent":
@@ -56,7 +61,11 @@ function evaluateCheck(check: EvalCheck, final: GenericSnapshot): CheckResult {
   }
 }
 
-function evaluateStateDiff(check: EvalCheck, final: GenericSnapshot): CheckResult {
+function evaluateStateDiff(
+  check: EvalCheck,
+  final: GenericSnapshot,
+  initial: GenericSnapshot,
+): CheckResult {
   const collection = final[check.entity!];
   let actual: unknown;
 
@@ -68,12 +77,25 @@ function evaluateStateDiff(check: EvalCheck, final: GenericSnapshot): CheckResul
   }
 
   const passed = JSON.stringify(actual) === JSON.stringify(check.expected);
+
+  // Include initial value in message for debugging
+  let initialValue: unknown;
+  if (check.id) {
+    const initialCollection = initial[check.entity!];
+    if (Array.isArray(initialCollection)) {
+      const initialItem = (initialCollection as { id: string }[]).find((e) => e.id === check.id);
+      initialValue = initialItem ? getNestedField(initialItem, check.field!) : undefined;
+    } else if (initialCollection && typeof initialCollection === "object") {
+      initialValue = getNestedField(initialCollection, check.field!);
+    }
+  }
+
   return {
     passed,
     actual,
     message: passed
       ? `PASS: ${check.description}`
-      : `FAIL: expected ${JSON.stringify(check.expected)}, got ${JSON.stringify(actual)}`,
+      : `FAIL: expected ${JSON.stringify(check.expected)}, got ${JSON.stringify(actual)} (was ${JSON.stringify(initialValue)})`,
     weight: check.weight,
   };
 }

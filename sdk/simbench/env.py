@@ -125,7 +125,17 @@ class SimBenchEnv(gym.Env):
         if self._browser:
             self._browser.close()
             self._browser = None
+        if hasattr(self, '_pw') and self._pw:
+            self._pw.stop()
+            self._pw = None
         self._client.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
 
     # -- Browser mode helpers --
 
