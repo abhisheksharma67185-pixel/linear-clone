@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       task_id: episode.task.id,
       status: episode.status,
       steps: episode.stepCount,
-      score: episode.result?.eval.score ?? 0,
+      score: episode.result?.score ?? 0,
       total_reward: episode.result?.totalReward ?? 0,
       wall_time_seconds: episode.result?.wallTimeSeconds ?? 0,
       eval: episode.result?.eval,

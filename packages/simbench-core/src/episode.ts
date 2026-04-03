@@ -13,6 +13,7 @@ import { resetUniversalConfig } from "./config";
 // ---------------------------------------------------------------------------
 
 export interface EpisodeResult {
+  score: number;
   diff: StateDiff;
   eval: EvalResult;
   judgeResult?: JudgeResult;
@@ -227,6 +228,7 @@ export function finishEpisode(agentResponse?: string): Episode {
     _activeEpisode.status = finalScore >= 1.0 ? "completed" : "failed";
   }
   _activeEpisode.result = {
+    score: finalScore,
     diff,
     eval: evalResult,
     judgeResult,
