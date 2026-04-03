@@ -11,9 +11,7 @@ import {
   BlockStack,
 } from "@shopify/polaris";
 
-const collections = [
-  { id: "1", title: "Home page", products: 0, conditions: "" },
-];
+const collections = [{ id: "1", title: "Home page", products: 0, conditions: "" }];
 
 export default function CollectionsPage() {
   const resourceName = { singular: "collection", plural: "collections" };
@@ -46,23 +44,14 @@ export default function CollectionsPage() {
   ));
 
   return (
-    <Page
-      title="Collections"
-      primaryAction={{ content: "Add collection" }}
-    >
+    <Page title="Collections" primaryAction={{ content: "Add collection" }}>
       <Card padding="0">
         <IndexTable
           resourceName={resourceName}
           itemCount={collections.length}
-          selectedItemsCount={
-            allResourcesSelected ? "All" : selectedResources.length
-          }
+          selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
           onSelectionChange={handleSelectionChange}
-          headings={[
-            { title: "Title" },
-            { title: "Products" },
-            { title: "Product conditions" },
-          ]}
+          headings={[{ title: "Title" }, { title: "Products" }, { title: "Product conditions" }]}
         >
           {rowMarkup}
         </IndexTable>

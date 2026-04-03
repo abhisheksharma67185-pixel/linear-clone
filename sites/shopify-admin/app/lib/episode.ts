@@ -88,7 +88,9 @@ export function startEpisode(config: EpisodeConfig): Episode {
   // Run setup actions (pre-conditions)
   if (task.setup) {
     for (const action of task.setup) {
-      const fn = (store as unknown as Record<string, (...args: unknown[]) => unknown>)[action.mutation];
+      const fn = (store as unknown as Record<string, (...args: unknown[]) => unknown>)[
+        action.mutation
+      ];
       if (fn) {
         fn(...action.args);
       }
@@ -172,55 +174,37 @@ export function finishEpisode(agentResponse?: string): Episode {
   // LLM judge for retrieval / impossible tasks
   let judgeResult: JudgeResult | undefined;
 
-  if (
-    agentResponse &&
-    _activeEpisode.task.type === "no_action"
-  ) {
+  if (agentResponse && _activeEpisode.task.type === "no_action") {
     judgeResult = judgeImpossibleTask(agentResponse);
   } else if (
     agentResponse &&
     _activeEpisode.task.retrievalRubric &&
-    (_activeEpisode.task.type === "retrieval" ||
-      _activeEpisode.task.type === "action_retrieval")
+    (_activeEpisode.task.type === "retrieval" || _activeEpisode.task.type === "action_retrieval")
   ) {
-    judgeResult = judgeRetrieval(
-      agentResponse,
-      _activeEpisode.task.retrievalRubric,
-    );
+    judgeResult = judgeRetrieval(agentResponse, _activeEpisode.task.retrievalRubric);
   }
 
-  const wallTime =
-    (Date.now() - new Date(_activeEpisode.startedAt).getTime()) / 1000;
+  const wallTime = (Date.now() - new Date(_activeEpisode.startedAt).getTime()) / 1000;
 
   // Compute total reward from action log + completion bonus
-  let totalReward = _activeEpisode.actionLog.reduce(
-    (sum, entry) => sum + entry.reward,
-    0,
-  );
+  let totalReward = _activeEpisode.actionLog.reduce((sum, entry) => sum + entry.reward, 0);
 
   // Add completion reward based on eval score
-  const completionBonus =
-    evalResult.score * _activeEpisode.task.rewardProfile.completion;
+  const completionBonus = evalResult.score * _activeEpisode.task.rewardProfile.completion;
   totalReward += completionBonus;
 
   // For retrieval/impossible tasks, factor in judge result
   if (judgeResult) {
-    totalReward += judgeResult.passed
-      ? _activeEpisode.task.rewardProfile.completion * 0.5
-      : 0;
+    totalReward += judgeResult.passed ? _activeEpisode.task.rewardProfile.completion * 0.5 : 0;
   }
 
   // Determine final status
   let finalScore = evalResult.score;
   if (judgeResult) {
     // Combined score: eval checks + judge
-    const evalWeight =
-      _activeEpisode.task.type === "action_retrieval" ? 0.5 : 0;
-    const judgeWeight =
-      _activeEpisode.task.type === "action_retrieval" ? 0.5 : 1;
-    finalScore =
-      evalResult.score * evalWeight +
-      (judgeResult.passed ? 1 : 0) * judgeWeight;
+    const evalWeight = _activeEpisode.task.type === "action_retrieval" ? 0.5 : 0;
+    const judgeWeight = _activeEpisode.task.type === "action_retrieval" ? 0.5 : 1;
+    finalScore = evalResult.score * evalWeight + (judgeResult.passed ? 1 : 0) * judgeWeight;
   }
 
   _activeEpisode.status = finalScore >= 1.0 ? "completed" : "failed";
@@ -241,9 +225,7 @@ export function finishEpisode(agentResponse?: string): Episode {
 // Get shaped reward for a single action (used by /api/rl integration)
 // ---------------------------------------------------------------------------
 
-export function getStepReward(
-  actionValid: boolean,
-): number {
+export function getStepReward(actionValid: boolean): number {
   if (!_activeEpisode) return 0;
   const profile = _activeEpisode.task.rewardProfile;
 

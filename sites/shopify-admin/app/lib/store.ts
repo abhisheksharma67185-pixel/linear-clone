@@ -16,9 +16,7 @@ import {
 // Result types
 // ---------------------------------------------------------------------------
 
-type Result<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+type Result<T = void> = { success: true; data: T } | { success: false; error: string };
 
 // ---------------------------------------------------------------------------
 // Singleton store — deep-cloned from initial data, shared across API routes
@@ -52,9 +50,18 @@ export function getProductById(id: string): Product | undefined {
   return _products.find((p) => p.id === id);
 }
 
-export function createProduct(
-  fields: { title?: string; description?: string; status?: Product["status"]; inventory?: number; price?: string; compareAtPrice?: string; vendor?: string; type?: string; tags?: string[]; images?: string[] },
-): Result<Product> {
+export function createProduct(fields: {
+  title?: string;
+  description?: string;
+  status?: Product["status"];
+  inventory?: number;
+  price?: string;
+  compareAtPrice?: string;
+  vendor?: string;
+  type?: string;
+  tags?: string[];
+  images?: string[];
+}): Result<Product> {
   if (!fields.title || fields.title.trim() === "") {
     return { success: false, error: "Title is required" };
   }
@@ -78,7 +85,18 @@ export function createProduct(
 
 export function updateProduct(
   id: string,
-  fields: { title?: string; description?: string; status?: Product["status"]; inventory?: number; price?: string; compareAtPrice?: string; vendor?: string; type?: string; tags?: string[]; images?: string[] },
+  fields: {
+    title?: string;
+    description?: string;
+    status?: Product["status"];
+    inventory?: number;
+    price?: string;
+    compareAtPrice?: string;
+    vendor?: string;
+    type?: string;
+    tags?: string[];
+    images?: string[];
+  },
 ): Result<Product> {
   const product = _products.find((p) => p.id === id);
   if (!product) return { success: false, error: "Product not found" };
@@ -189,9 +207,16 @@ export function getCustomerById(id: string): Customer | undefined {
   return _customers.find((c) => c.id === id);
 }
 
-export function createCustomer(
-  fields: { firstName?: string; lastName?: string; email?: string; phone?: string; location?: string; address?: Address; tags?: string[]; notes?: string },
-): Result<Customer> {
+export function createCustomer(fields: {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  address?: Address;
+  tags?: string[];
+  notes?: string;
+}): Result<Customer> {
   if (!fields.firstName || !fields.lastName || !fields.email) {
     return { success: false, error: "First name, last name, and email are required" };
   }
@@ -224,7 +249,16 @@ export function createCustomer(
 
 export function updateCustomer(
   id: string,
-  fields: { firstName?: string; lastName?: string; email?: string; phone?: string; location?: string; address?: Address; tags?: string[]; notes?: string },
+  fields: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+    address?: Address;
+    tags?: string[];
+    notes?: string;
+  },
 ): Result<Customer> {
   const customer = _customers.find((c) => c.id === id);
   if (!customer) return { success: false, error: "Customer not found" };
@@ -256,9 +290,17 @@ export function getDiscountById(id: string): Discount | undefined {
   return _discounts.find((d) => d.id === id);
 }
 
-export function createDiscount(
-  fields: { title?: string; code?: string; type?: Discount["type"]; valueType?: Discount["valueType"]; value?: string; status?: Discount["status"]; usageLimit?: number; startsAt?: string; endsAt?: string },
-): Result<Discount> {
+export function createDiscount(fields: {
+  title?: string;
+  code?: string;
+  type?: Discount["type"];
+  valueType?: Discount["valueType"];
+  value?: string;
+  status?: Discount["status"];
+  usageLimit?: number;
+  startsAt?: string;
+  endsAt?: string;
+}): Result<Discount> {
   if (!fields.title || fields.title.trim() === "") {
     return { success: false, error: "Title is required" };
   }
@@ -285,7 +327,17 @@ export function createDiscount(
 
 export function updateDiscount(
   id: string,
-  fields: { title?: string; code?: string; type?: Discount["type"]; valueType?: Discount["valueType"]; value?: string; status?: Discount["status"]; usageLimit?: number; startsAt?: string; endsAt?: string },
+  fields: {
+    title?: string;
+    code?: string;
+    type?: Discount["type"];
+    valueType?: Discount["valueType"];
+    value?: string;
+    status?: Discount["status"];
+    usageLimit?: number;
+    startsAt?: string;
+    endsAt?: string;
+  },
 ): Result<Discount> {
   const discount = _discounts.find((d) => d.id === id);
   if (!discount) return { success: false, error: "Discount not found" };
@@ -318,9 +370,7 @@ export function getSettings(): StoreSettings {
   return _settings;
 }
 
-export function updateSettings(
-  fields: Partial<StoreSettings>,
-): Result<StoreSettings> {
+export function updateSettings(fields: Partial<StoreSettings>): Result<StoreSettings> {
   if (fields.storeName !== undefined) _settings.storeName = fields.storeName;
   if (fields.email !== undefined) _settings.email = fields.email;
   if (fields.phone !== undefined) _settings.phone = fields.phone;

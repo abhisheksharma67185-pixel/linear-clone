@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Page,
-  Layout,
-  Card,
-  FormLayout,
-  TextField,
-  Select,
-  Banner,
-} from "@shopify/polaris";
+import { Page, Layout, Card, FormLayout, TextField, Select, Banner } from "@shopify/polaris";
 import { useState, useCallback, useEffect } from "react";
 import type { StoreSettings } from "../../lib/mock-data";
 
@@ -88,7 +80,19 @@ export default function SettingsPage() {
       setBanner({ tone: "critical", message: "Failed to save settings" });
     }
     setSaving(false);
-  }, [storeName, email, phone, currency, timezone, weightUnit, address1, city, province, country, zip]);
+  }, [
+    storeName,
+    email,
+    phone,
+    currency,
+    timezone,
+    weightUnit,
+    address1,
+    city,
+    province,
+    country,
+    zip,
+  ]);
 
   if (!settings) return null;
 
@@ -129,12 +133,7 @@ export default function SettingsPage() {
                 type="email"
                 autoComplete="off"
               />
-              <TextField
-                label="Store phone"
-                value={phone}
-                onChange={setPhone}
-                autoComplete="off"
-              />
+              <TextField label="Store phone" value={phone} onChange={setPhone} autoComplete="off" />
             </FormLayout>
           </Card>
         </Layout.AnnotatedSection>
@@ -152,12 +151,7 @@ export default function SettingsPage() {
                 autoComplete="off"
               />
               <FormLayout.Group>
-                <TextField
-                  label="City"
-                  value={city}
-                  onChange={setCity}
-                  autoComplete="off"
-                />
+                <TextField label="City" value={city} onChange={setCity} autoComplete="off" />
                 <TextField
                   label="State/Province"
                   value={province}

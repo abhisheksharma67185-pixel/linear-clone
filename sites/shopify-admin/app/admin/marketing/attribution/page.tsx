@@ -17,10 +17,7 @@ export default function AttributionPage() {
   const [showBanner, setShowBanner] = useState(true);
 
   return (
-    <Page
-      title="Attribution"
-      secondaryActions={[{ content: "Print" }, { content: "Export" }]}
-    >
+    <Page title="Attribution" secondaryActions={[{ content: "Print" }, { content: "Export" }]}>
       <BlockStack gap="400">
         {/* Date filters */}
         <InlineStack gap="200">
@@ -41,12 +38,7 @@ export default function AttributionPage() {
               padding="800"
             >
               <BlockStack align="center">
-                <Text
-                  as="p"
-                  variant="bodyMd"
-                  fontWeight="semibold"
-                  alignment="center"
-                >
+                <Text as="p" variant="bodyMd" fontWeight="semibold" alignment="center">
                   No data found for the date range selected
                 </Text>
                 <Text as="p" variant="bodySm" tone="subdued" alignment="center">
@@ -60,27 +52,16 @@ export default function AttributionPage() {
         {/* Info banner */}
         {showBanner && (
           <Banner tone="info" onDismiss={() => setShowBanner(false)}>
-            Cost, click, and impression metrics are now available for supported
-            marketing apps.{" "}
+            Cost, click, and impression metrics are now available for supported marketing apps.{" "}
             <Link>Learn more</Link>
           </Banner>
         )}
 
         {/* Table area */}
         <Card>
-          <Box
-            background="bg-surface-secondary"
-            borderRadius="200"
-            minHeight="150px"
-            padding="800"
-          >
+          <Box background="bg-surface-secondary" borderRadius="200" minHeight="150px" padding="800">
             <BlockStack align="center">
-              <Text
-                as="p"
-                variant="bodyMd"
-                fontWeight="semibold"
-                alignment="center"
-              >
+              <Text as="p" variant="bodyMd" fontWeight="semibold" alignment="center">
                 No data found for the date range selected
               </Text>
               <Text as="p" variant="bodySm" tone="subdued" alignment="center">

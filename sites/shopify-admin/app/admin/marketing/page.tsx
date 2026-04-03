@@ -23,12 +23,7 @@ function StatCard({ title, value }: { title: string; value: string }) {
         <Text as="p" variant="headingMd">
           {value}
         </Text>
-        <Box
-          background="bg-surface-secondary"
-          borderRadius="100"
-          minHeight="4px"
-          maxWidth="80px"
-        />
+        <Box background="bg-surface-secondary" borderRadius="100" minHeight="4px" maxWidth="80px" />
       </BlockStack>
     </Box>
   );
@@ -43,7 +38,9 @@ export default function MarketingPage() {
         {/* Date range selector */}
         <InlineStack gap="200">
           <Button size="slim">Last 30 days</Button>
-          <Button size="slim" variant="plain">No comparison</Button>
+          <Button size="slim" variant="plain">
+            No comparison
+          </Button>
         </InlineStack>
 
         {/* Stats row */}
@@ -67,12 +64,8 @@ export default function MarketingPage() {
             </InlineStack>
 
             {showBanner && (
-              <Banner
-                tone="info"
-                onDismiss={() => setShowBanner(false)}
-              >
-                Cost, click, and impression metrics are now available for
-                supported marketing apps.{" "}
+              <Banner tone="info" onDismiss={() => setShowBanner(false)}>
+                Cost, click, and impression metrics are now available for supported marketing apps.{" "}
                 <Link>Learn more</Link>
               </Banner>
             )}
@@ -102,10 +95,9 @@ export default function MarketingPage() {
               Centralize your campaign tracking
             </Text>
             <Text as="p" variant="bodyMd" tone="subdued">
-              Create campaigns to evaluate how marketing initiatives drive
-              business goals. Capture online and offline touchpoints, add
-              campaign activities from multiple marketing channels, and monitor
-              results.
+              Create campaigns to evaluate how marketing initiatives drive business goals. Capture
+              online and offline touchpoints, add campaign activities from multiple marketing
+              channels, and monitor results.
             </Text>
             <div>
               <Button>Create campaign</Button>
@@ -120,8 +112,8 @@ export default function MarketingPage() {
               Generate traffic with marketing apps
             </Text>
             <Text as="p" variant="bodyMd" tone="subdued">
-              Grow your audience on social platforms, capture new leads with
-              newsletter sign-ups, increase conversion with chat, and more.
+              Grow your audience on social platforms, capture new leads with newsletter sign-ups,
+              increase conversion with chat, and more.
             </Text>
             <div>
               <Button>Explore marketing apps</Button>
@@ -132,8 +124,7 @@ export default function MarketingPage() {
         {/* Footer */}
         <Box paddingBlock="200">
           <Text as="p" variant="bodySm" alignment="center" tone="subdued">
-            Learn more about{" "}
-            <Link>marketing campaigns</Link> and how{" "}
+            Learn more about <Link>marketing campaigns</Link> and how{" "}
             <Link>Shopify syncs report data</Link>.
           </Text>
         </Box>

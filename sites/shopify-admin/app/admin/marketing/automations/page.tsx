@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Page,
-  Card,
-  EmptyState,
-  Text,
-  Link,
-  Box,
-  BlockStack,
-} from "@shopify/polaris";
+import { Page, Card, EmptyState, Text, Link, Box, BlockStack } from "@shopify/polaris";
 
 export default function AutomationsPage() {
   return (
@@ -20,8 +12,8 @@ export default function AutomationsPage() {
           action={{ content: "Create automation" }}
         >
           <Text as="p" variant="bodyMd" tone="subdued">
-            Set up automated marketing to reach customers at the right moment.
-            Send welcome emails, win back lost customers, and more.
+            Set up automated marketing to reach customers at the right moment. Send welcome emails,
+            win back lost customers, and more.
           </Text>
         </EmptyState>
       </Card>

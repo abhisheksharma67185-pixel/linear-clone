@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Page,
-  Card,
-  EmptyState,
-  Text,
-  Link,
-  Box,
-  BlockStack,
-} from "@shopify/polaris";
+import { Page, Card, EmptyState, Text, Link, Box, BlockStack } from "@shopify/polaris";
 
 export default function MetaobjectsPage() {
   return (
@@ -24,9 +16,8 @@ export default function MetaobjectsPage() {
           action={{ content: "Add definition" }}
         >
           <Text as="p" variant="bodyMd" tone="subdued">
-            Metaobjects allow you to group fields and connect them to different
-            parts of your store. Use them to create custom content or data
-            structures.
+            Metaobjects allow you to group fields and connect them to different parts of your store.
+            Use them to create custom content or data structures.
           </Text>
         </EmptyState>
       </Card>

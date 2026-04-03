@@ -32,11 +32,7 @@ function statusBadge(status: Discount["status"]) {
 }
 
 function typeBadge(type: Discount["type"]) {
-  return type === "automatic" ? (
-    <Badge>Automatic</Badge>
-  ) : (
-    <Badge tone="attention">Code</Badge>
-  );
+  return type === "automatic" ? <Badge>Automatic</Badge> : <Badge tone="attention">Code</Badge>;
 }
 
 export default function DiscountsPage() {
@@ -83,9 +79,8 @@ export default function DiscountsPage() {
             action={{ content: "Create discount" }}
           >
             <Text as="p" variant="bodyMd" tone="subdued">
-              Add discount codes and automatic discounts that apply at checkout.
-              You can also use discounts with{" "}
-              <Link>compare at prices</Link>.
+              Add discount codes and automatic discounts that apply at checkout. You can also use
+              discounts with <Link>compare at prices</Link>.
             </Text>
           </EmptyState>
         </Card>
@@ -157,9 +152,7 @@ export default function DiscountsPage() {
         <IndexTable
           resourceName={resourceName}
           itemCount={discounts.length}
-          selectedItemsCount={
-            allResourcesSelected ? "All" : selectedResources.length
-          }
+          selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
           onSelectionChange={handleSelectionChange}
           headings={[
             { title: "Discount" },

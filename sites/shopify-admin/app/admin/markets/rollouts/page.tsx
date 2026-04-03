@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Page,
-  Text,
-  BlockStack,
-  InlineStack,
-  Box,
-  Button,
-} from "@shopify/polaris";
+import { Page, Text, BlockStack, InlineStack, Box, Button } from "@shopify/polaris";
 
 export default function RolloutsPage() {
   return (
@@ -20,8 +13,8 @@ export default function RolloutsPage() {
                 Upgrade your plan to access this feature
               </Text>
               <Text as="p" variant="bodyMd" tone="subdued">
-                To use this feature, your store must be on any of the following
-                plans: Basic, Grow, Advanced, Retail or Shopify Plus
+                To use this feature, your store must be on any of the following plans: Basic, Grow,
+                Advanced, Retail or Shopify Plus
               </Text>
               <div>
                 <Button variant="primary">Upgrade plan</Button>

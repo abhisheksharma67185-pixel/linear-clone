@@ -18,11 +18,7 @@ import { useState, useCallback, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import type { Customer, Order } from "../../../lib/mock-data";
 
-export default function CustomerDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -146,12 +142,7 @@ export default function CustomerDetailPage({
                     type="email"
                     autoComplete="off"
                   />
-                  <TextField
-                    label="Phone"
-                    value={phone}
-                    onChange={setPhone}
-                    autoComplete="off"
-                  />
+                  <TextField label="Phone" value={phone} onChange={setPhone} autoComplete="off" />
                   <TextField
                     label="Notes"
                     value={notes}
@@ -186,20 +177,8 @@ export default function CustomerDetailPage({
               </Text>
               {orders.length > 0 ? (
                 <DataTable
-                  columnContentTypes={[
-                    "text",
-                    "text",
-                    "numeric",
-                    "text",
-                    "text",
-                  ]}
-                  headings={[
-                    "Order",
-                    "Date",
-                    "Total",
-                    "Payment",
-                    "Fulfillment",
-                  ]}
+                  columnContentTypes={["text", "text", "numeric", "text", "text"]}
+                  headings={["Order", "Date", "Total", "Payment", "Fulfillment"]}
                   rows={orderRows}
                 />
               ) : (
@@ -232,15 +211,25 @@ export default function CustomerDetailPage({
                 Overview
               </Text>
               <InlineStack align="space-between">
-                <Text as="span" tone="subdued">Orders</Text>
-                <Text as="span" numeric>{customer.orders}</Text>
+                <Text as="span" tone="subdued">
+                  Orders
+                </Text>
+                <Text as="span" numeric>
+                  {customer.orders}
+                </Text>
               </InlineStack>
               <InlineStack align="space-between">
-                <Text as="span" tone="subdued">Total spent</Text>
-                <Text as="span" numeric>${customer.totalSpent}</Text>
+                <Text as="span" tone="subdued">
+                  Total spent
+                </Text>
+                <Text as="span" numeric>
+                  ${customer.totalSpent}
+                </Text>
               </InlineStack>
               <InlineStack align="space-between">
-                <Text as="span" tone="subdued">Customer since</Text>
+                <Text as="span" tone="subdued">
+                  Customer since
+                </Text>
                 <Text as="span">{customer.createdAt}</Text>
               </InlineStack>
             </BlockStack>

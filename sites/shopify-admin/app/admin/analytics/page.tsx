@@ -16,10 +16,16 @@ function StatCard({ title, value }: { title: string; value: string }) {
   return (
     <Card>
       <BlockStack gap="200">
-        <Text as="h3" variant="bodySm" tone="subdued">{title}</Text>
+        <Text as="h3" variant="bodySm" tone="subdued">
+          {title}
+        </Text>
         <InlineStack gap="100" blockAlign="center">
-          <Text as="p" variant="headingMd">{value}</Text>
-          <Text as="span" variant="bodySm" tone="subdued">—</Text>
+          <Text as="p" variant="headingMd">
+            {value}
+          </Text>
+          <Text as="span" variant="bodySm" tone="subdued">
+            —
+          </Text>
         </InlineStack>
         <Box background="bg-surface-secondary" borderRadius="100" minHeight="4px" maxWidth="60px" />
       </BlockStack>
@@ -27,19 +33,38 @@ function StatCard({ title, value }: { title: string; value: string }) {
   );
 }
 
-function ChartCard({ title, value, showChart }: { title: string; value?: string; showChart?: boolean }) {
+function ChartCard({
+  title,
+  value,
+  showChart,
+}: {
+  title: string;
+  value?: string;
+  showChart?: boolean;
+}) {
   return (
     <Card>
       <BlockStack gap="300">
-        <Text as="h3" variant="headingSm">{title}</Text>
+        <Text as="h3" variant="headingSm">
+          {title}
+        </Text>
         {value && (
           <InlineStack gap="100" blockAlign="center">
-            <Text as="p" variant="headingLg">{value}</Text>
-            <Text as="span" variant="bodySm" tone="subdued">—</Text>
+            <Text as="p" variant="headingLg">
+              {value}
+            </Text>
+            <Text as="span" variant="bodySm" tone="subdued">
+              —
+            </Text>
           </InlineStack>
         )}
         {showChart ? (
-          <Box background="bg-surface-secondary" borderRadius="200" minHeight="180px" padding="400" />
+          <Box
+            background="bg-surface-secondary"
+            borderRadius="200"
+            minHeight="180px"
+            padding="400"
+          />
         ) : (
           <Box minHeight="120px" padding="800">
             <Text as="p" variant="bodySm" tone="subdued" alignment="center">
@@ -52,18 +77,30 @@ function ChartCard({ title, value, showChart }: { title: string; value?: string;
   );
 }
 
-function BreakdownCard({ title, items }: { title: string; items: { label: string; value: string }[] }) {
+function BreakdownCard({
+  title,
+  items,
+}: {
+  title: string;
+  items: { label: string; value: string }[];
+}) {
   return (
     <Card>
       <BlockStack gap="300">
-        <Text as="h3" variant="headingSm">{title}</Text>
+        <Text as="h3" variant="headingSm">
+          {title}
+        </Text>
         <BlockStack gap="200">
           {items.map((item) => (
             <InlineStack key={item.label} align="space-between" blockAlign="center">
               <Link>{item.label}</Link>
               <InlineStack gap="200" blockAlign="center">
-                <Text as="span" variant="bodyMd">{item.value}</Text>
-                <Text as="span" variant="bodySm" tone="subdued">—</Text>
+                <Text as="span" variant="bodyMd">
+                  {item.value}
+                </Text>
+                <Text as="span" variant="bodySm" tone="subdued">
+                  —
+                </Text>
               </InlineStack>
             </InlineStack>
           ))}
@@ -83,18 +120,30 @@ function ConversionBreakdownCard() {
   return (
     <Card>
       <BlockStack gap="300">
-        <Text as="h3" variant="headingSm">Conversion rate breakdown</Text>
+        <Text as="h3" variant="headingSm">
+          Conversion rate breakdown
+        </Text>
         <InlineStack gap="100" blockAlign="center">
-          <Text as="p" variant="headingLg">0%</Text>
-          <Text as="span" variant="bodySm" tone="subdued">—</Text>
+          <Text as="p" variant="headingLg">
+            0%
+          </Text>
+          <Text as="span" variant="bodySm" tone="subdued">
+            —
+          </Text>
         </InlineStack>
         <div style={{ display: "flex", gap: 16 }}>
           {cols.map((col) => (
             <div key={col.label} style={{ flex: 1 }}>
               <BlockStack gap="100">
-                <Text as="span" variant="bodySm" tone="subdued">{col.label}</Text>
-                <Text as="span" variant="bodyMd" fontWeight="semibold">{col.value}</Text>
-                <Text as="span" variant="bodySm" tone="subdued">{col.sub}</Text>
+                <Text as="span" variant="bodySm" tone="subdued">
+                  {col.label}
+                </Text>
+                <Text as="span" variant="bodyMd" fontWeight="semibold">
+                  {col.value}
+                </Text>
+                <Text as="span" variant="bodySm" tone="subdued">
+                  {col.sub}
+                </Text>
               </BlockStack>
             </div>
           ))}
@@ -105,27 +154,46 @@ function ConversionBreakdownCard() {
 }
 
 function CohortCard() {
-  const months = ["Aug 2025", "Sep 2025", "Oct 2025", "Nov 2025", "Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026"];
+  const months = [
+    "Aug 2025",
+    "Sep 2025",
+    "Oct 2025",
+    "Nov 2025",
+    "Dec 2025",
+    "Jan 2026",
+    "Feb 2026",
+    "Mar 2026",
+  ];
   return (
     <Card>
       <BlockStack gap="300">
-        <Text as="h3" variant="headingSm">Customer cohort analysis</Text>
+        <Text as="h3" variant="headingSm">
+          Customer cohort analysis
+        </Text>
         <div style={{ display: "flex", gap: 8 }}>
           <div>
             <BlockStack gap="100">
-              <Text as="span" variant="bodySm" fontWeight="semibold">Cohort</Text>
+              <Text as="span" variant="bodySm" fontWeight="semibold">
+                Cohort
+              </Text>
               {months.map((m) => (
-                <Text key={m} as="span" variant="bodySm">{m}</Text>
+                <Text key={m} as="span" variant="bodySm">
+                  {m}
+                </Text>
               ))}
             </BlockStack>
           </div>
           <div style={{ flex: 1 }}>
             <BlockStack gap="100">
-              <Text as="span" variant="bodySm" fontWeight="semibold">Months</Text>
+              <Text as="span" variant="bodySm" fontWeight="semibold">
+                Months
+              </Text>
               {months.map((m, i) => (
                 <InlineStack key={m} gap="300">
                   {Array.from({ length: 8 - i }, (_, j) => (
-                    <Text key={j} as="span" variant="bodySm" tone="success">0%</Text>
+                    <Text key={j} as="span" variant="bodySm" tone="success">
+                      0%
+                    </Text>
                   ))}
                 </InlineStack>
               ))}

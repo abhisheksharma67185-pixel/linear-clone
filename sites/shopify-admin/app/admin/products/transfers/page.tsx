@@ -4,10 +4,7 @@ import { Page, Card, EmptyState, Text, Link, Box, BlockStack } from "@shopify/po
 
 export default function TransfersPage() {
   return (
-    <Page
-      title="Transfers"
-      secondaryActions={[{ content: "Transfers report" }]}
-    >
+    <Page title="Transfers" secondaryActions={[{ content: "Transfers report" }]}>
       <Card>
         <EmptyState
           heading="Move inventory between locations"

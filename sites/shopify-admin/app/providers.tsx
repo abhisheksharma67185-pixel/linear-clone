@@ -5,9 +5,5 @@ import enTranslations from "@shopify/polaris/locales/en.json";
 import { ReactNode } from "react";
 
 export default function PolarisProvider({ children }: { children: ReactNode }) {
-  return (
-    <AppProvider i18n={enTranslations}>
-      {children}
-    </AppProvider>
-  );
+  return <AppProvider i18n={enTranslations}>{children}</AppProvider>;
 }

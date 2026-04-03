@@ -31,12 +31,7 @@ function SetupCard({
 }) {
   return (
     <Card padding="0">
-      <Box
-        background="bg-surface-secondary"
-        minHeight="200px"
-        padding="800"
-        borderRadius="300"
-      />
+      <Box background="bg-surface-secondary" minHeight="200px" padding="800" borderRadius="300" />
       <Box padding="400">
         <BlockStack gap="300">
           <Text as="h3" variant="headingSm" fontWeight="semibold">
@@ -53,9 +48,7 @@ function SetupCard({
           </Text>
           <InlineStack gap="300">
             <Button>{actionLabel}</Button>
-            {secondaryActionLabel && (
-              <Button variant="plain">{secondaryActionLabel}</Button>
-            )}
+            {secondaryActionLabel && <Button variant="plain">{secondaryActionLabel}</Button>}
           </InlineStack>
         </BlockStack>
       </Box>
@@ -125,10 +118,7 @@ export default function AdminDashboard() {
                 Get 3 months for $1/month
               </Text>
               <InlineStack gap="200" blockAlign="center">
-                <Button
-                  size="slim"
-                  onClick={() => {}}
-                >
+                <Button size="slim" onClick={() => {}}>
                   Select a plan
                 </Button>
                 <Button
@@ -159,16 +149,8 @@ export default function AdminDashboard() {
               autoComplete="off"
               connectedRight={
                 <InlineStack gap="100">
-                  <Button
-                    icon={PlusIcon}
-                    variant="tertiary"
-                    accessibilityLabel="Add"
-                  />
-                  <Button
-                    icon={ArrowUpIcon}
-                    variant="tertiary"
-                    accessibilityLabel="Submit"
-                  />
+                  <Button icon={PlusIcon} variant="tertiary" accessibilityLabel="Add" />
+                  <Button icon={ArrowUpIcon} variant="tertiary" accessibilityLabel="Submit" />
                 </InlineStack>
               }
             />
@@ -181,11 +163,7 @@ export default function AdminDashboard() {
             <Text as="h2" variant="headingMd">
               Add store name
             </Text>
-            <Button
-              variant="plain"
-              icon={EditIcon}
-              accessibilityLabel="Edit store name"
-            />
+            <Button variant="plain" icon={EditIcon} accessibilityLabel="Edit store name" />
           </InlineStack>
         </Card>
 
@@ -247,23 +225,14 @@ export default function AdminDashboard() {
           </SmallSetupCard>
 
           <SmallSetupCard title="Review your shipping rates" actionLabel="Review">
-            <Box
-              background="bg-surface-secondary"
-              borderRadius="100"
-              padding="200"
-              maxWidth="40px"
-            >
+            <Box background="bg-surface-secondary" borderRadius="100" padding="200" maxWidth="40px">
               <Text as="span" variant="bodySm" alignment="center">
                 🇺🇸
               </Text>
             </Box>
           </SmallSetupCard>
 
-          <SmallSetupCard
-            title="Customize domain"
-            badge="Get $20"
-            actionLabel="Customize"
-          >
+          <SmallSetupCard title="Customize domain" badge="Get $20" actionLabel="Customize">
             <Box
               background="bg-surface-secondary"
               borderRadius="200"

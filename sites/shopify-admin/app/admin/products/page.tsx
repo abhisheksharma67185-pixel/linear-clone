@@ -35,13 +35,7 @@ function statusBadge(status: Product["status"]) {
   }
 }
 
-function ImportModal({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [step, setStep] = useState<"choose" | "csv" | "platform">("choose");
   const [importType, setImportType] = useState<string[]>(["csv"]);
   const [platform, setPlatform] = useState("");
@@ -63,10 +57,27 @@ function ImportModal({
 
   if (step === "platform") {
     const platforms = [
-      "Etsy", "Facebook Marketplace", "Square", "Amazon", "Instagram",
-      "eBay", "TikTok", "Wix", "Cash Register", "WooCommerce", "WordPress",
-      "Squarespace", "GoDaddy", "Clover", "Walmart", "Lightspeed",
-      "Big Cartel", "BigCommerce", "ShopKeep", "OpenCart", "Magento",
+      "Etsy",
+      "Facebook Marketplace",
+      "Square",
+      "Amazon",
+      "Instagram",
+      "eBay",
+      "TikTok",
+      "Wix",
+      "Cash Register",
+      "WooCommerce",
+      "WordPress",
+      "Squarespace",
+      "GoDaddy",
+      "Clover",
+      "Walmart",
+      "Lightspeed",
+      "Big Cartel",
+      "BigCommerce",
+      "ShopKeep",
+      "OpenCart",
+      "Magento",
       "PrestaShop",
     ];
     return (
@@ -129,8 +140,7 @@ function ImportModal({
                 value: "csv",
                 helpText: (
                   <Text as="span" variant="bodySm" tone="subdued">
-                    Import a CSV file that&apos;s already formatted to fit
-                    Shopify&apos;s template.{" "}
+                    Import a CSV file that&apos;s already formatted to fit Shopify&apos;s template.{" "}
                     <Link>Download sample CSV</Link>
                   </Text>
                 ),
@@ -140,8 +150,8 @@ function ImportModal({
                 value: "platform",
                 helpText: (
                   <Text as="span" variant="bodySm" tone="subdued">
-                    Import a copy of your data from another platform using one of
-                    our recommended apps.
+                    Import a copy of your data from another platform using one of our recommended
+                    apps.
                   </Text>
                 ),
               },
@@ -194,8 +204,8 @@ function ProductsEmptyState({
             Find products to sell
           </Text>
           <Text as="p" variant="bodyMd" tone="subdued">
-            Have dropshipping or print on demand products shipped directly from
-            the supplier to your customer, and only pay for what you sell.
+            Have dropshipping or print on demand products shipped directly from the supplier to your
+            customer, and only pay for what you sell.
           </Text>
           <div>
             <Button>Browse product sourcing apps</Button>
@@ -232,9 +242,7 @@ export default function ProductsPage() {
   const handleQueryChange = useCallback(
     (value: string) => {
       setQueryValue(value);
-      const filtered = products.filter((p) =>
-        p.title.toLowerCase().includes(value.toLowerCase()),
-      );
+      const filtered = products.filter((p) => p.title.toLowerCase().includes(value.toLowerCase()));
       setFilteredProducts(filtered);
     },
     [products],
@@ -262,10 +270,7 @@ export default function ProductsPage() {
           onAddProduct={() => router.push("/admin/products/new")}
           onImport={() => setImportOpen(true)}
         />
-        <ImportModal
-          open={importOpen}
-          onClose={() => setImportOpen(false)}
-        />
+        <ImportModal open={importOpen} onClose={() => setImportOpen(false)} />
       </Page>
     );
   }
@@ -328,9 +333,7 @@ export default function ProductsPage() {
         <IndexTable
           resourceName={resourceName}
           itemCount={filteredProducts.length}
-          selectedItemsCount={
-            allResourcesSelected ? "All" : selectedResources.length
-          }
+          selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
           onSelectionChange={handleSelectionChange}
           headings={[
             { title: "Product" },

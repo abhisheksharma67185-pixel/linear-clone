@@ -15,7 +15,13 @@ import {
 } from "@shopify/polaris";
 
 const storePages = [
-  { id: "1", title: "Contact", visibility: "Visible", content: "", updated: "Yesterday at 8:01 pm" },
+  {
+    id: "1",
+    title: "Contact",
+    visibility: "Visible",
+    content: "",
+    updated: "Yesterday at 8:01 pm",
+  },
 ];
 
 export default function PagesPage() {
@@ -39,19 +45,20 @@ export default function PagesPage() {
         <Badge tone="success">{page.visibility}</Badge>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{page.content}</Text>
+        <Text as="span" tone="subdued">
+          {page.content}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{page.updated}</Text>
+        <Text as="span" tone="subdued">
+          {page.updated}
+        </Text>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));
 
   return (
-    <Page
-      title="Pages"
-      primaryAction={{ content: "Add page" }}
-    >
+    <Page title="Pages" primaryAction={{ content: "Add page" }}>
       <BlockStack gap="400">
         <Banner tone="warning">
           <Text as="h3" variant="headingSm" fontWeight="semibold">
@@ -71,9 +78,7 @@ export default function PagesPage() {
           <IndexTable
             resourceName={resourceName}
             itemCount={storePages.length}
-            selectedItemsCount={
-              allResourcesSelected ? "All" : selectedResources.length
-            }
+            selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
             onSelectionChange={handleSelectionChange}
             headings={[
               { title: "Title" },

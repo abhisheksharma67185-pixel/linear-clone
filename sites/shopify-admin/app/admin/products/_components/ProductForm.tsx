@@ -114,7 +114,10 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
       status,
       vendor,
       type,
-      tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+      tags: tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
     };
 
     const url = isNew ? "/api/data/products" : `/api/data/products/${product?.id}`;
@@ -137,7 +140,20 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
     router.push(`/admin/products/${saved.id}`);
     router.refresh();
     setSaving(false);
-  }, [title, description, price, compareAtPrice, inventory, status, vendor, type, tags, isNew, product?.id, router]);
+  }, [
+    title,
+    description,
+    price,
+    compareAtPrice,
+    inventory,
+    status,
+    vendor,
+    type,
+    tags,
+    isNew,
+    product?.id,
+    router,
+  ]);
 
   const handleDelete = useCallback(async () => {
     if (!product?.id) return;
@@ -156,7 +172,10 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
       secondaryActions={
         isNew
           ? [{ content: "Discard", onAction: () => router.push("/admin/products") }]
-          : [{ content: "Discard" }, { content: "Delete", destructive: true, onAction: handleDelete }]
+          : [
+              { content: "Discard" },
+              { content: "Delete", destructive: true, onAction: handleDelete },
+            ]
       }
     >
       {error && (
@@ -185,7 +204,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
           {/* Media */}
           <Card>
             <BlockStack gap="300">
-              <Text as="h2" variant="headingSm">Media</Text>
+              <Text as="h2" variant="headingSm">
+                Media
+              </Text>
               <DropZone onDrop={() => {}} variableHeight>
                 <DropZone.FileUpload
                   actionTitle="Upload new"
@@ -274,11 +295,21 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
                       onChange={() => {}}
                     />
                   </FormLayout.Group>
-                  <Checkbox label="Charge tax on this product" checked={chargeTax} onChange={setChargeTax} />
+                  <Checkbox
+                    label="Charge tax on this product"
+                    checked={chargeTax}
+                    onChange={setChargeTax}
+                  />
                   <InlineStack gap="400">
-                    <Text as="span" variant="bodySm" tone="subdued">Cost --</Text>
-                    <Text as="span" variant="bodySm" tone="subdued">Profit --</Text>
-                    <Text as="span" variant="bodySm" tone="subdued">Margin --</Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Cost --
+                    </Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Profit --
+                    </Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Margin --
+                    </Text>
                   </InlineStack>
                 </BlockStack>
               </Collapsible>
@@ -289,17 +320,29 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
           <Card>
             <BlockStack gap="400">
               <InlineStack align="space-between" blockAlign="center">
-                <Text as="h2" variant="headingSm">Inventory</Text>
-                <Checkbox label="Inventory tracked" checked={trackInventory} onChange={setTrackInventory} />
+                <Text as="h2" variant="headingSm">
+                  Inventory
+                </Text>
+                <Checkbox
+                  label="Inventory tracked"
+                  checked={trackInventory}
+                  onChange={setTrackInventory}
+                />
               </InlineStack>
               <Box background="bg-surface-secondary" borderRadius="200" padding="300">
                 <InlineStack align="space-between">
-                  <Text as="span" variant="bodySm" fontWeight="semibold">Quantity</Text>
-                  <Text as="span" variant="bodySm" fontWeight="semibold">Quantity</Text>
+                  <Text as="span" variant="bodySm" fontWeight="semibold">
+                    Quantity
+                  </Text>
+                  <Text as="span" variant="bodySm" fontWeight="semibold">
+                    Quantity
+                  </Text>
                 </InlineStack>
               </Box>
               <InlineStack align="space-between" blockAlign="center">
-                <Text as="span" variant="bodyMd">Shop location</Text>
+                <Text as="span" variant="bodyMd">
+                  Shop location
+                </Text>
                 <div style={{ width: 100 }}>
                   <TextField
                     label="Quantity"
@@ -354,7 +397,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
           <Card>
             <BlockStack gap="400">
               <InlineStack align="space-between" blockAlign="center">
-                <Text as="h2" variant="headingSm">Shipping</Text>
+                <Text as="h2" variant="headingSm">
+                  Shipping
+                </Text>
                 <Checkbox label="Physical product" checked={isPhysical} onChange={setIsPhysical} />
               </InlineStack>
               {isPhysical && (
@@ -362,7 +407,13 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
                   <FormLayout.Group>
                     <Select
                       label="Package"
-                      options={[{ label: "Store default \u2022 Sample box - 22 \u00d7 13.7 \u00d7 4.2 cm, 0 kg", value: "default" }]}
+                      options={[
+                        {
+                          label:
+                            "Store default \u2022 Sample box - 22 \u00d7 13.7 \u00d7 4.2 cm, 0 kg",
+                          value: "default",
+                        },
+                      ]}
                       value="default"
                       onChange={() => {}}
                     />
@@ -434,7 +485,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
           {/* Variants */}
           <Card>
             <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">Variants</Text>
+              <Text as="h2" variant="headingSm">
+                Variants
+              </Text>
               {variantOptions.map((option, optIndex) => (
                 <Card key={optIndex}>
                   <BlockStack gap="300">
@@ -492,10 +545,12 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
           {/* Search engine listing */}
           <Card>
             <BlockStack gap="300">
-              <Text as="h2" variant="headingSm">Search engine listing</Text>
+              <Text as="h2" variant="headingSm">
+                Search engine listing
+              </Text>
               <Text as="p" variant="bodySm" tone="subdued">
-                Add a title and description to see how this product might appear
-                in a search engine listing
+                Add a title and description to see how this product might appear in a search engine
+                listing
               </Text>
             </BlockStack>
           </Card>
@@ -505,7 +560,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
         <Layout.Section variant="oneThird">
           <Card>
             <BlockStack gap="300">
-              <Text as="h2" variant="headingSm">Status</Text>
+              <Text as="h2" variant="headingSm">
+                Status
+              </Text>
               <Select
                 label="Status"
                 labelHidden
@@ -523,7 +580,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
           <Card>
             <BlockStack gap="300">
               <InlineStack align="space-between" blockAlign="center">
-                <Text as="h2" variant="headingSm">Publishing</Text>
+                <Text as="h2" variant="headingSm">
+                  Publishing
+                </Text>
                 <Button variant="plain" onClick={() => setPublishingOpen(true)}>
                   Manage
                 </Button>
@@ -565,7 +624,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
                       />
                     </InlineStack>
                     <InlineStack align="space-between" blockAlign="center">
-                      <Text as="span" variant="bodyMd">Online Store</Text>
+                      <Text as="span" variant="bodyMd">
+                        Online Store
+                      </Text>
                       <Checkbox
                         label=""
                         labelHidden
@@ -574,7 +635,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
                       />
                     </InlineStack>
                     <InlineStack align="space-between" blockAlign="center">
-                      <Text as="span" variant="bodyMd">Point of Sale</Text>
+                      <Text as="span" variant="bodyMd">
+                        Point of Sale
+                      </Text>
                       <Checkbox
                         label=""
                         labelHidden
@@ -588,7 +651,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
               <Modal.Section>
                 <InlineStack align="end" gap="200">
                   <Button onClick={() => setPublishingOpen(false)}>Cancel</Button>
-                  <Button variant="primary" onClick={() => setPublishingOpen(false)}>Done</Button>
+                  <Button variant="primary" onClick={() => setPublishingOpen(false)}>
+                    Done
+                  </Button>
                 </InlineStack>
               </Modal.Section>
             </Modal>
@@ -596,11 +661,19 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
 
           <Card>
             <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">Product organization</Text>
+              <Text as="h2" variant="headingSm">
+                Product organization
+              </Text>
               <FormLayout>
                 <TextField label="Type" value={type} onChange={setType} autoComplete="off" />
                 <TextField label="Vendor" value={vendor} onChange={setVendor} autoComplete="off" />
-                <TextField label="Collections" value="" onChange={() => {}} autoComplete="off" placeholder="Search collections" />
+                <TextField
+                  label="Collections"
+                  value=""
+                  onChange={() => {}}
+                  autoComplete="off"
+                  placeholder="Search collections"
+                />
                 <TextField label="Tags" value={tags} onChange={setTags} autoComplete="off" />
               </FormLayout>
             </BlockStack>
@@ -608,7 +681,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
 
           <Card>
             <BlockStack gap="300">
-              <Text as="h2" variant="headingSm">Theme template</Text>
+              <Text as="h2" variant="headingSm">
+                Theme template
+              </Text>
               <Select
                 label="Theme template"
                 labelHidden

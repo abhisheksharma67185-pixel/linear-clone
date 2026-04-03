@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as store from "../../lib/store";
-import {
-  getActiveEpisode,
-  hasActiveEpisode,
-  logAction,
-  getStepReward,
-} from "../../lib/episode";
+import { getActiveEpisode, hasActiveEpisode, logAction, getStepReward } from "../../lib/episode";
 
 // ---------------------------------------------------------------------------
 // Mutable RL session state
@@ -21,9 +16,7 @@ let stepCount = 0;
 // ---------------------------------------------------------------------------
 
 function getContextData(): Record<string, unknown> {
-  const match = currentPage.match(
-    /^\/admin\/(products|orders|customers|discounts)\/(\d+)$/,
-  );
+  const match = currentPage.match(/^\/admin\/(products|orders|customers|discounts)\/(\d+)$/);
   if (match) {
     const [, entity, id] = match;
     switch (entity) {
@@ -43,10 +36,7 @@ function getContextData(): Record<string, unknown> {
 function getAvailableActions(): string[] {
   const base = ["navigate", "search", "select"];
 
-  if (
-    currentPage === "/admin/products" ||
-    currentPage === "/admin/products/new"
-  ) {
+  if (currentPage === "/admin/products" || currentPage === "/admin/products/new") {
     return [...base, "create_product"];
   }
   if (currentPage.match(/^\/admin\/products\/\d+$/)) {
@@ -61,19 +51,13 @@ function getAvailableActions(): string[] {
     if (order?.paymentStatus === "paid") actions.push("refund_order");
     return actions;
   }
-  if (
-    currentPage === "/admin/customers" ||
-    currentPage === "/admin/customers/new"
-  ) {
+  if (currentPage === "/admin/customers" || currentPage === "/admin/customers/new") {
     return [...base, "create_customer"];
   }
   if (currentPage.match(/^\/admin\/customers\/\d+$/)) {
     return [...base, "update_customer"];
   }
-  if (
-    currentPage === "/admin/discounts" ||
-    currentPage === "/admin/discounts/new"
-  ) {
+  if (currentPage === "/admin/discounts" || currentPage === "/admin/discounts/new") {
     return [...base, "create_discount"];
   }
   if (currentPage === "/admin/settings") {
@@ -112,11 +96,8 @@ function getObservation() {
       totalProducts: products.length,
       activeProducts: products.filter((p) => p.status === "active").length,
       totalOrders: orders.length,
-      unfulfilledOrders: orders.filter(
-        (o) => o.fulfillmentStatus === "unfulfilled",
-      ).length,
-      pendingPayments: orders.filter((o) => o.paymentStatus === "pending")
-        .length,
+      unfulfilledOrders: orders.filter((o) => o.fulfillmentStatus === "unfulfilled").length,
+      pendingPayments: orders.filter((o) => o.paymentStatus === "pending").length,
       totalCustomers: customers.length,
       activeDiscounts: discounts.filter((d) => d.status === "active").length,
       storeName: settings.storeName,
@@ -168,10 +149,7 @@ function executeAction(action: Record<string, unknown>): {
 
   switch (action.action) {
     case "navigate": {
-      if (
-        typeof action.target === "string" &&
-        action.target !== currentPage
-      ) {
+      if (typeof action.target === "string" && action.target !== currentPage) {
         currentPage = action.target;
         reward = 0.0;
       }
@@ -189,9 +167,7 @@ function executeAction(action: Record<string, unknown>): {
     case "create_product": {
       const fields = action.fields as Record<string, unknown> | undefined;
       if (fields) {
-        const result = store.createProduct(
-          fields as Parameters<typeof store.createProduct>[0],
-        );
+        const result = store.createProduct(fields as Parameters<typeof store.createProduct>[0]);
         reward = result.success ? 0.5 : -0.5;
         success = result.success;
       } else {
@@ -234,10 +210,7 @@ function executeAction(action: Record<string, unknown>): {
       break;
     }
     case "add_order_note": {
-      const result = store.addOrderNote(
-        action.orderId as string,
-        action.message as string,
-      );
+      const result = store.addOrderNote(action.orderId as string, action.message as string);
       reward = result.success ? 0.1 : -0.5;
       success = result.success;
       break;
@@ -245,9 +218,7 @@ function executeAction(action: Record<string, unknown>): {
     case "create_customer": {
       const fields = action.fields as Record<string, unknown> | undefined;
       if (fields) {
-        const result = store.createCustomer(
-          fields as Parameters<typeof store.createCustomer>[0],
-        );
+        const result = store.createCustomer(fields as Parameters<typeof store.createCustomer>[0]);
         reward = result.success ? 0.5 : -0.5;
         success = result.success;
       } else {
@@ -268,9 +239,7 @@ function executeAction(action: Record<string, unknown>): {
     case "create_discount": {
       const fields = action.fields as Record<string, unknown> | undefined;
       if (fields) {
-        const result = store.createDiscount(
-          fields as Parameters<typeof store.createDiscount>[0],
-        );
+        const result = store.createDiscount(fields as Parameters<typeof store.createDiscount>[0]);
         reward = result.success ? 0.5 : -0.5;
         success = result.success;
       } else {
@@ -331,12 +300,7 @@ export async function POST(request: NextRequest) {
     finalReward = success ? baseReward + stepReward : stepReward;
 
     // Log action to episode
-    logAction(
-      actionName,
-      action as Record<string, unknown>,
-      finalReward,
-      success,
-    );
+    logAction(actionName, action as Record<string, unknown>, finalReward, success);
   }
 
   const observation = getObservation();
@@ -346,15 +310,12 @@ export async function POST(request: NextRequest) {
   if (episode) {
     // Episode mode: done when episode status changes
     done =
-      episode.status === "timeout" ||
-      episode.status === "completed" ||
-      episode.status === "failed";
+      episode.status === "timeout" || episode.status === "completed" || episode.status === "failed";
   } else {
     // Legacy mode: done when all orders fulfilled + payments captured
     const orders = store.getOrders();
     done =
-      orders.filter((o) => o.fulfillmentStatus === "unfulfilled").length ===
-        0 &&
+      orders.filter((o) => o.fulfillmentStatus === "unfulfilled").length === 0 &&
       orders.filter((o) => o.paymentStatus === "pending").length === 0;
   }
 
@@ -368,9 +329,7 @@ export async function POST(request: NextRequest) {
       lastAction: actionName,
       success,
       episodeActive: hasActiveEpisode(),
-      episodeStepsRemaining: episode
-        ? episode.task.maxSteps - episode.stepCount
-        : null,
+      episodeStepsRemaining: episode ? episode.task.maxSteps - episode.stepCount : null,
     },
   });
 }

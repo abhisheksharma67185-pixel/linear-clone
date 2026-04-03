@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Page,
-  Card,
-  DataTable,
-} from "@shopify/polaris";
+import { Page, Card, DataTable } from "@shopify/polaris";
 
 const menus = [
   ["Main menu", "Home, Catalog, Contact"],

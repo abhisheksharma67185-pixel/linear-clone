@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Page,
-  Card,
-  EmptyState,
-  Text,
-  Link,
-  Box,
-  BlockStack,
-} from "@shopify/polaris";
+import { Page, Card, EmptyState, Text, Link, Box, BlockStack } from "@shopify/polaris";
 
 export default function CatalogsPage() {
   return (
@@ -24,8 +16,7 @@ export default function CatalogsPage() {
           action={{ content: "Create catalog" }}
         >
           <Text as="p" variant="bodyMd" tone="subdued">
-            Create custom product and pricing offerings for your customers with
-            catalogs.
+            Create custom product and pricing offerings for your customers with catalogs.
           </Text>
         </EmptyState>
       </Card>

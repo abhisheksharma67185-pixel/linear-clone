@@ -69,8 +69,7 @@ export default function OrdersPage() {
       setQueryValue(value);
       const filtered = orders.filter(
         (o) =>
-          o.orderNumber.includes(value) ||
-          o.customer.toLowerCase().includes(value.toLowerCase()),
+          o.orderNumber.includes(value) || o.customer.toLowerCase().includes(value.toLowerCase()),
       );
       setFilteredOrders(filtered);
     },
@@ -95,10 +94,7 @@ export default function OrdersPage() {
   // Empty state matching the real Shopify admin for new stores
   if (orders.length === 0) {
     return (
-      <Page
-        title="Orders"
-        secondaryActions={[{ content: "More actions" }]}
-      >
+      <Page title="Orders" secondaryActions={[{ content: "More actions" }]}>
         <Card>
           <EmptyState
             heading="Your orders will show here"
@@ -106,9 +102,8 @@ export default function OrdersPage() {
             action={{ content: "Select plan" }}
           >
             <Text as="p" variant="bodyMd" tone="subdued">
-              To get orders and accept payments from customers, you need to
-              select a plan. You&apos;ll only be charged for your plan after your
-              free trial ends.
+              To get orders and accept payments from customers, you need to select a plan.
+              You&apos;ll only be charged for your plan after your free trial ends.
             </Text>
           </EmptyState>
         </Card>
@@ -144,23 +139,17 @@ export default function OrdersPage() {
         </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>{paymentBadge(order.paymentStatus)}</IndexTable.Cell>
-      <IndexTable.Cell>
-        {fulfillmentBadge(order.fulfillmentStatus)}
-      </IndexTable.Cell>
+      <IndexTable.Cell>{fulfillmentBadge(order.fulfillmentStatus)}</IndexTable.Cell>
       <IndexTable.Cell>
         <Text as="span" numeric>
-          {order.lineItems.length}{" "}
-          {order.lineItems.length === 1 ? "item" : "items"}
+          {order.lineItems.length} {order.lineItems.length === 1 ? "item" : "items"}
         </Text>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));
 
   return (
-    <Page
-      title="Orders"
-      secondaryActions={[{ content: "More actions" }, { content: "Export" }]}
-    >
+    <Page title="Orders" secondaryActions={[{ content: "More actions" }, { content: "Export" }]}>
       <Card padding="0">
         <IndexFilters
           queryValue={queryValue}
@@ -178,9 +167,7 @@ export default function OrdersPage() {
         <IndexTable
           resourceName={resourceName}
           itemCount={filteredOrders.length}
-          selectedItemsCount={
-            allResourcesSelected ? "All" : selectedResources.length
-          }
+          selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
           onSelectionChange={handleSelectionChange}
           headings={[
             { title: "Order" },

@@ -27,14 +27,22 @@ const actionSpace = {
     {
       name: "create_product",
       description: "Create a new product",
-      params: { fields: "{ title, description?, price?, status?, inventory?, vendor?, type?, tags? }" },
+      params: {
+        fields: "{ title, description?, price?, status?, inventory?, vendor?, type?, tags? }",
+      },
       reward: 0.5,
-      example: { action: "create_product", fields: { title: "New Shirt", price: "29.99", status: "active" } },
+      example: {
+        action: "create_product",
+        fields: { title: "New Shirt", price: "29.99", status: "active" },
+      },
     },
     {
       name: "update_product",
       description: "Update an existing product",
-      params: { productId: "string", fields: "{ title?, description?, price?, status?, inventory?, vendor?, type?, tags? }" },
+      params: {
+        productId: "string",
+        fields: "{ title?, description?, price?, status?, inventory?, vendor?, type?, tags? }",
+      },
       reward: 0.5,
       example: { action: "update_product", productId: "1", fields: { price: "34.99" } },
     },
@@ -71,33 +79,61 @@ const actionSpace = {
       description: "Add a note to an order timeline",
       params: { orderId: "string", message: "string" },
       reward: 0.1,
-      example: { action: "add_order_note", orderId: "1", message: "Contacted customer about shipping" },
+      example: {
+        action: "add_order_note",
+        orderId: "1",
+        message: "Contacted customer about shipping",
+      },
     },
     {
       name: "create_customer",
       description: "Create a new customer",
       params: { fields: "{ firstName, lastName, email, phone?, address?, tags?, notes? }" },
       reward: 0.5,
-      example: { action: "create_customer", fields: { firstName: "Jane", lastName: "Doe", email: "jane@example.com" } },
+      example: {
+        action: "create_customer",
+        fields: { firstName: "Jane", lastName: "Doe", email: "jane@example.com" },
+      },
     },
     {
       name: "update_customer",
       description: "Update an existing customer",
-      params: { customerId: "string", fields: "{ firstName?, lastName?, email?, phone?, tags?, notes? }" },
+      params: {
+        customerId: "string",
+        fields: "{ firstName?, lastName?, email?, phone?, tags?, notes? }",
+      },
       reward: 0.3,
-      example: { action: "update_customer", customerId: "1", fields: { tags: ["vip", "wholesale"] } },
+      example: {
+        action: "update_customer",
+        customerId: "1",
+        fields: { tags: ["vip", "wholesale"] },
+      },
     },
     {
       name: "create_discount",
       description: "Create a new discount",
-      params: { fields: "{ title, type: code|automatic, valueType?: percentage|fixed_amount|free_shipping, value?, code?, startsAt?, endsAt?, usageLimit? }" },
+      params: {
+        fields:
+          "{ title, type: code|automatic, valueType?: percentage|fixed_amount|free_shipping, value?, code?, startsAt?, endsAt?, usageLimit? }",
+      },
       reward: 0.5,
-      example: { action: "create_discount", fields: { title: "Spring 15%", type: "code", code: "SPRING15", valueType: "percentage", value: "15" } },
+      example: {
+        action: "create_discount",
+        fields: {
+          title: "Spring 15%",
+          type: "code",
+          code: "SPRING15",
+          valueType: "percentage",
+          value: "15",
+        },
+      },
     },
     {
       name: "update_settings",
       description: "Update store settings",
-      params: { fields: "{ storeName?, email?, phone?, currency?, timezone?, weightUnit?, address? }" },
+      params: {
+        fields: "{ storeName?, email?, phone?, currency?, timezone?, weightUnit?, address? }",
+      },
       reward: 0.3,
       example: { action: "update_settings", fields: { storeName: "My Awesome Store" } },
     },

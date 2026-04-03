@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Page,
-  Card,
-  DataTable,
-  TextField,
-  Icon,
-  Box,
-  InlineStack,
-  Button,
-} from "@shopify/polaris";
+import { Page, Card, DataTable, TextField, Icon, Box, InlineStack, Button } from "@shopify/polaris";
 import { SearchIcon } from "@shopify/polaris-icons";
 import { useState } from "react";
 
@@ -69,15 +60,10 @@ const reports = [
 export default function ReportsPage() {
   const [searchValue, setSearchValue] = useState("");
 
-  const filtered = reports.filter((r) =>
-    r[0].toLowerCase().includes(searchValue.toLowerCase()),
-  );
+  const filtered = reports.filter((r) => r[0].toLowerCase().includes(searchValue.toLowerCase()));
 
   return (
-    <Page
-      title="Reports"
-      primaryAction={{ content: "New exploration" }}
-    >
+    <Page title="Reports" primaryAction={{ content: "New exploration" }}>
       <Card padding="0">
         <Box padding="300">
           <TextField
@@ -92,9 +78,15 @@ export default function ReportsPage() {
         </Box>
         <Box padding="300" paddingBlockStart="0">
           <InlineStack gap="200">
-            <Button size="slim" disclosure>Created by</Button>
-            <Button size="slim" disclosure>Category</Button>
-            <Button size="slim" disclosure>Includes</Button>
+            <Button size="slim" disclosure>
+              Created by
+            </Button>
+            <Button size="slim" disclosure>
+              Category
+            </Button>
+            <Button size="slim" disclosure>
+              Includes
+            </Button>
           </InlineStack>
         </Box>
         <DataTable

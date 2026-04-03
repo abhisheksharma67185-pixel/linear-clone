@@ -39,9 +39,7 @@ export function evaluate(
   }
 
   const totalWeight = results.reduce((sum, r) => sum + r.check.weight, 0);
-  const earnedWeight = results
-    .filter((r) => r.passed)
-    .reduce((sum, r) => sum + r.check.weight, 0);
+  const earnedWeight = results.filter((r) => r.passed).reduce((sum, r) => sum + r.check.weight, 0);
 
   return {
     score: totalWeight > 0 ? earnedWeight / totalWeight : 0,
@@ -55,10 +53,7 @@ export function evaluate(
 // Individual check evaluation
 // ---------------------------------------------------------------------------
 
-function evaluateCheck(
-  check: EvalCheck,
-  final: StoreSnapshot,
-): CheckResult {
+function evaluateCheck(check: EvalCheck, final: StoreSnapshot): CheckResult {
   switch (check.type) {
     case "state_diff":
       return evaluateStateDiff(check, final);
@@ -79,24 +74,18 @@ function evaluateCheck(
   }
 }
 
-function evaluateStateDiff(
-  check: EvalCheck,
-  final: StoreSnapshot,
-): CheckResult {
+function evaluateStateDiff(check: EvalCheck, final: StoreSnapshot): CheckResult {
   const collection = final[check.entity as keyof StoreSnapshot];
   let actual: unknown;
 
   if (Array.isArray(collection)) {
-    const item = (collection as { id: string }[]).find(
-      (e) => e.id === check.id,
-    );
+    const item = (collection as { id: string }[]).find((e) => e.id === check.id);
     actual = item ? getNestedField(item, check.field!) : undefined;
   } else if (check.entity === "settings") {
     actual = getNestedField(collection, check.field!);
   }
 
-  const passed =
-    JSON.stringify(actual) === JSON.stringify(check.expected);
+  const passed = JSON.stringify(actual) === JSON.stringify(check.expected);
 
   return {
     check,
@@ -108,10 +97,7 @@ function evaluateStateDiff(
   };
 }
 
-function evaluateStateExists(
-  check: EvalCheck,
-  final: StoreSnapshot,
-): CheckResult {
+function evaluateStateExists(check: EvalCheck, final: StoreSnapshot): CheckResult {
   const collection = final[check.entity as keyof StoreSnapshot];
   let passed = false;
 
@@ -125,39 +111,27 @@ function evaluateStateExists(
   return {
     check,
     passed,
-    message: passed
-      ? `PASS: ${check.description}`
-      : `FAIL: ${check.description}`,
+    message: passed ? `PASS: ${check.description}` : `FAIL: ${check.description}`,
   };
 }
 
-function evaluateStateAbsent(
-  check: EvalCheck,
-  final: StoreSnapshot,
-): CheckResult {
+function evaluateStateAbsent(check: EvalCheck, final: StoreSnapshot): CheckResult {
   const collection = final[check.entity as keyof StoreSnapshot];
   let passed = true;
 
   if (Array.isArray(collection)) {
-    const exists = (collection as { id: string }[]).some(
-      (e) => e.id === check.id,
-    );
+    const exists = (collection as { id: string }[]).some((e) => e.id === check.id);
     passed = !exists;
   }
 
   return {
     check,
     passed,
-    message: passed
-      ? `PASS: ${check.description}`
-      : `FAIL: ${check.description}`,
+    message: passed ? `PASS: ${check.description}` : `FAIL: ${check.description}`,
   };
 }
 
-function evaluateStateCount(
-  check: EvalCheck,
-  final: StoreSnapshot,
-): CheckResult {
+function evaluateStateCount(check: EvalCheck, final: StoreSnapshot): CheckResult {
   const collection = final[check.entity as keyof StoreSnapshot];
   let actual: unknown;
   let passed = false;
@@ -177,10 +151,7 @@ function evaluateStateCount(
   };
 }
 
-function evaluateStatePredicate(
-  check: EvalCheck,
-  final: StoreSnapshot,
-): CheckResult {
+function evaluateStatePredicate(check: EvalCheck, final: StoreSnapshot): CheckResult {
   const fn = getPredicate(check.predicate!);
   const passed = fn ? fn(final, check) : false;
 

@@ -5,11 +5,7 @@ import { useEffect, useState, use } from "react";
 import ProductForm from "../_components/ProductForm";
 import type { Product } from "../../../lib/mock-data";
 
-export default function ProductDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);

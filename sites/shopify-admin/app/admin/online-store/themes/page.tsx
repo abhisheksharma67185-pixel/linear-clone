@@ -129,8 +129,7 @@ export default function ThemesPage() {
               Design your store in seconds
             </Text>
             <Text as="p" variant="bodyMd" tone="subdued">
-              Describe your business to create unique themes with personalized
-              content
+              Describe your business to create unique themes with personalized content
             </Text>
             <TextField
               label="Describe your business"
@@ -153,8 +152,7 @@ export default function ThemesPage() {
               </Text>
             </InlineStack>
             <Text as="p" variant="bodyMd" tone="subdued">
-              Made with core features you can easily customize — no coding
-              needed.
+              Made with core features you can easily customize — no coding needed.
             </Text>
             <InlineGrid columns={{ xs: 1, md: 3 }} gap="400">
               <ThemeCard name="Horizon" author="Shopify" />

@@ -29,8 +29,7 @@ function CustomersEmptyState({ onAddCustomer }: { onAddCustomer: () => void }) {
             Everything customers-related in one place
           </Text>
           <Text as="p" variant="bodyMd" tone="subdued">
-            Manage customer details, see customer order history, and group
-            customers into segments.
+            Manage customer details, see customer order history, and group customers into segments.
           </Text>
           <InlineStack gap="200">
             <Button variant="primary" onClick={onAddCustomer}>
@@ -46,8 +45,7 @@ function CustomersEmptyState({ onAddCustomer }: { onAddCustomer: () => void }) {
             Get customers with apps
           </Text>
           <Text as="p" variant="bodyMd" tone="subdued">
-            Grow your customer list by adding a lead capture form to your store
-            and marketing.
+            Grow your customer list by adding a lead capture form to your store and marketing.
           </Text>
           <div>
             <Button>See app recommendations</Button>
@@ -116,9 +114,7 @@ export default function CustomersPage() {
   if (customers.length === 0) {
     return (
       <Page title="Customers">
-        <CustomersEmptyState
-          onAddCustomer={() => router.push("/admin/customers/new")}
-        />
+        <CustomersEmptyState onAddCustomer={() => router.push("/admin/customers/new")} />
       </Page>
     );
   }
@@ -177,9 +173,7 @@ export default function CustomersPage() {
         <IndexTable
           resourceName={resourceName}
           itemCount={filteredCustomers.length}
-          selectedItemsCount={
-            allResourcesSelected ? "All" : selectedResources.length
-          }
+          selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
           onSelectionChange={handleSelectionChange}
           headings={[
             { title: "Name" },

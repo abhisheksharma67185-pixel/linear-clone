@@ -1,29 +1,41 @@
 "use client";
 
-import {
-  Page,
-  Card,
-  Text,
-  BlockStack,
-  InlineStack,
-  Box,
-  TextField,
-  Icon,
-} from "@shopify/polaris";
+import { Page, Card, Text, BlockStack, InlineStack, Box, TextField, Icon } from "@shopify/polaris";
 import { SearchIcon } from "@shopify/polaris-icons";
 import { useState } from "react";
 
-function LiveStatCard({ title, value, showBar }: { title: string; value: string; showBar?: boolean }) {
+function LiveStatCard({
+  title,
+  value,
+  showBar,
+}: {
+  title: string;
+  value: string;
+  showBar?: boolean;
+}) {
   return (
     <Box padding="400" borderInlineEndWidth="025" borderColor="border">
       <BlockStack gap="200">
-        <Text as="h3" variant="bodySm" tone="subdued">{title}</Text>
+        <Text as="h3" variant="bodySm" tone="subdued">
+          {title}
+        </Text>
         <InlineStack gap="100" blockAlign="center">
-          <Text as="p" variant="headingMd">{value}</Text>
-          {showBar && <Text as="span" variant="bodySm" tone="subdued">—</Text>}
+          <Text as="p" variant="headingMd">
+            {value}
+          </Text>
+          {showBar && (
+            <Text as="span" variant="bodySm" tone="subdued">
+              —
+            </Text>
+          )}
         </InlineStack>
         {showBar && (
-          <Box background="bg-surface-secondary" borderRadius="100" minHeight="4px" maxWidth="60px" />
+          <Box
+            background="bg-surface-secondary"
+            borderRadius="100"
+            minHeight="4px"
+            maxWidth="60px"
+          />
         )}
       </BlockStack>
     </Box>
@@ -34,7 +46,9 @@ function NoDataCard({ title }: { title: string }) {
   return (
     <Card>
       <BlockStack gap="300">
-        <Text as="h3" variant="headingSm">{title}</Text>
+        <Text as="h3" variant="headingSm">
+          {title}
+        </Text>
         <Box minHeight="100px" padding="400">
           <Text as="p" variant="bodySm" tone="subdued" alignment="center">
             No data for this date range
@@ -49,11 +63,7 @@ export default function LiveViewPage() {
   const [searchLocation, setSearchLocation] = useState("");
 
   return (
-    <Page
-      title="Live View"
-      subtitle="Just now"
-      fullWidth
-    >
+    <Page title="Live View" subtitle="Just now" fullWidth>
       <div style={{ display: "flex", gap: 16 }}>
         {/* Left column — stats */}
         <div style={{ width: 420, flexShrink: 0 }}>
@@ -75,25 +85,39 @@ export default function LiveViewPage() {
             {/* Customer behavior */}
             <Card padding="0">
               <Box padding="400" paddingBlockEnd="200">
-                <Text as="h3" variant="headingSm">Customer behavior</Text>
+                <Text as="h3" variant="headingSm">
+                  Customer behavior
+                </Text>
               </Box>
               <div style={{ display: "flex" }}>
                 <Box padding="400" borderInlineEndWidth="025" borderColor="border" minWidth="33%">
                   <BlockStack gap="100">
-                    <Text as="span" variant="bodySm" tone="subdued">Active carts</Text>
-                    <Text as="span" variant="headingMd">0</Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Active carts
+                    </Text>
+                    <Text as="span" variant="headingMd">
+                      0
+                    </Text>
                   </BlockStack>
                 </Box>
                 <Box padding="400" borderInlineEndWidth="025" borderColor="border" minWidth="33%">
                   <BlockStack gap="100">
-                    <Text as="span" variant="bodySm" tone="subdued">Checking out</Text>
-                    <Text as="span" variant="headingMd">0</Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Checking out
+                    </Text>
+                    <Text as="span" variant="headingMd">
+                      0
+                    </Text>
                   </BlockStack>
                 </Box>
                 <Box padding="400" minWidth="33%">
                   <BlockStack gap="100">
-                    <Text as="span" variant="bodySm" tone="subdued">Purchased</Text>
-                    <Text as="span" variant="headingMd">0</Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Purchased
+                    </Text>
+                    <Text as="span" variant="headingMd">
+                      0
+                    </Text>
                   </BlockStack>
                 </Box>
               </div>
@@ -122,17 +146,12 @@ export default function LiveViewPage() {
               </div>
             </InlineStack>
           </Box>
-          <Box
-            background="bg-surface-secondary"
-            borderRadius="300"
-            minHeight="600px"
-            padding="800"
-          >
+          <Box background="bg-surface-secondary" borderRadius="300" minHeight="600px" padding="800">
             <BlockStack align="center">
               <Box paddingBlockStart="1600">
                 <Text as="p" variant="bodySm" tone="subdued" alignment="center">
-                  Globe visualization — real-time visitor map will appear when you
-                  have active sessions
+                  Globe visualization — real-time visitor map will appear when you have active
+                  sessions
                 </Text>
               </Box>
             </BlockStack>
@@ -140,12 +159,21 @@ export default function LiveViewPage() {
           <Box paddingBlock="200">
             <InlineStack align="end" gap="400">
               <InlineStack gap="100" blockAlign="center">
-                <Box background="bg-fill-success" borderRadius="full" minWidth="8px" minHeight="8px" />
-                <Text as="span" variant="bodySm" tone="subdued">Orders</Text>
+                <Box
+                  background="bg-fill-success"
+                  borderRadius="full"
+                  minWidth="8px"
+                  minHeight="8px"
+                />
+                <Text as="span" variant="bodySm" tone="subdued">
+                  Orders
+                </Text>
               </InlineStack>
               <InlineStack gap="100" blockAlign="center">
                 <Box background="bg-fill-info" borderRadius="full" minWidth="8px" minHeight="8px" />
-                <Text as="span" variant="bodySm" tone="subdued">Visitors right now</Text>
+                <Text as="span" variant="bodySm" tone="subdued">
+                  Visitors right now
+                </Text>
               </InlineStack>
             </InlineStack>
           </Box>

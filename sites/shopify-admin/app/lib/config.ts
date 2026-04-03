@@ -54,10 +54,12 @@ export function getConfig(): SimConfig {
   return _config;
 }
 
-export function applyConfig(overrides: Partial<{
-  universal: Partial<UniversalConfig>;
-  site: Partial<ShopifyConfig>;
-}>): SimConfig {
+export function applyConfig(
+  overrides: Partial<{
+    universal: Partial<UniversalConfig>;
+    site: Partial<ShopifyConfig>;
+  }>,
+): SimConfig {
   if (overrides.universal) {
     _config.universal = { ..._config.universal, ...overrides.universal };
   }

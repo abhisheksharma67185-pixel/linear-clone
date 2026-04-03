@@ -26,9 +26,7 @@ export default function NewDiscountPage() {
   const [type, setType] = useState<string>("code");
   const [valueType, setValueType] = useState<string[]>(["percentage"]);
   const [value, setValue] = useState("");
-  const [startsAt, setStartsAt] = useState(
-    new Date().toISOString().slice(0, 10),
-  );
+  const [startsAt, setStartsAt] = useState(new Date().toISOString().slice(0, 10));
   const [hasEndDate, setHasEndDate] = useState(false);
   const [endsAt, setEndsAt] = useState("");
   const [usageLimit, setUsageLimit] = useState("");
@@ -139,11 +137,7 @@ export default function NewDiscountPage() {
               />
               {valueType[0] !== "free_shipping" && (
                 <TextField
-                  label={
-                    valueType[0] === "percentage"
-                      ? "Percentage value"
-                      : "Discount amount"
-                  }
+                  label={valueType[0] === "percentage" ? "Percentage value" : "Discount amount"}
                   value={value}
                   onChange={setValue}
                   prefix={valueType[0] === "fixed_amount" ? "$" : undefined}
@@ -168,11 +162,7 @@ export default function NewDiscountPage() {
                   type="date"
                   autoComplete="off"
                 />
-                <Checkbox
-                  label="Set end date"
-                  checked={hasEndDate}
-                  onChange={setHasEndDate}
-                />
+                <Checkbox label="Set end date" checked={hasEndDate} onChange={setHasEndDate} />
                 {hasEndDate && (
                   <TextField
                     label="End date"

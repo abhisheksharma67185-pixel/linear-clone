@@ -27,9 +27,7 @@ const allTasks: TaskDefinition[] = [
   ...impossibleTasks,
 ];
 
-const taskById = new Map<string, TaskDefinition>(
-  allTasks.map((t) => [t.id, t]),
-);
+const taskById = new Map<string, TaskDefinition>(allTasks.map((t) => [t.id, t]));
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -47,9 +45,7 @@ export function getTasksByDomain(domain: TaskDomain): TaskDefinition[] {
   return allTasks.filter((t) => t.domain === domain);
 }
 
-export function getTasksByDifficulty(
-  difficulty: TaskDifficulty,
-): TaskDefinition[] {
+export function getTasksByDifficulty(difficulty: TaskDifficulty): TaskDefinition[] {
   return allTasks.filter((t) => t.difficulty === difficulty);
 }
 
@@ -68,8 +64,7 @@ export function getTasksByCriteria(criteria: {
     if (criteria.domain && t.domain !== criteria.domain) return false;
     if (criteria.difficulty && t.difficulty !== criteria.difficulty) return false;
     if (criteria.type && t.type !== criteria.type) return false;
-    if (criteria.stage !== undefined && t.curriculumStage !== criteria.stage)
-      return false;
+    if (criteria.stage !== undefined && t.curriculumStage !== criteria.stage) return false;
     if (criteria.site && t.site !== criteria.site) return false;
     return true;
   });

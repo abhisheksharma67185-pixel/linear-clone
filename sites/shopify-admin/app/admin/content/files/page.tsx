@@ -1,21 +1,10 @@
 "use client";
 
-import {
-  Page,
-  Card,
-  EmptyState,
-  Text,
-  Link,
-  Box,
-  BlockStack,
-} from "@shopify/polaris";
+import { Page, Card, EmptyState, Text, Link, Box, BlockStack } from "@shopify/polaris";
 
 export default function FilesPage() {
   return (
-    <Page
-      title="Files"
-      primaryAction={{ content: "Upload files" }}
-    >
+    <Page title="Files" primaryAction={{ content: "Upload files" }}>
       <Card>
         <EmptyState
           heading="Upload and manage your files"

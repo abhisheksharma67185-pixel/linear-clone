@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as store from "../../../../lib/store";
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const product = store.getProductById(id);
   if (!product) {
@@ -13,10 +10,7 @@ export async function GET(
   return NextResponse.json(product);
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const fields = await request.json();
   const result = store.updateProduct(id, fields);

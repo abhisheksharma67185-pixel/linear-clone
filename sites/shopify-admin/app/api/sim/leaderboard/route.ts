@@ -24,10 +24,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
 
   if (!body.agent_name || !body.results) {
-    return NextResponse.json(
-      { error: "agent_name and results are required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "agent_name and results are required" }, { status: 400 });
   }
 
   const entry = submitToLeaderboard({

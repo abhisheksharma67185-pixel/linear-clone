@@ -21,7 +21,9 @@ export interface LeaderboardEntry {
 
 const _entries: LeaderboardEntry[] = [];
 
-export function submitToLeaderboard(entry: Omit<LeaderboardEntry, "id" | "submittedAt">): LeaderboardEntry {
+export function submitToLeaderboard(
+  entry: Omit<LeaderboardEntry, "id" | "submittedAt">,
+): LeaderboardEntry {
   const full: LeaderboardEntry = {
     ...entry,
     id: `lb_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,

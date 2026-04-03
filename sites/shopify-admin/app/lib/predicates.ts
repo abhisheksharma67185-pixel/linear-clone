@@ -6,10 +6,7 @@ import type { EvalCheck } from "./tasks/types";
 // Predicate function type
 // ---------------------------------------------------------------------------
 
-type PredicateFn = (
-  snapshot: StoreSnapshot,
-  check: EvalCheck,
-) => boolean;
+type PredicateFn = (snapshot: StoreSnapshot, check: EvalCheck) => boolean;
 
 // ---------------------------------------------------------------------------
 // Registry — O(1) lookup by name
@@ -35,16 +32,13 @@ registerPredicate("product_has_fields", (snapshot, check) => {
   const product = snapshot.products.find((p) => p.id === check.id);
   if (!product) return false;
   return Object.entries(expected).every(
-    ([key, val]) =>
-      JSON.stringify(getNestedField(product, key)) === JSON.stringify(val),
+    ([key, val]) => JSON.stringify(getNestedField(product, key)) === JSON.stringify(val),
   );
 });
 
 registerPredicate("product_exists_with_title", (snapshot, check) => {
   const title = String(check.expected ?? "");
-  return snapshot.products.some(
-    (p) => p.title.toLowerCase() === title.toLowerCase(),
-  );
+  return snapshot.products.some((p) => p.title.toLowerCase() === title.toLowerCase());
 });
 
 registerPredicate("order_has_note_containing", (snapshot, check) => {
@@ -75,9 +69,7 @@ registerPredicate("customer_has_tag", (snapshot, check) => {
 
 registerPredicate("discount_exists_with_code", (snapshot, check) => {
   const code = String(check.expected ?? "");
-  return snapshot.discounts.some(
-    (d) => d.code?.toUpperCase() === code.toUpperCase(),
-  );
+  return snapshot.discounts.some((d) => d.code?.toUpperCase() === code.toUpperCase());
 });
 
 registerPredicate("all_orders_fulfilled", (snapshot) => {

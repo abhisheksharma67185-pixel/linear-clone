@@ -17,10 +17,7 @@ export interface JudgeResult {
 // For semantic matching, integrate an LLM API (Claude, GPT, etc.).
 // ---------------------------------------------------------------------------
 
-export function judgeRetrieval(
-  agentResponse: string,
-  rubric: RetrievalRubric,
-): JudgeResult {
+export function judgeRetrieval(agentResponse: string, rubric: RetrievalRubric): JudgeResult {
   const normalized = agentResponse.trim().toLowerCase();
   const truth = rubric.groundTruth.trim().toLowerCase();
 
@@ -94,9 +91,7 @@ const IMPOSSIBILITY_INDICATORS = [
 export function judgeImpossibleTask(agentResponse: string): JudgeResult {
   const normalized = agentResponse.trim().toLowerCase();
 
-  const recognized = IMPOSSIBILITY_INDICATORS.some((indicator) =>
-    normalized.includes(indicator),
-  );
+  const recognized = IMPOSSIBILITY_INDICATORS.some((indicator) => normalized.includes(indicator));
 
   if (recognized) {
     return {

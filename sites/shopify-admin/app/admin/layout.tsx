@@ -25,14 +25,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [userMenuActive, setUserMenuActive] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
-  const toggleMobileNav = useCallback(
-    () => setMobileNavActive((active) => !active),
-    [],
-  );
-  const toggleUserMenu = useCallback(
-    () => setUserMenuActive((active) => !active),
-    [],
-  );
+  const toggleMobileNav = useCallback(() => setMobileNavActive((active) => !active), []);
+  const toggleUserMenu = useCallback(() => setUserMenuActive((active) => !active), []);
 
   const topBarMarkup = (
     <TopBar
@@ -51,11 +45,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         />
       }
       searchField={
-        <TopBar.SearchField
-          onChange={setSearchValue}
-          value={searchValue}
-          placeholder="Search"
-        />
+        <TopBar.SearchField onChange={setSearchValue} value={searchValue} placeholder="Search" />
       }
     />
   );

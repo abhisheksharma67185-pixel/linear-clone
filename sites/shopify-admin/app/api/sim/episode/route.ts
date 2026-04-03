@@ -16,8 +16,7 @@ export async function GET() {
     status: episode.status,
     step_count: episode.stepCount,
     max_steps: episode.task.maxSteps,
-    elapsed_seconds:
-      (Date.now() - new Date(episode.startedAt).getTime()) / 1000,
+    elapsed_seconds: (Date.now() - new Date(episode.startedAt).getTime()) / 1000,
     action_log_length: episode.actionLog.length,
   });
 }

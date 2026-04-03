@@ -16,11 +16,41 @@ import { SearchIcon } from "@shopify/polaris-icons";
 import { useState, useCallback } from "react";
 
 const segments = [
-  { id: "1", name: "Customers who have purchased at least once", percentOfCustomers: "", lastActivity: "Created at 8:01 pm", createdBy: "Shopify" },
-  { id: "2", name: "Email subscribers", percentOfCustomers: "", lastActivity: "Created at 8:01 pm", createdBy: "Shopify" },
-  { id: "3", name: "Abandoned checkouts in the last 30 days", percentOfCustomers: "", lastActivity: "Created at 8:01 pm", createdBy: "Shopify" },
-  { id: "4", name: "Customers who have purchased more than once", percentOfCustomers: "", lastActivity: "Created at 8:01 pm", createdBy: "Shopify" },
-  { id: "5", name: "Customers who haven't purchased", percentOfCustomers: "", lastActivity: "Created at 8:01 pm", createdBy: "Shopify" },
+  {
+    id: "1",
+    name: "Customers who have purchased at least once",
+    percentOfCustomers: "",
+    lastActivity: "Created at 8:01 pm",
+    createdBy: "Shopify",
+  },
+  {
+    id: "2",
+    name: "Email subscribers",
+    percentOfCustomers: "",
+    lastActivity: "Created at 8:01 pm",
+    createdBy: "Shopify",
+  },
+  {
+    id: "3",
+    name: "Abandoned checkouts in the last 30 days",
+    percentOfCustomers: "",
+    lastActivity: "Created at 8:01 pm",
+    createdBy: "Shopify",
+  },
+  {
+    id: "4",
+    name: "Customers who have purchased more than once",
+    percentOfCustomers: "",
+    lastActivity: "Created at 8:01 pm",
+    createdBy: "Shopify",
+  },
+  {
+    id: "5",
+    name: "Customers who haven't purchased",
+    percentOfCustomers: "",
+    lastActivity: "Created at 8:01 pm",
+    createdBy: "Shopify",
+  },
 ];
 
 export default function SegmentsPage() {
@@ -33,9 +63,7 @@ export default function SegmentsPage() {
 
   const handleQueryChange = useCallback((value: string) => {
     setQueryValue(value);
-    const filtered = segments.filter((s) =>
-      s.name.toLowerCase().includes(value.toLowerCase()),
-    );
+    const filtered = segments.filter((s) => s.name.toLowerCase().includes(value.toLowerCase()));
     setFilteredSegments(filtered);
   }, []);
 
@@ -70,10 +98,7 @@ export default function SegmentsPage() {
   ));
 
   return (
-    <Page
-      title="Segments"
-      primaryAction={{ content: "Create segment" }}
-    >
+    <Page title="Segments" primaryAction={{ content: "Create segment" }}>
       <Card padding="0">
         <Box padding="300">
           <TextField
@@ -89,9 +114,7 @@ export default function SegmentsPage() {
         <IndexTable
           resourceName={resourceName}
           itemCount={filteredSegments.length}
-          selectedItemsCount={
-            allResourcesSelected ? "All" : selectedResources.length
-          }
+          selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
           onSelectionChange={handleSelectionChange}
           headings={[
             { title: "Name" },

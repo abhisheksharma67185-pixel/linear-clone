@@ -43,11 +43,7 @@ function fulfillmentBadge(status: Order["fulfillmentStatus"]) {
   }
 }
 
-export default function OrderDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
@@ -209,20 +205,34 @@ export default function OrderDetailPage({
               </InlineStack>
               <BlockStack gap="200">
                 <InlineStack align="space-between">
-                  <Text as="span" tone="subdued">Subtotal</Text>
-                  <Text as="span" numeric>${order.subtotal}</Text>
+                  <Text as="span" tone="subdued">
+                    Subtotal
+                  </Text>
+                  <Text as="span" numeric>
+                    ${order.subtotal}
+                  </Text>
                 </InlineStack>
                 <InlineStack align="space-between">
-                  <Text as="span" tone="subdued">Shipping</Text>
-                  <Text as="span" numeric>${order.shipping}</Text>
+                  <Text as="span" tone="subdued">
+                    Shipping
+                  </Text>
+                  <Text as="span" numeric>
+                    ${order.shipping}
+                  </Text>
                 </InlineStack>
                 <InlineStack align="space-between">
-                  <Text as="span" tone="subdued">Tax</Text>
-                  <Text as="span" numeric>${order.tax}</Text>
+                  <Text as="span" tone="subdued">
+                    Tax
+                  </Text>
+                  <Text as="span" numeric>
+                    ${order.tax}
+                  </Text>
                 </InlineStack>
                 <Divider />
                 <InlineStack align="space-between">
-                  <Text as="span" fontWeight="semibold">Total</Text>
+                  <Text as="span" fontWeight="semibold">
+                    Total
+                  </Text>
                   <Text as="span" fontWeight="semibold" numeric>
                     ${order.total}
                   </Text>
@@ -264,9 +274,7 @@ export default function OrderDetailPage({
                       <Text
                         as="span"
                         variant="bodySm"
-                        fontWeight={
-                          entry.type === "comment" ? "semibold" : "regular"
-                        }
+                        fontWeight={entry.type === "comment" ? "semibold" : "regular"}
                       >
                         {entry.message}
                       </Text>
@@ -289,10 +297,7 @@ export default function OrderDetailPage({
                     autoComplete="off"
                   />
                 </div>
-                <Button
-                  onClick={handleAddNote}
-                  loading={actionLoading === "note"}
-                >
+                <Button onClick={handleAddNote} loading={actionLoading === "note"}>
                   Post
                 </Button>
               </InlineStack>

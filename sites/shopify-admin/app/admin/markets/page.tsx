@@ -95,11 +95,7 @@ export default function MarketsPage() {
             </Box>
 
             {/* India row */}
-            <Box
-              padding="300"
-              borderBlockEndWidth="025"
-              borderColor="border"
-            >
+            <Box padding="300" borderBlockEndWidth="025" borderColor="border">
               <div style={{ display: "flex", alignItems: "center" }}>
                 <div style={{ flex: 2 }}>
                   <InlineStack gap="200" blockAlign="center">

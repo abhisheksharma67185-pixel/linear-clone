@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Page,
-  Layout,
-  Card,
-  FormLayout,
-  TextField,
-  BlockStack,
-  Text,
-} from "@shopify/polaris";
+import { Page, Layout, Card, FormLayout, TextField, BlockStack, Text } from "@shopify/polaris";
 import { useState } from "react";
 
 export default function PreferencesPage() {
@@ -51,8 +43,7 @@ export default function PreferencesPage() {
           <Card>
             <BlockStack gap="300">
               <Text as="p" variant="bodySm" tone="subdued">
-                Add a social sharing image to display when your store is shared
-                on social media.
+                Add a social sharing image to display when your store is shared on social media.
               </Text>
             </BlockStack>
           </Card>

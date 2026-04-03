@@ -9,18 +9,13 @@ export default function InventoryPage() {
   return (
     <Page title="Inventory">
       <Card>
-        <EmptyState
-          heading="Keep track of your inventory"
-          image=""
-        >
+        <EmptyState heading="Keep track of your inventory" image="">
           <Text as="p" variant="bodyMd" tone="subdued">
-            When you enable inventory tracking on your products, you can view and
-            adjust their inventory counts here.
+            When you enable inventory tracking on your products, you can view and adjust their
+            inventory counts here.
           </Text>
           <Box paddingBlockStart="300">
-            <Button onClick={() => router.push("/admin/products")}>
-              Go to products
-            </Button>
+            <Button onClick={() => router.push("/admin/products")}>Go to products</Button>
           </Box>
         </EmptyState>
       </Card>

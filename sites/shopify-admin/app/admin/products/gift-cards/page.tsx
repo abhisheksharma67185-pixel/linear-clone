@@ -14,18 +14,12 @@ import {
 
 export default function GiftCardsPage() {
   return (
-    <Page
-      title="Gift cards"
-      secondaryActions={[{ content: "Export" }]}
-    >
+    <Page title="Gift cards" secondaryActions={[{ content: "Export" }]}>
       <Card>
-        <EmptyState
-          heading="Start selling gift cards"
-          image=""
-        >
+        <EmptyState heading="Start selling gift cards" image="">
           <Text as="p" variant="bodyMd" tone="subdued">
-            Add gift card products to sell or create gift cards and send them
-            directly to your customers.
+            Add gift card products to sell or create gift cards and send them directly to your
+            customers.
           </Text>
           <Box paddingBlockStart="300">
             <InlineStack gap="200" align="center">
@@ -35,8 +29,7 @@ export default function GiftCardsPage() {
           </Box>
           <Box paddingBlockStart="400">
             <Text as="p" variant="bodySm" tone="subdued">
-              By using gift cards, you agree to our{" "}
-              <Link>Terms of Service</Link>
+              By using gift cards, you agree to our <Link>Terms of Service</Link>
             </Text>
           </Box>
         </EmptyState>

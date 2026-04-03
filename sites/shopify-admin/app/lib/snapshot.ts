@@ -1,11 +1,5 @@
 import * as store from "./store";
-import type {
-  Product,
-  Order,
-  Customer,
-  Discount,
-  StoreSettings,
-} from "./mock-data";
+import type { Product, Order, Customer, Discount, StoreSettings } from "./mock-data";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -117,11 +111,7 @@ function diffCollection(
   }
 }
 
-function diffSettings(
-  before: StoreSettings,
-  after: StoreSettings,
-  diff: StateDiff,
-): void {
+function diffSettings(before: StoreSettings, after: StoreSettings, diff: StateDiff): void {
   const beforeRecord = before as unknown as Record<string, unknown>;
   const afterRecord = after as unknown as Record<string, unknown>;
 
@@ -138,19 +128,11 @@ function diffSettings(
   }
 }
 
-export function computeDiff(
-  before: StoreSnapshot,
-  after: StoreSnapshot,
-): StateDiff {
+export function computeDiff(before: StoreSnapshot, after: StoreSnapshot): StateDiff {
   const diff: StateDiff = { added: [], removed: [], modified: [] };
 
   for (const col of COLLECTIONS) {
-    diffCollection(
-      col,
-      before[col] as { id: string }[],
-      after[col] as { id: string }[],
-      diff,
-    );
+    diffCollection(col, before[col] as { id: string }[], after[col] as { id: string }[], diff);
   }
 
   diffSettings(before.settings, after.settings, diff);
@@ -166,8 +148,7 @@ export function getNestedField(obj: unknown, path: string): unknown {
   return path
     .split(".")
     .reduce(
-      (current, key) =>
-        current != null ? (current as Record<string, unknown>)[key] : undefined,
+      (current, key) => (current != null ? (current as Record<string, unknown>)[key] : undefined),
       obj,
     );
 }

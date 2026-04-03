@@ -6,13 +6,10 @@ export default function AbandonedCheckoutsPage() {
   return (
     <Page title="Abandoned checkouts">
       <Card>
-        <EmptyState
-          heading="Abandoned checkouts will show here"
-          image=""
-        >
+        <EmptyState heading="Abandoned checkouts will show here" image="">
           <Text as="p" variant="bodyMd" tone="subdued">
-            See when customers put an item in their cart but don&apos;t check out.
-            You can also email customers a link to their cart.
+            See when customers put an item in their cart but don&apos;t check out. You can also
+            email customers a link to their cart.
           </Text>
         </EmptyState>
       </Card>

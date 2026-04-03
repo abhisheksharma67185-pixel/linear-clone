@@ -6,13 +6,10 @@ export default function DraftsPage() {
   return (
     <Page title="Drafts">
       <Card>
-        <EmptyState
-          heading="Manually create orders and invoices"
-          image=""
-        >
+        <EmptyState heading="Manually create orders and invoices" image="">
           <Text as="p" variant="bodyMd" tone="subdued">
-            Use draft orders to take orders over the phone, email invoices to
-            customers, and collect payments.
+            Use draft orders to take orders over the phone, email invoices to customers, and collect
+            payments.
           </Text>
         </EmptyState>
       </Card>

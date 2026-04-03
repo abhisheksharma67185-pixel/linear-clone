@@ -65,9 +65,18 @@ export default function NewCustomerPage() {
     router.push(`/admin/customers/${saved.id}`);
     setSaving(false);
   }, [
-    firstName, lastName, email, phone,
-    address1, city, province, country, zip,
-    notes, tags, router,
+    firstName,
+    lastName,
+    email,
+    phone,
+    address1,
+    city,
+    province,
+    country,
+    zip,
+    notes,
+    tags,
+    router,
   ]);
 
   return (
@@ -118,12 +127,7 @@ export default function NewCustomerPage() {
                   type="email"
                   autoComplete="off"
                 />
-                <TextField
-                  label="Phone"
-                  value={phone}
-                  onChange={setPhone}
-                  autoComplete="off"
-                />
+                <TextField label="Phone" value={phone} onChange={setPhone} autoComplete="off" />
               </FormLayout>
             </BlockStack>
           </Card>
@@ -141,12 +145,7 @@ export default function NewCustomerPage() {
                   autoComplete="off"
                 />
                 <FormLayout.Group>
-                  <TextField
-                    label="City"
-                    value={city}
-                    onChange={setCity}
-                    autoComplete="off"
-                  />
+                  <TextField label="City" value={city} onChange={setCity} autoComplete="off" />
                   <TextField
                     label="State/Province"
                     value={province}
