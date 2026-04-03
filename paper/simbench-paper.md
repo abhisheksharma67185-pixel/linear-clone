@@ -4,7 +4,7 @@
 
 **Abstract**
 
-We introduce SimBench, a scalable platform for training and evaluating autonomous web agents across 100+ high-fidelity, deterministic simulations of popular real-world websites. While existing benchmarks like REAL (Garg et al., 2025), WebArena (Zhou et al., 2024), and BrowserGym (Chezelles et al., 2025) provide evaluation environments, they are fundamentally limited to outcome-only assessment -- offering binary pass/fail rewards computed only at task completion. SimBench addresses the critical gap between evaluation and training by introducing: (1) dense, shaped reward signals at every interaction step, (2) a 10-stage curriculum learning system with progressive difficulty and prerequisite tracking, (3) a dual-mode agent interface supporting both high-speed REST API interaction (1-5ms/step) for reinforcement learning training loops and realistic browser-based interaction via Playwright for faithful evaluation, (4) four task types including action, retrieval, combined, and impossible-task recognition, and (5) a modular site plugin architecture that enables any Next.js website clone to integrate with the shared simulation engine. Our initial release includes a comprehensive Shopify Admin simulation with 100+ tasks, with plans to scale to 100+ website simulations across 15 categories. SimBench is publicly deployed on Vercel, requires zero infrastructure setup, and provides a Gymnasium-compatible Python SDK for seamless integration with any RL framework. We release the platform, task suite, SDK, and leaderboard to accelerate research in autonomous web agents.
+We introduce SimBench, a scalable platform for training and evaluating autonomous web agents across 100+ high-fidelity, deterministic simulations of popular real-world websites. While existing benchmarks like REAL (Garg et al., 2025), WebArena (Zhou et al., 2024), and BrowserGym (Chezelles et al., 2025) provide evaluation environments, they are fundamentally limited to outcome-only assessment -- offering binary pass/fail rewards computed only at task completion. SimBench addresses the critical gap between evaluation and training by introducing: (1) dense, shaped reward signals at every interaction step, (2) a 10-stage curriculum learning system with progressive difficulty and prerequisite tracking, (3) a dual-mode agent interface supporting both high-speed REST API interaction (1-5ms/step) for reinforcement learning training loops and realistic browser-based interaction via Playwright for faithful evaluation, (4) four task types including action, retrieval, combined, and impossible-task recognition, and (5) a modular site plugin architecture that enables any Next.js website clone to integrate with the shared simulation engine. Our initial release includes a comprehensive Shopify Admin simulation with 111 tasks across 8 domains, with plans to scale to 100+ website simulations across 15 categories. SimBench is publicly deployed on Vercel, requires zero infrastructure setup, and provides a Gymnasium-compatible Python SDK for seamless integration with any RL framework. We release the platform, task suite, SDK, and leaderboard to accelerate research in autonomous web agents.
 
 ---
 
@@ -18,7 +18,7 @@ The problem is analogous to the state of robotic manipulation research before Mu
 
 We address this gap with SimBench, a platform that provides:
 
-1. **100+ deterministic website simulations** spanning e-commerce, communication, travel, productivity, social media, finance, healthcare, and developer tools -- each built with modern web frameworks (React, Next.js) and realistic mock data.
+1. **100+ deterministic website simulations (planned)** spanning e-commerce, communication, travel, productivity, social media, finance, healthcare, and developer tools -- each built with modern web frameworks (React, Next.js) and realistic mock data.
 
 2. **A dual-mode agent interface** that supports both REST API interaction (1-5ms per step, enabling millions of training steps per hour) and Playwright browser interaction (for realistic evaluation with screenshots and accessibility trees). Both modes share the same underlying state and evaluation engine.
 
@@ -61,8 +61,8 @@ SimBench occupies a unique position in the landscape:
 | | MiniWoB++ | WebArena | REAL | **SimBench** |
 |---|---|---|---|---|
 | Year | 2018 | 2024 | 2025 | 2025 |
-| Sites | 100 (toy) | 5 | 11 | **100+ (real)** |
-| Tasks | 100 | 812 | 112 | **1000+** |
+| Sites | 100 (toy) | 5 | 11 | **100+ (planned)** |
+| Tasks | 100 | 812 | 112 | **111 (v0.1)** |
 | Fidelity | Low | Medium | High | **High** |
 | Training support | None | None | None | **Full RL** |
 | Rewards | Sparse | Binary | Binary | **Dense + shaped** |
@@ -244,7 +244,7 @@ Our initial release focuses on a comprehensive Shopify Admin simulation built wi
 - Order workflow actions: fulfill, capture payment, refund, add notes
 - Realistic mock data: 12 products, 10 orders, 10 customers, 6 discounts
 - 14 REST API actions with shaped rewards
-- 100+ tasks across 10 curriculum stages
+- 111 tasks across 8 domains and 10 curriculum stages
 
 ### 6.3 Planned Releases
 
@@ -284,7 +284,7 @@ SimBench hosts a public leaderboard with per-site and aggregate scores. Submissi
 
 ## 9. Conclusion
 
-SimBench represents a fundamental shift from evaluation-only web agent benchmarks to a training-first platform. By providing 100+ deterministic website simulations with dense reward signals, curriculum learning, dual-mode interaction, and a Gymnasium-compatible SDK, we give frontier AI labs the infrastructure to train web agents through reinforcement learning at scale. Our initial Shopify Admin simulation demonstrates the depth achievable with this approach -- 100+ tasks across 10 curriculum stages in a single domain. We release SimBench as an open platform and invite the research community to contribute new website simulations, tasks, and agent baselines.
+SimBench represents a fundamental shift from evaluation-only web agent benchmarks to a training-first platform. By targeting 100+ deterministic website simulations with dense reward signals, curriculum learning, dual-mode interaction, and a Gymnasium-compatible SDK, we give frontier AI labs the infrastructure to train web agents through reinforcement learning at scale. Our initial Shopify Admin simulation demonstrates the depth achievable with this approach -- 111 tasks across 8 domains and 10 curriculum stages in a single site. We release SimBench as an open platform and invite the research community to contribute new website simulations, tasks, and agent baselines.
 
 ---
 

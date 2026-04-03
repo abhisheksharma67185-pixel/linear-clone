@@ -21,7 +21,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON in request body" }, { status: 400 });
+  }
 
   if (!body.agent_name || !body.results) {
     return NextResponse.json({ error: "agent_name and results are required" }, { status: 400 });

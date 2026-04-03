@@ -53,7 +53,9 @@ function diffCollection(
     const afterRecord = afterItem as Record<string, unknown>;
     const beforeRecord = beforeItem as Record<string, unknown>;
 
-    for (const key of Object.keys(afterRecord)) {
+    // Check all keys from both before and after to catch deletions
+    const allKeys = new Set([...Object.keys(beforeRecord), ...Object.keys(afterRecord)]);
+    for (const key of allKeys) {
       if (JSON.stringify(beforeRecord[key]) !== JSON.stringify(afterRecord[key])) {
         diff.modified.push({
           path: `${colName}.${id}.${key}`,
@@ -74,7 +76,9 @@ function diffSingleton(
   after: Record<string, unknown>,
   diff: StateDiff,
 ): void {
-  for (const key of Object.keys(after)) {
+  // Check all keys from both before and after to catch deletions
+  const allKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  for (const key of allKeys) {
     if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) {
       diff.modified.push({
         path: `${entityName}.${key}`,

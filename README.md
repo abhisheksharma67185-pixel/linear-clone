@@ -17,25 +17,37 @@ simbench/
 
 ## Quick Start
 
+**Prerequisites:** Node.js >= 20, Python >= 3.10 (for SDK)
+
 ### Run the Shopify Admin simulation
 
 ```bash
-cd sites/shopify-admin
+# From repo root (uses npm workspaces)
 npm install
+
+# Start the dev server (http://localhost:3000)
+cd sites/shopify-admin
 npm run dev
 ```
 
-### Use the Python SDK
+### Install the Python SDK
 
 ```bash
-pip install ./sdk
+cd sdk
+pip install -e .
 
-python -c "
+# For browser mode (Playwright)
+pip install 'simbench[browser]' && playwright install chromium
+```
+
+### Try it
+
+```python
 import simbench
-env = simbench.make('shopify-admin', task_id='prod-001')
+
+env = simbench.make("shopify-admin", task_id="prod-001")
 obs, info = env.reset()
-print(f'Task: {info[\"task_goal\"]}')
-"
+print(f"Task: {info['task_goal']}")
 ```
 
 ### API Endpoints

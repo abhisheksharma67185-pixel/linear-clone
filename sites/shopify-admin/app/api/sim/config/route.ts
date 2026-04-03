@@ -4,7 +4,12 @@ import { startEpisode } from "@simbench/core";
 import type { EpisodeConfig } from "@simbench/core";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON in request body" }, { status: 400 });
+  }
 
   const config: EpisodeConfig = {
     taskId: body.task_id ?? body.taskId,
@@ -35,6 +40,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to start episode";
-    return NextResponse.json({ error: message }, { status: 400 });
+    const status = message.includes("Task not found") ? 404 : 400;
+    return NextResponse.json({ error: message }, { status });
   }
 }

@@ -1,4 +1,4 @@
-import type { TaskDefinition } from "./types";
+import type { TaskDefinition } from "@simbench/core";
 
 const R4 = {
   completion: 8.0,

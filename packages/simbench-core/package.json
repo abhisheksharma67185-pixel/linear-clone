@@ -30,6 +30,5 @@
   "devDependencies": {
     "typescript": "^5",
     "vite-plus": "latest"
-  },
-  "packageManager": "pnpm@10.33.0"
+  }
 }

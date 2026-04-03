@@ -14,11 +14,17 @@ export interface JudgeResult {
 // Evaluate a retrieval response against a rubric
 // ---------------------------------------------------------------------------
 
-export function judgeRetrieval(agentResponse: string, rubric: RetrievalRubric): JudgeResult {
-  const normalized = agentResponse.trim().toLowerCase();
-  const truth = rubric.groundTruth.trim().toLowerCase();
+/** Normalize whitespace: collapse internal runs, trim, lowercase. */
+function normalize(str: string): string {
+  return str.trim().toLowerCase().replace(/\s+/g, " ");
+}
 
-  if (normalized === truth) {
+export function judgeRetrieval(agentResponse: string, rubric: RetrievalRubric): JudgeResult {
+  const normalizedResponse = normalize(agentResponse);
+  const truth = normalize(rubric.groundTruth);
+
+  // 1. Exact match (after normalization)
+  if (normalizedResponse === truth) {
     return {
       passed: true,
       reasoning: `Exact match with ground truth: "${rubric.groundTruth}"`,
@@ -26,8 +32,9 @@ export function judgeRetrieval(agentResponse: string, rubric: RetrievalRubric): 
     };
   }
 
+  // 2. Acceptable variations
   for (const variation of rubric.acceptableVariations) {
-    if (normalized === variation.trim().toLowerCase()) {
+    if (normalizedResponse === normalize(variation)) {
       return {
         passed: true,
         reasoning: `Matched acceptable variation: "${variation}"`,
@@ -36,12 +43,18 @@ export function judgeRetrieval(agentResponse: string, rubric: RetrievalRubric): 
     }
   }
 
-  if (normalized.includes(truth) && truth.length > 2) {
-    return {
-      passed: true,
-      reasoning: `Response contains ground truth: "${rubric.groundTruth}"`,
-      matchType: "semantic",
-    };
+  // 3. Semantic containment — response must contain the ground truth
+  //    AND ground truth must be a significant portion of the response
+  //    to prevent false positives from long rambling answers
+  if (truth.length > 2 && normalizedResponse.includes(truth)) {
+    const ratio = truth.length / normalizedResponse.length;
+    if (ratio > 0.15) {
+      return {
+        passed: true,
+        reasoning: `Response contains ground truth: "${rubric.groundTruth}"`,
+        matchType: "semantic",
+      };
+    }
   }
 
   return {
@@ -55,30 +68,44 @@ export function judgeRetrieval(agentResponse: string, rubric: RetrievalRubric): 
 // Evaluate an impossible task response
 // ---------------------------------------------------------------------------
 
+/** Phrases that unambiguously indicate the agent recognizes a task cannot be done. */
 const IMPOSSIBILITY_INDICATORS = [
   "not possible",
-  "cannot",
-  "can't",
+  "cannot be done",
+  "cannot be fulfilled",
+  "cannot be refunded",
+  "cannot be captured",
+  "cannot be completed",
+  "can't be done",
+  "can't be fulfilled",
   "impossible",
-  "unable",
-  "already",
+  "unable to",
+  "already fulfilled",
+  "already refunded",
+  "already captured",
+  "already completed",
+  "already been",
   "not available",
   "does not exist",
   "doesn't exist",
   "no such",
   "not found",
-  "failed",
-  "error",
+  "no action needed",
+  "no action required",
+  "should not",
+  "shouldn't",
+  "expired",
+  "is not valid",
 ];
 
 export function judgeImpossibleTask(agentResponse: string): JudgeResult {
-  const normalized = agentResponse.trim().toLowerCase();
-  const recognized = IMPOSSIBILITY_INDICATORS.some((ind) => normalized.includes(ind));
+  const normalized = normalize(agentResponse);
+  const matchedIndicator = IMPOSSIBILITY_INDICATORS.find((ind) => normalized.includes(ind));
 
-  return recognized
+  return matchedIndicator
     ? {
         passed: true,
-        reasoning: "Agent correctly recognized the task as impossible",
+        reasoning: `Agent recognized impossibility (matched: "${matchedIndicator}")`,
         matchType: "semantic",
       }
     : {

@@ -9,6 +9,7 @@ pip install simbench
 
 # With browser mode support (Playwright)
 pip install 'simbench[browser]'
+playwright install chromium
 ```
 
 ## Quick Start

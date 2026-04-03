@@ -139,6 +139,12 @@ export function logAction(
 
   if (_activeEpisode.stepCount >= _activeEpisode.task.maxSteps) {
     _activeEpisode.status = "timeout";
+  } else if (
+    _activeEpisode.task.timeLimitSeconds &&
+    (Date.now() - new Date(_activeEpisode.startedAt).getTime()) / 1000 >=
+      _activeEpisode.task.timeLimitSeconds
+  ) {
+    _activeEpisode.status = "timeout";
   }
 }
 
@@ -148,6 +154,7 @@ export function logAction(
 
 export function evaluateEpisode(): EvalResult | null {
   if (!_activeEpisode || !_siteAdapter) return null;
+  if (_activeEpisode.result) return _activeEpisode.result.eval;
 
   const current = captureSnapshot(_siteAdapter.getState);
   const diff = computeDiff(
@@ -201,14 +208,24 @@ export function finishEpisode(agentResponse?: string): Episode {
     totalReward += judgeResult.passed ? _activeEpisode.task.rewardProfile.completion * 0.5 : 0;
   }
 
-  let finalScore = evalResult.score;
-  if (judgeResult) {
-    const evalWeight = _activeEpisode.task.type === "action_retrieval" ? 0.5 : 0;
-    const judgeWeight = _activeEpisode.task.type === "action_retrieval" ? 0.5 : 1;
-    finalScore = evalResult.score * evalWeight + (judgeResult.passed ? 1 : 0) * judgeWeight;
+  // Compute final score based on task type
+  let finalScore: number;
+  const taskType = _activeEpisode.task.type;
+  if (judgeResult && (taskType === "retrieval" || taskType === "no_action")) {
+    // Pure retrieval / impossible: score entirely from judge
+    finalScore = judgeResult.passed ? 1 : 0;
+  } else if (judgeResult && taskType === "action_retrieval") {
+    // Combined: 50/50 eval + judge
+    finalScore = evalResult.score * 0.5 + (judgeResult.passed ? 1 : 0) * 0.5;
+  } else {
+    // Action tasks: score from eval checks only
+    finalScore = evalResult.score;
   }
 
-  _activeEpisode.status = finalScore >= 1.0 ? "completed" : "failed";
+  // Preserve timeout status — don't overwrite with completed/failed
+  if (_activeEpisode.status !== "timeout") {
+    _activeEpisode.status = finalScore >= 1.0 ? "completed" : "failed";
+  }
   _activeEpisode.result = {
     diff,
     eval: evalResult,

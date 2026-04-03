@@ -161,14 +161,11 @@ class SimBenchEnv(gym.Env):
             self._page.mouse.wheel(0, action.get("delta", 300))
 
         # Log to server for step tracking
-        self._client._client.post(
-            "/api/sim/episode/log",
-            json={
-                "action": action_type,
-                "payload": action,
-                "reward": -0.01,
-                "success": True,
-            },
+        self._client.log_action(
+            action=action_type,
+            payload=action,
+            reward=-0.01,
+            success=True,
         )
         return -0.01  # Step penalty; real reward at finish
 

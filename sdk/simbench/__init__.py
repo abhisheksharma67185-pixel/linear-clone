@@ -2,7 +2,7 @@
 
 from simbench.env import SimBenchEnv, make
 from simbench.curriculum import CurriculumRunner
-from simbench.client import SimBenchClient
+from simbench.client import SimBenchClient, SimBenchError
 
 __version__ = "0.1.0"
-__all__ = ["SimBenchEnv", "make", "CurriculumRunner", "SimBenchClient"]
+__all__ = ["SimBenchEnv", "make", "CurriculumRunner", "SimBenchClient", "SimBenchError"]

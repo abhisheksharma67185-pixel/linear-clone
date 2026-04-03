@@ -1,7 +1,7 @@
 """Pydantic models matching the server-side types."""
 
 from __future__ import annotations
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 from pydantic import BaseModel
 
 
@@ -61,6 +61,7 @@ class EpisodeFinishResponse(BaseModel):
     eval: Optional[EvalResult] = None
     judge_result: Optional[JudgeResult] = None
     diff: Optional[dict[str, Any]] = None
+    action_log: list[dict[str, Any]] = []
 
 
 class StepResponse(BaseModel):
@@ -76,7 +77,7 @@ class CurriculumStage(BaseModel):
     title: str
     description: str
     domains: list[str]
-    difficultyRange: list[str]
+    difficultyRange: Tuple[str, str]
     taskIds: list[str]
 
 

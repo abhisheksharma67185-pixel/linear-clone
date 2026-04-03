@@ -1,4 +1,4 @@
-import type { TaskDefinition } from "./types";
+import type { TaskDefinition } from "@simbench/core";
 
 const R = {
   completion: 5.0,
@@ -93,7 +93,7 @@ export const impossibleTasks: TaskDefinition[] = [
     title: "Fulfill order without capturing payment",
     goal: "Fulfill order #1039 (note: payment is still pending).",
     impossibilityReason:
-      "Best practice: payment should be captured before fulfillment. Agent should recognize the pending payment.",
+      "Order #1039 has pending payment status. The system requires payment to be captured before fulfillment can proceed.",
     evalChecks: [],
     maxSteps: 15,
     rewardProfile: R,

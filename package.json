@@ -3,11 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "description": "SimBench — A scalable platform for training and evaluating autonomous web agents",
-  "scripts": {
-    "dev:shopify": "cd sites/shopify-admin && npm run dev",
-    "build:shopify": "cd sites/shopify-admin && npm run build",
-    "lint:shopify": "cd sites/shopify-admin && npm run lint",
-    "dev:linear": "cd sites/linear && npm run dev",
-    "build:linear": "cd sites/linear && npm run build"
-  }
+  "workspaces": [
+    "packages/*",
+    "sites/shopify-admin"
+  ]
 }

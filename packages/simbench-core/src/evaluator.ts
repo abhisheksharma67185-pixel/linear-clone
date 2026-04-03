@@ -98,11 +98,16 @@ function evaluateStateExists(check: EvalCheck, final: GenericSnapshot): CheckRes
 
 function evaluateStateAbsent(check: EvalCheck, final: GenericSnapshot): CheckResult {
   const collection = final[check.entity!];
-  let passed = true;
 
-  if (Array.isArray(collection)) {
-    passed = !(collection as { id: string }[]).some((e) => e.id === check.id);
+  if (!Array.isArray(collection)) {
+    return {
+      passed: false,
+      message: `FAIL: collection "${check.entity}" not found or not an array`,
+      weight: check.weight,
+    };
   }
+
+  const passed = !(collection as { id: string }[]).some((e) => e.id === check.id);
 
   return {
     passed,
@@ -133,7 +138,14 @@ function evaluateStateCount(check: EvalCheck, final: GenericSnapshot): CheckResu
 
 function evaluateStatePredicate(check: EvalCheck, final: GenericSnapshot): CheckResult {
   const fn = getPredicate(check.predicate!);
-  const passed = fn ? fn(final, check) : false;
+  if (!fn) {
+    return {
+      passed: false,
+      message: `FAIL: predicate "${check.predicate}" not registered`,
+      weight: check.weight,
+    };
+  }
+  const passed = fn(final, check);
 
   return {
     passed,
