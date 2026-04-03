@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SimBench
 
-## Getting Started
+A scalable platform for training and evaluating autonomous web agents on 100+ deterministic website simulations.
 
-First, run the development server:
+## Repository Structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+simbench/
+├── packages/
+│   └── simbench-core/       # Shared simulation engine (site-agnostic)
+├── sites/
+│   ├── shopify-admin/       # Shopify Admin simulation (111 tasks)
+│   └── linear/              # Linear simulation (in progress)
+├── sdk/                     # Python SDK (pip install simbench)
+└── paper/                   # Research paper
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Quick Start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Run the Shopify Admin simulation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd sites/shopify-admin
+npm install
+npm run dev
+```
 
-## Learn More
+### Use the Python SDK
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pip install ./sdk
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+python -c "
+import simbench
+env = simbench.make('shopify-admin', task_id='prod-001')
+obs, info = env.reset()
+print(f'Task: {info[\"task_goal\"]}')
+"
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### API Endpoints
 
-## Deploy on Vercel
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/rl` | Current observation |
+| `POST /api/rl` | Execute action, get reward |
+| `POST /api/sim/config` | Start episode with task |
+| `POST /api/sim/finish` | End episode, get score |
+| `GET /api/sim/tasks` | List all tasks |
+| `GET /api/sim/tasks/curriculum` | 10-stage curriculum |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Architecture
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+SimBench separates the **simulation engine** (site-agnostic) from **site implementations** (site-specific). Each site is a standalone Next.js app that plugs into the shared engine via the `SitePlugin` interface.
+
+See [paper/simbench-paper.md](paper/simbench-paper.md) for the full research paper.
+
+## Sites
+
+| Site | Pages | Tasks | Status |
+|------|-------|-------|--------|
+| Shopify Admin | 39 | 111 | Complete |
+| Linear | - | - | In progress |
+
+## License
+
+MIT
