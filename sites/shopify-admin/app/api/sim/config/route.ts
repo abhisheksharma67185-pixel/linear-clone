@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { startEpisode } from "../../../lib/episode";
-import type { EpisodeConfig } from "../../../lib/episode";
+import "../../../lib/init-sim";
+import { startEpisode } from "@simbench/core";
+import type { EpisodeConfig } from "@simbench/core";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();

@@ -94,6 +94,7 @@ export interface CheckResult {
   passed: boolean;
   actual?: unknown;
   message: string;
+  weight?: number;
 }
 
 export interface EvalResult {

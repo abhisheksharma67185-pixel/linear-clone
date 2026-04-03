@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logAction, hasActiveEpisode } from "../../../../lib/episode";
+import "../../../../lib/init-sim";
+import { logAction, hasActiveEpisode } from "@simbench/core";
 
 export async function POST(request: NextRequest) {
   if (!hasActiveEpisode()) {
@@ -7,12 +8,12 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const action = body.action ?? "unknown";
-  const payload = body.payload ?? {};
-  const reward = body.reward ?? -0.01;
-  const success = body.success ?? true;
-
-  logAction(action, payload, reward, success);
+  logAction(
+    body.action ?? "unknown",
+    body.payload ?? {},
+    body.reward ?? -0.01,
+    body.success ?? true,
+  );
 
   return NextResponse.json({ logged: true });
 }

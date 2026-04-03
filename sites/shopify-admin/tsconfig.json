@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@simbench/core": ["../../packages/simbench-core/src/index.ts"],
+      "@simbench/core/*": ["../../packages/simbench-core/src/*"]
     }
   },
   "include": [

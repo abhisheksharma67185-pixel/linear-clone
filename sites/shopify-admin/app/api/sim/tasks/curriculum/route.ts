@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
-import { getCurriculum } from "../../../../lib/tasks/curriculum";
+import "../../../../lib/init-sim";
+import { getCurriculum } from "@simbench/core";
 
 export async function GET() {
   const stages = getCurriculum();
-  return NextResponse.json({
-    total_stages: stages.length,
-    stages,
-  });
+  return NextResponse.json({ total_stages: stages.length, stages });
 }

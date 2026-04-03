@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as store from "../../lib/store";
-import { getActiveEpisode, hasActiveEpisode, logAction, getStepReward } from "../../lib/episode";
+import "../../lib/init-sim";
+import { getActiveEpisode, hasActiveEpisode, logAction, getStepReward } from "@simbench/core";
 
 // ---------------------------------------------------------------------------
 // Mutable RL session state

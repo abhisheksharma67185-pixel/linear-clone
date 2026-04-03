@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { finishEpisode, hasActiveEpisode } from "../../../lib/episode";
+import "../../../lib/init-sim";
+import { finishEpisode, hasActiveEpisode } from "@simbench/core";
 
 export async function POST(request: NextRequest) {
   if (!hasActiveEpisode()) {

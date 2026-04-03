@@ -1,25 +1,8 @@
 import type { TaskDefinition, EvalCheck } from "./tasks/types";
-import type { StoreSnapshot, StateDiff } from "./snapshot";
+import type { GenericSnapshot } from "./snapshot";
+import type { StateDiff, EvalResult, CheckResult } from "./types";
 import { getNestedField } from "./snapshot";
 import { getPredicate } from "./predicates";
-
-// ---------------------------------------------------------------------------
-// Result types
-// ---------------------------------------------------------------------------
-
-export interface CheckResult {
-  check: EvalCheck;
-  passed: boolean;
-  actual?: unknown;
-  message: string;
-}
-
-export interface EvalResult {
-  score: number;
-  checks: CheckResult[];
-  passed: number;
-  total: number;
-}
 
 // ---------------------------------------------------------------------------
 // Evaluate a task against initial and final snapshots
@@ -27,19 +10,18 @@ export interface EvalResult {
 
 export function evaluate(
   task: TaskDefinition,
-  _initial: StoreSnapshot,
-  final: StoreSnapshot,
-  _diff: StateDiff, // eslint-disable-line @typescript-eslint/no-unused-vars -- reserved for future diff-based checks
+  _initial: GenericSnapshot, // eslint-disable-line @typescript-eslint/no-unused-vars
+  final: GenericSnapshot,
+  _diff: StateDiff, // eslint-disable-line @typescript-eslint/no-unused-vars
 ): EvalResult {
   const results: CheckResult[] = [];
 
   for (const check of task.evalChecks) {
-    const result = evaluateCheck(check, final);
-    results.push(result);
+    results.push(evaluateCheck(check, final));
   }
 
-  const totalWeight = results.reduce((sum, r) => sum + r.check.weight, 0);
-  const earnedWeight = results.filter((r) => r.passed).reduce((sum, r) => sum + r.check.weight, 0);
+  const totalWeight = results.reduce((sum, r) => sum + (r.weight ?? 1), 0);
+  const earnedWeight = results.filter((r) => r.passed).reduce((sum, r) => sum + (r.weight ?? 1), 0);
 
   return {
     score: totalWeight > 0 ? earnedWeight / totalWeight : 0,
@@ -53,7 +35,7 @@ export function evaluate(
 // Individual check evaluation
 // ---------------------------------------------------------------------------
 
-function evaluateCheck(check: EvalCheck, final: StoreSnapshot): CheckResult {
+function evaluateCheck(check: EvalCheck, final: GenericSnapshot): CheckResult {
   switch (check.type) {
     case "state_diff":
       return evaluateStateDiff(check, final);
@@ -67,72 +49,70 @@ function evaluateCheck(check: EvalCheck, final: StoreSnapshot): CheckResult {
       return evaluateStatePredicate(check, final);
     case "retrieval":
       return {
-        check,
         passed: false,
         message: "Retrieval checks evaluated separately via LLM judge",
+        weight: check.weight,
       };
   }
 }
 
-function evaluateStateDiff(check: EvalCheck, final: StoreSnapshot): CheckResult {
-  const collection = final[check.entity as keyof StoreSnapshot];
+function evaluateStateDiff(check: EvalCheck, final: GenericSnapshot): CheckResult {
+  const collection = final[check.entity!];
   let actual: unknown;
 
   if (Array.isArray(collection)) {
     const item = (collection as { id: string }[]).find((e) => e.id === check.id);
     actual = item ? getNestedField(item, check.field!) : undefined;
-  } else if (check.entity === "settings") {
+  } else if (collection && typeof collection === "object") {
     actual = getNestedField(collection, check.field!);
   }
 
   const passed = JSON.stringify(actual) === JSON.stringify(check.expected);
-
   return {
-    check,
     passed,
     actual,
     message: passed
       ? `PASS: ${check.description}`
       : `FAIL: expected ${JSON.stringify(check.expected)}, got ${JSON.stringify(actual)}`,
+    weight: check.weight,
   };
 }
 
-function evaluateStateExists(check: EvalCheck, final: StoreSnapshot): CheckResult {
-  const collection = final[check.entity as keyof StoreSnapshot];
+function evaluateStateExists(check: EvalCheck, final: GenericSnapshot): CheckResult {
+  const collection = final[check.entity!];
   let passed = false;
 
   if (Array.isArray(collection)) {
-    passed = (collection as Record<string, unknown>[]).some((item) => {
-      const val = getNestedField(item, check.field!);
-      return JSON.stringify(val) === JSON.stringify(check.expected);
-    });
+    passed = (collection as Record<string, unknown>[]).some(
+      (item) =>
+        JSON.stringify(getNestedField(item, check.field!)) === JSON.stringify(check.expected),
+    );
   }
 
   return {
-    check,
     passed,
     message: passed ? `PASS: ${check.description}` : `FAIL: ${check.description}`,
+    weight: check.weight,
   };
 }
 
-function evaluateStateAbsent(check: EvalCheck, final: StoreSnapshot): CheckResult {
-  const collection = final[check.entity as keyof StoreSnapshot];
+function evaluateStateAbsent(check: EvalCheck, final: GenericSnapshot): CheckResult {
+  const collection = final[check.entity!];
   let passed = true;
 
   if (Array.isArray(collection)) {
-    const exists = (collection as { id: string }[]).some((e) => e.id === check.id);
-    passed = !exists;
+    passed = !(collection as { id: string }[]).some((e) => e.id === check.id);
   }
 
   return {
-    check,
     passed,
     message: passed ? `PASS: ${check.description}` : `FAIL: ${check.description}`,
+    weight: check.weight,
   };
 }
 
-function evaluateStateCount(check: EvalCheck, final: StoreSnapshot): CheckResult {
-  const collection = final[check.entity as keyof StoreSnapshot];
+function evaluateStateCount(check: EvalCheck, final: GenericSnapshot): CheckResult {
+  const collection = final[check.entity!];
   let actual: unknown;
   let passed = false;
 
@@ -142,24 +122,24 @@ function evaluateStateCount(check: EvalCheck, final: StoreSnapshot): CheckResult
   }
 
   return {
-    check,
     passed,
     actual,
     message: passed
       ? `PASS: ${check.description}`
-      : `FAIL: count=${actual}, expected=${check.expected}`,
+      : `FAIL: count=${String(actual)}, expected=${String(check.expected)}`,
+    weight: check.weight,
   };
 }
 
-function evaluateStatePredicate(check: EvalCheck, final: StoreSnapshot): CheckResult {
+function evaluateStatePredicate(check: EvalCheck, final: GenericSnapshot): CheckResult {
   const fn = getPredicate(check.predicate!);
   const passed = fn ? fn(final, check) : false;
 
   return {
-    check,
     passed,
     message: passed
       ? `PASS: ${check.description}`
       : `FAIL: ${check.description} (predicate: ${check.predicate})`,
+    weight: check.weight,
   };
 }

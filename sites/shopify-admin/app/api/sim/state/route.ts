@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { captureSnapshot, computeDiff } from "../../../lib/snapshot";
-import { getActiveEpisode } from "../../../lib/episode";
+import "../../../lib/init-sim";
+import { captureSnapshot, computeDiff, getActiveEpisode } from "@simbench/core";
+import * as store from "../../../lib/store";
+
+const getState = () => ({
+  products: store.getProducts(),
+  orders: store.getOrders(),
+  customers: store.getCustomers(),
+  discounts: store.getDiscounts(),
+  settings: store.getSettings(),
+});
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const wantDiff = url.searchParams.get("diff") === "true";
 
-  const current = captureSnapshot();
+  const current = captureSnapshot(getState);
 
   if (wantDiff) {
     const episode = getActiveEpisode();
@@ -16,7 +25,12 @@ export async function GET(request: NextRequest) {
         { status: 400 },
       );
     }
-    const diff = computeDiff(episode.initialSnapshot, current);
+    const diff = computeDiff(
+      episode.initialSnapshot,
+      current,
+      ["products", "orders", "customers", "discounts"],
+      ["settings"],
+    );
     return NextResponse.json({ state: current, diff });
   }
 

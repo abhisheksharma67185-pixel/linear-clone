@@ -1,33 +1,16 @@
-import * as store from "./store";
 import { captureSnapshot, computeDiff } from "./snapshot";
-import type { StoreSnapshot, StateDiff } from "./snapshot";
+import type { GenericSnapshot } from "./snapshot";
 import { evaluate } from "./evaluator";
-import type { EvalResult } from "./evaluator";
 import { judgeRetrieval, judgeImpossibleTask } from "./llm-judge";
 import type { JudgeResult } from "./llm-judge";
-import { getTaskById } from "./tasks";
+import { getTaskById } from "./tasks/registry";
 import type { TaskDefinition } from "./tasks/types";
-import { applyConfig, resetConfig } from "./config";
+import type { StateDiff, EvalResult, EpisodeConfig, ActionLogEntry } from "./types";
+import { resetUniversalConfig } from "./config";
 
 // ---------------------------------------------------------------------------
-// Types
+// Episode result
 // ---------------------------------------------------------------------------
-
-export interface EpisodeConfig {
-  taskId: string;
-  seed?: number;
-  mode: "rest" | "browser";
-  configOverrides?: Record<string, unknown>;
-}
-
-export interface ActionLogEntry {
-  step: number;
-  timestamp: string;
-  action: string;
-  payload: Record<string, unknown>;
-  reward: number;
-  success: boolean;
-}
 
 export interface EpisodeResult {
   diff: StateDiff;
@@ -37,11 +20,15 @@ export interface EpisodeResult {
   wallTimeSeconds: number;
 }
 
+// ---------------------------------------------------------------------------
+// Episode
+// ---------------------------------------------------------------------------
+
 export interface Episode {
   id: string;
   task: TaskDefinition;
   config: EpisodeConfig;
-  initialSnapshot: StoreSnapshot;
+  initialSnapshot: GenericSnapshot;
   startedAt: string;
   status: "active" | "completed" | "failed" | "timeout";
   stepCount: number;
@@ -50,10 +37,29 @@ export interface Episode {
 }
 
 // ---------------------------------------------------------------------------
-// Singleton active episode
+// Site adapter — each site provides these functions
+// ---------------------------------------------------------------------------
+
+export interface SiteAdapter {
+  getState: () => Record<string, unknown>;
+  reset: (seed?: number) => void;
+  executeMutation: (name: string, args: unknown[]) => void;
+  collections: string[];
+  singletons: string[];
+  applyConfig?: (config: Record<string, unknown>) => void;
+  resetConfig?: () => void;
+}
+
+// ---------------------------------------------------------------------------
+// Singleton state
 // ---------------------------------------------------------------------------
 
 let _activeEpisode: Episode | null = null;
+let _siteAdapter: SiteAdapter | null = null;
+
+export function registerSiteAdapter(adapter: SiteAdapter): void {
+  _siteAdapter = adapter;
+}
 
 export function getActiveEpisode(): Episode | null {
   return _activeEpisode;
@@ -68,36 +74,32 @@ export function hasActiveEpisode(): boolean {
 // ---------------------------------------------------------------------------
 
 export function startEpisode(config: EpisodeConfig): Episode {
-  const task = getTaskById(config.taskId);
-  if (!task) {
-    throw new Error(`Task not found: ${config.taskId}`);
-  }
+  if (!_siteAdapter)
+    throw new Error("No site adapter registered. Call registerSiteAdapter() first.");
 
-  // Reset everything
-  store.reset();
-  resetConfig();
+  const task = getTaskById(config.taskId);
+  if (!task) throw new Error(`Task not found: ${config.taskId}`);
+
+  // Reset site + universal config
+  _siteAdapter.reset(config.seed);
+  resetUniversalConfig();
 
   // Apply task config overrides
-  if (task.configOverrides) {
-    applyConfig(task.configOverrides as Parameters<typeof applyConfig>[0]);
+  if (task.configOverrides && _siteAdapter.applyConfig) {
+    _siteAdapter.applyConfig(task.configOverrides);
   }
-  if (config.configOverrides) {
-    applyConfig(config.configOverrides as Parameters<typeof applyConfig>[0]);
+  if (config.configOverrides && _siteAdapter.applyConfig) {
+    _siteAdapter.applyConfig(config.configOverrides);
   }
 
-  // Run setup actions (pre-conditions)
+  // Run setup mutations
   if (task.setup) {
     for (const action of task.setup) {
-      const fn = (store as unknown as Record<string, (...args: unknown[]) => unknown>)[
-        action.mutation
-      ];
-      if (fn) {
-        fn(...action.args);
-      }
+      _siteAdapter.executeMutation(action.mutation, action.args);
     }
   }
 
-  const initialSnapshot = captureSnapshot();
+  const initialSnapshot = captureSnapshot(_siteAdapter.getState);
 
   _activeEpisode = {
     id: `ep_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -135,22 +137,26 @@ export function logAction(
     success,
   });
 
-  // Check step budget
   if (_activeEpisode.stepCount >= _activeEpisode.task.maxSteps) {
     _activeEpisode.status = "timeout";
   }
 }
 
 // ---------------------------------------------------------------------------
-// Mid-episode evaluate (non-destructive)
+// Mid-episode evaluate
 // ---------------------------------------------------------------------------
 
 export function evaluateEpisode(): EvalResult | null {
-  if (!_activeEpisode) return null;
+  if (!_activeEpisode || !_siteAdapter) return null;
 
-  const currentSnapshot = captureSnapshot();
-  const diff = computeDiff(_activeEpisode.initialSnapshot, currentSnapshot);
-  return evaluate(_activeEpisode.task, _activeEpisode.initialSnapshot, currentSnapshot, diff);
+  const current = captureSnapshot(_siteAdapter.getState);
+  const diff = computeDiff(
+    _activeEpisode.initialSnapshot,
+    current,
+    _siteAdapter.collections,
+    _siteAdapter.singletons,
+  );
+  return evaluate(_activeEpisode.task, _activeEpisode.initialSnapshot, current, diff);
 }
 
 // ---------------------------------------------------------------------------
@@ -158,12 +164,15 @@ export function evaluateEpisode(): EvalResult | null {
 // ---------------------------------------------------------------------------
 
 export function finishEpisode(agentResponse?: string): Episode {
-  if (!_activeEpisode) {
-    throw new Error("No active episode");
-  }
+  if (!_activeEpisode || !_siteAdapter) throw new Error("No active episode");
 
-  const finalSnapshot = captureSnapshot();
-  const diff = computeDiff(_activeEpisode.initialSnapshot, finalSnapshot);
+  const finalSnapshot = captureSnapshot(_siteAdapter.getState);
+  const diff = computeDiff(
+    _activeEpisode.initialSnapshot,
+    finalSnapshot,
+    _siteAdapter.collections,
+    _siteAdapter.singletons,
+  );
   const evalResult = evaluate(
     _activeEpisode.task,
     _activeEpisode.initialSnapshot,
@@ -173,7 +182,6 @@ export function finishEpisode(agentResponse?: string): Episode {
 
   // LLM judge for retrieval / impossible tasks
   let judgeResult: JudgeResult | undefined;
-
   if (agentResponse && _activeEpisode.task.type === "no_action") {
     judgeResult = judgeImpossibleTask(agentResponse);
   } else if (
@@ -186,22 +194,15 @@ export function finishEpisode(agentResponse?: string): Episode {
 
   const wallTime = (Date.now() - new Date(_activeEpisode.startedAt).getTime()) / 1000;
 
-  // Compute total reward from action log + completion bonus
   let totalReward = _activeEpisode.actionLog.reduce((sum, entry) => sum + entry.reward, 0);
+  totalReward += evalResult.score * _activeEpisode.task.rewardProfile.completion;
 
-  // Add completion reward based on eval score
-  const completionBonus = evalResult.score * _activeEpisode.task.rewardProfile.completion;
-  totalReward += completionBonus;
-
-  // For retrieval/impossible tasks, factor in judge result
   if (judgeResult) {
     totalReward += judgeResult.passed ? _activeEpisode.task.rewardProfile.completion * 0.5 : 0;
   }
 
-  // Determine final status
   let finalScore = evalResult.score;
   if (judgeResult) {
-    // Combined score: eval checks + judge
     const evalWeight = _activeEpisode.task.type === "action_retrieval" ? 0.5 : 0;
     const judgeWeight = _activeEpisode.task.type === "action_retrieval" ? 0.5 : 1;
     finalScore = evalResult.score * evalWeight + (judgeResult.passed ? 1 : 0) * judgeWeight;
@@ -222,13 +223,11 @@ export function finishEpisode(agentResponse?: string): Episode {
 }
 
 // ---------------------------------------------------------------------------
-// Get shaped reward for a single action (used by /api/rl integration)
+// Shaped reward for RL integration
 // ---------------------------------------------------------------------------
 
 export function getStepReward(actionValid: boolean): number {
   if (!_activeEpisode) return 0;
   const profile = _activeEpisode.task.rewardProfile;
-
-  if (!actionValid) return profile.invalidActionPenalty;
-  return profile.stepPenalty;
+  return actionValid ? profile.stepPenalty : profile.invalidActionPenalty;
 }

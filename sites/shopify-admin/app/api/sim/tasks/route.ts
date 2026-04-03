@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllTasks, getTasksByCriteria, getTaskCount } from "../../../lib/tasks";
-import type { TaskDomain, TaskDifficulty, TaskType } from "../../../lib/tasks/types";
+import "../../../lib/init-sim";
+import { getAllTasks, getTasksByCriteria, getTaskCount } from "@simbench/core";
+import type { TaskDomain, TaskDifficulty, TaskType } from "@simbench/core";
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);

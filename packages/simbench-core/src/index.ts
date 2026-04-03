@@ -20,6 +20,37 @@ export type {
   CurriculumStage,
 } from "./types";
 
+// Snapshot
+export type { GenericSnapshot } from "./snapshot";
+export { captureSnapshot, computeDiff, getNestedField } from "./snapshot";
+
+// Config
+export type { UniversalConfig } from "./config";
+export { getUniversalConfig, applyUniversalConfig, resetUniversalConfig } from "./config";
+
+// Evaluator
+export { evaluate } from "./evaluator";
+
+// LLM Judge
+export { judgeRetrieval, judgeImpossibleTask } from "./llm-judge";
+export type { JudgeResult as LlmJudgeResult } from "./llm-judge";
+
+// Predicates
+export { registerPredicate, getPredicate, clearPredicates } from "./predicates";
+
+// Episode
+export type { Episode, EpisodeResult, SiteAdapter } from "./episode";
+export {
+  registerSiteAdapter,
+  startEpisode,
+  logAction,
+  evaluateEpisode,
+  finishEpisode,
+  getActiveEpisode,
+  hasActiveEpisode,
+  getStepReward,
+} from "./episode";
+
 // Task types
 export type {
   TaskDefinition,
