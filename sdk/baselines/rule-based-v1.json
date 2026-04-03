@@ -1,0 +1,1259 @@
+{
+  "meta": {
+    "agent": "demo_agent",
+    "model": "rule-based",
+    "mode": "rest",
+    "site": "shopify-admin",
+    "simbench_version": "0.1.0",
+    "server_url": "http://localhost:3000",
+    "timestamp": "2026-04-03T19:36:10.648299+00:00"
+  },
+  "summary": {
+    "total_available": 104,
+    "total_evaluated": 104,
+    "passed": 14,
+    "score": 0.147,
+    "avg_steps": 21.3,
+    "avg_time_seconds": 0.058
+  },
+  "domains": {
+    "navigation": {
+      "tasks": 5,
+      "passed": 0,
+      "score": 0.0
+    },
+    "products": {
+      "tasks": 33,
+      "passed": 6,
+      "score": 0.221
+    },
+    "orders": {
+      "tasks": 22,
+      "passed": 5,
+      "score": 0.227
+    },
+    "customers": {
+      "tasks": 14,
+      "passed": 1,
+      "score": 0.071
+    },
+    "discounts": {
+      "tasks": 12,
+      "passed": 1,
+      "score": 0.083
+    },
+    "settings": {
+      "tasks": 6,
+      "passed": 0,
+      "score": 0.0
+    },
+    "search": {
+      "tasks": 4,
+      "passed": 1,
+      "score": 0.25
+    },
+    "multi-domain": {
+      "tasks": 8,
+      "passed": 0,
+      "score": 0.0
+    }
+  },
+  "curriculum": [
+    {
+      "stage": 1,
+      "tasks": 5,
+      "score": 0.0
+    },
+    {
+      "stage": 2,
+      "tasks": 24,
+      "score": 0.167
+    },
+    {
+      "stage": 3,
+      "tasks": 16,
+      "score": 0.0
+    },
+    {
+      "stage": 4,
+      "tasks": 8,
+      "score": 0.0
+    },
+    {
+      "stage": 5,
+      "tasks": 9,
+      "score": 0.056
+    },
+    {
+      "stage": 6,
+      "tasks": 12,
+      "score": 0.167
+    },
+    {
+      "stage": 7,
+      "tasks": 8,
+      "score": 0.1
+    },
+    {
+      "stage": 8,
+      "tasks": 14,
+      "score": 0.571
+    },
+    {
+      "stage": 9,
+      "tasks": 3,
+      "score": 0.0
+    },
+    {
+      "stage": 10,
+      "tasks": 5,
+      "score": 0.0
+    }
+  ],
+  "tasks": [
+    {
+      "id": "nav-001",
+      "domain": "navigation",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 1,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 5,
+      "time_seconds": 0.025
+    },
+    {
+      "id": "nav-002",
+      "domain": "navigation",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 1,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 5,
+      "time_seconds": 0.025
+    },
+    {
+      "id": "nav-003",
+      "domain": "navigation",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 1,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 5,
+      "time_seconds": 0.029
+    },
+    {
+      "id": "nav-004",
+      "domain": "navigation",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 1,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 5,
+      "time_seconds": 0.039
+    },
+    {
+      "id": "nav-005",
+      "domain": "navigation",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 1,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 5,
+      "time_seconds": 0.021
+    },
+    {
+      "id": "prod-001",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.04
+    },
+    {
+      "id": "prod-002",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.06
+    },
+    {
+      "id": "prod-003",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.044
+    },
+    {
+      "id": "prod-004",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.041
+    },
+    {
+      "id": "prod-005",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.051
+    },
+    {
+      "id": "prod-010",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.071
+    },
+    {
+      "id": "prod-011",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 30,
+      "time_seconds": 0.075
+    },
+    {
+      "id": "prod-012",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.061
+    },
+    {
+      "id": "prod-015",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 5,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.049
+    },
+    {
+      "id": "prod-016",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 5,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.049
+    },
+    {
+      "id": "prod-020",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 7,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 30,
+      "time_seconds": 0.072
+    },
+    {
+      "id": "prod-021",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 7,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 40,
+      "time_seconds": 0.098
+    },
+    {
+      "id": "prod-025",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 8,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 35,
+      "time_seconds": 0.085
+    },
+    {
+      "id": "prod-006",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.062
+    },
+    {
+      "id": "prod-007",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.044
+    },
+    {
+      "id": "prod-008",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.042
+    },
+    {
+      "id": "prod-009",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.038
+    },
+    {
+      "id": "prod-013",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 5,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.058
+    },
+    {
+      "id": "prod-014",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 5,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.059
+    },
+    {
+      "id": "prod-017",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 7,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.053
+    },
+    {
+      "id": "prod-018",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.059
+    },
+    {
+      "id": "prod-019",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 5,
+      "score": 0.5,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.059
+    },
+    {
+      "id": "prod-022",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 8,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 35,
+      "time_seconds": 0.086
+    },
+    {
+      "id": "prod-023",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.069
+    },
+    {
+      "id": "prod-024",
+      "domain": "products",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 7,
+      "score": 0.8,
+      "status": "timeout",
+      "steps": 30,
+      "time_seconds": 0.069
+    },
+    {
+      "id": "ord-001",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 4,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.042
+    },
+    {
+      "id": "ord-002",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 4,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.039
+    },
+    {
+      "id": "ord-003",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 4,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.062
+    },
+    {
+      "id": "ord-004",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 4,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.109
+    },
+    {
+      "id": "ord-005",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 4,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.034
+    },
+    {
+      "id": "ord-010",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 7,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 40,
+      "time_seconds": 0.08
+    },
+    {
+      "id": "ord-011",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 7,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.045
+    },
+    {
+      "id": "ord-015",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 8,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 50,
+      "time_seconds": 0.108
+    },
+    {
+      "id": "ord-006",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 4,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.037
+    },
+    {
+      "id": "ord-007",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 4,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.045
+    },
+    {
+      "id": "ord-008",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 7,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.04
+    },
+    {
+      "id": "ord-009",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 4,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.037
+    },
+    {
+      "id": "ord-012",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 7,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.058
+    },
+    {
+      "id": "ord-013",
+      "domain": "orders",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 8,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 35,
+      "time_seconds": 0.079
+    },
+    {
+      "id": "cust-001",
+      "domain": "customers",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.041
+    },
+    {
+      "id": "cust-002",
+      "domain": "customers",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.042
+    },
+    {
+      "id": "cust-003",
+      "domain": "customers",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.038
+    },
+    {
+      "id": "cust-004",
+      "domain": "customers",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.046
+    },
+    {
+      "id": "cust-005",
+      "domain": "customers",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.056
+    },
+    {
+      "id": "cust-006",
+      "domain": "customers",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.06
+    },
+    {
+      "id": "cust-007",
+      "domain": "customers",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.063
+    },
+    {
+      "id": "cust-010",
+      "domain": "customers",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 5,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.047
+    },
+    {
+      "id": "cust-008",
+      "domain": "customers",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.04
+    },
+    {
+      "id": "cust-009",
+      "domain": "customers",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.055
+    },
+    {
+      "id": "disc-001",
+      "domain": "discounts",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.065
+    },
+    {
+      "id": "disc-002",
+      "domain": "discounts",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.055
+    },
+    {
+      "id": "disc-003",
+      "domain": "discounts",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.057
+    },
+    {
+      "id": "disc-004",
+      "domain": "discounts",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.046
+    },
+    {
+      "id": "disc-005",
+      "domain": "discounts",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 5,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.05
+    },
+    {
+      "id": "disc-006",
+      "domain": "discounts",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.066
+    },
+    {
+      "id": "disc-007",
+      "domain": "discounts",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 3,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.057
+    },
+    {
+      "id": "disc-008",
+      "domain": "discounts",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 8,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 30,
+      "time_seconds": 0.069
+    },
+    {
+      "id": "disc-009",
+      "domain": "discounts",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 5,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.042
+    },
+    {
+      "id": "disc-010",
+      "domain": "discounts",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 8,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 35,
+      "time_seconds": 0.087
+    },
+    {
+      "id": "set-001",
+      "domain": "settings",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.04
+    },
+    {
+      "id": "set-002",
+      "domain": "settings",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.041
+    },
+    {
+      "id": "set-003",
+      "domain": "settings",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.04
+    },
+    {
+      "id": "set-004",
+      "domain": "settings",
+      "type": "action",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.082
+    },
+    {
+      "id": "set-005",
+      "domain": "settings",
+      "type": "action",
+      "difficulty": "medium",
+      "curriculum_stage": 5,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.059
+    },
+    {
+      "id": "srch-001",
+      "domain": "search",
+      "type": "retrieval",
+      "difficulty": "medium",
+      "curriculum_stage": 6,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.051
+    },
+    {
+      "id": "srch-002",
+      "domain": "search",
+      "type": "retrieval",
+      "difficulty": "medium",
+      "curriculum_stage": 6,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.049
+    },
+    {
+      "id": "srch-003",
+      "domain": "search",
+      "type": "retrieval",
+      "difficulty": "hard",
+      "curriculum_stage": 6,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.077
+    },
+    {
+      "id": "srch-004",
+      "domain": "search",
+      "type": "retrieval",
+      "difficulty": "hard",
+      "curriculum_stage": 6,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.063
+    },
+    {
+      "id": "multi-001",
+      "domain": "multi-domain",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 9,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 45,
+      "time_seconds": 0.103
+    },
+    {
+      "id": "multi-002",
+      "domain": "multi-domain",
+      "type": "action",
+      "difficulty": "hard",
+      "curriculum_stage": 9,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 45,
+      "time_seconds": 0.121
+    },
+    {
+      "id": "multi-003",
+      "domain": "multi-domain",
+      "type": "action_retrieval",
+      "difficulty": "hard",
+      "curriculum_stage": 9,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 35,
+      "time_seconds": 0.08
+    },
+    {
+      "id": "multi-010",
+      "domain": "multi-domain",
+      "type": "action",
+      "difficulty": "expert",
+      "curriculum_stage": 10,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 60,
+      "time_seconds": 0.138
+    },
+    {
+      "id": "multi-011",
+      "domain": "multi-domain",
+      "type": "action",
+      "difficulty": "expert",
+      "curriculum_stage": 10,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 50,
+      "time_seconds": 0.125
+    },
+    {
+      "id": "multi-012",
+      "domain": "multi-domain",
+      "type": "action_retrieval",
+      "difficulty": "expert",
+      "curriculum_stage": 10,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 50,
+      "time_seconds": 0.298
+    },
+    {
+      "id": "multi-013",
+      "domain": "multi-domain",
+      "type": "action",
+      "difficulty": "expert",
+      "curriculum_stage": 10,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 55,
+      "time_seconds": 0.107
+    },
+    {
+      "id": "multi-014",
+      "domain": "multi-domain",
+      "type": "action",
+      "difficulty": "expert",
+      "curriculum_stage": 10,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 60,
+      "time_seconds": 0.127
+    },
+    {
+      "id": "ret-001",
+      "domain": "products",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 10,
+      "time_seconds": 0.03
+    },
+    {
+      "id": "ret-002",
+      "domain": "products",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 10,
+      "time_seconds": 0.03
+    },
+    {
+      "id": "ret-003",
+      "domain": "orders",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 10,
+      "time_seconds": 0.03
+    },
+    {
+      "id": "ret-004",
+      "domain": "orders",
+      "type": "retrieval",
+      "difficulty": "medium",
+      "curriculum_stage": 6,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.048
+    },
+    {
+      "id": "ret-005",
+      "domain": "customers",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 10,
+      "time_seconds": 0.029
+    },
+    {
+      "id": "ret-006",
+      "domain": "customers",
+      "type": "retrieval",
+      "difficulty": "medium",
+      "curriculum_stage": 6,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.045
+    },
+    {
+      "id": "ret-007",
+      "domain": "products",
+      "type": "retrieval",
+      "difficulty": "medium",
+      "curriculum_stage": 6,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.037
+    },
+    {
+      "id": "ret-008",
+      "domain": "orders",
+      "type": "retrieval",
+      "difficulty": "medium",
+      "curriculum_stage": 6,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.039
+    },
+    {
+      "id": "ret-009",
+      "domain": "discounts",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.047
+    },
+    {
+      "id": "ret-010",
+      "domain": "products",
+      "type": "retrieval",
+      "difficulty": "hard",
+      "curriculum_stage": 6,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 25,
+      "time_seconds": 0.059
+    },
+    {
+      "id": "ret-011",
+      "domain": "settings",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 10,
+      "time_seconds": 0.03
+    },
+    {
+      "id": "ret-012",
+      "domain": "orders",
+      "type": "retrieval",
+      "difficulty": "hard",
+      "curriculum_stage": 6,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 20,
+      "time_seconds": 0.046
+    },
+    {
+      "id": "ret-013",
+      "domain": "products",
+      "type": "retrieval",
+      "difficulty": "easy",
+      "curriculum_stage": 2,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 10,
+      "time_seconds": 0.037
+    },
+    {
+      "id": "ret-014",
+      "domain": "customers",
+      "type": "retrieval",
+      "difficulty": "medium",
+      "curriculum_stage": 6,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 10,
+      "time_seconds": 0.033
+    },
+    {
+      "id": "ret-015",
+      "domain": "products",
+      "type": "retrieval",
+      "difficulty": "medium",
+      "curriculum_stage": 6,
+      "score": 0.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.041
+    },
+    {
+      "id": "imp-001",
+      "domain": "orders",
+      "type": "no_action",
+      "difficulty": "medium",
+      "curriculum_stage": 8,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.04
+    },
+    {
+      "id": "imp-002",
+      "domain": "orders",
+      "type": "no_action",
+      "difficulty": "medium",
+      "curriculum_stage": 8,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.041
+    },
+    {
+      "id": "imp-003",
+      "domain": "orders",
+      "type": "no_action",
+      "difficulty": "medium",
+      "curriculum_stage": 8,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.048
+    },
+    {
+      "id": "imp-004",
+      "domain": "products",
+      "type": "no_action",
+      "difficulty": "medium",
+      "curriculum_stage": 8,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.042
+    },
+    {
+      "id": "imp-005",
+      "domain": "customers",
+      "type": "no_action",
+      "difficulty": "medium",
+      "curriculum_stage": 8,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.04
+    },
+    {
+      "id": "imp-006",
+      "domain": "orders",
+      "type": "no_action",
+      "difficulty": "hard",
+      "curriculum_stage": 8,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.042
+    },
+    {
+      "id": "imp-007",
+      "domain": "discounts",
+      "type": "no_action",
+      "difficulty": "medium",
+      "curriculum_stage": 8,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.042
+    },
+    {
+      "id": "imp-008",
+      "domain": "products",
+      "type": "no_action",
+      "difficulty": "medium",
+      "curriculum_stage": 8,
+      "score": 1.0,
+      "status": "timeout",
+      "steps": 15,
+      "time_seconds": 0.052
+    }
+  ]
+}

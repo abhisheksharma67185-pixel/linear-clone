@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.github
+.claude
+.agents
+.vercel
+sdk/.venv
+paper
+*.md
+!README.md
+.DS_Store
