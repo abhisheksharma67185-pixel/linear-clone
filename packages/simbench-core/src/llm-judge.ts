@@ -1,14 +1,7 @@
 import type { RetrievalRubric } from "./tasks/types";
+import type { JudgeResult } from "./types";
 
-// ---------------------------------------------------------------------------
-// LLM Judge result
-// ---------------------------------------------------------------------------
-
-export interface JudgeResult {
-  passed: boolean;
-  reasoning: string;
-  matchType: "exact" | "variation" | "semantic" | "failed";
-}
+export type { JudgeResult };
 
 // ---------------------------------------------------------------------------
 // Evaluate a retrieval response against a rubric

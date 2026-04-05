@@ -71,12 +71,13 @@ export default function CustomersPage() {
 
   useEffect(() => {
     fetch("/api/data/customers")
-      .then((res) => res.json())
+      .then((res) => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
       .then((data) => {
         setCustomers(data);
         setFilteredCustomers(data);
         setLoading(false);
-      });
+      })
+      .catch(() => { setLoading(false); });
   }, []);
 
   const resourceName = { singular: "customer", plural: "customers" };
@@ -166,7 +167,7 @@ export default function CustomersPage() {
           selected={0}
           onSelect={() => {}}
           filters={[]}
-          onClearAll={() => {}}
+          onClearAll={handleQueryClear}
           mode={mode}
           setMode={setMode}
         />

@@ -112,10 +112,10 @@ function BreakdownCard({
 
 function ConversionBreakdownCard() {
   const cols = [
-    { label: "Sessions", value: "0%", sub: "0x 0%" },
-    { label: "Added to cart", value: "0%", sub: "0x 0%" },
-    { label: "Reached checko...", value: "0%", sub: "0x 0%" },
-    { label: "Completed...", value: "0%", sub: "0x 0%" },
+    { label: "Sessions", value: "100%", sub: "1,204x" },
+    { label: "Added to cart", value: "12.1%", sub: "146x" },
+    { label: "Reached checkout", value: "5.8%", sub: "70x" },
+    { label: "Completed", value: "3.5%", sub: "42x" },
   ];
   return (
     <Card>
@@ -125,7 +125,7 @@ function ConversionBreakdownCard() {
         </Text>
         <InlineStack gap="100" blockAlign="center">
           <Text as="p" variant="headingLg">
-            0%
+            3.5%
           </Text>
           <Text as="span" variant="bodySm" tone="subdued">
             —
@@ -188,15 +188,27 @@ function CohortCard() {
               <Text as="span" variant="bodySm" fontWeight="semibold">
                 Months
               </Text>
-              {months.map((m, i) => (
-                <InlineStack key={m} gap="300">
-                  {Array.from({ length: 8 - i }, (_, j) => (
-                    <Text key={j} as="span" variant="bodySm" tone="success">
-                      0%
-                    </Text>
-                  ))}
-                </InlineStack>
-              ))}
+              {months.map((m, i) => {
+                const cohortData = [
+                  [8.2, 5.1, 3.8, 2.9, 2.1, 1.5, 1.2, 0.8],
+                  [7.5, 4.8, 3.2, 2.5, 1.9, 1.1, 0.9],
+                  [9.1, 5.6, 4.0, 3.1, 2.3, 1.7],
+                  [6.8, 4.2, 2.9, 2.0, 1.4],
+                  [8.4, 5.3, 3.5, 2.6],
+                  [7.9, 4.9, 3.3],
+                  [10.2, 6.1],
+                  [8.7],
+                ];
+                return (
+                  <InlineStack key={m} gap="300">
+                    {cohortData[i].map((val, j) => (
+                      <Text key={j} as="span" variant="bodySm" tone="success">
+                        {val}%
+                      </Text>
+                    ))}
+                  </InlineStack>
+                );
+              })}
             </BlockStack>
           </div>
         </div>
@@ -207,14 +219,14 @@ function CohortCard() {
 
 export default function AnalyticsPage() {
   const salesBreakdown = [
-    { label: "Gross sales", value: "$0.00" },
-    { label: "Discounts", value: "$0.00" },
-    { label: "Returns", value: "$0.00" },
-    { label: "Net sales", value: "$0.00" },
-    { label: "Shipping charges", value: "$0.00" },
+    { label: "Gross sales", value: "$14,102.80" },
+    { label: "Discounts", value: "-$423.08" },
+    { label: "Returns", value: "-$189.50" },
+    { label: "Net sales", value: "$13,490.22" },
+    { label: "Shipping charges", value: "$312.40" },
     { label: "Return fees", value: "$0.00" },
-    { label: "Taxes", value: "$0.00" },
-    { label: "Total sales", value: "$0.00" },
+    { label: "Taxes", value: "$955.30" },
+    { label: "Total sales", value: "$12,847.32" },
   ];
 
   return (
@@ -234,29 +246,29 @@ export default function AnalyticsPage() {
 
         {/* Top stats row */}
         <InlineGrid columns={{ xs: 1, sm: 2, lg: 4 }} gap="400">
-          <StatCard title="Gross sales" value="$0.00" />
-          <StatCard title="Returning customer rate" value="0%" />
-          <StatCard title="Orders fulfilled" value="0" />
-          <StatCard title="Orders" value="0" />
+          <StatCard title="Gross sales" value="$14,102.80" />
+          <StatCard title="Returning customer rate" value="32.4%" />
+          <StatCard title="Orders fulfilled" value="38" />
+          <StatCard title="Orders" value="42" />
         </InlineGrid>
 
         {/* Total sales over time + breakdown */}
         <InlineGrid columns={{ xs: 1, lg: "2fr 1fr" }} gap="400">
-          <ChartCard title="Total sales over time" value="$0.00" showChart />
+          <ChartCard title="Total sales over time" value="$12,847.32" showChart />
           <BreakdownCard title="Total sales breakdown" items={salesBreakdown} />
         </InlineGrid>
 
         {/* Three chart row */}
         <InlineGrid columns={{ xs: 1, lg: 3 }} gap="400">
           <ChartCard title="Total sales by sales channel" />
-          <ChartCard title="Average order value over time" value="$0.00" showChart />
+          <ChartCard title="Average order value over time" value="$305.89" showChart />
           <ChartCard title="Total sales by product" />
         </InlineGrid>
 
         {/* Sessions + conversion row */}
         <InlineGrid columns={{ xs: 1, lg: 3 }} gap="400">
-          <ChartCard title="Sessions over time" value="0" showChart />
-          <ChartCard title="Conversion rate over time" value="0%" showChart />
+          <ChartCard title="Sessions over time" value="1,204" showChart />
+          <ChartCard title="Conversion rate over time" value="3.5%" showChart />
           <ConversionBreakdownCard />
         </InlineGrid>
 

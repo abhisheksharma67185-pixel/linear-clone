@@ -4,10 +4,14 @@ from __future__ import annotations
 from typing import Any, Callable, Optional
 from datetime import datetime, timezone
 import time
-import sys
-
 from simbench.client import SimBenchClient
 from simbench.env import SimBenchEnv
+
+
+def _get_version() -> str:
+    """Lazy import to avoid circular dependency with __init__.py."""
+    from simbench import __version__
+    return __version__
 
 
 class BatchRunner:
@@ -28,6 +32,7 @@ class BatchRunner:
         agent_name: str = "unknown",
         model_name: str = "unknown",
         mode: str = "rest",
+        site: str = "shopify-admin",
         verbose: bool = True,
     ):
         self.base_url = base_url
@@ -36,6 +41,7 @@ class BatchRunner:
         self.agent_name = agent_name
         self.model_name = model_name
         self.mode = mode
+        self._site = site
         self.verbose = verbose
         self._client = SimBenchClient(base_url)
 
@@ -83,22 +89,24 @@ class BatchRunner:
         try:
             self._client.reset_env()
             env = SimBenchEnv(base_url=self.base_url, task_id=task_id, mode=self.mode)
-            obs, info = env.reset()
+            try:
+                obs, info = env.reset()
 
-            done = False
-            steps = 0
-            while not done:
-                action = self.agent_step_fn(obs, info)
-                obs, reward, terminated, truncated, info = env.step(action)
-                steps += 1
-                done = terminated or truncated
+                done = False
+                steps = 0
+                while not done:
+                    action = self.agent_step_fn(obs, info)
+                    obs, reward, terminated, truncated, info = env.step(action)
+                    steps += 1
+                    done = terminated or truncated
 
-            agent_response = None
-            if self.agent_response_fn:
-                agent_response = self.agent_response_fn(obs, info)
+                agent_response = None
+                if self.agent_response_fn:
+                    agent_response = self.agent_response_fn(obs, info)
 
-            result = env.finish(agent_response)
-            env.close()
+                result = env.finish(agent_response)
+            finally:
+                env.close()
 
             return {
                 "id": task_id,
@@ -166,8 +174,8 @@ class BatchRunner:
                 "agent": self.agent_name,
                 "model": self.model_name,
                 "mode": self.mode,
-                "site": "shopify-admin",
-                "simbench_version": "0.1.0",
+                "site": self._site,
+                "simbench_version": _get_version(),
                 "server_url": self.base_url,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             },

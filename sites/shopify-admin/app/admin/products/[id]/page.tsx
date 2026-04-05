@@ -12,11 +12,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     fetch(`/api/data/products/${id}`)
-      .then((res) => res.json())
+      .then((res) => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
       .then((data) => {
         setProduct(data);
         setLoading(false);
-      });
+      })
+      .catch(() => { setLoading(false); });
   }, [id]);
 
   if (loading || !product) {

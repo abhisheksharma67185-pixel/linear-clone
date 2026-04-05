@@ -13,6 +13,7 @@ import {
   BlockStack,
   Link,
 } from "@shopify/polaris";
+import { useRouter } from "next/navigation";
 
 const storePages = [
   {
@@ -25,6 +26,7 @@ const storePages = [
 ];
 
 export default function PagesPage() {
+  const router = useRouter();
   const resourceName = { singular: "page", plural: "pages" };
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(storePages);
@@ -70,7 +72,7 @@ export default function PagesPage() {
             </Text>
           </Box>
           <Box paddingBlockStart="200">
-            <Button>Manage access</Button>
+            <Button onClick={() => router.push("/admin/online-store/preferences")}>Manage access</Button>
           </Box>
         </Banner>
 

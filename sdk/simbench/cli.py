@@ -7,6 +7,8 @@ import json
 import sys
 from typing import Any, Optional
 
+import httpx
+
 from simbench.client import SimBenchClient, SimBenchError
 from simbench.runner import BatchRunner
 
@@ -69,12 +71,12 @@ def main() -> None:
     except SimBenchError as e:
         print(f"{RED}Error: {e.detail}{RESET}")
         sys.exit(1)
+    except (httpx.ConnectError, httpx.ConnectTimeout):
+        print(f"{RED}Cannot connect to SimBench server at {args.url}{RESET}")
+        print(f"Start the server: cd sites/shopify-admin && npm run dev")
+        sys.exit(1)
     except Exception as e:
-        if "Connection" in type(e).__name__ or "Connect" in str(e):
-            print(f"{RED}Cannot connect to SimBench server at {args.url}{RESET}")
-            print(f"Start the server: cd sites/shopify-admin && npm run dev")
-        else:
-            print(f"{RED}Error: {e}{RESET}")
+        print(f"{RED}Error: {e}{RESET}")
         sys.exit(1)
 
 
@@ -163,7 +165,7 @@ def cmd_eval(args: argparse.Namespace) -> None:
         agent_step_fn=agent_step,
         agent_response_fn=agent_response,
         agent_name=agent_module_name,
-        model_name=getattr(sys.modules.get(agent_module_name), "MODEL", "rule-based"),
+        model_name=getattr(sys.modules.get("agent_module"), "MODEL", "rule-based"),
         mode="rest",
         verbose=True,
     )

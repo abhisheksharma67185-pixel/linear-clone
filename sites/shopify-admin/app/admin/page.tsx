@@ -15,6 +15,7 @@ import {
 } from "@shopify/polaris";
 import { EditIcon, PlusIcon, ArrowUpIcon, XIcon } from "@shopify/polaris-icons";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 function SetupCard({
   title,
@@ -98,6 +99,7 @@ function SmallSetupCard({
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [askValue, setAskValue] = useState("");
   const [showBanner, setShowBanner] = useState(true);
 
@@ -118,7 +120,7 @@ export default function AdminDashboard() {
                 Get 3 months for $1/month
               </Text>
               <InlineStack gap="200" blockAlign="center">
-                <Button size="slim" onClick={() => {}}>
+                <Button size="slim" onClick={() => router.push('/admin/settings')}>
                   Select a plan
                 </Button>
                 <Button

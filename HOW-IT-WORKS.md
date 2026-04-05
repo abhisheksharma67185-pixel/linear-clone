@@ -82,8 +82,8 @@ obs, reward, done, trunc, info = env.step({
 - Their own compute (GPU clusters for training)
 
 ### SimBench provides:
-- Simulated websites (Shopify Admin, Linear, and more)
-- 104 tasks across 8 domains and 10 difficulty stages
+- Simulated websites (Shopify Admin, Linear, Jira, and more)
+- 264 tasks across 3 sites and 10 difficulty stages
 - Deterministic evaluation with ground-truth scoring
 - Gymnasium-compatible Python SDK
 - REST API for programmatic access
@@ -117,10 +117,10 @@ HTTP API (/api/sim/*, /api/rl/*)
     +-- LLM Judge (retrieval + impossibility detection)
     +-- Config System (universal + site-specific)
     +-- Curriculum (10-stage progression)
-    +-- Task Registry (104 tasks, filterable)
+    +-- Task Registry (264 tasks across 3 sites, filterable)
     |
     v
-Site Plugin (e.g. Shopify Admin)
+Site Plugin (e.g. Shopify Admin, Linear, Jira)
     |
     +-- Mock Data Store (products, orders, customers, discounts, settings)
     +-- 39 Polaris UI pages
@@ -132,10 +132,10 @@ Site Plugin (e.g. Shopify Admin)
 
 | Type | Count | How It Works |
 |------|-------|-------------|
-| **Action** | ~71 | Agent must modify state (create, update, delete entities). Scored by comparing before/after snapshots. |
-| **Retrieval** | 15 | Agent must find and report information. Scored by LLM judge comparing response to ground truth. |
-| **Impossible** | 8 | Task cannot be completed (e.g. refund an already-refunded order). Agent must recognize and explain why. |
-| **Multi-domain** | 14 | Tasks spanning multiple entity types (e.g. create a product AND a discount for it). |
+| **Action** | ~121 | Agent must modify state (create, update, delete entities). Scored by comparing before/after snapshots. |
+| **Retrieval** | 40 | Agent must find and report information. Scored by LLM judge comparing response to ground truth. |
+| **Impossible** | 13 | Task cannot be completed (e.g. refund an already-refunded order). Agent must recognize and explain why. |
+| **Multi-domain** | 10 | Tasks spanning multiple entity types (e.g. create a product AND a discount for it). |
 
 ## Curriculum System
 
@@ -159,6 +159,7 @@ Site Plugin (e.g. Shopify Admin)
 ```
                            +--- shopify-admin (e-commerce)
                            +--- linear (project management)
+                           +--- jira (project management)
                            +--- gmail-sim (email)
 SimBench Platform ---------+--- github-sim (code hosting)
                            +--- slack-sim (messaging)
@@ -175,7 +176,7 @@ Result: "GPT-4o scores 73% on SimBench (856/1000+ tasks across 10 sites)"
 ```
 
 Each new site follows the same pattern:
-1. Implement `SiteAdapter` interface from `@simbench/core`
+1. Implement `SitePlugin` interface from `@simbench/core`
 2. Define task definitions with eval checks
 3. Register tasks and predicates
 4. The SDK, API, curriculum, and scoring all work automatically
@@ -188,7 +189,7 @@ Each new site follows the same pattern:
 |------|---------|
 | **Deterministic seeding** | `seed` param guarantees identical timestamps and state across runs. |
 | **Docker self-hosting** | `docker build -t simbench . && docker run -p 3000:3000 simbench` with healthcheck. |
-| **Batch evaluation CLI** | `simbench eval --agent my_agent.py --output results.json` runs all 104 tasks. |
+| **Batch evaluation CLI** | `simbench eval --agent my_agent.py --output results.json` runs all tasks per site. |
 | **Standardized results format** | JSON output with per-domain and per-stage breakdowns. |
 | **Input validation** | All API routes validate JSON, enums, numeric types. Leaderboard validates submissions. |
 | **RL episode isolation** | Per-episode state prevents concurrent agent interference. |
@@ -200,9 +201,9 @@ Each new site follows the same pattern:
 
 | Item | Why | Status |
 |------|-----|--------|
-| **Baseline results** | "Here's how GPT-4o / Claude / Gemini score." Without this, no reference point. Requires API keys. | Not started |
+| **Baseline results** | "Here's how GPT-4o / Claude / Gemini score." Rule-based agent baseline done (14.7%). LLM baselines require API keys. | Rule-based done |
 | **Published PyPI package** | `pip install simbench` from PyPI, not `pip install ./sdk`. Requires PyPI credentials. | Not started |
-| **5+ sites** | 1 site = demo, 5+ = benchmark. Labs need diversity to prove generalization. | 1 done |
+| **5+ sites** | 1 site = demo, 5+ = benchmark. Labs need diversity to prove generalization. | 3 done (Shopify Admin, Linear, Jira) |
 | **Paper on arXiv** | Draft exists, needs baseline numbers to publish. | Draft done |
 | **Leaderboard signing** | HMAC-signed submissions to prevent spoofing. Requires secret key setup. | Not started |
 | **Multi-agent support** | Concurrent episodes for parallel evaluation at scale. | Not started |

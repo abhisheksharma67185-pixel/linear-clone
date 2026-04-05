@@ -151,7 +151,7 @@ export const orderTasks: TaskDefinition[] = [
     difficulty: "hard",
     curriculumStage: 7,
     title: "Fulfill all unfulfilled orders",
-    goal: "Find and fulfill ALL unfulfilled orders.",
+    goal: "Find and fulfill ALL unfulfilled orders. Note: order #1039 has a pending payment that must be captured before it can be fulfilled.",
     evalChecks: [
       {
         type: "state_predicate",

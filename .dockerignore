@@ -5,8 +5,11 @@ node_modules
 .claude
 .agents
 .vercel
-sdk/.venv
+sdk/
 paper
 *.md
 !README.md
 .DS_Store
+.env*
+coverage/
+*.log

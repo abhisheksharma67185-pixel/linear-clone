@@ -19,6 +19,7 @@ import {
   Badge,
   Modal,
   Icon,
+  Tag,
 } from "@shopify/polaris";
 import { SearchIcon } from "@shopify/polaris-icons";
 import { PlusIcon } from "@shopify/polaris-icons";
@@ -62,6 +63,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
   const [countryOfOrigin, setCountryOfOrigin] = useState("");
   const [hsCode, setHsCode] = useState("");
   const [themeTemplate, setThemeTemplate] = useState("default");
+
+  // Uploaded media files
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   // Collapsible sections
   const [showPriceExtras, setShowPriceExtras] = useState(false);
@@ -118,6 +122,7 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean),
+      images: uploadedFiles.map((f) => f.name),
     };
 
     const url = isNew ? "/api/data/products" : `/api/data/products/${product?.id}`;
@@ -153,6 +158,7 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
     isNew,
     product?.id,
     router,
+    uploadedFiles,
   ]);
 
   const handleDelete = useCallback(async () => {
@@ -207,12 +213,31 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
               <Text as="h2" variant="headingSm">
                 Media
               </Text>
-              <DropZone onDrop={() => {}} variableHeight>
+              <DropZone
+                onDrop={(_droppedFiles, acceptedFiles) =>
+                  setUploadedFiles((prev) => [...prev, ...acceptedFiles])
+                }
+                variableHeight
+              >
                 <DropZone.FileUpload
                   actionTitle="Upload new"
                   actionHint="Accepts images, videos, or 3D models"
                 />
               </DropZone>
+              {uploadedFiles.length > 0 && (
+                <InlineStack gap="200" wrap>
+                  {uploadedFiles.map((file, i) => (
+                    <Tag
+                      key={`${file.name}-${i}`}
+                      onRemove={() =>
+                        setUploadedFiles((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                    >
+                      {file.name}
+                    </Tag>
+                  ))}
+                </InlineStack>
+              )}
             </BlockStack>
           </Card>
 

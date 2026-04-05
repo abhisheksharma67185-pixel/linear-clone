@@ -1,6 +1,6 @@
 "use client";
 
-import { Page, Layout, Card, FormLayout, TextField, Select, Banner } from "@shopify/polaris";
+import { Page, Layout, Card, FormLayout, TextField, Select, Banner, Spinner } from "@shopify/polaris";
 import { useState, useCallback, useEffect } from "react";
 import type { StoreSettings } from "../../lib/mock-data";
 
@@ -94,7 +94,13 @@ export default function SettingsPage() {
     zip,
   ]);
 
-  if (!settings) return null;
+  if (!settings) return (
+    <Page title="Settings">
+      <div style={{ padding: 40, textAlign: "center" }}>
+        <Spinner size="large" />
+      </div>
+    </Page>
+  );
 
   return (
     <Page

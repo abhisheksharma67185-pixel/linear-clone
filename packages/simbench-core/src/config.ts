@@ -22,7 +22,7 @@ const DEFAULT_UNIVERSAL: UniversalConfig = {
 let _universalConfig: UniversalConfig = { ...DEFAULT_UNIVERSAL };
 
 export function getUniversalConfig(): UniversalConfig {
-  return _universalConfig;
+  return { ..._universalConfig };
 }
 
 export function applyUniversalConfig(overrides: Partial<UniversalConfig>): UniversalConfig {

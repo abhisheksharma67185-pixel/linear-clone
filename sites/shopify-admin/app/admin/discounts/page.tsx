@@ -16,7 +16,7 @@ import {
   BlockStack,
   Link,
 } from "@shopify/polaris";
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Discount } from "../../lib/mock-data";
 
@@ -39,20 +39,37 @@ export default function DiscountsPage() {
   const router = useRouter();
   const [discounts, setDiscounts] = useState<Discount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [queryValue, setQueryValue] = useState("");
   const { mode, setMode } = useSetIndexFiltersMode(IndexFiltersMode.Default);
 
   useEffect(() => {
     fetch("/api/data/discounts")
-      .then((res) => res.json())
+      .then((res) => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
       .then((data) => {
         setDiscounts(data);
         setLoading(false);
-      });
+      })
+      .catch(() => { setLoading(false); });
   }, []);
+
+  const handleQueryChange = useCallback((value: string) => {
+    setQueryValue(value);
+  }, []);
+
+  const handleQueryClear = useCallback(() => {
+    setQueryValue("");
+  }, []);
+
+  const filteredDiscounts = discounts.filter(
+    (d) =>
+      !queryValue ||
+      d.title.toLowerCase().includes(queryValue.toLowerCase()) ||
+      (d.code?.toLowerCase().includes(queryValue.toLowerCase()))
+  );
 
   const resourceName = { singular: "discount", plural: "discounts" };
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
-    useIndexResourceState(discounts);
+    useIndexResourceState(filteredDiscounts);
 
   if (loading) {
     return (
@@ -75,7 +92,7 @@ export default function DiscountsPage() {
         <Card>
           <EmptyState
             heading="Manage discounts and promotions"
-            image=""
+            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
             action={{ content: "Create discount" }}
           >
             <Text as="p" variant="bodyMd" tone="subdued">
@@ -95,7 +112,7 @@ export default function DiscountsPage() {
     );
   }
 
-  const rowMarkup = discounts.map((discount, index) => (
+  const rowMarkup = filteredDiscounts.map((discount, index) => (
     <IndexTable.Row
       id={discount.id}
       key={discount.id}
@@ -137,21 +154,21 @@ export default function DiscountsPage() {
     >
       <Card padding="0">
         <IndexFilters
-          queryValue=""
+          queryValue={queryValue}
           queryPlaceholder="Search discounts"
-          onQueryChange={() => {}}
-          onQueryClear={() => {}}
+          onQueryChange={handleQueryChange}
+          onQueryClear={handleQueryClear}
           tabs={[]}
           selected={0}
           onSelect={() => {}}
           filters={[]}
-          onClearAll={() => {}}
+          onClearAll={handleQueryClear}
           mode={mode}
           setMode={setMode}
         />
         <IndexTable
           resourceName={resourceName}
-          itemCount={discounts.length}
+          itemCount={filteredDiscounts.length}
           selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
           onSelectionChange={handleSelectionChange}
           headings={[

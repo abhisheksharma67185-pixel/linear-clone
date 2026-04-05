@@ -1,3 +1,4 @@
+// AUTH: Intentionally omitted — this route is designed for local benchmark/sim use only.
 import { NextRequest, NextResponse } from "next/server";
 import * as store from "../../lib/store";
 import "../../lib/init-sim";
@@ -327,11 +328,12 @@ export async function POST(request: NextRequest) {
   const action = body as Record<string, unknown>;
   const actionName = action.action as string;
 
-  _rlState.stepCount++;
   _rlState.lastAction = actionName;
 
   // Execute the action
   const { reward: baseReward, success } = executeAction(action);
+
+  _rlState.stepCount++;
 
   // If episode is active, use shaped rewards and log action
   let finalReward = baseReward;

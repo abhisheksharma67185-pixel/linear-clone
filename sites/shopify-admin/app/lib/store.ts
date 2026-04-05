@@ -140,7 +140,12 @@ export function updateProduct(
   const product = _products.find((p) => p.id === id);
   if (!product) return { success: false, error: "Product not found" };
 
-  if (fields.title !== undefined) product.title = fields.title;
+  if (fields.title !== undefined) {
+    if (String(fields.title).trim() === "") {
+      return { success: false, error: "Title cannot be empty" };
+    }
+    product.title = fields.title;
+  }
   if (fields.description !== undefined) product.description = fields.description;
   if (fields.status !== undefined) {
     if (!VALID_PRODUCT_STATUS.has(fields.status)) {
@@ -405,10 +410,28 @@ export function updateDiscount(
 
   if (fields.title !== undefined) discount.title = fields.title;
   if (fields.code !== undefined) discount.code = fields.code;
-  if (fields.type !== undefined) discount.type = fields.type;
-  if (fields.valueType !== undefined) discount.valueType = fields.valueType;
+  if (fields.type !== undefined) {
+    if (!VALID_DISCOUNT_TYPE.has(fields.type)) {
+      return { success: false, error: `Invalid discount type: ${fields.type}` };
+    }
+    discount.type = fields.type;
+  }
+  if (fields.valueType !== undefined) {
+    if (!VALID_DISCOUNT_VALUE_TYPE.has(fields.valueType)) {
+      return { success: false, error: `Invalid value type: ${fields.valueType}` };
+    }
+    discount.valueType = fields.valueType;
+  }
   if (fields.value !== undefined) discount.value = fields.value;
-  if (fields.status !== undefined) discount.status = fields.status;
+  if (fields.status !== undefined) {
+    if (!VALID_DISCOUNT_STATUS.has(fields.status)) {
+      return { success: false, error: `Invalid status: ${fields.status}` };
+    }
+    if (discount.status === "expired" && fields.status === "active") {
+      return { success: false, error: "Cannot reactivate an expired discount" };
+    }
+    discount.status = fields.status;
+  }
   if (fields.usageLimit !== undefined) discount.usageLimit = fields.usageLimit;
   if (fields.startsAt !== undefined) discount.startsAt = fields.startsAt;
   if (fields.endsAt !== undefined) discount.endsAt = fields.endsAt;

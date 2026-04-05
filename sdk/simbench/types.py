@@ -31,12 +31,6 @@ class EpisodeStartResponse(BaseModel):
     initial_snapshot: dict[str, Any]
 
 
-class CheckResult(BaseModel):
-    passed: bool
-    actual: Any = None
-    message: str
-
-
 class EvalResult(BaseModel):
     score: float
     checks: list[dict[str, Any]]

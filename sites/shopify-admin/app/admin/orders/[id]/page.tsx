@@ -57,11 +57,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
   const fetchOrder = useCallback(() => {
     fetch(`/api/data/orders/${id}`)
-      .then((res) => res.json())
+      .then((res) => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
       .then((data) => {
         setOrder(data);
         setLoading(false);
-      });
+      })
+      .catch(() => { setLoading(false); });
   }, [id]);
 
   useEffect(() => {

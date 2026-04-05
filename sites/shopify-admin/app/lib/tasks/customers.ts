@@ -176,6 +176,7 @@ export const customerTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "customer_has_tag",
+        id: "11",
         expected: "vip",
         weight: 0.5,
         description: "Has VIP tag",

@@ -3,13 +3,34 @@ import "../../../lib/init-sim";
 import { getAllTasks, getTasksByCriteria, getTaskCount } from "@simbench/core";
 import type { TaskDomain, TaskDifficulty, TaskType } from "@simbench/core";
 
+const VALID_DOMAINS: TaskDomain[] = [
+  "navigation", "products", "orders", "customers", "discounts",
+  "settings", "search", "retrieval", "impossible", "multi-domain",
+];
+const VALID_DIFFICULTIES: TaskDifficulty[] = ["easy", "medium", "hard", "expert"];
+const VALID_TYPES: TaskType[] = ["action", "retrieval", "action_retrieval", "no_action"];
+
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
-  const domain = url.searchParams.get("domain") as TaskDomain | null;
-  const difficulty = url.searchParams.get("difficulty") as TaskDifficulty | null;
-  const type = url.searchParams.get("type") as TaskType | null;
+  const domainRaw = url.searchParams.get("domain");
+  const difficultyRaw = url.searchParams.get("difficulty");
+  const typeRaw = url.searchParams.get("type");
   const stage = url.searchParams.get("stage");
   const site = url.searchParams.get("site");
+
+  if (domainRaw && !VALID_DOMAINS.includes(domainRaw as TaskDomain)) {
+    return NextResponse.json({ error: `Invalid domain. Must be one of: ${VALID_DOMAINS.join(", ")}` }, { status: 400 });
+  }
+  if (difficultyRaw && !VALID_DIFFICULTIES.includes(difficultyRaw as TaskDifficulty)) {
+    return NextResponse.json({ error: `Invalid difficulty. Must be one of: ${VALID_DIFFICULTIES.join(", ")}` }, { status: 400 });
+  }
+  if (typeRaw && !VALID_TYPES.includes(typeRaw as TaskType)) {
+    return NextResponse.json({ error: `Invalid type. Must be one of: ${VALID_TYPES.join(", ")}` }, { status: 400 });
+  }
+
+  const domain = domainRaw as TaskDomain | null;
+  const difficulty = difficultyRaw as TaskDifficulty | null;
+  const type = typeRaw as TaskType | null;
 
   const hasFilters = domain || difficulty || type || stage || site;
 

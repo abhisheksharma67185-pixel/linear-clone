@@ -45,8 +45,27 @@ const shopifyAdapter: SiteAdapter = {
   reset: (seed?: number) => store.reset(seed),
 
   executeMutation: (name: string, args: unknown[]) => {
+    const MUTATION_ALLOWLIST = new Set([
+      "createProduct",
+      "updateProduct",
+      "deleteProduct",
+      "fulfillOrder",
+      "capturePayment",
+      "refundOrder",
+      "addOrderNote",
+      "createCustomer",
+      "updateCustomer",
+      "createDiscount",
+      "updateDiscount",
+      "deleteDiscount",
+      "updateSettings",
+    ]);
+    if (!MUTATION_ALLOWLIST.has(name)) {
+      return { success: false, error: `Unknown mutation: ${name}` };
+    }
     const fn = (store as unknown as Record<string, (...a: unknown[]) => unknown>)[name];
-    if (fn) fn(...args);
+    if (fn) return fn(...args);
+    return { success: false, error: `Mutation not found: ${name}` };
   },
 
   collections: ["products", "orders", "customers", "discounts"],
@@ -138,6 +157,27 @@ registerPredicate("discount_exists_with_code", (snapshot: GenericSnapshot, check
   const code = String(check.expected ?? "").toUpperCase();
   const discounts = snapshot.discounts as { code?: string }[];
   return discounts?.some((d) => d.code?.toUpperCase() === code) ?? false;
+});
+
+registerPredicate("discount_has_fields", (snapshot: GenericSnapshot, check: EvalCheck) => {
+  const expected = check.expected as Record<string, unknown> | undefined;
+  if (!expected) return false;
+  const discounts = snapshot.discounts as { id: string; code?: string; title?: string }[];
+  let discount = check.id ? discounts?.find((d) => d.id === check.id) : undefined;
+  if (!discount && expected.code) {
+    discount = discounts?.find(
+      (d) => d.code?.toUpperCase() === String(expected.code).toUpperCase(),
+    );
+  }
+  if (!discount && expected.title) {
+    discount = discounts?.find(
+      (d) => d.title?.toLowerCase() === String(expected.title).toLowerCase(),
+    );
+  }
+  if (!discount) return false;
+  return Object.entries(expected).every(
+    ([key, val]) => JSON.stringify(getNestedField(discount, key)) === JSON.stringify(val),
+  );
 });
 
 registerPredicate("all_orders_fulfilled", (snapshot: GenericSnapshot) => {

@@ -19,6 +19,7 @@ import {
   DropZone,
   Link,
   Select,
+  Banner,
 } from "@shopify/polaris";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -39,6 +40,8 @@ function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) 
   const [step, setStep] = useState<"choose" | "csv" | "platform">("choose");
   const [importType, setImportType] = useState<string[]>(["csv"]);
   const [platform, setPlatform] = useState("");
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvSuccess, setCsvSuccess] = useState(false);
 
   const handleNext = useCallback(() => {
     if (importType[0] === "csv") {
@@ -52,6 +55,8 @@ function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) 
     setStep("choose");
     setImportType(["csv"]);
     setPlatform("");
+    setCsvFile(null);
+    setCsvSuccess(false);
     onClose();
   }, [onClose]);
 
@@ -105,16 +110,40 @@ function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) 
     return (
       <Modal open={open} onClose={handleClose} title="Import products by CSV">
         <Modal.Section>
-          <DropZone onDrop={() => {}} label="Upload CSV file">
-            <DropZone.FileUpload actionTitle="Add file" />
-          </DropZone>
+          <BlockStack gap="300">
+            <DropZone
+              onDrop={(_droppedFiles, acceptedFiles) => {
+                if (acceptedFiles.length > 0) setCsvFile(acceptedFiles[0]);
+              }}
+              label="Upload CSV file"
+            >
+              <DropZone.FileUpload actionTitle="Add file" />
+            </DropZone>
+            {csvFile && (
+              <Banner tone="info">
+                <Text as="span" variant="bodyMd">Selected file: {csvFile.name}</Text>
+              </Banner>
+            )}
+            {csvSuccess && (
+              <Banner tone="success">
+                <Text as="span" variant="bodyMd">CSV import started</Text>
+              </Banner>
+            )}
+          </BlockStack>
         </Modal.Section>
         <Modal.Section>
           <InlineStack align="space-between" blockAlign="center">
             <Link>Download sample CSV</Link>
             <InlineStack gap="200">
               <Button onClick={handleClose}>Cancel</Button>
-              <Button variant="primary" disabled>
+              <Button
+                variant="primary"
+                disabled={!csvFile}
+                onClick={() => {
+                  setCsvSuccess(true);
+                  setTimeout(() => handleClose(), 1500);
+                }}
+              >
                 Upload and preview
               </Button>
             </InlineStack>
@@ -223,35 +252,91 @@ export default function ProductsPage() {
   const [queryValue, setQueryValue] = useState("");
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [importOpen, setImportOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [selectedTab, setSelectedTab] = useState(0);
   const { mode, setMode } = useSetIndexFiltersMode(IndexFiltersMode.Default);
 
   useEffect(() => {
     fetch("/api/data/products")
-      .then((res) => res.json())
+      .then((res) => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
       .then((data) => {
         setProducts(data);
         setFilteredProducts(data);
         setLoading(false);
-      });
+      })
+      .catch(() => { setLoading(false); });
   }, []);
 
   const resourceName = { singular: "product", plural: "products" };
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(filteredProducts);
 
-  const handleQueryChange = useCallback(
-    (value: string) => {
-      setQueryValue(value);
-      const filtered = products.filter((p) => p.title.toLowerCase().includes(value.toLowerCase()));
+  const applyFilters = useCallback(
+    (query: string, statuses: string[]) => {
+      let filtered = products;
+      if (query) {
+        filtered = filtered.filter((p) => p.title.toLowerCase().includes(query.toLowerCase()));
+      }
+      if (statuses.length > 0) {
+        filtered = filtered.filter((p) => statuses.includes(p.status));
+      }
       setFilteredProducts(filtered);
     },
     [products],
   );
 
+  const handleQueryChange = useCallback(
+    (value: string) => {
+      setQueryValue(value);
+      applyFilters(value, statusFilter);
+    },
+    [applyFilters, statusFilter],
+  );
+
   const handleQueryClear = useCallback(() => {
     setQueryValue("");
+    applyFilters("", statusFilter);
+  }, [applyFilters, statusFilter]);
+
+  const handleStatusFilterChange = useCallback(
+    (value: string[]) => {
+      setStatusFilter(value);
+      applyFilters(queryValue, value);
+    },
+    [applyFilters, queryValue],
+  );
+
+  const handleClearAll = useCallback(() => {
+    setQueryValue("");
+    setStatusFilter([]);
     setFilteredProducts(products);
   }, [products]);
+
+  const filters = [
+    {
+      key: "status",
+      label: "Status",
+      filter: (
+        <ChoiceList
+          title="Status"
+          titleHidden
+          choices={[
+            { label: "Active", value: "active" },
+            { label: "Draft", value: "draft" },
+            { label: "Archived", value: "archived" },
+          ]}
+          selected={statusFilter}
+          onChange={handleStatusFilterChange}
+          allowMultiple
+        />
+      ),
+      shortcut: true,
+    },
+  ];
+
+  const appliedFilters = statusFilter.length > 0
+    ? [{ key: "status", label: `Status: ${statusFilter.join(", ")}`, onRemove: () => handleStatusFilterChange([]) }]
+    : [];
 
   if (loading) {
     return (
@@ -323,10 +408,11 @@ export default function ProductsPage() {
           onQueryChange={handleQueryChange}
           onQueryClear={handleQueryClear}
           tabs={[]}
-          selected={0}
-          onSelect={() => {}}
-          filters={[]}
-          onClearAll={() => {}}
+          selected={selectedTab}
+          onSelect={setSelectedTab}
+          filters={filters}
+          appliedFilters={appliedFilters}
+          onClearAll={handleClearAll}
           mode={mode}
           setMode={setMode}
         />

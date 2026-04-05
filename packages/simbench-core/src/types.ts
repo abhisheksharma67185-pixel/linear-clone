@@ -35,7 +35,7 @@ export interface SitePlugin {
   reset(seed?: number): void;
 
   getMutations(): MutationDefinition[];
-  executeMutation(name: string, args: unknown): MutationResult;
+  executeMutation(name: string, args: unknown[]): MutationResult;
 
   getConfigSchema(): ConfigSchema;
   applyConfig(config: Record<string, unknown>): void;

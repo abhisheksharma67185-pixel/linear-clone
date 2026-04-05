@@ -15,6 +15,7 @@ import {
   Box,
   BlockStack,
   Link,
+  ChoiceList,
 } from "@shopify/polaris";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -48,38 +49,131 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [queryValue, setQueryValue] = useState("");
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [fulfillmentFilter, setFulfillmentFilter] = useState<string[]>([]);
+  const [paymentFilter, setPaymentFilter] = useState<string[]>([]);
+  const [selectedTab, setSelectedTab] = useState(0);
   const { mode, setMode } = useSetIndexFiltersMode(IndexFiltersMode.Default);
 
   useEffect(() => {
     fetch("/api/data/orders")
-      .then((res) => res.json())
+      .then((res) => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
       .then((data) => {
         setOrders(data);
         setFilteredOrders(data);
         setLoading(false);
-      });
+      })
+      .catch(() => { setLoading(false); });
   }, []);
 
   const resourceName = { singular: "order", plural: "orders" };
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(filteredOrders);
 
-  const handleQueryChange = useCallback(
-    (value: string) => {
-      setQueryValue(value);
-      const filtered = orders.filter(
-        (o) =>
-          o.orderNumber.includes(value) || o.customer.toLowerCase().includes(value.toLowerCase()),
-      );
+  const applyFilters = useCallback(
+    (query: string, fulfillment: string[], payment: string[]) => {
+      let filtered = orders;
+      if (query) {
+        filtered = filtered.filter(
+          (o) =>
+            o.orderNumber.includes(query) || o.customer.toLowerCase().includes(query.toLowerCase()),
+        );
+      }
+      if (fulfillment.length > 0) {
+        filtered = filtered.filter((o) => fulfillment.includes(o.fulfillmentStatus));
+      }
+      if (payment.length > 0) {
+        filtered = filtered.filter((o) => payment.includes(o.paymentStatus));
+      }
       setFilteredOrders(filtered);
     },
     [orders],
   );
 
+  const handleQueryChange = useCallback(
+    (value: string) => {
+      setQueryValue(value);
+      applyFilters(value, fulfillmentFilter, paymentFilter);
+    },
+    [applyFilters, fulfillmentFilter, paymentFilter],
+  );
+
   const handleQueryClear = useCallback(() => {
     setQueryValue("");
+    applyFilters("", fulfillmentFilter, paymentFilter);
+  }, [applyFilters, fulfillmentFilter, paymentFilter]);
+
+  const handleFulfillmentFilterChange = useCallback(
+    (value: string[]) => {
+      setFulfillmentFilter(value);
+      applyFilters(queryValue, value, paymentFilter);
+    },
+    [applyFilters, queryValue, paymentFilter],
+  );
+
+  const handlePaymentFilterChange = useCallback(
+    (value: string[]) => {
+      setPaymentFilter(value);
+      applyFilters(queryValue, fulfillmentFilter, value);
+    },
+    [applyFilters, queryValue, fulfillmentFilter],
+  );
+
+  const handleClearAll = useCallback(() => {
+    setQueryValue("");
+    setFulfillmentFilter([]);
+    setPaymentFilter([]);
     setFilteredOrders(orders);
   }, [orders]);
+
+  const orderFilters = [
+    {
+      key: "fulfillmentStatus",
+      label: "Fulfillment status",
+      filter: (
+        <ChoiceList
+          title="Fulfillment status"
+          titleHidden
+          choices={[
+            { label: "Fulfilled", value: "fulfilled" },
+            { label: "Unfulfilled", value: "unfulfilled" },
+            { label: "Partial", value: "partial" },
+          ]}
+          selected={fulfillmentFilter}
+          onChange={handleFulfillmentFilterChange}
+          allowMultiple
+        />
+      ),
+      shortcut: true,
+    },
+    {
+      key: "paymentStatus",
+      label: "Payment status",
+      filter: (
+        <ChoiceList
+          title="Payment status"
+          titleHidden
+          choices={[
+            { label: "Paid", value: "paid" },
+            { label: "Pending", value: "pending" },
+            { label: "Refunded", value: "refunded" },
+          ]}
+          selected={paymentFilter}
+          onChange={handlePaymentFilterChange}
+          allowMultiple
+        />
+      ),
+      shortcut: true,
+    },
+  ];
+
+  const appliedFilters = [
+    ...(fulfillmentFilter.length > 0
+      ? [{ key: "fulfillmentStatus", label: `Fulfillment: ${fulfillmentFilter.join(", ")}`, onRemove: () => handleFulfillmentFilterChange([]) }]
+      : []),
+    ...(paymentFilter.length > 0
+      ? [{ key: "paymentStatus", label: `Payment: ${paymentFilter.join(", ")}`, onRemove: () => handlePaymentFilterChange([]) }]
+      : []),
+  ];
 
   if (loading) {
     return (
@@ -98,7 +192,7 @@ export default function OrdersPage() {
         <Card>
           <EmptyState
             heading="Your orders will show here"
-            image=""
+            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
             action={{ content: "Select plan" }}
           >
             <Text as="p" variant="bodyMd" tone="subdued">
@@ -157,10 +251,11 @@ export default function OrdersPage() {
           onQueryChange={handleQueryChange}
           onQueryClear={handleQueryClear}
           tabs={[]}
-          selected={0}
-          onSelect={() => {}}
-          filters={[]}
-          onClearAll={() => {}}
+          selected={selectedTab}
+          onSelect={setSelectedTab}
+          filters={orderFilters}
+          appliedFilters={appliedFilters}
+          onClearAll={handleClearAll}
           mode={mode}
           setMode={setMode}
         />

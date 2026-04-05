@@ -12,142 +12,262 @@ import {
   Icon,
   Link,
   Button,
+  Modal,
+  Toast,
+  Frame,
 } from "@shopify/polaris";
 import { SearchIcon, PlusIcon, XIcon, GlobeIcon } from "@shopify/polaris-icons";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+
+interface Market {
+  [key: string]: unknown;
+  id: string;
+  name: string;
+  status: string;
+  includes: string;
+}
+
+const initialMarkets: Market[] = [
+  { id: "1", name: "India", status: "Active", includes: "India" },
+];
 
 export default function MarketsPage() {
   const [searchValue, setSearchValue] = useState("");
+  const [markets, setMarkets] = useState<Market[]>(initialMarkets);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newMarketName, setNewMarketName] = useState("");
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<string[]>([]);
+  const [graphView, setGraphView] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const handleCreateMarket = useCallback(() => {
+    if (newMarketName.trim()) {
+      setMarkets((prev) => [
+        ...prev,
+        {
+          id: String(Date.now()),
+          name: newMarketName.trim(),
+          status: "Active",
+          includes: newMarketName.trim(),
+        },
+      ]);
+      setNewMarketName("");
+      setShowCreateModal(false);
+      setToastMessage(`Market "${newMarketName.trim()}" created`);
+    }
+  }, [newMarketName]);
+
+  const handleDismiss = useCallback((suggestion: string) => {
+    setDismissedSuggestions((prev) => [...prev, suggestion]);
+  }, []);
+
+  const handleCreateSuggested = useCallback(
+    (name: string) => {
+      setMarkets((prev) => [
+        ...prev,
+        {
+          id: String(Date.now()),
+          name,
+          status: "Active",
+          includes: name,
+        },
+      ]);
+      setDismissedSuggestions((prev) => [...prev, name]);
+      setToastMessage(`Market "${name}" created`);
+    },
+    []
+  );
+
+  const suggestions = [
+    { label: "Create United States Market", name: "United States" },
+    { label: "Create United Kingdom Market", name: "United Kingdom" },
+  ].filter((s) => !dismissedSuggestions.includes(s.name));
 
   return (
-    <Page
-      title="Markets"
-      primaryAction={{ content: "Create market" }}
-      secondaryActions={[{ content: "Graph view" }]}
-      fullWidth
-    >
-      <div style={{ display: "flex", gap: 16 }}>
-        {/* Left sidebar */}
-        <div style={{ width: 200, flexShrink: 0 }}>
-          <Card padding="300">
-            <BlockStack gap="200">
-              <InlineStack gap="200" blockAlign="center">
-                <Icon source={GlobeIcon} tone="base" />
-                <Text as="span" variant="bodyMd" fontWeight="semibold">
-                  Store default
-                </Text>
-              </InlineStack>
-              <InlineStack gap="200" blockAlign="center">
-                <Icon source={PlusIcon} tone="base" />
-                <Text as="span" variant="bodyMd">
-                  Regions
-                </Text>
-              </InlineStack>
-            </BlockStack>
-          </Card>
-        </div>
-
-        {/* Right content — full width */}
-        <div style={{ flexGrow: 1, minWidth: 0 }}>
-          <Card padding="0">
-            <Box padding="300">
-              <TextField
-                label="Search markets"
-                labelHidden
-                placeholder="Search in all markets"
-                value={searchValue}
-                onChange={setSearchValue}
-                prefix={<Icon source={SearchIcon} />}
-                autoComplete="off"
-              />
-            </Box>
-
-            {/* Table header */}
-            <Box
-              padding="300"
-              paddingBlockStart="200"
-              paddingBlockEnd="200"
-              borderBlockEndWidth="025"
-              borderColor="border"
-            >
-              <div style={{ display: "flex" }}>
-                <div style={{ flex: 2 }}>
-                  <Text as="span" variant="bodySm" fontWeight="semibold">
-                    Market
+    <Frame>
+      <Page
+        title="Markets"
+        primaryAction={{
+          content: "Create market",
+          onAction: () => setShowCreateModal(true),
+        }}
+        secondaryActions={[
+          {
+            content: graphView ? "List view" : "Graph view",
+            onAction: () => {
+              setGraphView((prev) => !prev);
+              setToastMessage(graphView ? "Switched to list view" : "Switched to graph view");
+            },
+          },
+        ]}
+        fullWidth
+      >
+        <div style={{ display: "flex", gap: 16 }}>
+          {/* Left sidebar */}
+          <div style={{ width: 200, flexShrink: 0 }}>
+            <Card padding="300">
+              <BlockStack gap="200">
+                <InlineStack gap="200" blockAlign="center">
+                  <Icon source={GlobeIcon} tone="base" />
+                  <Text as="span" variant="bodyMd" fontWeight="semibold">
+                    Store default
                   </Text>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <Text as="span" variant="bodySm" fontWeight="semibold">
-                    Status
-                  </Text>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <Text as="span" variant="bodySm" fontWeight="semibold">
-                    Includes
-                  </Text>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <Text as="span" variant="bodySm" fontWeight="semibold">
-                    Customizations
-                  </Text>
-                </div>
-              </div>
-            </Box>
-
-            {/* India row */}
-            <Box padding="300" borderBlockEndWidth="025" borderColor="border">
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <div style={{ flex: 2 }}>
-                  <InlineStack gap="200" blockAlign="center">
-                    <Icon source={GlobeIcon} tone="base" />
-                    <Text as="span" variant="bodyMd">
-                      India
-                    </Text>
-                  </InlineStack>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <Badge tone="success">Active</Badge>
-                </div>
-                <div style={{ flex: 1 }}>
+                </InlineStack>
+                <InlineStack gap="200" blockAlign="center">
+                  <Icon source={PlusIcon} tone="base" />
                   <Text as="span" variant="bodyMd">
-                    India
+                    Regions
                   </Text>
+                </InlineStack>
+              </BlockStack>
+            </Card>
+          </div>
+
+          {/* Right content */}
+          <div style={{ flexGrow: 1, minWidth: 0 }}>
+            <Card padding="0">
+              <Box padding="300">
+                <TextField
+                  label="Search markets"
+                  labelHidden
+                  placeholder="Search in all markets"
+                  value={searchValue}
+                  onChange={setSearchValue}
+                  prefix={<Icon source={SearchIcon} />}
+                  autoComplete="off"
+                />
+              </Box>
+
+              {/* Table header */}
+              <Box
+                padding="300"
+                paddingBlockStart="200"
+                paddingBlockEnd="200"
+                borderBlockEndWidth="025"
+                borderColor="border"
+              >
+                <div style={{ display: "flex" }}>
+                  <div style={{ flex: 2 }}>
+                    <Text as="span" variant="bodySm" fontWeight="semibold">
+                      Market
+                    </Text>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <Text as="span" variant="bodySm" fontWeight="semibold">
+                      Status
+                    </Text>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <Text as="span" variant="bodySm" fontWeight="semibold">
+                      Includes
+                    </Text>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <Text as="span" variant="bodySm" fontWeight="semibold">
+                      Customizations
+                    </Text>
+                  </div>
                 </div>
-                <div style={{ flex: 1 }} />
-              </div>
-            </Box>
+              </Box>
 
-            {/* Suggested markets */}
-            <Box padding="300" borderBlockEndWidth="025" borderColor="border">
-              <InlineStack align="space-between" blockAlign="center">
-                <InlineStack gap="200" blockAlign="center">
-                  <Link>Create United States Market</Link>
-                  <Icon source={PlusIcon} tone="interactive" />
-                </InlineStack>
-                <Button variant="plain" icon={XIcon} accessibilityLabel="Dismiss" />
-              </InlineStack>
-            </Box>
+              {/* Market rows */}
+              {markets
+                .filter((m) =>
+                  m.name.toLowerCase().includes(searchValue.toLowerCase())
+                )
+                .map((market) => (
+                  <Box
+                    key={market.id}
+                    padding="300"
+                    borderBlockEndWidth="025"
+                    borderColor="border"
+                  >
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <div style={{ flex: 2 }}>
+                        <InlineStack gap="200" blockAlign="center">
+                          <Icon source={GlobeIcon} tone="base" />
+                          <Text as="span" variant="bodyMd">
+                            {market.name}
+                          </Text>
+                        </InlineStack>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <Badge tone="success">{market.status}</Badge>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <Text as="span" variant="bodyMd">
+                          {market.includes}
+                        </Text>
+                      </div>
+                      <div style={{ flex: 1 }} />
+                    </div>
+                  </Box>
+                ))}
 
-            <Box padding="300">
-              <InlineStack align="space-between" blockAlign="center">
-                <InlineStack gap="200" blockAlign="center">
-                  <Link>Create United Kingdom Market</Link>
-                  <Icon source={PlusIcon} tone="interactive" />
-                </InlineStack>
-                <Button variant="plain" icon={XIcon} accessibilityLabel="Dismiss" />
-              </InlineStack>
-            </Box>
-          </Card>
+              {/* Suggested markets */}
+              {suggestions.map((suggestion, i) => (
+                <Box
+                  key={suggestion.name}
+                  padding="300"
+                  borderBlockEndWidth={i < suggestions.length - 1 ? "025" : undefined}
+                  borderColor="border"
+                >
+                  <InlineStack align="space-between" blockAlign="center">
+                    <InlineStack gap="200" blockAlign="center">
+                      <Link onClick={() => handleCreateSuggested(suggestion.name)}>
+                        {suggestion.label}
+                      </Link>
+                      <Icon source={PlusIcon} tone="interactive" />
+                    </InlineStack>
+                    <Button
+                      variant="plain"
+                      icon={XIcon}
+                      accessibilityLabel="Dismiss"
+                      onClick={() => handleDismiss(suggestion.name)}
+                    />
+                  </InlineStack>
+                </Box>
+              ))}
+            </Card>
 
-          <Box paddingBlock="400">
-            <BlockStack align="center">
-              <Text as="p" variant="bodySm" alignment="center">
-                <Link monochrome>Learn more about markets</Link>
-              </Text>
-            </BlockStack>
-          </Box>
+            <Box paddingBlock="400">
+              <BlockStack align="center">
+                <Text as="p" variant="bodySm" alignment="center">
+                  <Link monochrome>Learn more about markets</Link>
+                </Text>
+              </BlockStack>
+            </Box>
+          </div>
         </div>
-      </div>
-    </Page>
+      </Page>
+
+      <Modal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create market"
+        primaryAction={{
+          content: "Create",
+          onAction: handleCreateMarket,
+          disabled: !newMarketName.trim(),
+        }}
+        secondaryActions={[
+          { content: "Cancel", onAction: () => setShowCreateModal(false) },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="Market name"
+            value={newMarketName}
+            onChange={setNewMarketName}
+            autoComplete="off"
+            placeholder="e.g. North America"
+          />
+        </Modal.Section>
+      </Modal>
+
+      {toastMessage && (
+        <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />
+      )}
+    </Frame>
   );
 }

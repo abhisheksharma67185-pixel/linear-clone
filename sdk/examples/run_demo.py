@@ -87,7 +87,7 @@ def main():
 
         # Run the task
         try:
-            client._client.post("/api/rl/reset")
+            client.reset_env()
             env = SimBenchEnv(base_url=args.url, task_id=task_id, mode="rest")
             obs, info = env.reset()
 

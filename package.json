@@ -5,6 +5,17 @@
   "description": "SimBench — A scalable platform for training and evaluating autonomous web agents",
   "workspaces": [
     "packages/*",
-    "sites/shopify-admin"
-  ]
+    "sites/shopify-admin",
+    "sites/linear",
+    "sites/jira"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev --workspace=sites/shopify-admin",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }

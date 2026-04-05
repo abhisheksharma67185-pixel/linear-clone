@@ -1,7 +1,7 @@
 "use client";
 
-import { Page, Layout, Card, FormLayout, TextField, BlockStack, Text } from "@shopify/polaris";
-import { useState } from "react";
+import { Page, Layout, Card, FormLayout, TextField, BlockStack, Text, Banner } from "@shopify/polaris";
+import { useState, useCallback } from "react";
 
 export default function PreferencesPage() {
   const [title, setTitle] = useState("My Store");
@@ -9,9 +9,29 @@ export default function PreferencesPage() {
   const [gaAccount, setGaAccount] = useState("");
   const [fbPixel, setFbPixel] = useState("");
   const [password, setPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    setShowBanner(false);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setSaving(false);
+    setShowBanner(true);
+  }, []);
 
   return (
-    <Page title="Preferences">
+    <Page
+      title="Preferences"
+      primaryAction={{ content: "Save", loading: saving, onAction: handleSave }}
+    >
+      {showBanner && (
+        <div style={{ marginBottom: 16 }}>
+          <Banner tone="success" onDismiss={() => setShowBanner(false)}>
+            Preferences saved successfully.
+          </Banner>
+        </div>
+      )}
       <Layout>
         <Layout.AnnotatedSection
           title="Title and meta description"

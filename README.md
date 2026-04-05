@@ -1,6 +1,6 @@
 # SimBench
 
-A scalable platform for training and evaluating autonomous web agents on 100+ deterministic website simulations.
+A scalable platform for training and evaluating autonomous web agents on 264 deterministic website simulation tasks across 3 sites.
 
 ## Repository Structure
 
@@ -10,7 +10,8 @@ simbench/
 │   └── simbench-core/       # Shared simulation engine (site-agnostic)
 ├── sites/
 │   ├── shopify-admin/       # Shopify Admin simulation (104 tasks)
-│   └── linear/              # Linear simulation (in progress)
+│   ├── linear/              # Linear simulation (project management, 80 tasks)
+│   └── jira/                # Jira simulation (project management, 80 tasks)
 ├── sdk/                     # Python SDK (pip install simbench)
 └── paper/                   # Research paper
 ```
@@ -71,8 +72,9 @@ See [paper/simbench-paper.md](paper/simbench-paper.md) for the full research pap
 
 | Site | Pages | Tasks | Status |
 |------|-------|-------|--------|
-| Shopify Admin | 39 | 111 | Complete |
-| Linear | - | - | In progress |
+| Shopify Admin | 39 | 104 | Complete |
+| Linear | - | 80 | Complete |
+| Jira | - | 80 | Complete |
 
 ## License
 

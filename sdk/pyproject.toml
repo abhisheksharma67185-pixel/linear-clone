@@ -35,9 +35,9 @@ dev = ["pytest", "pytest-asyncio"]
 simbench = "simbench.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/RahulSulegoakar/shopify-admin-sim"
-Documentation = "https://github.com/RahulSulegoakar/shopify-admin-sim/blob/main/sdk/README.md"
-Repository = "https://github.com/RahulSulegoakar/shopify-admin-sim"
+Homepage = "https://github.com/RahulSulegoakar/theta-rl-labs"
+Documentation = "https://github.com/RahulSulegoakar/theta-rl-labs/blob/main/sdk/README.md"
+Repository = "https://github.com/RahulSulegoakar/theta-rl-labs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["simbench"]

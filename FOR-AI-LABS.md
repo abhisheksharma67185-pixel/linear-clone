@@ -18,7 +18,7 @@ You train models to interact with websites (computer use, browsing, form filling
 
 ## What SimBench Gives You
 
-- **104 tasks** across 8 domains and 10 difficulty stages (Shopify Admin v0.1)
+- **264 tasks** across 3 sites (Shopify Admin: 104 tasks, Linear: 80 tasks, Jira: 80 tasks) and 10 difficulty stages
 - **Deterministic evaluation** with ground-truth state-diff scoring
 - **REST mode** at 1-5ms/step for RL training loops
 - **Browser mode** via Playwright for vision-language model evaluation
@@ -82,11 +82,55 @@ def agent_response(obs, info):
 # Single task
 simbench run --task prod-001 --agent your_agent.py
 
-# Full benchmark (all 104 tasks)
+# Full Shopify benchmark (104 tasks)
 simbench eval --agent your_agent.py --output results.json
+
+# Full Linear benchmark (80 tasks)
+simbench eval --agent your_agent.py --url http://localhost:3001 --output linear-results.json
+
+# Full Jira benchmark (80 tasks)
+simbench eval --agent your_agent.py --url http://localhost:3002 --output jira-results.json
 
 # View platform info
 simbench info
+```
+
+### Run Against the Linear Site
+
+```python
+import simbench
+
+# Linear runs on a separate port (default: 3001)
+env = simbench.make("linear", base_url="http://localhost:3001", task_id="issue-001")
+obs, info = env.reset()
+
+while True:
+    action = your_model.decide(obs)
+    obs, reward, done, truncated, info = env.step(action)
+    if done or truncated:
+        break
+
+result = env.finish()
+print(f"Score: {result['score']:.0%}")
+```
+
+### Run Against the Jira Site
+
+```python
+import simbench
+
+# Jira runs on a separate port (default: 3002)
+env = simbench.make("jira", base_url="http://localhost:3002", task_id="jira-001")
+obs, info = env.reset()
+
+while True:
+    action = your_model.decide(obs)
+    obs, reward, done, truncated, info = env.step(action)
+    if done or truncated:
+        break
+
+result = env.finish()
+print(f"Score: {result['score']:.0%}")
 ```
 
 ### Or Use the Python API Directly
@@ -196,10 +240,10 @@ simbench eval --agent your_agent.py --url https://shopify-admin-sim.vercel.app
 
 | Type | Count | How Scored | Example |
 |------|-------|-----------|---------|
-| **Action** | 71 | State-diff: did the database change correctly? | "Change product price to $34.99" |
-| **Retrieval** | 15 | LLM judge: does agent's answer match ground truth? | "What is the price of Hiking Jacket?" |
-| **Impossible** | 8 | LLM judge: did agent recognize the task can't be done? | "Refund an already-refunded order" |
-| **Multi-domain** | 10 | Combined state-diff across multiple entities | "Create product + discount for it" |
+| **Action** | 181 | State-diff: did the database change correctly? | "Change product price to $34.99" |
+| **Retrieval** | 50 | LLM judge: does agent's answer match ground truth? | "What is the price of Hiking Jacket?" |
+| **Impossible** | 18 | LLM judge: did agent recognize the task can't be done? | "Refund an already-refunded order" |
+| **Multi-domain** | 15 | Combined state-diff across multiple entities | "Create product + discount for it" |
 
 ## Curriculum (10 Stages)
 
@@ -277,8 +321,9 @@ This is the floor. Your model should significantly outperform this.
 | Phase | Sites | Tasks | Status |
 |-------|-------|-------|--------|
 | v0.1 | Shopify Admin | 104 | Live |
-| v0.2 | + Linear (project mgmt) | ~200 | In progress |
-| v0.3 | + Gmail, GitHub, Slack | ~500 | Planned |
+| v0.2 | + Linear (project mgmt) | 184 | Live |
+| v0.3 | + Jira (project mgmt) | 264 | Live |
+| v0.4 | + Gmail, GitHub, Slack | ~500 | Planned |
 | v1.0 | 10+ sites | 1000+ | Planned |
 
 Each new site works with the same SDK, CLI, and agent interface. No changes to your code.

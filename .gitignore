@@ -10,8 +10,11 @@ dist/
 *.sw?
 .vscode/
 !.vscode/extensions.json
+.idea/
 __pycache__/
 *.pyc
 *.egg-info/
 .pytest_cache/
 .vercel
+coverage/
+*.log

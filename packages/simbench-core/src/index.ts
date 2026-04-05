@@ -33,7 +33,6 @@ export { evaluate } from "./evaluator";
 
 // LLM Judge
 export { judgeRetrieval, judgeImpossibleTask } from "./llm-judge";
-export type { JudgeResult as LlmJudgeResult } from "./llm-judge";
 
 // Predicates
 export { registerPredicate, getPredicate, clearPredicates } from "./predicates";

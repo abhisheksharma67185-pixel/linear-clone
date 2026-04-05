@@ -4,6 +4,25 @@ import type { StateDiff, EvalResult, CheckResult } from "./types";
 import { getNestedField } from "./snapshot";
 import { getPredicate } from "./predicates";
 
+/** Order-independent deep equality using sorted JSON keys */
+function deepEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return a === b;
+  if (typeof a !== typeof b) return false;
+  if (typeof a !== "object") return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    return a.every((v, i) => deepEqual(v, b[i]));
+  }
+  const aObj = a as Record<string, unknown>;
+  const bObj = b as Record<string, unknown>;
+  const aKeys = Object.keys(aObj).sort();
+  const bKeys = Object.keys(bObj).sort();
+  if (aKeys.length !== bKeys.length) return false;
+  return aKeys.every((key, i) => key === bKeys[i] && deepEqual(aObj[key], bObj[key]));
+}
+
 // ---------------------------------------------------------------------------
 // Evaluate a task against initial and final snapshots
 // ---------------------------------------------------------------------------
@@ -66,27 +85,35 @@ function evaluateStateDiff(
   final: GenericSnapshot,
   initial: GenericSnapshot,
 ): CheckResult {
-  const collection = final[check.entity!];
+  if (!check.entity || !check.field) {
+    return {
+      passed: false,
+      message: `FAIL: state_diff check missing required entity or field: ${check.description}`,
+      weight: check.weight,
+    };
+  }
+
+  const collection = final[check.entity];
   let actual: unknown;
 
   if (Array.isArray(collection)) {
     const item = (collection as { id: string }[]).find((e) => e.id === check.id);
-    actual = item ? getNestedField(item, check.field!) : undefined;
+    actual = item ? getNestedField(item, check.field) : undefined;
   } else if (collection && typeof collection === "object") {
-    actual = getNestedField(collection, check.field!);
+    actual = getNestedField(collection, check.field);
   }
 
-  const passed = JSON.stringify(actual) === JSON.stringify(check.expected);
+  const passed = deepEqual(actual, check.expected);
 
   // Include initial value in message for debugging
   let initialValue: unknown;
   if (check.id) {
-    const initialCollection = initial[check.entity!];
+    const initialCollection = initial[check.entity];
     if (Array.isArray(initialCollection)) {
       const initialItem = (initialCollection as { id: string }[]).find((e) => e.id === check.id);
-      initialValue = initialItem ? getNestedField(initialItem, check.field!) : undefined;
+      initialValue = initialItem ? getNestedField(initialItem, check.field) : undefined;
     } else if (initialCollection && typeof initialCollection === "object") {
-      initialValue = getNestedField(initialCollection, check.field!);
+      initialValue = getNestedField(initialCollection, check.field);
     }
   }
 
@@ -101,13 +128,20 @@ function evaluateStateDiff(
 }
 
 function evaluateStateExists(check: EvalCheck, final: GenericSnapshot): CheckResult {
-  const collection = final[check.entity!];
+  if (!check.entity || !check.field) {
+    return {
+      passed: false,
+      message: `FAIL: state_exists check missing required entity or field: ${check.description}`,
+      weight: check.weight,
+    };
+  }
+
+  const collection = final[check.entity];
   let passed = false;
 
   if (Array.isArray(collection)) {
     passed = (collection as Record<string, unknown>[]).some(
-      (item) =>
-        JSON.stringify(getNestedField(item, check.field!)) === JSON.stringify(check.expected),
+      (item) => deepEqual(getNestedField(item, check.field!), check.expected),
     );
   }
 
@@ -119,7 +153,15 @@ function evaluateStateExists(check: EvalCheck, final: GenericSnapshot): CheckRes
 }
 
 function evaluateStateAbsent(check: EvalCheck, final: GenericSnapshot): CheckResult {
-  const collection = final[check.entity!];
+  if (!check.entity) {
+    return {
+      passed: false,
+      message: `FAIL: state_absent check missing required entity: ${check.description}`,
+      weight: check.weight,
+    };
+  }
+
+  const collection = final[check.entity];
 
   if (!Array.isArray(collection)) {
     return {
@@ -139,13 +181,21 @@ function evaluateStateAbsent(check: EvalCheck, final: GenericSnapshot): CheckRes
 }
 
 function evaluateStateCount(check: EvalCheck, final: GenericSnapshot): CheckResult {
-  const collection = final[check.entity!];
+  if (!check.entity) {
+    return {
+      passed: false,
+      message: `FAIL: state_count check missing required entity: ${check.description}`,
+      weight: check.weight,
+    };
+  }
+
+  const collection = final[check.entity];
   let actual: unknown;
   let passed = false;
 
   if (Array.isArray(collection)) {
     actual = collection.length;
-    passed = collection.length === check.expected;
+    passed = collection.length === Number(check.expected);
   }
 
   return {

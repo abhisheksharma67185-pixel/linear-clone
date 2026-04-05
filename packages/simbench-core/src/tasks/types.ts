@@ -10,7 +10,17 @@ export type TaskDomain =
   | "discounts"
   | "settings"
   | "search"
-  | "multi-domain";
+  | "retrieval"
+  | "impossible"
+  | "multi-domain"
+  | "issues"
+  | "projects"
+  | "sprints"
+  | "cycles"
+  | "views"
+  | "boards"
+  | "labels"
+  | "teams";
 
 export type TaskDifficulty = "easy" | "medium" | "hard" | "expert";
 

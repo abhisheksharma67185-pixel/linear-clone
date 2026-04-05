@@ -21,14 +21,10 @@ class CurriculumRunner:
         base_url: str = "http://localhost:3000",
         mode: Literal["rest", "browser"] = "rest",
         mastery_threshold: float = 0.8,
-        min_successes: int = 3,
-        max_attempts_per_task: int = 10,
     ):
         self.base_url = base_url
         self.mode = mode
         self.mastery_threshold = mastery_threshold
-        self.min_successes = min_successes
-        self.max_attempts_per_task = max_attempts_per_task
         self._client = SimBenchClient(base_url)
 
     def get_curriculum(self) -> list[dict[str, Any]]:

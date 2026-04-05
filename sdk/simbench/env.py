@@ -4,8 +4,6 @@ from __future__ import annotations
 from typing import Any, Optional, Literal
 
 import gymnasium as gym
-import numpy as np
-
 from simbench.client import SimBenchClient
 
 
@@ -60,7 +58,7 @@ class SimBenchEnv(gym.Env):
         options: Optional[dict[str, Any]] = None,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """Start a new episode for the configured task."""
-        effective_seed = seed or self._seed
+        effective_seed = seed if seed is not None else self._seed
         overrides = self._config_overrides
         if options and "config_overrides" in options:
             overrides = options["config_overrides"]
@@ -75,6 +73,7 @@ class SimBenchEnv(gym.Env):
         self._step_count = 0
 
         if self.mode == "browser":
+            self._close_browser()
             self._init_browser()
             self._page.goto(f"{self.base_url}/admin")
 
@@ -121,13 +120,17 @@ class SimBenchEnv(gym.Env):
         result = self._client.finish_episode(agent_response)
         return result.model_dump()
 
-    def close(self) -> None:
+    def _close_browser(self) -> None:
+        """Close the browser and Playwright instance if they exist."""
         if self._browser:
             self._browser.close()
             self._browser = None
         if hasattr(self, '_pw') and self._pw:
             self._pw.stop()
             self._pw = None
+
+    def close(self) -> None:
+        self._close_browser()
         self._client.close()
 
     def __enter__(self):
@@ -209,8 +212,13 @@ def make(
         env = simbench.make("shopify-admin", task_id="prod-001")
         env = simbench.make("shopify-admin", task_id="ord-001", mode="browser")
     """
+    # Use site to construct the base_url if a non-default site is provided
+    effective_url = base_url
+    if site != "shopify-admin" and base_url == "http://localhost:3000":
+        effective_url = f"http://localhost:3000/sites/{site}"
+
     return SimBenchEnv(
-        base_url=base_url,
+        base_url=effective_url,
         task_id=task_id,
         mode=mode,
         **kwargs,

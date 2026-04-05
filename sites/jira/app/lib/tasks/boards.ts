@@ -1,0 +1,148 @@
+import type { TaskDefinition } from "@simbench/core";
+
+const R5 = {
+  completion: 5.0,
+  partialPerCheck: true,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+};
+const R8 = {
+  completion: 8.0,
+  partialPerCheck: true,
+  stepPenalty: -0.02,
+  invalidActionPenalty: -0.2,
+};
+const R10 = {
+  completion: 10.0,
+  partialPerCheck: true,
+  stepPenalty: -0.02,
+  invalidActionPenalty: -0.2,
+};
+
+export const boardTasks: TaskDefinition[] = [
+  // ---------------------------------------------------------------------------
+  // Stage 5 — board column movement via status transition
+  // ---------------------------------------------------------------------------
+  {
+    id: "jira-brd-001",
+    site: "jira",
+    domain: "boards",
+    type: "action",
+    difficulty: "medium",
+    curriculumStage: 5,
+    title: "Move issue to In Progress column",
+    goal: "On the PROJ Board, move issue PROJ-4 (iss-4) from 'To Do' to 'In Progress' by transitioning its status.",
+    evalChecks: [
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-4",
+        expected: "in_progress",
+        weight: 1.0,
+        description: "PROJ-4 is in_progress (In Progress column)",
+      },
+    ],
+    maxSteps: 10,
+    rewardProfile: R5,
+    tags: ["board", "transition"],
+  },
+  {
+    id: "jira-brd-002",
+    site: "jira",
+    domain: "boards",
+    type: "action",
+    difficulty: "medium",
+    curriculumStage: 5,
+    title: "Move issue to Done column",
+    goal: "On the PROJ Board, move issue PROJ-3 (iss-3) from 'In Review' to 'Done'.",
+    evalChecks: [
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-3",
+        expected: "done",
+        weight: 1.0,
+        description: "PROJ-3 is done (Done column)",
+      },
+    ],
+    maxSteps: 10,
+    rewardProfile: R5,
+    tags: ["board", "transition"],
+  },
+  {
+    id: "jira-brd-003",
+    site: "jira",
+    domain: "boards",
+    type: "action",
+    difficulty: "medium",
+    curriculumStage: 6,
+    title: "Move issue backward on board",
+    goal: "Move issue PROJ-9 (iss-9) from 'In Progress' back to 'To Do' on the PROJ Board.",
+    evalChecks: [
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-9",
+        expected: "to_do",
+        weight: 1.0,
+        description: "PROJ-9 is to_do (moved back)",
+      },
+    ],
+    maxSteps: 10,
+    rewardProfile: R5,
+    tags: ["board", "transition"],
+  },
+  {
+    id: "jira-brd-004",
+    site: "jira",
+    domain: "boards",
+    type: "action",
+    difficulty: "hard",
+    curriculumStage: 7,
+    title: "Clear Done column on KANB board",
+    goal: "Delete all 'done' issues on the KANB Board. Currently KANB-1 (iss-19) is done.",
+    evalChecks: [
+      {
+        type: "state_predicate",
+        predicate: "issue_count_equals",
+        expected: 24,
+        weight: 1.0,
+        description: "Total issue count is 24 (one deleted)",
+      },
+    ],
+    maxSteps: 15,
+    rewardProfile: R8,
+    tags: ["board", "delete", "bulk"],
+  },
+  {
+    id: "jira-brd-005",
+    site: "jira",
+    domain: "boards",
+    type: "action",
+    difficulty: "hard",
+    curriculumStage: 7,
+    title: "Progress all KANB in-progress issues",
+    goal: "On the KANB Board, transition all 'in_progress' issues to 'in_review'. Currently KANB-2 (iss-20) and KANB-7 (iss-25) are in_progress.",
+    evalChecks: [
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-20",
+        expected: "in_review",
+        weight: 0.5,
+        description: "KANB-2 is in_review",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-25",
+        expected: "in_review",
+        weight: 0.5,
+        description: "KANB-7 is in_review",
+      },
+    ],
+    maxSteps: 15,
+    rewardProfile: R8,
+    tags: ["board", "transition", "bulk"],
+  },
+];

@@ -1,0 +1,91 @@
+import type { TaskDefinition } from "@simbench/core";
+
+const R = {
+  completion: 5.0,
+  partialPerCheck: false,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+};
+
+export const impossibleTasks: TaskDefinition[] = [
+  {
+    id: "jira-imp-001",
+    site: "jira",
+    domain: "impossible",
+    type: "no_action",
+    difficulty: "medium",
+    curriculumStage: 8,
+    title: "Start already-active sprint",
+    goal: "Start Sprint 13 (sprint-2).",
+    impossibilityReason:
+      "Sprint 13 (sprint-2) is already in 'active' state. Starting an already-active sprint is not allowed.",
+    evalChecks: [],
+    maxSteps: 15,
+    rewardProfile: R,
+    tags: ["impossible", "error-recognition"],
+  },
+  {
+    id: "jira-imp-002",
+    site: "jira",
+    domain: "impossible",
+    type: "no_action",
+    difficulty: "medium",
+    curriculumStage: 8,
+    title: "Complete future sprint",
+    goal: "Complete Sprint 14 (sprint-3).",
+    impossibilityReason:
+      "Sprint 14 (sprint-3) is in 'future' state. Only active sprints can be completed — a sprint must be started first.",
+    evalChecks: [],
+    maxSteps: 15,
+    rewardProfile: R,
+    tags: ["impossible", "error-recognition"],
+  },
+  {
+    id: "jira-imp-003",
+    site: "jira",
+    domain: "impossible",
+    type: "no_action",
+    difficulty: "medium",
+    curriculumStage: 8,
+    title: "Assign to nonexistent user",
+    goal: "Assign issue PROJ-1 to user 'Chris Davis' (usr-99).",
+    impossibilityReason:
+      "User 'Chris Davis' (usr-99) does not exist. Only Alex Johnson (usr-1), Sam Williams (usr-2), Jordan Lee (usr-3), and Taylor Brown (usr-4) are valid users.",
+    evalChecks: [],
+    maxSteps: 15,
+    rewardProfile: R,
+    tags: ["impossible", "error-recognition"],
+  },
+  {
+    id: "jira-imp-004",
+    site: "jira",
+    domain: "impossible",
+    type: "no_action",
+    difficulty: "medium",
+    curriculumStage: 8,
+    title: "Invalid status transition",
+    goal: "Transition issue PROJ-4 (currently 'to_do') directly to 'done'.",
+    impossibilityReason:
+      "Direct transition from 'to_do' to 'done' is not allowed. Valid transitions from 'to_do' are: 'in_progress'. The issue must go through the workflow: to_do -> in_progress -> in_review -> done.",
+    evalChecks: [],
+    maxSteps: 15,
+    rewardProfile: R,
+    tags: ["impossible", "error-recognition", "workflow"],
+  },
+  {
+    id: "jira-imp-005",
+    site: "jira",
+    domain: "impossible",
+    type: "no_action",
+    difficulty: "medium",
+    curriculumStage: 8,
+    title: "Start sprint with active sprint existing",
+    goal: "Start Sprint 14 (sprint-3) without completing Sprint 13 first.",
+    impossibilityReason:
+      "Sprint 13 (sprint-2) is currently active in the PROJ project. Only one sprint can be active per project at a time. Sprint 13 must be completed before Sprint 14 can be started.",
+    evalChecks: [],
+    maxSteps: 15,
+    rewardProfile: R,
+    tags: ["impossible", "error-recognition", "sprint"],
+  },
+];
