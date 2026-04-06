@@ -13,6 +13,7 @@ import {
   type Issue,
   type Board,
   type SavedFilter,
+  type Plan,
 } from "./mock-data";
 
 // ---------------------------------------------------------------------------
@@ -84,6 +85,7 @@ let _epics: Epic[] = deepClone(initialEpics);
 let _issues: Issue[] = deepClone(initialIssues);
 let _boards: Board[] = deepClone(initialBoards);
 let _filters: SavedFilter[] = deepClone(initialFilters);
+let _plans: Plan[] = [];
 
 // Auto-increment counters per project key
 let _nextIssueCounters: Record<string, number> = { PROJ: 19, KANB: 8 };
@@ -92,6 +94,7 @@ let _nextProjectId = 3;
 let _nextSprintId = 4;
 let _nextEpicId = 4;
 let _nextFilterId = 4;
+let _nextPlanId = 1;
 
 // ---------------------------------------------------------------------------
 // Issues
@@ -579,6 +582,49 @@ export function createFilter(fields: {
 }
 
 // ---------------------------------------------------------------------------
+// Plans
+// ---------------------------------------------------------------------------
+
+export function getPlans(): Plan[] {
+  return deepClone(_plans);
+}
+
+export function getPlan(id: string): Plan | undefined {
+  const plan = _plans.find((p) => p.id === id);
+  return plan ? deepClone(plan) : undefined;
+}
+
+export function createPlan(fields: {
+  name?: string;
+  access?: Plan["access"];
+  workSources?: { type: "space" | "board" | "filter"; name: string }[];
+  owner?: string;
+}): Result<Plan> {
+  if (!fields.name || String(fields.name).trim() === "") {
+    return { success: false, error: "Name is required" };
+  }
+
+  const plan: Plan = {
+    id: `plan-${_nextPlanId++}`,
+    name: fields.name.trim(),
+    access: fields.access ?? "open",
+    workSources: fields.workSources ?? [],
+    owner: fields.owner ?? "usr-1",
+    createdAt: now(),
+  };
+
+  _plans.push(plan);
+  return { success: true, data: deepClone(plan) };
+}
+
+export function deletePlan(id: string): Result<void> {
+  const idx = _plans.findIndex((p) => p.id === id);
+  if (idx === -1) return { success: false, error: "Plan not found" };
+  _plans.splice(idx, 1);
+  return { success: true, data: undefined };
+}
+
+// ---------------------------------------------------------------------------
 // Reset — restores everything to initial state
 // ---------------------------------------------------------------------------
 
@@ -590,6 +636,7 @@ export function reset(seed?: number): void {
   _issues = deepClone(initialIssues);
   _boards = deepClone(initialBoards);
   _filters = deepClone(initialFilters);
+  _plans = [];
 
   _nextIssueCounters = { PROJ: 19, KANB: 8 };
   _nextIssueId = 26;
@@ -597,6 +644,7 @@ export function reset(seed?: number): void {
   _nextSprintId = 4;
   _nextEpicId = 4;
   _nextFilterId = 4;
+  _nextPlanId = 1;
 
   // Deterministic timestamps when seed is provided
   if (seed !== undefined) {

@@ -3,14 +3,85 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import type { Project, User } from "@/app/lib/mock-data"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  ArrowDown01Icon,
+  FilterIcon,
+  Add01Icon,
+  Layers01Icon,
+} from "@hugeicons/core-free-icons"
 
-export default function ProjectsPage() {
+const templateList = [
+  {
+    name: "Scrum",
+    description: "Deliver work in short time blocks",
+    color: "bg-blue-100 dark:bg-blue-900/30",
+    iconColor: "text-blue-600",
+  },
+  {
+    name: "Work requests",
+    description: "Quickly manage incoming requests",
+    badge: "TRY",
+    color: "bg-purple-100 dark:bg-purple-900/30",
+    iconColor: "text-purple-600",
+  },
+  {
+    name: "IT service",
+    description: "Manage requests and incidents",
+    badge: "TRY",
+    color: "bg-green-100 dark:bg-green-900/30",
+    iconColor: "text-green-600",
+  },
+  {
+    name: "Kanban",
+    description: "Visualize your work on a board",
+    color: "bg-teal-100 dark:bg-teal-900/30",
+    iconColor: "text-teal-600",
+  },
+  {
+    name: "Personal tasks",
+    description: "Create your to-do list",
+    color: "bg-orange-100 dark:bg-orange-900/30",
+    iconColor: "text-orange-600",
+  },
+  {
+    name: "Business project",
+    description: "Manage tasks with due dates",
+    color: "bg-emerald-100 dark:bg-emerald-900/30",
+    iconColor: "text-emerald-600",
+  },
+  {
+    name: "Top-level planning",
+    description: "Monitor work from many projects",
+    badge: "PREMIUM",
+    color: "bg-pink-100 dark:bg-pink-900/30",
+    iconColor: "text-pink-600",
+  },
+]
+
+const filterChips = [
+  "Jira - software spaces",
+  "Jira - business spaces",
+]
+
+export default function SpacesPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
+  const [showTemplates, setShowTemplates] = useState(true)
+  const [activeFilters, setActiveFilters] = useState<string[]>([...filterChips])
 
   useEffect(() => {
     Promise.all([
@@ -23,6 +94,19 @@ export default function ProjectsPage() {
     })
   }, [])
 
+  const removeFilter = (filter: string) => {
+    setActiveFilters((prev) => prev.filter((f) => f !== filter))
+  }
+
+  const clearAllFilters = () => {
+    setActiveFilters([])
+  }
+
+  const filteredProjects = projects.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.key.toLowerCase().includes(search.toLowerCase())
+  )
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
@@ -32,62 +116,261 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Projects</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          All projects in your organization.
-        </p>
+    <div className="flex h-full">
+      {/* Main Content */}
+      <div className="flex-1 p-8">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-semibold tracking-tight">Spaces</h1>
+          <div className="flex items-center gap-2">
+            <Button className="bg-blue-600 text-white hover:bg-blue-700">
+              Create space
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowTemplates(!showTemplates)}
+            >
+              Templates
+            </Button>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="mb-4">
+          <div className="relative">
+            <svg
+              className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+              />
+            </svg>
+            <Input
+              placeholder="Search spaces"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </div>
+
+        {/* Filter Chips */}
+        {activeFilters.length > 0 && (
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {activeFilters.map((filter) => (
+                <span
+                  key={filter}
+                  className="inline-flex items-center gap-1 rounded-md border bg-card px-2.5 py-1 text-sm"
+                >
+                  {filter}
+                  <button
+                    onClick={() => removeFilter(filter)}
+                    className="ml-0.5 text-muted-foreground hover:text-foreground"
+                  >
+                    <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
+            </div>
+            <button
+              onClick={clearAllFilters}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+              </svg>
+            </button>
+            <button className="text-muted-foreground hover:text-foreground">
+              <HugeiconsIcon icon={ArrowDown01Icon} className="size-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Table */}
+        <div className="rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-8">
+                  <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                </TableHead>
+                <TableHead>
+                  <button className="flex items-center gap-1 text-xs font-medium">
+                    Name
+                    <HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />
+                  </button>
+                </TableHead>
+                <TableHead className="text-xs font-medium">Key</TableHead>
+                <TableHead className="text-xs font-medium">Type</TableHead>
+                <TableHead className="text-xs font-medium">Lead</TableHead>
+                <TableHead className="text-xs font-medium">Space URL</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredProjects.map((project) => {
+                const lead = users.find((u) => u.id === project.lead)
+                const typeLabel =
+                  project.type === "scrum"
+                    ? "Team-managed software"
+                    : "Team-managed business"
+                return (
+                  <TableRow key={project.id}>
+                    <TableCell>
+                      <button className="text-muted-foreground hover:text-yellow-500">
+                        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                      </button>
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/projects/${project.key}/board`}
+                        className="flex items-center gap-2 font-medium text-blue-600 hover:underline"
+                      >
+                        <div className="flex size-6 items-center justify-center rounded bg-blue-100 dark:bg-blue-900/30">
+                          <HugeiconsIcon
+                            icon={Layers01Icon}
+                            className="size-3.5 text-blue-600"
+                          />
+                        </div>
+                        {project.name}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="font-mono text-sm text-muted-foreground">
+                      {project.key}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {typeLabel}
+                    </TableCell>
+                    <TableCell>
+                      {lead && (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="size-6">
+                            <AvatarFallback className="bg-blue-100 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                              {lead.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm">{lead.name}</span>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <button className="text-muted-foreground hover:text-foreground">
+                        <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                        </svg>
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+              {filteredProjects.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="h-24 text-center text-sm text-muted-foreground"
+                  >
+                    No spaces found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-4 flex items-center justify-center gap-1">
+          <button className="rounded p-1.5 text-muted-foreground hover:bg-accent" disabled>
+            <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
+              <path fillRule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+            </svg>
+          </button>
+          <button className="flex size-8 items-center justify-center rounded border bg-blue-50 text-sm font-medium text-blue-600 dark:bg-blue-900/20">
+            1
+          </button>
+          <button className="rounded p-1.5 text-muted-foreground hover:bg-accent" disabled>
+            <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
+              <path fillRule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project) => {
-          const lead = users.find((u) => u.id === project.lead)
-          return (
-            <Link key={project.id} href={`/projects/${project.key}/board`}>
-              <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-medium">
-                      {project.name}
-                    </CardTitle>
-                    <Badge
-                      variant="outline"
-                      className={
-                        project.type === "scrum"
-                          ? "border-blue-300 text-blue-700 dark:text-blue-400"
-                          : "border-purple-300 text-purple-700 dark:text-purple-400"
-                      }
-                    >
-                      {project.type}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {project.description}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="font-mono font-medium">{project.key}</span>
-                    {lead && (
-                      <>
-                        <span className="text-border">|</span>
-                        <Avatar className="size-4">
-                          <AvatarImage src={lead.avatar} />
-                          <AvatarFallback className="text-[8px]">
-                            {lead.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>Lead: {lead.name}</span>
-                      </>
+      {/* Templates Panel */}
+      {showTemplates && (
+        <div className="w-72 border-l bg-card p-6">
+          <div className="mb-1 flex items-center justify-between">
+            <h2 className="text-base font-semibold">Templates</h2>
+            <button
+              onClick={() => setShowTemplates(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <svg className="size-5" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+              </svg>
+            </button>
+          </div>
+          <p className="mb-5 text-sm text-muted-foreground">
+            Preview a template for your next space
+          </p>
+
+          <div className="flex flex-col gap-1">
+            {templateList.map((tmpl) => (
+              <button
+                key={tmpl.name}
+                className="flex items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-accent transition-colors"
+              >
+                <div
+                  className={`flex size-8 items-center justify-center rounded-md ${tmpl.color}`}
+                >
+                  <HugeiconsIcon
+                    icon={Layers01Icon}
+                    className={`size-4 ${tmpl.iconColor}`}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium">{tmpl.name}</span>
+                    {tmpl.badge && (
+                      <span
+                        className={`rounded px-1 py-0.5 text-[10px] font-bold leading-none ${
+                          tmpl.badge === "PREMIUM"
+                            ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                            : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                        }`}
+                      >
+                        {tmpl.badge}
+                      </span>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
-          )
-        })}
-      </div>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {tmpl.description}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <button className="mt-4 text-sm font-medium text-blue-600 hover:underline">
+            More templates
+          </button>
+        </div>
+      )}
     </div>
   )
 }

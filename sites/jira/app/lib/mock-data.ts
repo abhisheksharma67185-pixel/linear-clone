@@ -80,6 +80,16 @@ export interface SavedFilter {
   createdAt: string;
 }
 
+export interface Plan {
+  [key: string]: unknown;
+  id: string;
+  name: string;
+  access: "open" | "private" | "team";
+  workSources: { type: "space" | "board" | "filter"; name: string }[];
+  owner: string;
+  createdAt: string;
+}
+
 // ---------------------------------------------------------------------------
 // Data
 // ---------------------------------------------------------------------------
@@ -87,9 +97,9 @@ export interface SavedFilter {
 export const users: User[] = [
   {
     id: "usr-1",
-    name: "Alex Johnson",
-    email: "alex@company.io",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=alex",
+    name: "Abhishek Sharma",
+    email: "abhishek@company.io",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=abhishek",
     role: "admin",
   },
   {
@@ -118,21 +128,12 @@ export const users: User[] = [
 export const projects: Project[] = [
   {
     id: "proj-1",
-    key: "PROJ",
-    name: "Product Development",
+    key: "SCRUM",
+    name: "My Scrum Project",
     lead: "usr-1",
     type: "scrum",
-    description: "Core product development team working on the main platform.",
+    description: "Your first project",
     createdAt: "2025-01-15T09:00:00.000Z",
-  },
-  {
-    id: "proj-2",
-    key: "KANB",
-    name: "Marketing Kanban",
-    lead: "usr-2",
-    type: "kanban",
-    description: "Marketing team kanban board for campaign tracking.",
-    createdAt: "2025-02-01T10:00:00.000Z",
   },
 ];
 
@@ -181,20 +182,13 @@ export const epics: Epic[] = [
     projectId: "proj-1",
     status: "to_do",
   },
-  {
-    id: "epic-3",
-    name: "Campaign Tracker",
-    summary: "Build campaign tracking and analytics for marketing team.",
-    projectId: "proj-2",
-    status: "in_progress",
-  },
 ];
 
 export const issues: Issue[] = [
-  // PROJ issues (PROJ-1 to PROJ-18)
+  // SCRUM issues (SCRUM-1 to SCRUM-18)
   {
     id: "iss-1",
-    key: "PROJ-1",
+    key: "SCRUM-1",
     summary: "Implement login page",
     description: "Create the main login page with email/password form.",
     type: "story",
@@ -212,7 +206,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-2",
-    key: "PROJ-2",
+    key: "SCRUM-2",
     summary: "Add OAuth2 integration",
     description: "Integrate Google and GitHub OAuth2 providers.",
     type: "story",
@@ -230,7 +224,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-3",
-    key: "PROJ-3",
+    key: "SCRUM-3",
     summary: "Fix password reset email",
     description: "Password reset emails are not being sent to some users.",
     type: "bug",
@@ -248,7 +242,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-4",
-    key: "PROJ-4",
+    key: "SCRUM-4",
     summary: "Create session management service",
     description: "Build a service to handle user sessions and token refresh.",
     type: "task",
@@ -266,7 +260,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-5",
-    key: "PROJ-5",
+    key: "SCRUM-5",
     summary: "Add MFA support",
     description: "Implement multi-factor authentication with TOTP.",
     type: "story",
@@ -284,7 +278,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-6",
-    key: "PROJ-6",
+    key: "SCRUM-6",
     summary: "Write auth API documentation",
     description: "Document all authentication API endpoints.",
     type: "task",
@@ -302,7 +296,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-7",
-    key: "PROJ-7",
+    key: "SCRUM-7",
     summary: "Design dashboard wireframes",
     description: "Create wireframes for the new dashboard layout.",
     type: "task",
@@ -320,7 +314,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-8",
-    key: "PROJ-8",
+    key: "SCRUM-8",
     summary: "Implement dashboard widget framework",
     description: "Build the framework for pluggable dashboard widgets.",
     type: "story",
@@ -338,7 +332,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-9",
-    key: "PROJ-9",
+    key: "SCRUM-9",
     summary: "Fix navigation breadcrumb bug",
     description: "Breadcrumbs show wrong path on nested pages.",
     type: "bug",
@@ -356,7 +350,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-10",
-    key: "PROJ-10",
+    key: "SCRUM-10",
     summary: "Set up CI/CD pipeline",
     description: "Configure GitHub Actions for automated testing and deployment.",
     type: "task",
@@ -374,7 +368,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-11",
-    key: "PROJ-11",
+    key: "SCRUM-11",
     summary: "Add unit tests for auth module",
     description: "Write comprehensive unit tests for the authentication module.",
     type: "task",
@@ -392,7 +386,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-12",
-    key: "PROJ-12",
+    key: "SCRUM-12",
     summary: "Database migration for user roles",
     description: "Add role column to users table and migrate existing data.",
     type: "task",
@@ -410,7 +404,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-13",
-    key: "PROJ-13",
+    key: "SCRUM-13",
     summary: "Refactor API error handling",
     description: "Standardize error responses across all API endpoints.",
     type: "task",
@@ -428,7 +422,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-14",
-    key: "PROJ-14",
+    key: "SCRUM-14",
     summary: "Implement rate limiting",
     description: "Add rate limiting middleware to protect API endpoints.",
     type: "story",
@@ -446,7 +440,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-15",
-    key: "PROJ-15",
+    key: "SCRUM-15",
     summary: "Fix login button alignment",
     description: "Login button is misaligned on mobile devices.",
     type: "bug",
@@ -464,7 +458,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-16",
-    key: "PROJ-16",
+    key: "SCRUM-16",
     summary: "Add loading skeletons",
     description: "Add skeleton loading states to dashboard components.",
     type: "subtask",
@@ -482,7 +476,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-17",
-    key: "PROJ-17",
+    key: "SCRUM-17",
     summary: "Security audit prep",
     description: "Prepare documentation and code for upcoming security audit.",
     type: "task",
@@ -500,7 +494,7 @@ export const issues: Issue[] = [
   },
   {
     id: "iss-18",
-    key: "PROJ-18",
+    key: "SCRUM-18",
     summary: "Update onboarding flow",
     description: "Revamp the new user onboarding experience.",
     type: "story",
@@ -516,154 +510,14 @@ export const issues: Issue[] = [
     createdAt: "2025-04-14T10:00:00.000Z",
     updatedAt: "2025-04-14T10:00:00.000Z",
   },
-  // KANB issues (KANB-1 to KANB-7)
-  {
-    id: "iss-19",
-    key: "KANB-1",
-    summary: "Design email campaign template",
-    description: "Create responsive email templates for Q2 campaign.",
-    type: "task",
-    status: "done",
-    priority: "high",
-    assigneeId: "usr-2",
-    reporterId: "usr-2",
-    sprintId: null,
-    epicId: "epic-3",
-    projectId: "proj-2",
-    storyPoints: 3,
-    labels: ["design"],
-    createdAt: "2025-03-01T09:00:00.000Z",
-    updatedAt: "2025-03-20T14:00:00.000Z",
-  },
-  {
-    id: "iss-20",
-    key: "KANB-2",
-    summary: "Set up analytics tracking",
-    description: "Configure UTM parameters and conversion tracking.",
-    type: "task",
-    status: "in_progress",
-    priority: "high",
-    assigneeId: "usr-2",
-    reporterId: "usr-2",
-    sprintId: null,
-    epicId: "epic-3",
-    projectId: "proj-2",
-    storyPoints: 5,
-    labels: ["analytics"],
-    createdAt: "2025-03-05T10:00:00.000Z",
-    updatedAt: "2025-04-15T11:00:00.000Z",
-  },
-  {
-    id: "iss-21",
-    key: "KANB-3",
-    summary: "Write blog post for product launch",
-    description: "Draft and publish blog post announcing new features.",
-    type: "task",
-    status: "in_review",
-    priority: "medium",
-    assigneeId: "usr-4",
-    reporterId: "usr-2",
-    sprintId: null,
-    epicId: null,
-    projectId: "proj-2",
-    storyPoints: 3,
-    labels: ["content"],
-    createdAt: "2025-03-10T09:00:00.000Z",
-    updatedAt: "2025-04-18T10:00:00.000Z",
-  },
-  {
-    id: "iss-22",
-    key: "KANB-4",
-    summary: "Social media content calendar",
-    description: "Plan social media posts for the next month.",
-    type: "task",
-    status: "to_do",
-    priority: "medium",
-    assigneeId: "usr-4",
-    reporterId: "usr-2",
-    sprintId: null,
-    epicId: "epic-3",
-    projectId: "proj-2",
-    storyPoints: 2,
-    labels: ["content"],
-    createdAt: "2025-03-15T11:00:00.000Z",
-    updatedAt: "2025-03-15T11:00:00.000Z",
-  },
-  {
-    id: "iss-23",
-    key: "KANB-5",
-    summary: "Fix tracking pixel on landing page",
-    description: "Tracking pixel not firing on the main landing page.",
-    type: "bug",
-    status: "to_do",
-    priority: "highest",
-    assigneeId: null,
-    reporterId: "usr-4",
-    sprintId: null,
-    epicId: "epic-3",
-    projectId: "proj-2",
-    storyPoints: 1,
-    labels: ["bug", "analytics"],
-    createdAt: "2025-03-20T14:00:00.000Z",
-    updatedAt: "2025-03-20T14:00:00.000Z",
-  },
-  {
-    id: "iss-24",
-    key: "KANB-6",
-    summary: "Create A/B test variants",
-    description: "Set up A/B test variants for the pricing page.",
-    type: "story",
-    status: "to_do",
-    priority: "medium",
-    assigneeId: "usr-2",
-    reporterId: "usr-2",
-    sprintId: null,
-    epicId: null,
-    projectId: "proj-2",
-    storyPoints: 5,
-    labels: ["testing"],
-    createdAt: "2025-03-25T10:00:00.000Z",
-    updatedAt: "2025-03-25T10:00:00.000Z",
-  },
-  {
-    id: "iss-25",
-    key: "KANB-7",
-    summary: "Competitor analysis report",
-    description: "Research and compile competitor feature comparison.",
-    type: "task",
-    status: "in_progress",
-    priority: "low",
-    assigneeId: "usr-3",
-    reporterId: "usr-2",
-    sprintId: null,
-    epicId: null,
-    projectId: "proj-2",
-    storyPoints: 3,
-    labels: ["research"],
-    createdAt: "2025-04-01T09:00:00.000Z",
-    updatedAt: "2025-04-16T13:00:00.000Z",
-  },
 ];
 
 export const boards: Board[] = [
   {
     id: "board-1",
-    name: "PROJ Board",
+    name: "SCRUM Board",
     projectId: "proj-1",
     type: "scrum",
-    columns: [
-      { name: "Backlog", statuses: ["to_do"] },
-      { name: "To Do", statuses: ["to_do"] },
-      { name: "In Progress", statuses: ["in_progress"] },
-      { name: "In Review", statuses: ["in_review"] },
-      { name: "Done", statuses: ["done"] },
-    ],
-  },
-  {
-    id: "board-2",
-    name: "KANB Board",
-    projectId: "proj-2",
-    type: "kanban",
     columns: [
       { name: "Backlog", statuses: ["to_do"] },
       { name: "To Do", statuses: ["to_do"] },
