@@ -1,0 +1,91 @@
+import type { TaskDefinition } from "@simbench/core";
+
+const R = {
+  completion: 5.0,
+  partialPerCheck: false,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+};
+
+export const impossibleTasks: TaskDefinition[] = [
+  {
+    id: "linear-imp-001",
+    site: "linear",
+    domain: "impossible",
+    type: "no_action",
+    difficulty: "medium",
+    curriculumStage: 8,
+    title: "Start already-active cycle",
+    goal: "Start Cycle 13 (cycle-2).",
+    impossibilityReason:
+      "Cycle 13 (cycle-2) is already in 'active' state. Starting an already-active cycle is not allowed.",
+    evalChecks: [],
+    maxSteps: 15,
+    rewardProfile: R,
+    tags: ["impossible", "error-recognition"],
+  },
+  {
+    id: "linear-imp-002",
+    site: "linear",
+    domain: "impossible",
+    type: "no_action",
+    difficulty: "medium",
+    curriculumStage: 8,
+    title: "Complete upcoming cycle",
+    goal: "Complete Cycle 14 (cycle-3).",
+    impossibilityReason:
+      "Cycle 14 (cycle-3) is in 'upcoming' state. Only active cycles can be completed — a cycle must be started first.",
+    evalChecks: [],
+    maxSteps: 15,
+    rewardProfile: R,
+    tags: ["impossible", "error-recognition"],
+  },
+  {
+    id: "linear-imp-003",
+    site: "linear",
+    domain: "impossible",
+    type: "no_action",
+    difficulty: "medium",
+    curriculumStage: 8,
+    title: "Assign to nonexistent member",
+    goal: "Assign issue ENG-1 to member 'Chris Davis' (usr-99).",
+    impossibilityReason:
+      "Member 'Chris Davis' (usr-99) does not exist. Only Alex Johnson (usr-1), Sam Williams (usr-2), Jordan Lee (usr-3), and Taylor Brown (usr-4) are valid members.",
+    evalChecks: [],
+    maxSteps: 15,
+    rewardProfile: R,
+    tags: ["impossible", "error-recognition"],
+  },
+  {
+    id: "linear-imp-004",
+    site: "linear",
+    domain: "impossible",
+    type: "no_action",
+    difficulty: "medium",
+    curriculumStage: 8,
+    title: "Invalid status transition",
+    goal: "Transition issue ENG-4 (currently 'todo') directly to 'done'.",
+    impossibilityReason:
+      "Direct transition from 'todo' to 'done' is not allowed. Valid transitions from 'todo' are: 'in_progress', 'cancelled'. The issue must go through the workflow: todo -> in_progress -> done.",
+    evalChecks: [],
+    maxSteps: 15,
+    rewardProfile: R,
+    tags: ["impossible", "error-recognition", "workflow"],
+  },
+  {
+    id: "linear-imp-005",
+    site: "linear",
+    domain: "impossible",
+    type: "no_action",
+    difficulty: "medium",
+    curriculumStage: 8,
+    title: "Start cycle with active cycle existing",
+    goal: "Start Cycle 14 (cycle-3) without completing Cycle 13 first.",
+    impossibilityReason:
+      "Cycle 13 (cycle-2) is currently active in the Engineering team. Only one cycle can be active per team at a time. Cycle 13 must be completed before Cycle 14 can be started.",
+    evalChecks: [],
+    maxSteps: 15,
+    rewardProfile: R,
+    tags: ["impossible", "error-recognition", "cycle"],
+  },
+];
