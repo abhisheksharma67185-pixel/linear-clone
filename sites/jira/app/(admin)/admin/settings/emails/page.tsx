@@ -14,7 +14,7 @@ export default function EmailsPage() {
 
         <p className="text-sm text-muted-foreground mb-4">
           Improve delivery rates and security by personalizing notifications from your apps. To start, verify your domain and add email addresses for project admins to use.{" "}
-          <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Explore emails</a>
+          <button type="button" className="text-blue-600 hover:underline">Explore emails</button>
         </p>
 
         <Button className="bg-blue-600 hover:bg-blue-700 text-white">

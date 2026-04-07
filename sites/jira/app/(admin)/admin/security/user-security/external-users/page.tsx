@@ -9,7 +9,7 @@ export default function ExternalUsersPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         An external user is someone who collaborates with your team but has a different email address from your company domain. External user policies control how users with an external email address access your organization&apos;s apps.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">More about external user security</a>
+        <button type="button" className="text-blue-600 hover:underline">More about external user security</button>
       </p>
 
       <div className="mb-8">

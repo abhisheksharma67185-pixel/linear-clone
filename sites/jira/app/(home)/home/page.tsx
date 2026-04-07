@@ -99,12 +99,39 @@ export default function HomePage() {
             </button>
           </div>
         </div>
-        <div className="rounded-lg border bg-muted/30 px-6 py-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9 12l2 2 4-4" /></svg>
-            You haven&apos;t visited any places yet. Visit and view your team&apos;s spaces to start seeing your work.
+        {visitedTab === "work" ? (
+          <div className="rounded-lg border bg-muted/30 px-6 py-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9 12l2 2 4-4" /></svg>
+              You haven&apos;t visited any places yet. Visit and view your team&apos;s spaces to start seeing your work.
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="rounded-xl border overflow-hidden">
+            <div className="flex">
+              <div className="flex-1 p-6">
+                <h3 className="mb-2 text-base font-semibold">Join a team to add team spaces</h3>
+                <p className="mb-5 text-sm text-muted-foreground">
+                  Once you&apos;re on a team, you can add shortcuts to the places where your team works. Find a team in the directory, or create a new team to get started.
+                </p>
+                <div className="flex items-center gap-3">
+                  <Link href="/teams" className="text-sm text-muted-foreground hover:text-foreground">Create a new team</Link>
+                  <Link href="/teams/directory" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Browse teams</Link>
+                </div>
+              </div>
+              <div className="hidden w-72 shrink-0 items-center justify-center bg-gradient-to-br from-orange-100 via-blue-50 to-purple-100 p-4 dark:from-orange-900/20 dark:via-blue-900/20 dark:to-purple-900/20 lg:flex">
+                <div className="relative">
+                  <div className="rounded-lg border bg-background/80 px-4 py-2 text-sm font-medium shadow-sm">Team Awesome</div>
+                  <div className="mt-2 flex gap-1">
+                    <div className="size-8 rounded bg-teal-200" />
+                    <div className="size-8 rounded bg-blue-200" />
+                    <div className="size-8 rounded bg-green-200" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* What's next */}

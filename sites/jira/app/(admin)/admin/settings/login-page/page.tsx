@@ -12,7 +12,7 @@ export default function LoginPageSettingsPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         The login page is the first thing that your users see when they log in to Confluence and Jira apps.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">How to customize your login page</a>
+        <button type="button" className="text-blue-600 hover:underline">How to customize your login page</button>
       </p>
 
       <div className="flex gap-8">
@@ -44,7 +44,7 @@ export default function LoginPageSettingsPage() {
                 disabled
               />
               <span className="text-sm text-muted-foreground">Hide</span>
-              <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline">Requires an Atlassian Guard subscription</a>
+              <button type="button" className="text-sm text-blue-600 hover:underline">Requires an Atlassian Guard subscription</button>
             </label>
           </div>
 

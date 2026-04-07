@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export default function KudosPage() {
@@ -7,7 +8,9 @@ export default function KudosPage() {
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Kudos</h1>
-        <Button variant="outline">Give kudos</Button>
+        <Link href="/kudos">
+          <Button variant="outline">Give kudos</Button>
+        </Link>
       </div>
 
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -33,12 +36,12 @@ export default function KudosPage() {
 
         <p className="mb-2 max-w-lg text-sm text-muted-foreground">
           We couldn&apos;t find any teams matching your search. Try changing your search criteria or{" "}
-          <button className="font-medium text-blue-600 hover:underline">clear all filters</button>.
+          <button type="button" className="font-medium text-blue-600 hover:underline">clear all filters</button>.
         </p>
         <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
           Some teams may not be found on this site due to{" "}
-          <button className="font-medium text-blue-600 hover:underline">changes in team visibility</button>.
+          <button type="button" className="font-medium text-blue-600 hover:underline">changes in team visibility</button>.
         </p>
       </div>
     </div>

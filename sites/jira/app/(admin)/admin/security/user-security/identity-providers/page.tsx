@@ -147,7 +147,7 @@ export default function IdentityProvidersPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         Manage users in Atlassian apps from one place, your identity provider. Set up single sign-on and user sync after you connect your identity provider.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Explore identity providers</a>
+        <button type="button" className="text-blue-600 hover:underline">Explore identity providers</button>
       </p>
 
       <h2 className="text-base font-semibold mb-4">Choose an identity provider</h2>

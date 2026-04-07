@@ -35,7 +35,7 @@ export default function ApiKeysPage() {
 
         <p className="text-sm text-muted-foreground mb-4">
           Create API keys to automate Atlassian administration tasks in your organization.{" "}
-          <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Understand API keys</a>
+          <button type="button" className="text-blue-600 hover:underline">Understand API keys</button>
         </p>
 
         <Button className="bg-blue-600 hover:bg-blue-700 text-white">

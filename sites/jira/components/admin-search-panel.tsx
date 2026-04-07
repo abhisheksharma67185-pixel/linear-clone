@@ -135,6 +135,7 @@ export function AdminSearchPanel({
               {filteredArticles.map((article, i) => (
                 <button
                   key={i}
+                  onClick={() => { setQuery(""); onClose() }}
                   className="flex items-start gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-accent"
                 >
                   <svg className="mt-0.5 size-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -162,6 +163,7 @@ export function AdminSearchPanel({
             {helpLinks.map((link, i) => (
               <button
                 key={i}
+                onClick={() => onClose()}
                 className="flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent"
               >
                 <span className="text-muted-foreground">{link.icon}</span>
@@ -182,9 +184,9 @@ export function AdminSearchPanel({
       {/* Footer */}
       <div className="border-t px-4 py-3">
         <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-          <button className="hover:text-foreground transition-colors">About</button>
-          <button className="hover:text-foreground transition-colors">Terms of use</button>
-          <button className="hover:text-foreground transition-colors">Privacy policy</button>
+          <button onClick={() => onClose()} className="hover:text-foreground transition-colors">About</button>
+          <button onClick={() => onClose()} className="hover:text-foreground transition-colors">Terms of use</button>
+          <button onClick={() => onClose()} className="hover:text-foreground transition-colors">Privacy policy</button>
         </div>
       </div>
     </div>

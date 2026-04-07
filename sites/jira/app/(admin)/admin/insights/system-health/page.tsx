@@ -62,24 +62,24 @@ export default function SystemHealthPage() {
       </div>
       <div className="text-sm text-muted-foreground mb-1">
         Go to{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline inline-flex items-center gap-0.5">
+        <button type="button" className="text-blue-600 hover:underline inline-flex items-center gap-0.5">
           status.atlassian.com
           <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
             <polyline points="15 3 21 3 21 9" />
             <line x1="10" y1="14" x2="21" y2="3" />
           </svg>
-        </a>{" "}
+        </button>{" "}
         for a full list of Atlassian incidents.
       </div>
-      <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline inline-flex items-center gap-0.5 mb-4">
+      <button type="button" className="text-sm text-blue-600 hover:underline inline-flex items-center gap-0.5 mb-4">
         Understand how we detect and classify incidents
         <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
           <polyline points="15 3 21 3 21 9" />
           <line x1="10" y1="14" x2="21" y2="3" />
         </svg>
-      </a>
+      </button>
 
       <div className="flex items-center justify-end gap-2 mb-2">
         <span className="text-sm text-muted-foreground">Last updated: just now</span>

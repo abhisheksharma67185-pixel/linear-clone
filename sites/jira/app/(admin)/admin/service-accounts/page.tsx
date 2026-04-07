@@ -196,7 +196,7 @@ export default function ServiceAccountsPage() {
         <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setWizardOpen(true)}>
           Create a service account
         </Button>
-        <a href="" onClick={(e) => e.preventDefault()} className="mt-3 text-sm text-blue-600 hover:underline">Understand service accounts</a>
+        <button type="button" className="mt-3 text-sm text-blue-600 hover:underline">Understand service accounts</button>
       </div>
     </div>
   )

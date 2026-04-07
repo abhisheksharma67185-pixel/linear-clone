@@ -7,6 +7,7 @@ import type { Issue, User, Project, Epic } from "@/app/lib/mock-data"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { priorityVariant, typeVariant, projectTypeVariant } from "@/lib/badge-styles"
 
 const STATUS_COLUMNS = [
   { key: "to_do", label: "To Do", color: "bg-gray-400" },
@@ -15,20 +16,6 @@ const STATUS_COLUMNS = [
   { key: "done", label: "Done", color: "bg-green-500" },
 ] as const
 
-const priorityStyle: Record<string, string> = {
-  highest: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  high: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  low: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  lowest: "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
-}
-
-const typeStyle: Record<string, string> = {
-  story: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  task: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  bug: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  subtask: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300",
-}
 
 export default function BoardPage() {
   const params = useParams<{ key: string }>()
@@ -85,11 +72,7 @@ export default function BoardPage() {
         <h1 className="text-xl font-semibold">{project.name}</h1>
         <Badge
           variant="outline"
-          className={
-            project.type === "scrum"
-              ? "border-blue-300 text-blue-700 dark:text-blue-400"
-              : "border-purple-300 text-purple-700 dark:text-purple-400"
-          }
+          className={projectTypeVariant[project.type]}
         >
           {project.type} board
         </Badge>
@@ -130,10 +113,10 @@ export default function BoardPage() {
                           )}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5">
-                              <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${typeStyle[issue.type]}`}>
+                              <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${typeVariant[issue.type]}`}>
                                 {issue.type}
                               </Badge>
-                              <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${priorityStyle[issue.priority]}`}>
+                              <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${priorityVariant[issue.priority]}`}>
                                 {issue.priority}
                               </Badge>
                             </div>

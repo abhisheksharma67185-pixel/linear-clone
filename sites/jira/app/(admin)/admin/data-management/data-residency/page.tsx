@@ -66,7 +66,7 @@ export default function DataResidencyPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         You can control the location of your data with data residency. If data residency is available for your Atlassian app, you can set a location for hosting the in-scope Atlassian app and Marketplace app data.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Explore data residency</a>
+        <button type="button" className="text-blue-600 hover:underline">Explore data residency</button>
       </p>
 
       {/* Summary card */}
@@ -164,7 +164,7 @@ export default function DataResidencyPage() {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     {app.hasAction && (
-                      <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline">Set location</a>
+                      <button type="button" className="text-sm text-blue-600 hover:underline">Set location</button>
                     )}
                     {app.hasAction && (
                       <button className="rounded p-1 text-muted-foreground hover:bg-accent">

@@ -3,19 +3,25 @@
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+const projectStatusStyle: Record<string, string> = {
+  "ON TRACK": "border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
+  "AT RISK": "border-yellow-300 text-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400",
+  "OFF TRACK": "border-red-300 text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400",
+}
 
 const mockProjects = [
-  { id: 1, name: "New employee onboarding update", status: "ON TRACK", statusColor: "border-green-300 text-green-700 bg-green-50", icon: "🎨", lastUpdated: "1 day ago" },
-  { id: 2, name: "Cloud migration phase 2", status: "AT RISK", statusColor: "border-yellow-300 text-yellow-700 bg-yellow-50", icon: "☁️", lastUpdated: "3 days ago" },
-  { id: 3, name: "Customer portal redesign", status: "AT RISK", statusColor: "border-yellow-300 text-yellow-700 bg-yellow-50", icon: "🤝", lastUpdated: "5 days ago" },
-  { id: 4, name: "Mobile app performance optimization", status: "ON TRACK", statusColor: "border-green-300 text-green-700 bg-green-50", icon: "🌱", lastUpdated: "1 week ago" },
+  { id: 1, name: "New employee onboarding update", status: "ON TRACK", icon: "🎨", lastUpdated: "1 day ago" },
+  { id: 2, name: "Cloud migration phase 2", status: "AT RISK", icon: "☁️", lastUpdated: "3 days ago" },
+  { id: 3, name: "Customer portal redesign", status: "AT RISK", icon: "🤝", lastUpdated: "5 days ago" },
+  { id: 4, name: "Mobile app performance optimization", status: "ON TRACK", icon: "🌱", lastUpdated: "1 week ago" },
 ]
 
 const tabs = ["All projects", "My projects", "Archived"]
 const filterButtons = ["Filter by Tag", "Status", "Goal", "Team", "Owner"]
 
 export default function ProjectDirectoryPage() {
-  const [activeTab, setActiveTab] = useState("All projects")
   const [search, setSearch] = useState("")
 
   return (
@@ -43,25 +49,15 @@ export default function ProjectDirectoryPage() {
       {/* Title + tabs */}
       <div className="mb-4 flex items-center gap-4">
         <h1 className="text-2xl font-semibold text-muted-foreground">Projects</h1>
-        <div className="flex items-center gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-                activeTab === tab
-                  ? "border border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-          <button className="flex items-center gap-1 px-3 py-1 text-sm text-muted-foreground hover:text-foreground">
-            More views
-            <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
-          </button>
-        </div>
+        <Tabs defaultValue="All projects">
+          <TabsList variant="line">
+            {tabs.map((tab) => (
+              <TabsTrigger key={tab} value={tab}>
+                {tab}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* Search */}
@@ -128,7 +124,7 @@ export default function ProjectDirectoryPage() {
               <span className="text-sm truncate">{project.name}</span>
             </div>
             <div>
-              <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase ${project.statusColor}`}>
+              <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase ${projectStatusStyle[project.status]}`}>
                 {project.status}
               </span>
             </div>

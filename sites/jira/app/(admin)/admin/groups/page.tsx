@@ -48,7 +48,7 @@ export default function AdminGroupsPage() {
 
       <p className="mb-6 text-sm text-muted-foreground">
         Use groups to grant the same access and permissions to multiple users.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">How to manage groups</a>
+        <button type="button" className="text-blue-600 hover:underline">How to manage groups</button>
       </p>
 
       <div className="mb-4 flex items-center gap-2">

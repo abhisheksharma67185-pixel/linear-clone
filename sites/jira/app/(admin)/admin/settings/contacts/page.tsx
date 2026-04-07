@@ -24,7 +24,7 @@ export default function ContactsPage() {
           <p className="text-sm font-medium">Allow users to connect contacts from Google, Slack, and Microsoft</p>
           <p className="text-sm text-muted-foreground">
             Users can connect and invite contacts.{" "}
-            <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">How to invite contacts</a>
+            <button type="button" className="text-blue-600 hover:underline">How to invite contacts</button>
           </p>
         </div>
       </div>

@@ -110,7 +110,7 @@ export default function DomainsPage() {
               <h2 className="text-xl font-semibold mb-2">Verify domain</h2>
               <p className="text-sm text-muted-foreground mb-4">
                 To verify ownership of this domain, use one of the following methods.{" "}
-                <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Learn about domain verification</a>
+                <button type="button" className="text-blue-600 hover:underline">Learn about domain verification</button>
               </p>
 
               {/* Verification method tabs */}
@@ -249,7 +249,7 @@ export default function DomainsPage() {
               {verifyTab === "google" && (
                 <p className="text-sm text-muted-foreground">
                   To verify your domains and import users from Google Workspace, connect your Google Workspace account.{" "}
-                  <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Learn more about Google Workspace</a>
+                  <button type="button" className="text-blue-600 hover:underline">Learn more about Google Workspace</button>
                 </p>
               )}
 
@@ -257,7 +257,7 @@ export default function DomainsPage() {
               {verifyTab === "azure" && (
                 <p className="text-sm text-muted-foreground">
                   To verify your domains and import users from Azure AD, connect your Azure AD account.{" "}
-                  <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Learn more about Azure AD sync</a>
+                  <button type="button" className="text-blue-600 hover:underline">Learn more about Azure AD sync</button>
                 </p>
               )}
             </>

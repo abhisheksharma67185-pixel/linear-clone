@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 
@@ -13,10 +14,10 @@ export default function TeamsForYouPage() {
             <h2 className="text-base font-semibold">People you work with</h2>
             <Button variant="outline" size="sm">Add people</Button>
           </div>
-          <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <Link href="/teams/people" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             Browse everyone
             <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-          </button>
+          </Link>
         </div>
 
         <div className="flex gap-4">
@@ -69,7 +70,10 @@ export default function TeamsForYouPage() {
           <p className="mb-5 text-sm leading-relaxed text-muted-foreground max-w-md">
             Capture who&apos;s on your team, what they work on, and how people can get help from your team. All in a profile that can be used across Jira, Confluence and other Atlassian apps.
           </p>
-          <Button className="bg-blue-600 text-white hover:bg-blue-700">
+          <Button
+            className="bg-blue-600 text-white hover:bg-blue-700"
+            onClick={() => window.dispatchEvent(new CustomEvent("open-create-team"))}
+          >
             Create a team
           </Button>
         </div>

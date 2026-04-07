@@ -18,7 +18,7 @@ export default function IpAllowlistsPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         An IP allowlist ensures that only users from trusted IP addresses or locations can access the apps in your organization.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">More about IP allowlists.</a>
+        <button type="button" className="text-blue-600 hover:underline">More about IP allowlists.</button>
       </p>
 
       {/* Filters */}

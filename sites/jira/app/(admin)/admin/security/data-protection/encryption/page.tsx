@@ -37,13 +37,13 @@ export default function EncryptionPage() {
 
         <p className="text-sm text-muted-foreground mb-4">
           Apps use Atlassian managed encryption keys by default. You can choose to use{" "}
-          <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Customer-managed keys (CMK)</a>{" "}
+          <button type="button" className="text-blue-600 hover:underline">Customer-managed keys (CMK)</button>{" "}
           encryption to maintain more control and management of your data.
         </p>
 
-        <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline mb-8">
+        <button type="button" className="text-sm text-blue-600 hover:underline mb-8">
           Understand more about data managed with CMK
-        </a>
+        </button>
 
         {/* CMK upsell card */}
         <div className="rounded-lg border bg-muted/30 p-6 w-full text-center">

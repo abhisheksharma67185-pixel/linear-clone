@@ -96,7 +96,7 @@ export default function AppDetailPage() {
           <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setAddGroupOpen(true)}>Add groups</Button>
         </div>
 
-        <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline mb-4 inline-block">{app.url}</a>
+        <button type="button" className="text-sm text-blue-600 hover:underline mb-4 inline-block">{app.url}</button>
 
         {/* Plan / Users */}
         <div className="flex items-start gap-12 mb-6">

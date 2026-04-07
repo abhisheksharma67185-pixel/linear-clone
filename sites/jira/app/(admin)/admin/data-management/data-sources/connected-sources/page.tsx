@@ -34,7 +34,7 @@ export default function ConnectedSourcesPage() {
         </p>
         <p className="text-sm text-muted-foreground mb-4">
           Once connected, you&apos;ll be able to manage your connections from a single location and integrate with a variety of apps.{" "}
-          <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Learn how</a>
+          <button type="button" className="text-blue-600 hover:underline">Learn how</button>
         </p>
 
         <Button className="bg-blue-600 hover:bg-blue-700 text-white">

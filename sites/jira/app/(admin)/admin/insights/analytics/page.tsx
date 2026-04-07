@@ -21,7 +21,7 @@ export default function AnalyticsPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         View analytics for insights about the users of your organization&apos;s Atlassian apps and your security practices.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Tell me more about organizational insights.</a>
+        <button type="button" className="text-blue-600 hover:underline">Tell me more about organizational insights.</button>
       </p>
 
       {/* Tabs */}

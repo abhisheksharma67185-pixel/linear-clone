@@ -7,7 +7,7 @@ export default function HipaaCompliancePage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         We provide comprehensive privacy and security protections that enable you to operate our apps in compliance with regulatory requirements, frameworks, and guidelines.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Explore compliance programs</a>
+        <button type="button" className="text-blue-600 hover:underline">Explore compliance programs</button>
       </p>
 
       {/* HIPAA card */}
@@ -23,7 +23,7 @@ export default function HipaaCompliancePage() {
             <p className="text-sm text-muted-foreground mb-2 max-w-3xl">
               The Health Insurance Portability and Accountability Act of 1996 (HIPAA) is a US federal law that requires privacy and security protections for Protected Health Information (PHI). Sign your Business Associate Agreements (BAA), tag apps, and learn how to configure your HIPAA eligible apps.
             </p>
-            <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline">How HIPAA works</a>
+            <button type="button" className="text-sm text-blue-600 hover:underline">How HIPAA works</button>
           </div>
           <svg className="size-5 text-muted-foreground shrink-0 ml-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M5 12h14" />

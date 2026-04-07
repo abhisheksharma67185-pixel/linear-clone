@@ -49,9 +49,9 @@ export default function BackupAndRestorePage() {
         </p>
 
         <div className="flex items-center gap-4 mb-6">
-          <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-muted-foreground hover:text-foreground">
+          <button type="button" className="text-sm text-muted-foreground hover:text-foreground">
             Explore benefits
-          </a>
+          </button>
           <Button className="bg-blue-600 hover:bg-blue-700 text-white">
             Contact sales
           </Button>

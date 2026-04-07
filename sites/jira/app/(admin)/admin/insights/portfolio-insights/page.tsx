@@ -32,7 +32,7 @@ export default function PortfolioInsightsPage() {
 
       <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
         Manage and optimize your Atlassian portfolio by adding, discovering, and assessing your Atlassian apps for cloud readiness and instance optimization.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Get started with Portfolio insights</a>
+        <button type="button" className="text-blue-600 hover:underline">Get started with Portfolio insights</button>
       </p>
 
       {/* Tip banner */}
@@ -44,7 +44,7 @@ export default function PortfolioInsightsPage() {
         </svg>
         <p className="text-sm">
           Get insights and recommendations on how to improve your Data Center performance and cloud readiness.{" "}
-          <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Connect Data Center</a>
+          <button type="button" className="text-blue-600 hover:underline">Connect Data Center</button>
         </p>
       </div>
 

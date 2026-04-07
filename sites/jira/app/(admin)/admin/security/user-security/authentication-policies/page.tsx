@@ -34,7 +34,7 @@ export default function AuthenticationPoliciesPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-md">
         You need to verify ownership of your company domain and claim your user accounts. You can then set up an authentication policy to secure log in for your users.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Explore authentication policies</a>
+        <button type="button" className="text-blue-600 hover:underline">Explore authentication policies</button>
       </p>
 
       <Button className="bg-blue-600 hover:bg-blue-700 text-white">

@@ -183,6 +183,7 @@ export function AdminAppSwitcher({
         {recommendedApps.map((app) => (
           <button
             key={app.name}
+            onClick={onClose}
             className="flex items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-accent"
           >
             {app.icon}
@@ -199,7 +200,7 @@ export function AdminAppSwitcher({
         ))}
 
         {/* More Atlassian apps */}
-        <button className="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-accent">
+        <Link href="/home/apps" onClick={onClose} className="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-accent">
           <div className="flex size-8 items-center justify-center rounded border">
             <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="7" height="7" />
@@ -209,7 +210,7 @@ export function AdminAppSwitcher({
             </svg>
           </div>
           <span className="text-sm font-medium">More Atlassian apps</span>
-        </button>
+        </Link>
       </div>
     </div>
   )

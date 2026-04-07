@@ -10,7 +10,7 @@ export default function PlatformUsagePage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         Track usage of Rovo credits and other usage types across your organization.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">More information about platform usage</a>
+        <button type="button" className="text-blue-600 hover:underline">More information about platform usage</button>
       </p>
 
       {/* Table */}

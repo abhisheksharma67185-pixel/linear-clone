@@ -9,7 +9,7 @@ export default function MobileAppPoliciesPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         Mobile application policies allow you to manage the security of Atlassian mobile apps on user smartphones and tablets.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">How to use mobile app policies</a>
+        <button type="button" className="text-blue-600 hover:underline">How to use mobile app policies</button>
       </p>
 
       {/* Stat cards */}

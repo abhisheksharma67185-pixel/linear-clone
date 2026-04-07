@@ -13,7 +13,7 @@ export default function LinkFixingPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         When you migrate to cloud, links between individual Jira work items or Confluence pages stop working, because they still point at their old destinations. For each app listed here, perform a link update that will fix your links in bulk.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Learn more about link fixing</a>
+        <button type="button" className="text-blue-600 hover:underline">Learn more about link fixing</button>
       </p>
 
       {/* Filters */}

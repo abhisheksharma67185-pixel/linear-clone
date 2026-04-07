@@ -47,7 +47,7 @@ export default function ProfilePage() {
           <p className="text-sm">
             This feature is unavailable for your organization. To transfer your apps to another organization, contact support and raise a ticket under the category <strong>Technical issues and bugs.</strong>
           </p>
-          <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline">Contact support</a>
+          <button type="button" className="text-sm text-blue-600 hover:underline">Contact support</button>
         </div>
       </div>
 
@@ -55,7 +55,7 @@ export default function ProfilePage() {
       <h2 className="text-base font-semibold mb-2">Delete organization</h2>
       <p className="text-sm text-muted-foreground mb-2 max-w-3xl">
         We recommend that you delete this organization only if you no longer need it. Make sure you&apos;ve backed up any data that you would like to keep.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">How to delete an organization</a>
+        <button type="button" className="text-blue-600 hover:underline">How to delete an organization</button>
       </p>
       <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
         You can delete an organization only if there are no domains and no active app subscriptions associated with the organization.

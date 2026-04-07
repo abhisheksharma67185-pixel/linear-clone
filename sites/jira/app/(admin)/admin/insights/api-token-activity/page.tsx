@@ -17,9 +17,9 @@ export default function ApiTokenActivityPage() {
       <p className="text-sm text-muted-foreground mb-1">
         Track user API token activity in your organization.
       </p>
-      <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline mb-6 inline-block">
+      <button type="button" className="text-sm text-blue-600 hover:underline mb-6 inline-block">
         How to track user API tokens
-      </a>
+      </button>
 
       {/* Filters */}
       <div className="flex items-center gap-3 mb-4 mt-4">

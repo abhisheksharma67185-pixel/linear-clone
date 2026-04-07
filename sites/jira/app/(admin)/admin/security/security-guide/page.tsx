@@ -232,7 +232,7 @@ export default function SecurityGuidePage() {
       <div className="flex items-center gap-2 mb-3">
         <p className="text-xs font-bold text-muted-foreground">Secure your organization&apos;s users and data</p>
         <span className="text-sm">🛡️</span>
-        <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline">Requires Atlassian Guard</a>
+        <button type="button" className="text-sm text-blue-600 hover:underline">Requires Atlassian Guard</button>
       </div>
 
       <div className="rounded-lg border divide-y mb-6">
@@ -274,7 +274,7 @@ export default function SecurityGuidePage() {
           <span className="text-sm">🛡️</span>
           <span className="text-sm font-medium">Try Atlassian Guard to secure your users and protect your top-priority projects.</span>
         </div>
-        <a href="" onClick={(e) => e.preventDefault()} className="text-sm font-semibold text-blue-600 hover:underline whitespace-nowrap">Start 30-day free trial</a>
+        <button type="button" className="text-sm font-semibold text-blue-600 hover:underline whitespace-nowrap">Start 30-day free trial</button>
       </div>
 
       {/* Bottom feature cards */}

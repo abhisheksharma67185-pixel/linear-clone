@@ -19,12 +19,12 @@ export default function AuditLogPage() {
         <p className="mb-2">
           Your organization&apos;s audit log tracks activities that occurred from your organization and across your sites within the past 180 days. For Atlassian app-specific activity, visit the app&apos;s audit log.
         </p>
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Explore your organization&apos;s audit log</a>
+        <button type="button" className="text-blue-600 hover:underline">Explore your organization&apos;s audit log</button>
       </div>
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         To save activities before they pass 180 days, regularly export the log or use the organization REST API to store activities to another location.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Explore your organization&apos;s REST API</a>
+        <button type="button" className="text-blue-600 hover:underline">Explore your organization&apos;s REST API</button>
       </p>
 
       {/* Guard upsell card */}
@@ -54,7 +54,7 @@ export default function AuditLogPage() {
               Site admins can now view audit log data for their site(s), making it easier to track important changes and events.
             </p>
             <div className="flex items-center gap-2 text-sm">
-              <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Understand more about site admin access</a>
+              <button type="button" className="text-blue-600 hover:underline">Understand more about site admin access</button>
               <span className="text-muted-foreground">·</span>
               <button onClick={() => setShowBanner(false)} className="text-blue-600 hover:underline">Dismiss</button>
             </div>
@@ -147,7 +147,7 @@ export default function AuditLogPage() {
         <span className="text-muted-foreground">Did you find what you were looking for?</span>
         <Button variant="outline" size="sm" className="h-7 text-xs">Yes</Button>
         <Button variant="outline" size="sm" className="h-7 text-xs">No</Button>
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline text-sm">Give feedback or suggestions</a>
+        <button type="button" className="text-blue-600 hover:underline text-sm">Give feedback or suggestions</button>
       </div>
     </div>
   )

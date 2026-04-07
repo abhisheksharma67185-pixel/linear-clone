@@ -32,9 +32,9 @@ export default function DataTransferPage() {
           A transfer plan is a collection of project, spaces, users, groups, and related data such as pages, configurations, and settings you want to transfer.
         </p>
 
-        <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline mb-4">
+        <button type="button" className="text-sm text-blue-600 hover:underline mb-4">
           How to transfer data
-        </a>
+        </button>
 
         <Button className="bg-blue-600 hover:bg-blue-700 text-white">
           Create transfer plan

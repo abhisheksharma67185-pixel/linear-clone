@@ -14,28 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
-const statusStyle: Record<string, string> = {
-  to_do: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  in_progress: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  in_review: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  done: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-}
-
-const priorityStyle: Record<string, string> = {
-  highest: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  high: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  low: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  lowest: "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
-}
-
-const typeLabel: Record<string, string> = {
-  story: "Story",
-  task: "Task",
-  bug: "Bug",
-  subtask: "Sub-task",
-}
+import { statusVariant, priorityVariant, typeLabel, projectTypeVariant } from "@/lib/badge-styles"
 
 export default function DashboardPage() {
   const [issues, setIssues] = useState<Issue[]>([])
@@ -167,12 +146,12 @@ export default function DashboardPage() {
                       <span className="text-xs">{typeLabel[issue.type]}</span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className={priorityStyle[issue.priority]}>
+                      <Badge variant="secondary" className={priorityVariant[issue.priority]}>
                         {issue.priority}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className={statusStyle[issue.status]}>
+                      <Badge variant="secondary" className={statusVariant[issue.status]}>
                         {issue.status.replace(/_/g, " ")}
                       </Badge>
                     </TableCell>
@@ -200,11 +179,7 @@ export default function DashboardPage() {
                       </CardTitle>
                       <Badge
                         variant="outline"
-                        className={
-                          project.type === "scrum"
-                            ? "border-blue-300 text-blue-700 dark:text-blue-400"
-                            : "border-purple-300 text-purple-700 dark:text-purple-400"
-                        }
+                        className={projectTypeVariant[project.type]}
                       >
                         {project.type}
                       </Badge>

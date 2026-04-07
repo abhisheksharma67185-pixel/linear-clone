@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useMemo } from "react"
+import Link from "next/link"
 
 interface Notification {
   id: string
@@ -217,12 +218,14 @@ export function AdminNotificationsPanel({
                   {notification.actions && (
                     <div className="mt-2 flex items-center gap-3">
                       {notification.actions.map((action, i) => (
-                        <button
+                        <Link
                           key={i}
+                          href={action.href}
+                          onClick={() => onClose()}
                           className="text-sm text-blue-600 hover:underline"
                         >
                           {action.label}
-                        </button>
+                        </Link>
                       ))}
                     </div>
                   )}

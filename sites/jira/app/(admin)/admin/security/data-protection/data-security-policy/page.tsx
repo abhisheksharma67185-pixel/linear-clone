@@ -118,14 +118,14 @@ export default function DataSecurityPolicyPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         A data security policy helps keep your organization&apos;s data secure and protects it from unauthorized access, loss, or damage. Manage the controls below to minimize risk to your data.{" "}
-        <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline inline-flex items-center gap-0.5">
+        <button type="button" className="text-blue-600 hover:underline inline-flex items-center gap-0.5">
           More about data security policy controls
           <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
             <polyline points="15 3 21 3 21 9" />
             <line x1="10" y1="14" x2="21" y2="3" />
           </svg>
-        </a>
+        </button>
       </p>
 
       {/* Controls table */}

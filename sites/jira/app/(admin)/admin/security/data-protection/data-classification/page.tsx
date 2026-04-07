@@ -29,13 +29,13 @@ export default function DataClassificationPage() {
 
         <p className="text-sm text-muted-foreground mb-6">
           Data classification allows you to define classification levels for users to categorize their content into. It&apos;s the foundation of data governance and can be based on different taxonomies, such as data sensitivity, data type or regulatory requirements.{" "}
-          <a href="" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">How data classification works</a>
+          <button type="button" className="text-blue-600 hover:underline">How data classification works</button>
         </p>
 
         <div className="flex items-center gap-4">
-          <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-muted-foreground hover:text-foreground">
+          <button type="button" className="text-sm text-muted-foreground hover:text-foreground">
             Explore benefits
-          </a>
+          </button>
           <Button className="bg-blue-600 hover:bg-blue-700 text-white">
             Trial Atlassian Guard Premium
           </Button>

@@ -11,34 +11,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-
-const priorityStyle: Record<string, string> = {
-  highest: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  high: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  low: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  lowest: "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
-}
-
-const statusStyle: Record<string, string> = {
-  to_do: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  in_progress: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  in_review: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  done: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-}
-
-const typeLabel: Record<string, string> = {
-  story: "Story",
-  task: "Task",
-  bug: "Bug",
-  subtask: "Sub-task",
-}
-
-const sprintStateBadge: Record<string, string> = {
-  active: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  closed: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
-  future: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-}
+import { statusVariant, priorityVariant, typeLabel, sprintStateVariant } from "@/lib/badge-styles"
 
 function IssueRow({
   issue,
@@ -69,10 +42,10 @@ function IssueRow({
           {epic.name}
         </span>
       )}
-      <Badge variant="secondary" className={`text-[10px] shrink-0 ${priorityStyle[issue.priority]}`}>
+      <Badge variant="secondary" className={`text-[10px] shrink-0 ${priorityVariant[issue.priority]}`}>
         {issue.priority}
       </Badge>
-      <Badge variant="secondary" className={`text-[10px] shrink-0 ${statusStyle[issue.status]}`}>
+      <Badge variant="secondary" className={`text-[10px] shrink-0 ${statusVariant[issue.status]}`}>
         {issue.status.replace(/_/g, " ")}
       </Badge>
       {issue.storyPoints != null && (
@@ -170,7 +143,7 @@ export default function BacklogPage() {
             <div className="border rounded-lg">
               <CollapsibleTrigger className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-accent/50 transition-colors">
                 <span className="font-medium text-sm">{sprint.name}</span>
-                <Badge variant="secondary" className={sprintStateBadge[sprint.state]}>
+                <Badge variant="secondary" className={sprintStateVariant[sprint.state]}>
                   {sprint.state}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
@@ -216,7 +189,7 @@ export default function BacklogPage() {
             <div className="border rounded-lg">
               <CollapsibleTrigger className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-accent/50 transition-colors">
                 <span className="font-medium text-sm">{sprint.name}</span>
-                <Badge variant="secondary" className={sprintStateBadge[sprint.state]}>
+                <Badge variant="secondary" className={sprintStateVariant[sprint.state]}>
                   {sprint.state}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
@@ -259,7 +232,7 @@ export default function BacklogPage() {
         <div className="border rounded-lg">
           <CollapsibleTrigger className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-accent/50 transition-colors">
             <span className="font-medium text-sm">Backlog</span>
-            <Badge variant="secondary" className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+            <Badge variant="secondary" className={sprintStateVariant["closed"]}>
               unscheduled
             </Badge>
             <span className="text-xs text-muted-foreground ml-auto">

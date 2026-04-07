@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
@@ -79,6 +80,10 @@ const goalStats = [
 ]
 
 function ProjectCard({ update }: { update: typeof projectUpdates[0] }) {
+  const [following, setFollowing] = useState(true)
+  const [shared, setShared] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<number | null>(null)
+
   return (
     <div className="rounded-lg border">
       {/* Project header */}
@@ -132,9 +137,9 @@ function ProjectCard({ update }: { update: typeof projectUpdates[0] }) {
 
         {/* Actions */}
         <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-          <button className="hover:text-foreground">Share</button>
+          <button onClick={() => setShared(!shared)} className={shared ? "text-blue-600 font-medium" : "hover:text-foreground"}>{shared ? "Shared!" : "Share"}</button>
           <span>&middot;</span>
-          <button className="hover:text-foreground">Unfollow</button>
+          <button onClick={() => setFollowing(!following)} className="hover:text-foreground">{following ? "Unfollow" : "Follow"}</button>
         </div>
 
         {/* Comments */}
@@ -149,7 +154,7 @@ function ProjectCard({ update }: { update: typeof projectUpdates[0] }) {
                     <span className="ml-1 text-muted-foreground">{comment.time}</span>
                   </p>
                   <p className="text-sm text-muted-foreground">{comment.text}</p>
-                  <button className="text-xs text-muted-foreground hover:text-foreground">Reply</button>
+                  <button onClick={() => setReplyingTo(replyingTo === i ? null : i)} className={`text-xs ${replyingTo === i ? "text-blue-600" : "text-muted-foreground hover:text-foreground"}`}>{replyingTo === i ? "Cancel" : "Reply"}</button>
                 </div>
               </div>
             ))}
@@ -273,10 +278,10 @@ function WriteUpdatesOverlay({ onClose }: { onClose: () => void }) {
 
         <p className="mb-6 text-sm text-muted-foreground">
           We recommend writing your project and goal updates on Friday, ready for the team to read on Monday.{" "}
-          <a href="#" onClick={(e) => e.preventDefault()} className="inline-flex items-center gap-0.5 text-blue-600 underline">
+          <Link href="/home/status-updates" className="inline-flex items-center gap-0.5 text-blue-600 underline">
             Learn more about The Loop
             <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-          </a>
+          </Link>
         </p>
 
         <Button variant="outline" onClick={onClose}>Done</Button>
@@ -285,10 +290,15 @@ function WriteUpdatesOverlay({ onClose }: { onClose: () => void }) {
   )
 }
 
+const weekLabels = ["3 weeks ago", "2 weeks ago", "Last week", "This week"]
+const monthLabels = ["January", "February", "March", "April", "May", "June"]
+
 export default function StatusUpdatesPage() {
   const [tab, setTab] = useState<"projects" | "goals">("projects")
   const [catchUpOpen, setCatchUpOpen] = useState(false)
   const [writeOpen, setWriteOpen] = useState(false)
+  const [weekIdx, setWeekIdx] = useState(2)
+  const [monthIdx, setMonthIdx] = useState(3)
 
   return (
     <>
@@ -332,19 +342,22 @@ export default function StatusUpdatesPage() {
                     <p className="text-sm font-semibold">There aren&apos;t any new project updates to show yet</p>
                     <p className="text-sm text-muted-foreground">Every Monday, this feed will show the latest updates from projects and topics you follow.</p>
                     <div className="mt-3 flex items-center gap-3">
-                      <Button className="bg-blue-600 text-white hover:bg-blue-700" size="sm">Create project</Button>
-                      <button className="text-sm text-muted-foreground hover:text-foreground">More about projects</button>
+                      <Link href="/projects"><Button className="bg-blue-600 text-white hover:bg-blue-700" size="sm">Create project</Button></Link>
+                      <Link href="/project-directory" className="text-sm text-muted-foreground hover:text-foreground">More about projects</Link>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Last week header */}
+              {/* Week navigation header */}
               <div className="mb-4 flex items-center justify-center gap-3">
-                <button className="rounded p-1 text-muted-foreground hover:bg-accent">
+                <button onClick={() => setWeekIdx(Math.max(0, weekIdx - 1))} className="rounded p-1 text-muted-foreground hover:bg-accent disabled:opacity-30" disabled={weekIdx === 0}>
                   <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
                 </button>
-                <h3 className="text-lg font-medium text-muted-foreground">Last week</h3>
+                <h3 className="w-32 text-center text-lg font-medium text-muted-foreground">{weekLabels[weekIdx]}</h3>
+                <button onClick={() => setWeekIdx(Math.min(weekLabels.length - 1, weekIdx + 1))} className="rounded p-1 text-muted-foreground hover:bg-accent disabled:opacity-30" disabled={weekIdx === weekLabels.length - 1}>
+                  <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+                </button>
               </div>
 
               <p className="mb-4 text-sm text-muted-foreground">You&apos;re following 4 active projects, here&apos;s the breakdown.</p>
@@ -378,20 +391,20 @@ export default function StatusUpdatesPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">On the 8th of each month, you&apos;ll see the latest updates on goals and topics you follow in this feed.</p>
                     <div className="mt-3 flex items-center gap-3">
-                      <Button className="bg-blue-600 text-white hover:bg-blue-700" size="sm">Create your first goal</Button>
-                      <button className="text-sm text-muted-foreground hover:text-foreground">More about goals</button>
+                      <Link href="/goals"><Button className="bg-blue-600 text-white hover:bg-blue-700" size="sm">Create your first goal</Button></Link>
+                      <Link href="/goals" className="text-sm text-muted-foreground hover:text-foreground">More about goals</Link>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* April header */}
+              {/* Month navigation header */}
               <div className="mb-4 flex items-center justify-center gap-3">
-                <button className="rounded p-1 text-muted-foreground hover:bg-accent">
+                <button onClick={() => setMonthIdx(Math.max(0, monthIdx - 1))} className="rounded p-1 text-muted-foreground hover:bg-accent disabled:opacity-30" disabled={monthIdx === 0}>
                   <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
                 </button>
-                <h3 className="text-lg font-medium text-muted-foreground">April</h3>
-                <button className="rounded p-1 text-muted-foreground hover:bg-accent">
+                <h3 className="w-28 text-center text-lg font-medium text-muted-foreground">{monthLabels[monthIdx]}</h3>
+                <button onClick={() => setMonthIdx(Math.min(monthLabels.length - 1, monthIdx + 1))} className="rounded p-1 text-muted-foreground hover:bg-accent disabled:opacity-30" disabled={monthIdx === monthLabels.length - 1}>
                   <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
                 </button>
               </div>

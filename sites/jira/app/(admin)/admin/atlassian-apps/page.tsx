@@ -74,7 +74,7 @@ export default function AtlassianAppsPage() {
       </div>
 
       <p className="mb-1 text-sm text-muted-foreground">Manage access, changes, and more for all the Atlassian apps in your organization.</p>
-      <a href="" onClick={(e) => e.preventDefault()} className="mb-6 text-sm text-blue-600 hover:underline inline-block">Looking for your Marketplace and third-party apps?</a>
+      <button type="button" className="mb-6 text-sm text-blue-600 hover:underline inline-block">Looking for your Marketplace and third-party apps?</button>
 
       <div className="mb-4 flex items-center gap-2" ref={filterRef}>
         <div className="relative max-w-xs">
@@ -209,7 +209,7 @@ export default function AtlassianAppsPage() {
             <p className="mb-4 text-sm text-muted-foreground">Both are built on a common platform so your support and development teams can connect their work and create a full picture, from request to resolution.</p>
             <div className="flex items-center gap-3">
               <Button className="bg-blue-600 text-white hover:bg-blue-700" size="sm">Try it now</Button>
-              <a href="" onClick={(e) => e.preventDefault()} className="text-sm text-blue-600 hover:underline">Learn more</a>
+              <button type="button" className="text-sm text-blue-600 hover:underline">Learn more</button>
             </div>
           </div>
         </div>
