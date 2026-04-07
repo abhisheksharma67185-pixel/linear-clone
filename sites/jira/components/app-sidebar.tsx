@@ -34,7 +34,6 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Layers01Icon,
   Add01Icon,
-  TaskEdit01Icon,
 } from "@hugeicons/core-free-icons"
 import { AppSwitcher } from "@/components/app-switcher"
 

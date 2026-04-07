@@ -1,11 +1,7 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 
 const ThreeDotsIcon = (
   <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
@@ -19,7 +15,7 @@ const mainApps = [
   { name: "Goals", href: "/goals", icon: <div className="flex size-7 items-center justify-center rounded-md bg-purple-100 dark:bg-purple-900/30"><svg className="size-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg></div> },
   { name: "Projects", href: "/project-directory", icon: <div className="flex size-7 items-center justify-center rounded-md bg-pink-100 dark:bg-pink-900/30"><svg className="size-4 text-pink-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg></div> },
   { name: "Teams", href: "/teams", icon: <div className="flex size-7 items-center justify-center rounded-md bg-teal-100 dark:bg-teal-900/30"><svg className="size-4 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></div> },
-  { name: "Administration", href: "/applications", icon: <div className="flex size-7 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800"><svg className="size-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg></div> },
+  { name: "Administration", href: "/admin", icon: <div className="flex size-7 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800"><svg className="size-4 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg></div> },
 ]
 
 const recommended = [
@@ -41,69 +37,80 @@ const recommended = [
 ]
 
 export function AppSwitcher() {
+  const [open, setOpen] = useState(false)
+
   return (
-    <Popover>
-      <PopoverTrigger className="rounded-md border p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="rounded-md border p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+      >
         <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
           <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
         </svg>
-      </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className="w-80 p-0" sideOffset={8}>
-        <div className="p-3">
-          <div className="flex flex-col gap-0.5">
-            {mainApps.map((app) => (
-              <Link
-                key={app.name}
-                href={app.href}
-                className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors"
-              >
-                {app.icon}
-                <span className="font-medium">{app.name}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-full z-50 mt-2 w-80 rounded-lg border bg-popover shadow-lg">
+            <div className="p-3">
+              <div className="flex flex-col gap-0.5">
+                {mainApps.map((app) => (
+                  <Link
+                    key={app.name}
+                    href={app.href}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors"
+                  >
+                    {app.icon}
+                    <span className="font-medium">{app.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
 
-        <div className="border-t" />
+            <div className="border-t" />
 
-        <div className="p-3">
-          <p className="mb-2 px-2 text-[11px] font-semibold text-muted-foreground">Recommended for your team</p>
-          <div className="flex flex-col gap-0.5">
-            {recommended.map((item) => (
-              <div
-                key={item.name}
-                className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent transition-colors cursor-pointer"
-              >
-                {item.icon}
-                <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium">{item.name}</span>
-                  <p className="text-xs text-muted-foreground truncate">{item.description}</p>
-                </div>
-                <button className="text-muted-foreground hover:text-foreground shrink-0">
-                  {ThreeDotsIcon}
+            <div className="p-3">
+              <p className="mb-2 px-2 text-[11px] font-semibold text-muted-foreground">Recommended for your team</p>
+              <div className="flex flex-col gap-0.5">
+                {recommended.map((item) => (
+                  <div
+                    key={item.name}
+                    className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent transition-colors cursor-pointer"
+                  >
+                    {item.icon}
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium">{item.name}</span>
+                      <p className="text-xs text-muted-foreground truncate">{item.description}</p>
+                    </div>
+                    <button className="text-muted-foreground hover:text-foreground shrink-0">
+                      {ThreeDotsIcon}
+                    </button>
+                  </div>
+                ))}
+
+                <button className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors">
+                  <div className="flex size-8 items-center justify-center rounded-md bg-muted">
+                    <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                      <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                  </div>
+                  <span className="font-medium">More Atlassian apps</span>
                 </button>
               </div>
-            ))}
+            </div>
 
-            <button className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors">
-              <div className="flex size-8 items-center justify-center rounded-md bg-muted">
-                <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-                  <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-                </svg>
-              </div>
-              <span className="font-medium">More Atlassian apps</span>
-            </button>
+            <div className="border-t px-4 py-3">
+              <button onClick={() => setOpen(false)} className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors">
+                Manage list
+              </button>
+            </div>
           </div>
-        </div>
-
-        <div className="border-t px-4 py-3">
-          <button className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors">
-            Manage list
-          </button>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </>
+      )}
+    </div>
   )
 }

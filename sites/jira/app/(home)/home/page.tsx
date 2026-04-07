@@ -1,11 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
-
-const today = new Date()
-const dayName = today.toLocaleDateString("en-US", { weekday: "long" })
-const monthDay = today.toLocaleDateString("en-US", { month: "long", day: "numeric" })
 
 const yourApps = [
   { name: "Goals", instance: "abhisheksharma67185", href: "/goals", icon: <div className="flex size-8 items-center justify-center rounded-md bg-purple-100 dark:bg-purple-900/30"><svg className="size-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg></div> },
@@ -17,6 +13,13 @@ const yourApps = [
 export default function HomePage() {
   const [visitedTab, setVisitedTab] = useState<"work" | "teams">("work")
   const [nextTab, setNextTab] = useState<"worked" | "viewed">("worked")
+  const { dayName, monthDay } = useMemo(() => {
+    const today = new Date()
+    return {
+      dayName: today.toLocaleDateString("en-US", { weekday: "long" }),
+      monthDay: today.toLocaleDateString("en-US", { month: "long", day: "numeric" }),
+    }
+  }, [])
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -55,10 +58,10 @@ export default function HomePage() {
       <div className="mb-8">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold">Your apps</h2>
-          <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <Link href="/home/apps" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             View all apps
             <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-          </button>
+          </Link>
         </div>
         <div className="grid grid-cols-4 gap-3">
           {yourApps.map((app) => (
