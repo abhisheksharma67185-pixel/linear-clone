@@ -1,5 +1,3 @@
-import { type VariantProps } from "class-variance-authority"
-
 // Status badges for issues
 export const statusVariant: Record<string, string> = {
   to_do: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",

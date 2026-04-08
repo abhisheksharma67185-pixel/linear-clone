@@ -35,9 +35,6 @@ export default function DashboardPage() {
     })
   }, [])
 
-  const userName = (id: string | null) =>
-    users.find((u) => u.id === id)?.name ?? "Unassigned"
-
   const myIssues = issues.filter(
     (i) => i.assigneeId === "usr-1" && i.status !== "done"
   )

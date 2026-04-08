@@ -84,7 +84,7 @@ export default function BacklogPage() {
   const [issues, setIssues] = useState<Issue[]>([])
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [members, setMembers] = useState<Member[]>([])
-  const [labels, setLabels] = useState<Label[]>([])
+  const [, setLabels] = useState<Label[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

@@ -61,8 +61,6 @@ function today(): string {
 const VALID_ISSUE_STATUS = new Set<string>(["backlog", "todo", "in_progress", "done", "cancelled"]);
 const VALID_ISSUE_PRIORITY = new Set<string>(["urgent", "high", "medium", "low", "none"]);
 const VALID_PROJECT_STATUS = new Set<string>(["planned", "in_progress", "completed", "cancelled"]);
-const VALID_CYCLE_STATE = new Set<string>(["active", "upcoming", "completed"]);
-
 // Valid status transitions for issues
 const VALID_TRANSITIONS: Record<string, string[]> = {
   backlog: ["todo", "cancelled"],

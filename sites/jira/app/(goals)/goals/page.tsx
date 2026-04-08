@@ -14,9 +14,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
   DropdownMenuGroup,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
 import {
   Dialog,
@@ -108,6 +107,7 @@ const filterConfig = [
   },
 ]
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function InlineFilterDropdown({ filter, onClose }: { filter: typeof filterConfig[0]; onClose: () => void }) {
   const [search, setSearch] = useState("")
 

@@ -51,8 +51,8 @@ function Button({
   className,
   variant = "default",
   size = "default",
-  render: _render,
-  nativeButton: _nativeButton,
+  render: _render, // eslint-disable-line @typescript-eslint/no-unused-vars
+  nativeButton: _nativeButton, // eslint-disable-line @typescript-eslint/no-unused-vars
   ...props
 }: ButtonProps) {
   return (

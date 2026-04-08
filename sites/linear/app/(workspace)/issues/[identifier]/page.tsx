@@ -32,8 +32,8 @@ export default function IssueDetailPage() {
   const [members, setMembers] = useState<Member[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [cycles, setCycles] = useState<Cycle[]>([])
-  const [labels, setLabels] = useState<LabelType[]>([])
-  const [teams, setTeams] = useState<Team[]>([])
+  const [, setLabels] = useState<LabelType[]>([])
+  const [, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 

@@ -74,11 +74,6 @@ export default function MyIssuesPage() {
   const doneCount = myIssues.filter((i) => i.status === "done").length
   const totalCount = myIssues.length
 
-  const teamKeyById = (teamId: string) => {
-    const team = teams.find((t) => t.id === teamId)
-    return team ? team.key : ""
-  }
-
   return (
     <div className="flex flex-col gap-6 p-6">
       <div>

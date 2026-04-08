@@ -26,8 +26,6 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ArrowDown01Icon,
-  FilterIcon,
-  Add01Icon,
   Layers01Icon,
 } from "@hugeicons/core-free-icons"
 

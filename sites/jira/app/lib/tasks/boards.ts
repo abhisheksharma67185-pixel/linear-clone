@@ -12,13 +12,6 @@ const R8 = {
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
 };
-const R10 = {
-  completion: 10.0,
-  partialPerCheck: true,
-  stepPenalty: -0.02,
-  invalidActionPenalty: -0.2,
-};
-
 export const boardTasks: TaskDefinition[] = [
   // ---------------------------------------------------------------------------
   // Stage 5 — board column movement via status transition

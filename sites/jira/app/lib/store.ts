@@ -63,7 +63,6 @@ const VALID_ISSUE_TYPE = new Set<string>(["story", "task", "bug", "subtask"]);
 const VALID_ISSUE_STATUS = new Set<string>(["to_do", "in_progress", "in_review", "done"]);
 const VALID_ISSUE_PRIORITY = new Set<string>(["highest", "high", "medium", "low", "lowest"]);
 const VALID_PROJECT_TYPE = new Set<string>(["scrum", "kanban"]);
-const VALID_SPRINT_STATE = new Set<string>(["active", "closed", "future"]);
 const VALID_EPIC_STATUS = new Set<string>(["to_do", "in_progress", "done"]);
 
 // Valid status transitions

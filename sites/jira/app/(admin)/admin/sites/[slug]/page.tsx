@@ -203,6 +203,7 @@ function EmojiContent() {
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function ConnectionInfoCell({ appName }: { appName: string }) {
   const [open, setOpen] = useState(false)
   return (
@@ -390,6 +391,7 @@ function AuditLogContent() {
 
 // ── Main Page ──────────────────────────────────────────────────────
 export default function SiteSettingsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const [activePage, setActivePage] = useState("access-requests")
   const [siteSettingsOpen, setSiteSettingsOpen] = useState(true)

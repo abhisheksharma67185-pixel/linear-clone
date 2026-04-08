@@ -1,5 +1,4 @@
 export default function Page() {
-  const name = "__NAME__"
   return (
     <div className="p-8">
       <h1 className="text-2xl font-semibold">Apps</h1>
