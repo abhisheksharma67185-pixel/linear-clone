@@ -1,0 +1,80 @@
+import type { TaskDefinition } from "@simbench/core";
+
+const R5 = {
+  completion: 5.0,
+  partialPerCheck: true,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+};
+
+export const viewTasks: TaskDefinition[] = [
+  {
+    id: "linear-view-001",
+    site: "linear",
+    domain: "views",
+    type: "action",
+    difficulty: "medium",
+    curriculumStage: 5,
+    title: "Create a custom view",
+    goal: "Create a custom view named 'High Priority Bugs' with filter query 'label = bug AND priority in (urgent, high)' in team Engineering (team-1).",
+    evalChecks: [
+      {
+        type: "state_diff",
+        entity: "views",
+        field: "name",
+        expected: "High Priority Bugs",
+        weight: 1.0,
+        description: "View 'High Priority Bugs' exists",
+      },
+    ],
+    maxSteps: 15,
+    rewardProfile: R5,
+    tags: ["create", "view"],
+  },
+  {
+    id: "linear-view-002",
+    site: "linear",
+    domain: "views",
+    type: "action",
+    difficulty: "medium",
+    curriculumStage: 5,
+    title: "Create cycle progress view",
+    goal: "Create a custom view named 'Cycle Progress' with filter query 'cycle = activeCycle() AND status != done' owned by Sam Williams (usr-2) in team Engineering (team-1).",
+    evalChecks: [
+      {
+        type: "state_diff",
+        entity: "views",
+        field: "name",
+        expected: "Cycle Progress",
+        weight: 1.0,
+        description: "View 'Cycle Progress' exists",
+      },
+    ],
+    maxSteps: 15,
+    rewardProfile: R5,
+    tags: ["create", "view"],
+  },
+  {
+    id: "linear-view-003",
+    site: "linear",
+    domain: "views",
+    type: "action",
+    difficulty: "medium",
+    curriculumStage: 5,
+    title: "Create team workload view",
+    goal: "Create a custom view named 'Team Workload' with filter query 'assignee is NOT EMPTY ORDER BY assignee' in team Engineering (team-1).",
+    evalChecks: [
+      {
+        type: "state_diff",
+        entity: "views",
+        field: "name",
+        expected: "Team Workload",
+        weight: 1.0,
+        description: "View 'Team Workload' exists",
+      },
+    ],
+    maxSteps: 15,
+    rewardProfile: R5,
+    tags: ["create", "view"],
+  },
+];
