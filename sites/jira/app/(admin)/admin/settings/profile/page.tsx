@@ -3,9 +3,38 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 export default function ProfilePage() {
   const [orgName, setOrgName] = useState("abhisheksharma67185")
+  const [savedOrgName, setSavedOrgName] = useState("abhisheksharma67185")
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState("")
+
+  const isDirty = orgName !== savedOrgName
+  const canDelete = deleteConfirmText === savedOrgName
+
+  const handleSave = () => {
+    if (!orgName.trim()) return
+    setSaveStatus("saving")
+    setTimeout(() => {
+      setSavedOrgName(orgName)
+      setSaveStatus("saved")
+      setTimeout(() => setSaveStatus("idle"), 2000)
+    }, 500)
+  }
+
+  const handleCancel = () => {
+    setOrgName(savedOrgName)
+  }
 
   return (
     <div className="p-8 max-w-5xl">
@@ -29,8 +58,20 @@ export default function ProfilePage() {
       />
 
       <div className="flex items-center gap-2 mb-10">
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white">Save</Button>
-        <Button variant="ghost">Cancel</Button>
+        <Button
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+          onClick={handleSave}
+          disabled={!orgName.trim() || saveStatus === "saving"}
+        >
+          {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved!" : "Save"}
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={handleCancel}
+          disabled={!isDirty}
+        >
+          Cancel
+        </Button>
       </div>
 
       {/* Transfer section */}
@@ -47,7 +88,14 @@ export default function ProfilePage() {
           <p className="text-sm">
             This feature is unavailable for your organization. To transfer your apps to another organization, contact support and raise a ticket under the category <strong>Technical issues and bugs.</strong>
           </p>
-          <button type="button" className="text-sm text-blue-600 hover:underline">Contact support</button>
+          <a
+            href="https://support.atlassian.com/contact/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Contact support
+          </a>
         </div>
       </div>
 
@@ -55,13 +103,78 @@ export default function ProfilePage() {
       <h2 className="text-base font-semibold mb-2">Delete organization</h2>
       <p className="text-sm text-muted-foreground mb-2 max-w-3xl">
         We recommend that you delete this organization only if you no longer need it. Make sure you&apos;ve backed up any data that you would like to keep.{" "}
-        <button type="button" className="text-blue-600 hover:underline">How to delete an organization</button>
+        <a
+          href="https://support.atlassian.com/organization-administration/docs/delete-an-organization/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline"
+        >
+          How to delete an organization
+        </a>
       </p>
-      <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
-        You can delete an organization only if there are no domains and no active app subscriptions associated with the organization.
+      <p className="text-sm text-muted-foreground mb-2 max-w-3xl">
+        Before you can delete the organization, you&apos;ll need to:
       </p>
+      <ul className="list-disc pl-6 mb-4 max-w-3xl">
+        <li className="text-sm text-muted-foreground">
+          Remove all apps included in your active subscriptions.{" "}
+          <a
+            href="https://support.atlassian.com/organization-administration/docs/manage-your-product-subscriptions/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            How to do this
+          </a>
+        </li>
+      </ul>
 
-      <Button variant="outline">Delete organization</Button>
+      <Button variant="outline" onClick={() => setDeleteOpen(true)}>
+        Delete organization
+      </Button>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete organization</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete the organization <strong>{savedOrgName}</strong> and all associated data.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-medium">
+              Type <strong>{savedOrgName}</strong> to confirm
+            </label>
+            <Input
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder={savedOrgName}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteOpen(false)
+                setDeleteConfirmText("")
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={!canDelete}
+              onClick={() => {
+                setDeleteOpen(false)
+                setDeleteConfirmText("")
+              }}
+            >
+              Delete organization
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

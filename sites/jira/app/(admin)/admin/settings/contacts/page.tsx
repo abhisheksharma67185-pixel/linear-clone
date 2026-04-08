@@ -24,7 +24,14 @@ export default function ContactsPage() {
           <p className="text-sm font-medium">Allow users to connect contacts from Google, Slack, and Microsoft</p>
           <p className="text-sm text-muted-foreground">
             Users can connect and invite contacts.{" "}
-            <button type="button" className="text-blue-600 hover:underline">How to invite contacts</button>
+            <a
+              href="https://support.atlassian.com/organization-administration/docs/manage-contacts-in-your-organization/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              How to invite contacts
+            </a>
           </p>
         </div>
       </div>

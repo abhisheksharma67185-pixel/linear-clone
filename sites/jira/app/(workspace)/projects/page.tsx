@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type { Project, User } from "@/app/lib/mock-data"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -14,6 +15,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ArrowDown01Icon,
@@ -21,6 +30,147 @@ import {
   Add01Icon,
   Layers01Icon,
 } from "@hugeicons/core-free-icons"
+
+function SpaceActionsDropdown({ projectKey, projectName }: { projectKey: string; projectName: string }) {
+  const [open, setOpen] = useState(false)
+  const [trashOpen, setTrashOpen] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
+  const [actionDone, setActionDone] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [open])
+
+  return (
+    <>
+      <div className="relative" ref={ref}>
+        <button
+          onClick={() => setOpen(!open)}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+          </svg>
+        </button>
+        {open && (
+          <div className="absolute right-0 top-full z-50 mt-1 w-44 rounded-md border bg-popover py-1 shadow-md">
+            <button
+              className="flex w-full items-center px-3 py-2 text-sm hover:bg-accent transition-colors text-left"
+              onClick={() => {
+                setOpen(false)
+                router.push(`/projects/${projectKey}/settings`)
+              }}
+            >
+              Space settings
+            </button>
+            <button
+              className="flex w-full items-center px-3 py-2 text-sm hover:bg-accent transition-colors text-left"
+              onClick={() => {
+                setOpen(false)
+                setTrashOpen(true)
+              }}
+            >
+              Move to trash
+            </button>
+            <button
+              className="flex w-full items-center px-3 py-2 text-sm hover:bg-accent transition-colors text-left"
+              onClick={() => {
+                setOpen(false)
+                setArchiveOpen(true)
+              }}
+            >
+              Archive
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Move to trash dialog */}
+      <Dialog open={trashOpen} onOpenChange={setTrashOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Move to trash</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to move <strong>{projectName}</strong> to trash? The space will be deleted after 60 days if not restored.
+            </DialogDescription>
+          </DialogHeader>
+          {actionDone ? (
+            <div className="flex flex-col items-center gap-2 py-3">
+              <svg className="size-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+              <p className="text-sm font-medium">Moved to trash</p>
+            </div>
+          ) : (
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setTrashOpen(false)}>Cancel</Button>
+              <Button
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => {
+                  setActionDone(true)
+                  setTimeout(() => {
+                    setTrashOpen(false)
+                    setActionDone(false)
+                  }, 1500)
+                }}
+              >
+                Move to trash
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Archive dialog */}
+      <Dialog open={archiveOpen} onOpenChange={setArchiveOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Archive space</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to archive <strong>{projectName}</strong>? Archived spaces are read-only and hidden from navigation.
+            </DialogDescription>
+          </DialogHeader>
+          {actionDone ? (
+            <div className="flex flex-col items-center gap-2 py-3">
+              <svg className="size-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+              <p className="text-sm font-medium">Space archived</p>
+            </div>
+          ) : (
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setArchiveOpen(false)}>Cancel</Button>
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  setActionDone(true)
+                  setTimeout(() => {
+                    setArchiveOpen(false)
+                    setActionDone(false)
+                  }, 1500)
+                }}
+              >
+                Archive
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
 
 const templateList = [
   {
@@ -82,6 +232,19 @@ export default function SpacesPage() {
   const [search, setSearch] = useState("")
   const [showTemplates, setShowTemplates] = useState(true)
   const [activeFilters, setActiveFilters] = useState<string[]>([...filterChips])
+  const [starredProjects, setStarredProjects] = useState<Set<string>>(new Set())
+  const [createOpen, setCreateOpen] = useState(false)
+  const [newSpaceName, setNewSpaceName] = useState("")
+  const [newSpaceKey, setNewSpaceKey] = useState("")
+
+  const toggleStar = (projectId: string) => {
+    setStarredProjects((prev) => {
+      const next = new Set(prev)
+      if (next.has(projectId)) next.delete(projectId)
+      else next.add(projectId)
+      return next
+    })
+  }
 
   useEffect(() => {
     Promise.all([
@@ -123,7 +286,10 @@ export default function SpacesPage() {
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">Spaces</h1>
           <div className="flex items-center gap-2">
-            <Button className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button
+              className="bg-blue-600 text-white hover:bg-blue-700"
+              onClick={() => setCreateOpen(true)}
+            >
               Create space
             </Button>
             <Button
@@ -228,8 +394,11 @@ export default function SpacesPage() {
                 return (
                   <TableRow key={project.id}>
                     <TableCell>
-                      <button className="text-muted-foreground hover:text-yellow-500">
-                        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <button
+                        className={starredProjects.has(project.id) ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-500"}
+                        onClick={() => toggleStar(project.id)}
+                      >
+                        <svg className="size-4" viewBox="0 0 24 24" fill={starredProjects.has(project.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                         </svg>
                       </button>
@@ -270,11 +439,7 @@ export default function SpacesPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <button className="text-muted-foreground hover:text-foreground">
-                        <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
-                          <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-                        </svg>
-                      </button>
+                      <SpaceActionsDropdown projectKey={project.key} projectName={project.name} />
                     </TableCell>
                   </TableRow>
                 )
@@ -371,6 +536,66 @@ export default function SpacesPage() {
           </button>
         </div>
       )}
+
+      {/* Create space dialog */}
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create space</DialogTitle>
+            <DialogDescription>
+              Create a new space to organize and manage your work.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium" htmlFor="space-name">
+                Space name <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="space-name"
+                value={newSpaceName}
+                onChange={(e) => {
+                  setNewSpaceName(e.target.value)
+                  setNewSpaceKey(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 5))
+                }}
+                placeholder="e.g. Marketing"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium" htmlFor="space-key">
+                Key
+              </label>
+              <Input
+                id="space-key"
+                value={newSpaceKey}
+                onChange={(e) => setNewSpaceKey(e.target.value.toUpperCase())}
+                placeholder="e.g. MARK"
+                className="font-mono"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setCreateOpen(false)
+              setNewSpaceName("")
+              setNewSpaceKey("")
+            }}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={!newSpaceName.trim()}
+              onClick={() => {
+                setCreateOpen(false)
+                setNewSpaceName("")
+                setNewSpaceKey("")
+              }}
+            >
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
