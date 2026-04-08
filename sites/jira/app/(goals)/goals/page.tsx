@@ -759,52 +759,52 @@ export default function GoalsPage() {
   )
 }
 
+const CAL_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+const CAL_DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+function getDaysInMonth(m: number, y: number) { return new Date(y, m + 1, 0).getDate() }
+function getFirstDay(m: number, y: number) { return new Date(y, m, 1).getDay() }
+
+function CalMonth({ month, year, onPrev, onNext, onPrevY, onNextY }: {
+  month: number; year: number; onPrev: () => void; onNext: () => void; onPrevY: () => void; onNextY: () => void
+}) {
+  const dim = getDaysInMonth(month, year)
+  const fd = getFirstDay(month, year)
+  const prevDim = getDaysInMonth(month === 0 ? 11 : month - 1, month === 0 ? year - 1 : year)
+  const today = new Date()
+  const isToday = (d: number) => d === today.getDate() && month === today.getMonth() && year === today.getFullYear()
+
+  const cells = []
+  for (let i = fd - 1; i >= 0; i--) cells.push(<span key={`p${i}`} className="flex size-8 items-center justify-center text-xs text-muted-foreground/40">{prevDim - i}</span>)
+  for (let d = 1; d <= dim; d++) cells.push(
+    <button key={d} className={`flex size-8 items-center justify-center rounded-full text-xs transition-colors hover:bg-accent ${isToday(d) ? "bg-blue-600 text-white font-semibold hover:bg-blue-700" : ""}`}>{d}</button>
+  )
+  const rem = 42 - cells.length
+  for (let d = 1; d <= rem; d++) cells.push(<span key={`n${d}`} className="flex size-8 items-center justify-center text-xs text-muted-foreground/40">{d}</span>)
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <div className="flex items-center gap-0.5">
+          <button onClick={onPrevY} className="rounded p-0.5 text-muted-foreground hover:bg-accent"><svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></svg></button>
+          <button onClick={onPrev} className="rounded p-0.5 text-muted-foreground hover:bg-accent"><svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg></button>
+        </div>
+        <span className="text-sm font-medium">{CAL_MONTHS[month]} {year}</span>
+        <div className="flex items-center gap-0.5">
+          <button onClick={onNext} className="rounded p-0.5 text-muted-foreground hover:bg-accent"><svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg></button>
+          <button onClick={onNextY} className="rounded p-0.5 text-muted-foreground hover:bg-accent"><svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="13 17 18 12 13 7" /><polyline points="6 17 11 12 6 7" /></svg></button>
+        </div>
+      </div>
+      <div className="grid grid-cols-7">{CAL_DAY_LABELS.map((d) => <span key={d} className="flex size-8 items-center justify-center text-[10px] font-medium text-muted-foreground">{d}</span>)}{cells}</div>
+    </div>
+  )
+}
+
 function DateRangePicker() {
   const [startMonth, setStartMonth] = useState(11)
   const [startYear, setStartYear] = useState(2025)
   const [endMonth, setEndMonth] = useState(5)
   const [endYear, setEndYear] = useState(2027)
-
-  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-  const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-
-  function getDaysInMonth(m: number, y: number) { return new Date(y, m + 1, 0).getDate() }
-  function getFirstDay(m: number, y: number) { return new Date(y, m, 1).getDay() }
-
-  function CalMonth({ month, year, onPrev, onNext, onPrevY, onNextY }: {
-    month: number; year: number; onPrev: () => void; onNext: () => void; onPrevY: () => void; onNextY: () => void
-  }) {
-    const dim = getDaysInMonth(month, year)
-    const fd = getFirstDay(month, year)
-    const prevDim = getDaysInMonth(month === 0 ? 11 : month - 1, month === 0 ? year - 1 : year)
-    const today = new Date()
-    const isToday = (d: number) => d === today.getDate() && month === today.getMonth() && year === today.getFullYear()
-
-    const cells = []
-    for (let i = fd - 1; i >= 0; i--) cells.push(<span key={`p${i}`} className="flex size-8 items-center justify-center text-xs text-muted-foreground/40">{prevDim - i}</span>)
-    for (let d = 1; d <= dim; d++) cells.push(
-      <button key={d} className={`flex size-8 items-center justify-center rounded-full text-xs transition-colors hover:bg-accent ${isToday(d) ? "bg-blue-600 text-white font-semibold hover:bg-blue-700" : ""}`}>{d}</button>
-    )
-    const rem = 42 - cells.length
-    for (let d = 1; d <= rem; d++) cells.push(<span key={`n${d}`} className="flex size-8 items-center justify-center text-xs text-muted-foreground/40">{d}</span>)
-
-    return (
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <div className="flex items-center gap-0.5">
-            <button onClick={onPrevY} className="rounded p-0.5 text-muted-foreground hover:bg-accent"><svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></svg></button>
-            <button onClick={onPrev} className="rounded p-0.5 text-muted-foreground hover:bg-accent"><svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg></button>
-          </div>
-          <span className="text-sm font-medium">{months[month]} {year}</span>
-          <div className="flex items-center gap-0.5">
-            <button onClick={onNext} className="rounded p-0.5 text-muted-foreground hover:bg-accent"><svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg></button>
-            <button onClick={onNextY} className="rounded p-0.5 text-muted-foreground hover:bg-accent"><svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="13 17 18 12 13 7" /><polyline points="6 17 11 12 6 7" /></svg></button>
-          </div>
-        </div>
-        <div className="grid grid-cols-7">{dayLabels.map((d) => <span key={d} className="flex size-8 items-center justify-center text-[10px] font-medium text-muted-foreground">{d}</span>)}{cells}</div>
-      </div>
-    )
-  }
 
   const nav = (cur: number, yCur: number, dir: -1 | 1): [number, number] => {
     const m = cur + dir

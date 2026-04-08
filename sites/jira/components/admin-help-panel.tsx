@@ -88,7 +88,7 @@ export function AdminHelpPanel({
       const response = getAIResponse(userMessage)
       setMessages((prev) => [...prev, { role: "assistant", content: response }])
       setIsTyping(false)
-    }, 800 + Math.random() * 700)
+    }, 800 + 700 * 0.5)
   }
 
   const handleSuggestion = (question: string) => {
@@ -99,7 +99,7 @@ export function AdminHelpPanel({
       const response = getAIResponse(question)
       setMessages((prev) => [...prev, { role: "assistant", content: response }])
       setIsTyping(false)
-    }, 800 + Math.random() * 700)
+    }, 800 + 700 * 0.5)
   }
 
   const handleNewChat = () => {

@@ -73,6 +73,14 @@ export function AdminNotificationsPanel({
     }
   }, [menuOpen])
 
+  const dateStr = useMemo(() => {
+    return new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
+  }, [])
+
   if (!open) return null
 
   const markAllAsRead = () => {
@@ -82,14 +90,6 @@ export function AdminNotificationsPanel({
   const displayed = showUnreadOnly
     ? notifications.filter((n) => !n.read)
     : notifications
-
-  const dateStr = useMemo(() => {
-    return new Date().toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
-  }, [])
 
   return (
     <div
