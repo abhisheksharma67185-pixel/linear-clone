@@ -3,16 +3,17 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import type { Project, Member, Team } from "@/app/lib/mock-data"
+import { projectStatusStyle } from "@/lib/status-styles"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
-const statusStyle: Record<string, string> = {
-  planned: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  in_progress: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  completed: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  cancelled: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-}
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -35,13 +36,22 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Loading...
+      <div className="flex flex-col gap-6 p-6">
+        <div>
+          <Skeleton className="h-7 w-28" />
+          <Skeleton className="mt-2 h-4 w-56" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
       </div>
     )
   }
 
   return (
+    <TooltipProvider>
     <div className="flex flex-col gap-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold">Projects</h1>
@@ -67,7 +77,7 @@ export default function ProjectsPage() {
                     </CardTitle>
                     <Badge
                       variant="secondary"
-                      className={`text-[10px] ${statusStyle[project.status]}`}
+                      className={`text-[10px] ${projectStatusStyle[project.status]}`}
                     >
                       {project.status.replace("_", " ")}
                     </Badge>
@@ -84,12 +94,17 @@ export default function ProjectsPage() {
                     {lead && (
                       <>
                         <span className="text-border">|</span>
-                        <Avatar className="size-4">
-                          <AvatarImage src={lead.avatar} />
-                          <AvatarFallback className="text-[8px]">
-                            {lead.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
+                        <Tooltip>
+                          <TooltipTrigger render={<span />}>
+                            <Avatar className="size-4">
+                              <AvatarImage src={lead.avatar} />
+                              <AvatarFallback className="text-[8px]">
+                                {lead.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </TooltipTrigger>
+                          <TooltipContent>{lead.name}</TooltipContent>
+                        </Tooltip>
                         <span>Lead: {lead.name}</span>
                       </>
                     )}
@@ -101,5 +116,6 @@ export default function ProjectsPage() {
         })}
       </div>
     </div>
+    </TooltipProvider>
   )
 }

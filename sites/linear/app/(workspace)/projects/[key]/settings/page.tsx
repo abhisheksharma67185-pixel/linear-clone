@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function SettingsPage() {
   const params = useParams<{ key: string }>()
@@ -57,16 +58,33 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Loading...
+      <div className="flex flex-col gap-6 p-6 max-w-2xl">
+        <div>
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="mt-2 h-4 w-64" />
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-20" />
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   if (!team || (team as Record<string, unknown>).error) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Team not found.
+      <div className="flex items-center justify-center p-12">
+        <Card className="max-w-sm text-center">
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Team not found.</p>
+          </CardContent>
+        </Card>
       </div>
     )
   }

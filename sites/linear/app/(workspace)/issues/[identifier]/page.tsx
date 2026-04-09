@@ -2,19 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import type {
-  Issue,
-  Member,
-  Project,
-  Cycle,
-  Label as LabelType,
-  Team,
-} from "@/app/lib/mock-data"
+import type { Issue, Member, Project, Cycle } from "@/app/lib/mock-data"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
   SelectContent,
@@ -22,6 +16,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function IssueDetailPage() {
   const params = useParams<{ identifier: string }>()
@@ -32,8 +37,6 @@ export default function IssueDetailPage() {
   const [members, setMembers] = useState<Member[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [cycles, setCycles] = useState<Cycle[]>([])
-  const [, setLabels] = useState<LabelType[]>([])
-  const [, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -56,15 +59,11 @@ export default function IssueDetailPage() {
       fetch("/api/data/members").then((r) => r.json()),
       fetch("/api/data/projects").then((r) => r.json()),
       fetch("/api/data/cycles").then((r) => r.json()),
-      fetch("/api/data/labels").then((r) => r.json()),
-      fetch("/api/data/teams").then((r) => r.json()),
-    ]).then(([iss, m, p, c, l, t]) => {
+    ]).then(([iss, m, p, c]) => {
       setIssue(iss)
       setMembers(m)
       setProjects(p)
       setCycles(c)
-      setLabels(l)
-      setTeams(t)
       if (iss && !iss.error) {
         setTitle(iss.title)
         setDescription(iss.description)
@@ -113,16 +112,33 @@ export default function IssueDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Loading...
+      <div className="flex flex-col gap-6 p-6">
+        <div>
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="mt-2 h-4 w-32" />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 flex flex-col gap-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+          <Skeleton className="h-96 rounded-lg" />
+        </div>
       </div>
     )
   }
 
   if (!issue || (issue as Record<string, unknown>).error) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Issue not found.
+      <div className="flex items-center justify-center p-12">
+        <Card className="max-w-sm text-center">
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Issue not found.</p>
+            <Button variant="outline" className="mt-4" onClick={() => router.push("/my-issues")}>
+              Back to My Issues
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -297,9 +313,25 @@ export default function IssueDetailPage() {
               <Button onClick={handleSave} disabled={saving} className="flex-1">
                 {saving ? "Saving..." : "Save"}
               </Button>
-              <Button variant="destructive" onClick={handleDelete}>
-                Delete
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger render={<Button variant="destructive" />}>
+                  Delete
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete issue?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete {issue.identifier}. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction variant="destructive" onClick={handleDelete}>
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </CardContent>
         </Card>

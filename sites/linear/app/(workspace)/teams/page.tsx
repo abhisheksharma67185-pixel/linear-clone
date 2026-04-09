@@ -6,6 +6,13 @@ import type { Team, Member } from "@/app/lib/mock-data"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>([])
@@ -25,13 +32,22 @@ export default function TeamsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Loading...
+      <div className="flex flex-col gap-6 p-6">
+        <div>
+          <Skeleton className="h-7 w-24" />
+          <Skeleton className="mt-2 h-4 w-56" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
       </div>
     )
   }
 
   return (
+    <TooltipProvider>
     <div className="flex flex-col gap-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold">Teams</h1>
@@ -67,12 +83,17 @@ export default function TeamsPage() {
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       {lead && (
                         <>
-                          <Avatar className="size-4">
-                            <AvatarImage src={lead.avatar} />
-                            <AvatarFallback className="text-[8px]">
-                              {lead.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
+                          <Tooltip>
+                            <TooltipTrigger render={<span />}>
+                              <Avatar className="size-4">
+                                <AvatarImage src={lead.avatar} />
+                                <AvatarFallback className="text-[8px]">
+                                  {lead.name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                            </TooltipTrigger>
+                            <TooltipContent>{lead.name}</TooltipContent>
+                          </Tooltip>
                           <span>Lead: {lead.name}</span>
                           <span className="text-border">|</span>
                         </>
@@ -89,5 +110,6 @@ export default function TeamsPage() {
         </div>
       )}
     </div>
+    </TooltipProvider>
   )
 }

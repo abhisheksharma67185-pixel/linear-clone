@@ -3,30 +3,22 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import type { Issue, Member, Team, Cycle, Label } from "@/app/lib/mock-data"
+import type { Issue, Member, Team, Cycle } from "@/app/lib/mock-data"
+import { statusStyle, priorityStyle, cycleStateStyle } from "@/lib/status-styles"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-
-const statusStyle: Record<string, string> = {
-  backlog: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  todo: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  in_progress: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  done: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  cancelled: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-}
-
-const priorityStyle: Record<string, string> = {
-  urgent: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  high: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  low: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  none: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
-}
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 function IssueRow({
   issue,
@@ -63,12 +55,17 @@ function IssueRow({
         </span>
       )}
       {assignee ? (
-        <Avatar className="size-5 shrink-0">
-          <AvatarImage src={assignee.avatar} />
-          <AvatarFallback className="text-[8px]">
-            {assignee.name.charAt(0)}
-          </AvatarFallback>
-        </Avatar>
+        <Tooltip>
+          <TooltipTrigger render={<span className="shrink-0" />}>
+            <Avatar className="size-5">
+              <AvatarImage src={assignee.avatar} />
+              <AvatarFallback className="text-[8px]">
+                {assignee.name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          </TooltipTrigger>
+          <TooltipContent>{assignee.name}</TooltipContent>
+        </Tooltip>
       ) : (
         <div className="size-5 shrink-0" />
       )}
@@ -84,7 +81,6 @@ export default function BacklogPage() {
   const [issues, setIssues] = useState<Issue[]>([])
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [members, setMembers] = useState<Member[]>([])
-  const [, setLabels] = useState<Label[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -93,21 +89,27 @@ export default function BacklogPage() {
       fetch("/api/data/issues").then((r) => r.json()),
       fetch("/api/data/cycles").then((r) => r.json()),
       fetch("/api/data/members").then((r) => r.json()),
-      fetch("/api/data/labels").then((r) => r.json()),
-    ]).then(([t, i, c, m, l]) => {
+    ]).then(([t, i, c, m]) => {
       setTeam(t)
       setIssues(i)
       setCycles(c)
       setMembers(m)
-      setLabels(l)
       setLoading(false)
     })
   }, [teamKey])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Loading...
+      <div className="flex flex-col gap-6 p-6">
+        <div>
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="mt-2 h-4 w-64" />
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full" />
+          ))}
+        </div>
       </div>
     )
   }
@@ -133,13 +135,8 @@ export default function BacklogPage() {
     (i) => !scheduledIssueIds.has(i.id)
   )
 
-  const cycleStateStyle: Record<string, string> = {
-    active: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-    upcoming: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-    completed: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  }
-
   return (
+    <TooltipProvider>
     <div className="flex flex-col gap-6 p-6">
       <div>
         <h1 className="text-xl font-semibold">{team.name} Backlog</h1>
@@ -260,5 +257,6 @@ export default function BacklogPage() {
         </CollapsibleContent>
       </Collapsible>
     </div>
+    </TooltipProvider>
   )
 }

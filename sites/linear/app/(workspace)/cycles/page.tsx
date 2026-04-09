@@ -3,35 +3,42 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import type { Cycle, Issue, Member, Team } from "@/app/lib/mock-data"
+import { statusStyle, priorityStyle, cycleStateStyle } from "@/lib/status-styles"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-
-const cycleStateStyle: Record<string, string> = {
-  active: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  upcoming: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  completed: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-}
-
-const statusStyle: Record<string, string> = {
-  backlog: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  todo: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  in_progress: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  done: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  cancelled: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-}
-
-const priorityStyle: Record<string, string> = {
-  urgent: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  high: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  low: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  none: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
-}
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 export default function CyclesPage() {
   const [cycles, setCycles] = useState<Cycle[]>([])
@@ -40,7 +47,14 @@ export default function CyclesPage() {
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const [createOpen, setCreateOpen] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [newDescription, setNewDescription] = useState("")
+  const [newTeamId, setNewTeamId] = useState("")
+  const [newStartDate, setNewStartDate] = useState("")
+  const [newEndDate, setNewEndDate] = useState("")
+
+  const fetchAll = () => {
     Promise.all([
       fetch("/api/data/cycles").then((r) => r.json()),
       fetch("/api/data/issues").then((r) => r.json()),
@@ -53,12 +67,60 @@ export default function CyclesPage() {
       setTeams(t)
       setLoading(false)
     })
-  }, [])
+  }
+
+  useEffect(() => { fetchAll() }, [])
+
+  const handleCreate = async () => {
+    const res = await fetch("/api/data/cycles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: newName,
+        description: newDescription,
+        teamId: newTeamId,
+        startDate: newStartDate,
+        endDate: newEndDate,
+      }),
+    })
+    if (res.ok) {
+      const created = await res.json()
+      setCycles((prev) => [...prev, created])
+      setNewName("")
+      setNewDescription("")
+      setNewTeamId("")
+      setNewStartDate("")
+      setNewEndDate("")
+      setCreateOpen(false)
+    }
+  }
+
+  const handleComplete = async (cycleId: string) => {
+    const res = await fetch(`/api/data/cycles/${cycleId}/complete`, { method: "POST" })
+    if (res.ok) {
+      setCycles((prev) => prev.map((c) => (c.id === cycleId ? { ...c, state: "completed" as const } : c)))
+    }
+  }
+
+  const handleStart = async (cycleId: string) => {
+    const res = await fetch(`/api/data/cycles/${cycleId}/start`, { method: "POST" })
+    if (res.ok) {
+      setCycles((prev) => prev.map((c) => (c.id === cycleId ? { ...c, state: "active" as const } : c)))
+    }
+  }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Loading...
+      <div className="flex flex-col gap-6 p-6">
+        <div>
+          <Skeleton className="h-7 w-24" />
+          <Skeleton className="mt-2 h-4 w-48" />
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-lg" />
+          ))}
+        </div>
       </div>
     )
   }
@@ -105,9 +167,29 @@ export default function CyclesPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="pb-3">
-                    <div className="flex gap-4 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span>{cycleIssues.length} issues</span>
                       <span>{totalEstimate} points</span>
+                      {cycle.state === "active" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="ml-auto h-6 text-[10px]"
+                          onClick={(e) => { e.stopPropagation(); handleComplete(cycle.id) }}
+                        >
+                          Complete Cycle
+                        </Button>
+                      )}
+                      {cycle.state === "upcoming" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="ml-auto h-6 text-[10px]"
+                          onClick={(e) => { e.stopPropagation(); handleStart(cycle.id) }}
+                        >
+                          Start Cycle
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </CollapsibleTrigger>
@@ -147,10 +229,18 @@ export default function CyclesPage() {
                               >
                                 {issue.status.replace("_", " ")}
                               </Badge>
-                              {assignee && (
-                                <span className="text-xs text-muted-foreground shrink-0">
-                                  {assignee.name}
-                                </span>
+                              {assignee ? (
+                                <Tooltip>
+                                  <TooltipTrigger render={<span className="shrink-0" />}>
+                                    <Avatar className="size-5">
+                                      <AvatarImage src={assignee.avatar} />
+                                      <AvatarFallback className="text-[8px]">{assignee.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                  </TooltipTrigger>
+                                  <TooltipContent>{assignee.name}</TooltipContent>
+                                </Tooltip>
+                              ) : (
+                                <div className="size-5 shrink-0" />
                               )}
                             </Link>
                           )
@@ -168,12 +258,58 @@ export default function CyclesPage() {
   }
 
   return (
+    <TooltipProvider>
     <div className="flex flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Cycles</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          All cycles across your teams.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Cycles</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            All cycles across your teams.
+          </p>
+        </div>
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <DialogTrigger render={<Button />}>New Cycle</DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create Cycle</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 py-2">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="cycle-name">Name</Label>
+                <Input id="cycle-name" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Cycle 15" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="cycle-desc">Description</Label>
+                <Textarea id="cycle-desc" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} rows={2} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label>Team</Label>
+                <Select value={newTeamId} onValueChange={(v) => v && setNewTeamId(v)}>
+                  <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
+                  <SelectContent>
+                    {teams.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="cycle-start">Start Date</Label>
+                  <Input id="cycle-start" type="date" value={newStartDate} onChange={(e) => setNewStartDate(e.target.value)} />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="cycle-end">End Date</Label>
+                  <Input id="cycle-end" type="date" value={newEndDate} onChange={(e) => setNewEndDate(e.target.value)} />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+              <Button onClick={handleCreate} disabled={!newName.trim() || !newTeamId}>Create</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {cycles.length === 0 ? (
@@ -186,5 +322,6 @@ export default function CyclesPage() {
         </>
       )}
     </div>
+    </TooltipProvider>
   )
 }

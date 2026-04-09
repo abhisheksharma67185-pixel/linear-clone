@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import type { Issue, Member, Team } from "@/app/lib/mock-data"
+import { statusStyle, priorityStyle } from "@/lib/status-styles"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -20,22 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-
-const statusStyle: Record<string, string> = {
-  backlog: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  todo: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  in_progress: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  done: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-  cancelled: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-}
-
-const priorityStyle: Record<string, string> = {
-  urgent: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-  high: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-  low: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  none: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
-}
 
 export default function AllIssuesPage() {
   const [issues, setIssues] = useState<Issue[]>([])
@@ -61,8 +47,17 @@ export default function AllIssuesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Loading...
+      <div className="flex flex-col gap-6 p-6">
+        <div>
+          <Skeleton className="h-7 w-32" />
+          <Skeleton className="mt-2 h-4 w-40" />
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-48" />
+          <Skeleton className="h-9 w-[140px]" />
+          <Skeleton className="h-9 w-[140px]" />
+        </div>
+        <Skeleton className="h-64 rounded-lg" />
       </div>
     )
   }

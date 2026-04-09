@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import {
   Sidebar,
@@ -33,10 +34,15 @@ import {
   Add01Icon,
   DashboardSquare01Icon,
   Tag01Icon,
+  Settings01Icon,
 } from "@hugeicons/core-free-icons"
+import { CreateIssueDialog } from "@/components/create-issue-dialog"
 
 export function AppSidebar() {
+  const [createOpen, setCreateOpen] = useState(false)
+
   return (
+    <>
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2 px-1 py-1">
@@ -167,7 +173,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton render={<Link href="/projects/ENG/board" />}>
+                <SidebarMenuButton onClick={() => setCreateOpen(true)}>
                   <HugeiconsIcon icon={Add01Icon} />
                   <span>Create Issue</span>
                 </SidebarMenuButton>
@@ -178,10 +184,18 @@ export function AppSidebar() {
                   <span>Backlog</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton render={<Link href="/settings" />}>
+                  <HugeiconsIcon icon={Settings01Icon} />
+                  <span>Settings</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
+    <CreateIssueDialog open={createOpen} onOpenChange={setCreateOpen} />
+    </>
   )
 }

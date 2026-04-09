@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
   TooltipContent,
@@ -109,8 +110,9 @@ function SortableIssueCard({
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <button
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                  <Button
+                    variant="ghost"
+                    className="size-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
                   />
@@ -367,16 +369,32 @@ export default function BoardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Loading...
+      <div className="flex flex-col h-full">
+        <div className="flex items-center gap-3 px-6 py-3 border-b">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-5 w-16" />
+        </div>
+        <div className="flex flex-1 p-2 gap-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex-1 space-y-2">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-24 w-full rounded-lg" />
+              <Skeleton className="h-24 w-full rounded-lg" />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
 
   if (!team || (team as Record<string, unknown>).error) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Team not found.
+      <div className="flex items-center justify-center p-12">
+        <Card className="max-w-sm text-center">
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Team not found.</p>
+          </CardContent>
+        </Card>
       </div>
     )
   }
