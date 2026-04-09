@@ -1,5 +1,8 @@
 import "./globals.css"
+import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export default function RootLayout({
   children,
@@ -10,7 +13,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className="antialiased font-sans"
+      className={`antialiased ${inter.className}`}
     >
       <body>
         <ThemeProvider>{children}</ThemeProvider>
