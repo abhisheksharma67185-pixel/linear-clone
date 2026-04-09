@@ -13,6 +13,7 @@ import {
   TextField,
   FormLayout,
   Banner,
+  Box,
 } from "@shopify/polaris";
 import { useState, useCallback, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
@@ -76,9 +77,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   if (loading || !customer) {
     return (
-      <div style={{ padding: 40, textAlign: "center" }}>
-        <Spinner size="large" />
-      </div>
+      <Box padding="1000">
+        <InlineStack align="center">
+          <Spinner size="large" />
+        </InlineStack>
+      </Box>
     );
   }
 
@@ -106,11 +109,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       }
     >
       {banner && (
-        <div style={{ marginBottom: 16 }}>
+        <Box paddingBlockEnd="400">
           <Banner tone={banner.tone} onDismiss={() => setBanner(null)}>
             {banner.message}
           </Banner>
-        </div>
+        </Box>
       )}
 
       <Layout>

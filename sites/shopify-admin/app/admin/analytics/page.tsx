@@ -131,9 +131,9 @@ function ConversionBreakdownCard() {
             —
           </Text>
         </InlineStack>
-        <div style={{ display: "flex", gap: 16 }}>
+        <InlineStack gap="400" wrap={false}>
           {cols.map((col) => (
-            <div key={col.label} style={{ flex: 1 }}>
+            <Box key={col.label} width="25%">
               <BlockStack gap="100">
                 <Text as="span" variant="bodySm" tone="subdued">
                   {col.label}
@@ -145,9 +145,9 @@ function ConversionBreakdownCard() {
                   {col.sub}
                 </Text>
               </BlockStack>
-            </div>
+            </Box>
           ))}
-        </div>
+        </InlineStack>
       </BlockStack>
     </Card>
   );
@@ -170,8 +170,8 @@ function CohortCard() {
         <Text as="h3" variant="headingSm">
           Customer cohort analysis
         </Text>
-        <div style={{ display: "flex", gap: 8 }}>
-          <div>
+        <InlineStack gap="200" wrap={false}>
+          <Box>
             <BlockStack gap="100">
               <Text as="span" variant="bodySm" fontWeight="semibold">
                 Cohort
@@ -182,8 +182,8 @@ function CohortCard() {
                 </Text>
               ))}
             </BlockStack>
-          </div>
-          <div style={{ flex: 1 }}>
+          </Box>
+          <Box width="100%">
             <BlockStack gap="100">
               <Text as="span" variant="bodySm" fontWeight="semibold">
                 Months
@@ -210,8 +210,8 @@ function CohortCard() {
                 );
               })}
             </BlockStack>
-          </div>
-        </div>
+          </Box>
+        </InlineStack>
       </BlockStack>
     </Card>
   );

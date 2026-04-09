@@ -90,9 +90,9 @@ function SmallSetupCard({
           )}
         </InlineStack>
         {children}
-        <div>
+        <InlineStack>
           <Button size="slim">{actionLabel}</Button>
-        </div>
+        </InlineStack>
       </BlockStack>
     </Card>
   );

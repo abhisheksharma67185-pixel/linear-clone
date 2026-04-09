@@ -99,9 +99,9 @@ export default function MarketingPage() {
               online and offline touchpoints, add campaign activities from multiple marketing
               channels, and monitor results.
             </Text>
-            <div>
+            <InlineStack>
               <Button>Create campaign</Button>
-            </div>
+            </InlineStack>
           </BlockStack>
         </Card>
 
@@ -115,9 +115,9 @@ export default function MarketingPage() {
               Grow your audience on social platforms, capture new leads with newsletter sign-ups,
               increase conversion with chat, and more.
             </Text>
-            <div>
+            <InlineStack>
               <Button>Explore marketing apps</Button>
-            </div>
+            </InlineStack>
           </BlockStack>
         </Card>
 

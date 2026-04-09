@@ -170,9 +170,9 @@ export default function ThemesPage() {
                   <Text as="p" variant="bodySm" tone="subdued">
                     Browse professionally designed free and paid themes
                   </Text>
-                  <div>
+                  <InlineStack>
                     <Button>Visit Theme Store</Button>
-                  </div>
+                  </InlineStack>
                 </BlockStack>
               </Card>
             </InlineGrid>

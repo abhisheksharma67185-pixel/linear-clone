@@ -114,9 +114,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
   if (loading || !order) {
     return (
-      <div style={{ padding: 40, textAlign: "center" }}>
-        <Spinner size="large" />
-      </div>
+      <Box padding="1000">
+        <InlineStack align="center">
+          <Spinner size="large" />
+        </InlineStack>
+      </Box>
     );
   }
 
@@ -138,11 +140,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       subtitle={`${order.date} from ${order.customer}`}
     >
       {banner && (
-        <div style={{ marginBottom: 16 }}>
+        <Box paddingBlockEnd="400">
           <Banner tone={banner.tone} onDismiss={() => setBanner(null)}>
             {banner.message}
           </Banner>
-        </div>
+        </Box>
       )}
 
       <Layout>
@@ -287,8 +289,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 ))}
               </BlockStack>
               <Divider />
-              <InlineStack gap="200" blockAlign="end">
-                <div style={{ flexGrow: 1 }}>
+              <InlineStack gap="200" blockAlign="end" wrap={false}>
+                <Box width="100%">
                   <TextField
                     label="Add note"
                     labelHidden
@@ -297,7 +299,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     onChange={setNoteValue}
                     autoComplete="off"
                   />
-                </div>
+                </Box>
                 <Button onClick={handleAddNote} loading={actionLoading === "note"}>
                   Post
                 </Button>

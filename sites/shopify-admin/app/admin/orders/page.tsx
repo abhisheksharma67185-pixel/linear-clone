@@ -16,6 +16,7 @@ import {
   BlockStack,
   Link,
   ChoiceList,
+  InlineStack,
 } from "@shopify/polaris";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -178,9 +179,11 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <Page title="Orders">
-        <div style={{ padding: 40, textAlign: "center" }}>
-          <Spinner size="large" />
-        </div>
+        <Box padding="1000">
+          <InlineStack align="center">
+            <Spinner size="large" />
+          </InlineStack>
+        </Box>
       </Page>
     );
   }

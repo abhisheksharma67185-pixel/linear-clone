@@ -6,9 +6,11 @@ import {
   Card,
   Text,
   BlockStack,
+  Form,
   FormLayout,
   TextField,
   Banner,
+  Box,
 } from "@shopify/polaris";
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -93,18 +95,19 @@ export default function NewCustomerPage() {
       }}
     >
       {error && (
-        <div style={{ marginBottom: 16 }}>
+        <Box paddingBlockEnd="400">
           <Banner tone="critical">{error}</Banner>
-        </div>
+        </Box>
       )}
 
-      <Layout>
-        <Layout.Section>
-          <Card>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">
-                Customer overview
-              </Text>
+      <Form onSubmit={handleSave}>
+        <Layout>
+          <Layout.Section>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingSm">
+                  Customer overview
+                </Text>
               <FormLayout>
                 <FormLayout.Group>
                   <TextField
@@ -204,8 +207,9 @@ export default function NewCustomerPage() {
               />
             </BlockStack>
           </Card>
-        </Layout.Section>
-      </Layout>
+          </Layout.Section>
+        </Layout>
+      </Form>
     </Page>
   );
 }

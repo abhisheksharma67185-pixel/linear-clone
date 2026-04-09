@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@shopify/polaris";
+import { Spinner, Box, InlineStack } from "@shopify/polaris";
 import { useEffect, useState, use } from "react";
 import ProductForm from "../_components/ProductForm";
 import type { Product } from "../../../lib/mock-data";
@@ -22,9 +22,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   if (loading || !product) {
     return (
-      <div style={{ padding: 40, textAlign: "center" }}>
-        <Spinner size="large" />
-      </div>
+      <Box padding="1000">
+        <InlineStack align="center">
+          <Spinner size="large" />
+        </InlineStack>
+      </Box>
     );
   }
 

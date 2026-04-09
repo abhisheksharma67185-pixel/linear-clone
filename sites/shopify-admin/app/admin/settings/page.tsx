@@ -1,6 +1,6 @@
 "use client";
 
-import { Page, Layout, Card, FormLayout, TextField, Select, Banner, Spinner } from "@shopify/polaris";
+import { Page, Layout, Card, Form, FormLayout, TextField, Select, Banner, Spinner, Box, InlineStack } from "@shopify/polaris";
 import { useState, useCallback, useEffect } from "react";
 import type { StoreSettings } from "../../lib/mock-data";
 
@@ -96,9 +96,11 @@ export default function SettingsPage() {
 
   if (!settings) return (
     <Page title="Settings">
-      <div style={{ padding: 40, textAlign: "center" }}>
-        <Spinner size="large" />
-      </div>
+      <Box padding="1000">
+        <InlineStack align="center">
+          <Spinner size="large" />
+        </InlineStack>
+      </Box>
     </Page>
   );
 
@@ -112,18 +114,19 @@ export default function SettingsPage() {
       }}
     >
       {banner && (
-        <div style={{ marginBottom: 16 }}>
+        <Box paddingBlockEnd="400">
           <Banner tone={banner.tone} onDismiss={() => setBanner(null)}>
             {banner.message}
           </Banner>
-        </div>
+        </Box>
       )}
 
-      <Layout>
-        <Layout.AnnotatedSection
-          title="Store details"
-          description="Your store name and contact information"
-        >
+      <Form onSubmit={handleSave}>
+        <Layout>
+          <Layout.AnnotatedSection
+            title="Store details"
+            description="Your store name and contact information"
+          >
           <Card>
             <FormLayout>
               <TextField
@@ -222,8 +225,9 @@ export default function SettingsPage() {
               />
             </FormLayout>
           </Card>
-        </Layout.AnnotatedSection>
-      </Layout>
+          </Layout.AnnotatedSection>
+        </Layout>
+      </Form>
     </Page>
   );
 }

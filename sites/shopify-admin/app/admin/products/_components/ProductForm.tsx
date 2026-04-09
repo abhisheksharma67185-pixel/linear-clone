@@ -3,6 +3,7 @@
 import {
   Layout,
   Card,
+  Form,
   FormLayout,
   TextField,
   Select,
@@ -185,15 +186,16 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
       }
     >
       {error && (
-        <div style={{ marginBottom: 16 }}>
+        <Box paddingBlockEnd="400">
           <Banner tone="critical">{error}</Banner>
-        </div>
+        </Box>
       )}
 
-      <Layout>
-        {/* Main column */}
-        <Layout.Section>
-          {/* Title + Description */}
+      <Form onSubmit={handleSave}>
+        <Layout>
+          {/* Main column */}
+          <Layout.Section>
+            {/* Title + Description */}
           <Card>
             <BlockStack gap="400">
               <TextField label="Title" value={title} onChange={setTitle} autoComplete="off" />
@@ -298,7 +300,7 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
                 Additional display prices
               </Button>
               <Collapsible open={showPriceExtras} id="price-extras">
-                <BlockStack gap="300">
+                <FormLayout>
                   <FormLayout.Group>
                     <TextField
                       label="Compare-at price"
@@ -336,7 +338,7 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
                       Margin --
                     </Text>
                   </InlineStack>
-                </BlockStack>
+                </FormLayout>
               </Collapsible>
             </BlockStack>
           </Card>
@@ -368,7 +370,7 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
                 <Text as="span" variant="bodyMd">
                   Shop location
                 </Text>
-                <div style={{ width: 100 }}>
+                <Box maxWidth="100px">
                   <TextField
                     label="Quantity"
                     labelHidden
@@ -377,7 +379,7 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
                     type="number"
                     autoComplete="off"
                   />
-                </div>
+                </Box>
               </InlineStack>
             </BlockStack>
           </Card>
@@ -718,8 +720,9 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
               />
             </BlockStack>
           </Card>
-        </Layout.Section>
-      </Layout>
+          </Layout.Section>
+        </Layout>
+      </Form>
     </Page>
   );
 }

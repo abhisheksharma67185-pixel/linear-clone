@@ -63,11 +63,11 @@ export default function CampaignsPage() {
                 Grow your audience on social platforms, capture new leads with newsletter sign-ups,
                 increase conversion with chat, and more.
               </Text>
-              <div>
+              <InlineStack>
                 <Button onClick={() => router.push("/admin/marketing")}>
                   Browse marketing apps
                 </Button>
-              </div>
+              </InlineStack>
             </BlockStack>
           </Card>
         </BlockStack>

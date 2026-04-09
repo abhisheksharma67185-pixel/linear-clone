@@ -47,9 +47,9 @@ function CustomersEmptyState({ onAddCustomer }: { onAddCustomer: () => void }) {
           <Text as="p" variant="bodyMd" tone="subdued">
             Grow your customer list by adding a lead capture form to your store and marketing.
           </Text>
-          <div>
+          <InlineStack>
             <Button>See app recommendations</Button>
-          </div>
+          </InlineStack>
         </BlockStack>
       </Card>
       <Box paddingBlock="200">
@@ -105,9 +105,11 @@ export default function CustomersPage() {
   if (loading) {
     return (
       <Page title="Customers">
-        <div style={{ padding: 40, textAlign: "center" }}>
-          <Spinner size="large" />
-        </div>
+        <Box padding="1000">
+          <InlineStack align="center">
+            <Spinner size="large" />
+          </InlineStack>
+        </Box>
       </Page>
     );
   }

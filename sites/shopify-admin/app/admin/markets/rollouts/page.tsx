@@ -7,7 +7,7 @@ export default function RolloutsPage() {
     <Page title="Rollouts">
       <Box padding="1600">
         <InlineStack align="center" blockAlign="center">
-          <div style={{ maxWidth: 500 }}>
+          <Box maxWidth="500px">
             <BlockStack gap="400">
               <Text as="h2" variant="headingLg">
                 Upgrade your plan to access this feature
@@ -16,11 +16,11 @@ export default function RolloutsPage() {
                 To use this feature, your store must be on any of the following plans: Basic, Grow,
                 Advanced, Retail or Shopify Plus
               </Text>
-              <div>
+              <InlineStack>
                 <Button variant="primary">Upgrade plan</Button>
-              </div>
+              </InlineStack>
             </BlockStack>
-          </div>
+          </Box>
         </InlineStack>
       </Box>
     </Page>

@@ -20,6 +20,7 @@ import {
   Link,
   Select,
   Banner,
+  Box,
 } from "@shopify/polaris";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -341,9 +342,11 @@ export default function ProductsPage() {
   if (loading) {
     return (
       <Page title="Products">
-        <div style={{ padding: 40, textAlign: "center" }}>
-          <Spinner size="large" />
-        </div>
+        <Box padding="1000">
+          <InlineStack align="center">
+            <Spinner size="large" />
+          </InlineStack>
+        </Box>
       </Page>
     );
   }

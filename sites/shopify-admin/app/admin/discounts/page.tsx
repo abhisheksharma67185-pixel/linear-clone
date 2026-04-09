@@ -15,6 +15,7 @@ import {
   Box,
   BlockStack,
   Link,
+  InlineStack,
 } from "@shopify/polaris";
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -74,9 +75,11 @@ export default function DiscountsPage() {
   if (loading) {
     return (
       <Page title="Discounts">
-        <div style={{ padding: 40, textAlign: "center" }}>
-          <Spinner size="large" />
-        </div>
+        <Box padding="1000">
+          <InlineStack align="center">
+            <Spinner size="large" />
+          </InlineStack>
+        </Box>
       </Page>
     );
   }

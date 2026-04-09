@@ -1,6 +1,6 @@
 "use client";
 
-import { Page, Layout, Card, FormLayout, TextField, BlockStack, Text, Banner } from "@shopify/polaris";
+import { Page, Layout, Card, FormLayout, TextField, BlockStack, Text, Banner, Box } from "@shopify/polaris";
 import { useState, useCallback } from "react";
 
 export default function PreferencesPage() {
@@ -26,11 +26,11 @@ export default function PreferencesPage() {
       primaryAction={{ content: "Save", loading: saving, onAction: handleSave }}
     >
       {showBanner && (
-        <div style={{ marginBottom: 16 }}>
+        <Box paddingBlockEnd="400">
           <Banner tone="success" onDismiss={() => setShowBanner(false)}>
             Preferences saved successfully.
           </Banner>
-        </div>
+        </Box>
       )}
       <Layout>
         <Layout.AnnotatedSection
