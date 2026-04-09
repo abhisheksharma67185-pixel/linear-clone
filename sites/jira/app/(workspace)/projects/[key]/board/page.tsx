@@ -1,21 +1,55 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import type { Issue, User, Project, Epic } from "@/app/lib/mock-data"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { priorityVariant, typeVariant, projectTypeVariant } from "@/lib/badge-styles"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { priorityVariant, typeVariant, typeLabel, projectTypeVariant } from "@/lib/badge-styles"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { MoreHorizontalIcon, ArrowRight01Icon, FilterIcon } from "@hugeicons/core-free-icons"
 
 const STATUS_COLUMNS = [
-  { key: "to_do", label: "To Do", color: "bg-gray-400" },
-  { key: "in_progress", label: "In Progress", color: "bg-blue-500" },
-  { key: "in_review", label: "In Review", color: "bg-yellow-500" },
-  { key: "done", label: "Done", color: "bg-green-500" },
+  { key: "to_do", label: "TO DO", icon: "○", color: "text-gray-400", dotColor: "bg-gray-400" },
+  { key: "in_progress", label: "IN PROGRESS", icon: "◐", color: "text-blue-500", dotColor: "bg-blue-500" },
+  { key: "in_review", label: "IN REVIEW", icon: "◑", color: "text-yellow-500", dotColor: "bg-yellow-500" },
+  { key: "done", label: "DONE", icon: "●", color: "text-green-500", dotColor: "bg-green-500" },
 ] as const
 
+const PRIORITY_ICON: Record<string, string> = {
+  highest: "⬆⬆",
+  high: "⬆",
+  medium: "→",
+  low: "⬇",
+  lowest: "⬇⬇",
+}
+
+const TYPE_ICON: Record<string, { icon: string; color: string }> = {
+  story: { icon: "⚡", color: "text-green-600" },
+  task: { icon: "☑", color: "text-blue-600" },
+  bug: { icon: "●", color: "text-red-600" },
+  subtask: { icon: "◦", color: "text-cyan-600" },
+}
+
+type StatusKey = typeof STATUS_COLUMNS[number]["key"]
 
 export default function BoardPage() {
   const params = useParams<{ key: string }>()
@@ -26,6 +60,8 @@ export default function BoardPage() {
   const [users, setUsers] = useState<User[]>([])
   const [epics, setEpics] = useState<Epic[]>([])
   const [loading, setLoading] = useState(true)
+  const [filterType, setFilterType] = useState<string | null>(null)
+  const [filterAssignee, setFilterAssignee] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -42,11 +78,18 @@ export default function BoardPage() {
     })
   }, [projectKey])
 
-  const userName = (id: string | null) =>
-    users.find((u) => u.id === id)
-
-  const projectIssues = issues.filter(
-    (i) => project && i.projectId === project.id
+  const moveIssue = useCallback(
+    (issueKey: string, newStatus: StatusKey) => {
+      setIssues((prev) =>
+        prev.map((i) => (i.key === issueKey ? { ...i, status: newStatus } : i))
+      )
+      fetch(`/api/data/issues/${issueKey}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      })
+    },
+    []
   )
 
   if (loading) {
@@ -57,7 +100,7 @@ export default function BoardPage() {
     )
   }
 
-  if (!project || project.error) {
+  if (!project || (project as Record<string, unknown>).error) {
     return (
       <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
         Project not found.
@@ -65,95 +108,268 @@ export default function BoardPage() {
     )
   }
 
-  return (
-    <div className="flex flex-col gap-4 p-6 h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <h1 className="text-xl font-semibold">{project.name}</h1>
-        <Badge
-          variant="outline"
-          className={projectTypeVariant[project.type]}
-        >
-          {project.type} board
-        </Badge>
-      </div>
+  const projectIssues = issues
+    .filter((i) => i.projectId === project.id)
+    .filter((i) => !filterType || i.type === filterType)
+    .filter((i) => !filterAssignee || i.assigneeId === filterAssignee)
 
-      {/* Kanban columns */}
-      <div className="grid grid-cols-4 gap-4 flex-1 min-h-0">
-        {STATUS_COLUMNS.map((col) => {
-          const colIssues = projectIssues.filter(
-            (i) => i.status === col.key
-          )
-          return (
-            <div key={col.key} className="flex flex-col min-h-0">
-              <div className="flex items-center gap-2 mb-3 px-1">
-                <div className={`size-2 rounded-full ${col.color}`} />
-                <span className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-                  {col.label}
-                </span>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {colIssues.length}
-                </span>
-              </div>
-              <div className="flex flex-col gap-2 overflow-y-auto flex-1">
-                {colIssues.map((issue) => {
-                  const assignee = userName(issue.assigneeId)
-                  const epic = epics.find((e) => e.id === issue.epicId)
-                  return (
-                    <Link key={issue.id} href={`/issue/${issue.key}`}>
-                      <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-                        <CardContent className="p-3">
-                          <p className="text-sm font-medium mb-2 leading-snug">
-                            {issue.summary}
-                          </p>
-                          {epic && (
-                            <p className="text-xs text-purple-600 dark:text-purple-400 mb-2">
-                              {epic.name}
-                            </p>
-                          )}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                              <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${typeVariant[issue.type]}`}>
-                                {issue.type}
-                              </Badge>
-                              <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${priorityVariant[issue.priority]}`}>
-                                {issue.priority}
-                              </Badge>
+  const hasFilters = filterType || filterAssignee
+  const projectUsers = users.filter((u) =>
+    issues.some((i) => i.projectId === project.id && i.assigneeId === u.id)
+  )
+
+  return (
+    <TooltipProvider>
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-3 border-b">
+          <div className="flex items-center gap-3">
+            <h1 className="text-base font-semibold">{project.name}</h1>
+            <Badge variant="outline" className={`text-[10px] ${projectTypeVariant[project.type]}`}>
+              {project.type} board
+            </Badge>
+            <Separator orientation="vertical" className="h-4" />
+            <span className="text-xs text-muted-foreground">
+              {projectIssues.length} issues
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Type filter */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant={filterType ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs gap-1"
+                  />
+                }
+              >
+                <HugeiconsIcon icon={FilterIcon} className="size-3" />
+                {filterType ? (typeLabel[filterType] ?? filterType) : "Type"}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setFilterType(null)}>
+                  All types
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {Object.entries(TYPE_ICON).map(([key, cfg]) => (
+                  <DropdownMenuItem key={key} onClick={() => setFilterType(key)}>
+                    <span className={`mr-1 ${cfg.color}`}>{cfg.icon}</span> {typeLabel[key] ?? key}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Assignee filter */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant={filterAssignee ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 text-xs gap-1"
+                  />
+                }
+              >
+                {filterAssignee
+                  ? users.find((u) => u.id === filterAssignee)?.name ?? "Assignee"
+                  : "Assignee"}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setFilterAssignee(null)}>
+                  All members
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {projectUsers.map((u) => (
+                  <DropdownMenuItem key={u.id} onClick={() => setFilterAssignee(u.id)}>
+                    <Avatar className="size-4 mr-1.5">
+                      <AvatarImage src={u.avatar} />
+                      <AvatarFallback className="text-[7px]">{u.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    {u.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {hasFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-muted-foreground"
+                onClick={() => {
+                  setFilterType(null)
+                  setFilterAssignee(null)
+                }}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Board columns */}
+        <div className="flex flex-1 min-h-0 overflow-x-auto">
+          {STATUS_COLUMNS.map((col, colIdx) => {
+            const colIssues = projectIssues.filter((i) => i.status === col.key)
+            return (
+              <div
+                key={col.key}
+                className={`flex flex-col min-w-[280px] flex-1 ${
+                  colIdx < STATUS_COLUMNS.length - 1 ? "border-r" : ""
+                }`}
+              >
+                {/* Column header */}
+                <div className="flex items-center gap-2 px-3 py-2.5 border-b bg-muted/30">
+                  <span className={`text-sm ${col.color}`}>{col.icon}</span>
+                  <span className="text-[11px] font-semibold text-muted-foreground tracking-wider">
+                    {col.label}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground/60 tabular-nums ml-auto font-mono">
+                    {colIssues.length}
+                  </span>
+                </div>
+
+                {/* Issue cards */}
+                <ScrollArea className="flex-1">
+                  <div className="flex flex-col gap-1.5 p-2">
+                    {colIssues.map((issue) => {
+                      const assignee = users.find((u) => u.id === issue.assigneeId)
+                      const epic = epics.find((e) => e.id === issue.epicId)
+                      const typeInfo = TYPE_ICON[issue.type]
+
+                      return (
+                        <Card
+                          key={issue.id}
+                          className="group hover:border-primary/30 transition-colors shadow-none"
+                        >
+                          <CardContent className="p-2.5">
+                            {/* Top row: key + type icon + actions */}
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-1.5">
+                                <Tooltip>
+                                  <TooltipTrigger
+                                    render={<span className={`text-xs ${typeInfo.color}`} />}
+                                  >
+                                    {typeInfo.icon}
+                                  </TooltipTrigger>
+                                  <TooltipContent>{typeLabel[issue.type] ?? issue.type}</TooltipContent>
+                                </Tooltip>
+                                <Link
+                                  href={`/issue/${issue.key}`}
+                                  className="font-mono text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                                >
+                                  {issue.key}
+                                </Link>
+                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger
+                                  render={
+                                    <button className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted" />
+                                  }
+                                >
+                                  <HugeiconsIcon icon={MoreHorizontalIcon} className="size-3.5 text-muted-foreground" />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {STATUS_COLUMNS.filter((s) => s.key !== col.key).map((s) => (
+                                    <DropdownMenuItem
+                                      key={s.key}
+                                      onClick={() => moveIssue(issue.key, s.key)}
+                                    >
+                                      <HugeiconsIcon icon={ArrowRight01Icon} className="size-3 mr-1.5" />
+                                      Move to {s.label}
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              {issue.storyPoints != null && (
-                                <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-1.5 py-0.5">
-                                  {issue.storyPoints}
-                                </span>
-                              )}
+
+                            {/* Title */}
+                            <Link href={`/issue/${issue.key}`}>
+                              <p className="text-sm font-medium leading-snug mb-1.5 hover:text-primary transition-colors cursor-pointer line-clamp-2">
+                                {issue.summary}
+                              </p>
+                            </Link>
+
+                            {/* Epic */}
+                            {epic && (
+                              <p className="text-[10px] text-purple-600 dark:text-purple-400 mb-2 truncate">
+                                {epic.name}
+                              </p>
+                            )}
+
+                            {/* Bottom row: badges + assignee */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
+                                <Tooltip>
+                                  <TooltipTrigger
+                                    render={
+                                      <span>
+                                        <Badge variant="secondary" className={`text-[9px] px-1 py-0 ${typeVariant[issue.type]}`}>
+                                          {typeLabel[issue.type] ?? issue.type}
+                                        </Badge>
+                                      </span>
+                                    }
+                                  />
+                                  <TooltipContent>Type: {typeLabel[issue.type]}</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger
+                                    render={
+                                      <span>
+                                        <Badge variant="secondary" className={`text-[9px] px-1 py-0 ${priorityVariant[issue.priority]}`}>
+                                          {PRIORITY_ICON[issue.priority]} {issue.priority}
+                                        </Badge>
+                                      </span>
+                                    }
+                                  />
+                                  <TooltipContent>Priority: {issue.priority}</TooltipContent>
+                                </Tooltip>
+                                {issue.storyPoints != null && (
+                                  <Tooltip>
+                                    <TooltipTrigger
+                                      render={
+                                        <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 tabular-nums" />
+                                      }
+                                    >
+                                      {issue.storyPoints}
+                                    </TooltipTrigger>
+                                    <TooltipContent>{issue.storyPoints} story points</TooltipContent>
+                                  </Tooltip>
+                                )}
+                              </div>
                               {assignee && (
-                                <Avatar className="size-5">
-                                  <AvatarImage src={assignee.avatar} />
-                                  <AvatarFallback className="text-[8px]">
-                                    {assignee.name.charAt(0)}
-                                  </AvatarFallback>
-                                </Avatar>
+                                <Tooltip>
+                                  <TooltipTrigger render={<span />}>
+                                    <Avatar className="size-5">
+                                      <AvatarImage src={assignee.avatar} />
+                                      <AvatarFallback className="text-[8px]">
+                                        {assignee.name.charAt(0)}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  </TooltipTrigger>
+                                  <TooltipContent>{assignee.name}</TooltipContent>
+                                </Tooltip>
                               )}
                             </div>
-                          </div>
-                          <p className="text-[10px] text-muted-foreground mt-1.5 font-mono">
-                            {issue.key}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  )
-                })}
-                {colIssues.length === 0 && (
-                  <div className="text-xs text-muted-foreground text-center py-8 border border-dashed rounded-md">
-                    No issues
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                    {colIssues.length === 0 && (
+                      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground/50">
+                        <span className={`text-2xl mb-1 ${col.color}`}>{col.icon}</span>
+                        <span className="text-xs">No issues</span>
+                      </div>
+                    )}
                   </div>
-                )}
+                </ScrollArea>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   )
 }
