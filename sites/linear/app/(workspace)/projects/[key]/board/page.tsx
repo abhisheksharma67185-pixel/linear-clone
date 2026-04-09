@@ -29,6 +29,19 @@ import {
   ArrowRight01Icon,
   FilterIcon,
 } from "@hugeicons/core-free-icons"
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+  type DragStartEvent,
+  type DragEndEvent,
+  type DragOverEvent,
+} from "@dnd-kit/core"
+import { useSortable, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 const STATUS_COLUMNS = [
   { key: "backlog", label: "Backlog", icon: "○", color: "text-gray-400", dotColor: "bg-gray-400" },
@@ -48,6 +61,221 @@ const PRIORITY_CONFIG: Record<string, { label: string; icon: string; style: stri
 
 type StatusKey = typeof STATUS_COLUMNS[number]["key"]
 
+// ── Draggable Issue Card ─────────────────────────────────────────────
+function SortableIssueCard({
+  issue,
+  members,
+  labels: allLabels,
+  colKey,
+  moveIssue,
+}: {
+  issue: Issue
+  members: Member[]
+  labels: Label[]
+  colKey: StatusKey
+  moveIssue: (id: string, status: StatusKey) => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: issue.id, data: { status: colKey } })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+
+  const assignee = members.find((m) => m.id === issue.assigneeId)
+  const issueLabels = allLabels.filter((l) => issue.labelIds.includes(l.id))
+  const priority = PRIORITY_CONFIG[issue.priority]
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <Card className="group hover:border-primary/30 transition-colors shadow-none cursor-grab active:cursor-grabbing" {...listeners}>
+        <CardContent className="p-2.5">
+          <div className="flex items-center justify-between mb-1">
+            <Link
+              href={`/issues/${issue.identifier}`}
+              className="font-mono text-[10px] text-muted-foreground hover:text-primary transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {issue.identifier}
+            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                  />
+                }
+              >
+                <HugeiconsIcon icon={MoreHorizontalIcon} className="size-3.5 text-muted-foreground" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {STATUS_COLUMNS.filter((s) => s.key !== colKey).map((s) => (
+                  <DropdownMenuItem key={s.key} onClick={() => moveIssue(issue.id, s.key)}>
+                    <HugeiconsIcon icon={ArrowRight01Icon} className="size-3 mr-1.5" />
+                    Move to {s.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <Link href={`/issues/${issue.identifier}`} onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+            <p className="text-sm font-medium leading-snug mb-2 hover:text-primary transition-colors cursor-pointer line-clamp-2">
+              {issue.title}
+            </p>
+          </Link>
+
+          {issueLabels.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-2">
+              {issueLabels.map((label) => (
+                <span
+                  key={label.id}
+                  className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white"
+                  style={{ backgroundColor: label.color }}
+                >
+                  {label.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <span className={`inline-flex items-center rounded border px-1 py-0.5 text-[9px] font-medium ${priority.style}`} />
+                  }
+                >
+                  {priority.icon}
+                </TooltipTrigger>
+                <TooltipContent>{priority.label} priority</TooltipContent>
+              </Tooltip>
+              {issue.estimate != null && (
+                <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 tabular-nums">
+                  {issue.estimate}
+                </span>
+              )}
+            </div>
+            {assignee && (
+              <Tooltip>
+                <TooltipTrigger render={<span />}>
+                  <Avatar className="size-5">
+                    <AvatarImage src={assignee.avatar} />
+                    <AvatarFallback className="text-[8px]">{assignee.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent>{assignee.name}</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// ── Drag Overlay Card (ghost shown while dragging) ───────────────────
+function DragOverlayCard({ issue, members, labels: allLabels }: { issue: Issue; members: Member[]; labels: Label[] }) {
+  const assignee = members.find((m) => m.id === issue.assigneeId)
+  const priority = PRIORITY_CONFIG[issue.priority]
+  const issueLabels = allLabels.filter((l) => issue.labelIds.includes(l.id))
+
+  return (
+    <Card className="shadow-lg border-primary/40 w-[244px] rotate-2">
+      <CardContent className="p-2.5">
+        <p className="font-mono text-[10px] text-muted-foreground mb-1">{issue.identifier}</p>
+        <p className="text-sm font-medium leading-snug mb-2 line-clamp-2">{issue.title}</p>
+        {issueLabels.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {issueLabels.map((label) => (
+              <span key={label.id} className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: label.color }}>
+                {label.name}
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          <span className={`inline-flex items-center rounded border px-1 py-0.5 text-[9px] font-medium ${priority.style}`}>
+            {priority.icon}
+          </span>
+          {assignee && (
+            <Avatar className="size-5">
+              <AvatarImage src={assignee.avatar} />
+              <AvatarFallback className="text-[8px]">{assignee.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// ── Droppable Column ─────────────────────────────────────────────────
+function DroppableColumn({
+  col,
+  issues: colIssues,
+  members,
+  labels,
+  moveIssue,
+  isLast,
+}: {
+  col: typeof STATUS_COLUMNS[number]
+  issues: Issue[]
+  members: Member[]
+  labels: Label[]
+  moveIssue: (id: string, status: StatusKey) => void
+  isLast: boolean
+}) {
+  return (
+    <div className={`flex flex-col min-w-[260px] w-[260px] flex-shrink-0 ${!isLast ? "border-r" : ""}`}>
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b bg-muted/30">
+        <span className={`text-sm ${col.color}`}>{col.icon}</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          {col.label}
+        </span>
+        <span className="text-[10px] text-muted-foreground/60 tabular-nums ml-auto font-mono">
+          {colIssues.length}
+        </span>
+      </div>
+
+      <ScrollArea className="flex-1">
+        <SortableContext items={colIssues.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+          <div className="flex flex-col gap-1.5 p-2 min-h-[100px]" data-column={col.key}>
+            {colIssues.map((issue) => (
+              <SortableIssueCard
+                key={issue.id}
+                issue={issue}
+                members={members}
+                labels={labels}
+                colKey={col.key}
+                moveIssue={moveIssue}
+              />
+            ))}
+            {colIssues.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground/50">
+                <span className={`text-2xl mb-1 ${col.color}`}>{col.icon}</span>
+                <span className="text-xs">No issues</span>
+              </div>
+            )}
+          </div>
+        </SortableContext>
+      </ScrollArea>
+    </div>
+  )
+}
+
+// ── Main Board ───────────────────────────────────────────────────────
 export default function BoardPage() {
   const params = useParams<{ key: string }>()
   const teamKey = params.key
@@ -59,6 +287,11 @@ export default function BoardPage() {
   const [loading, setLoading] = useState(true)
   const [filterPriority, setFilterPriority] = useState<string | null>(null)
   const [filterAssignee, setFilterAssignee] = useState<string | null>(null)
+  const [activeId, setActiveId] = useState<string | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  )
 
   useEffect(() => {
     Promise.all([
@@ -80,11 +313,54 @@ export default function BoardPage() {
       setIssues((prev) =>
         prev.map((i) => (i.id === issueId ? { ...i, status: newStatus } : i))
       )
-      fetch(`/api/data/issues/${issues.find((i) => i.id === issueId)?.identifier}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      })
+      const issue = issues.find((i) => i.id === issueId)
+      if (issue) {
+        fetch(`/api/data/issues/${issue.identifier}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        })
+      }
+    },
+    [issues]
+  )
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }, [])
+
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { active, over } = event
+    if (!over) return
+
+    const activeStatus = active.data.current?.status as StatusKey | undefined
+    const overStatus = over.data.current?.status as StatusKey | undefined
+
+    if (activeStatus && overStatus && activeStatus !== overStatus) {
+      setIssues((prev) =>
+        prev.map((i) => (i.id === active.id ? { ...i, status: overStatus } : i))
+      )
+    }
+  }, [])
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event
+      setActiveId(null)
+      if (!over) return
+
+      const overStatus = over.data.current?.status as StatusKey | undefined
+      if (overStatus) {
+        const issue = issues.find((i) => i.id === active.id)
+        if (issue && issue.status !== overStatus) {
+          // already moved in handleDragOver, just persist
+          fetch(`/api/data/issues/${issue.identifier}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: overStatus }),
+          })
+        }
+      }
     },
     [issues]
   )
@@ -112,6 +388,7 @@ export default function BoardPage() {
 
   const hasFilters = filterPriority || filterAssignee
   const teamMembers = members.filter((m) => team.memberIds.includes(m.id))
+  const activeIssue = activeId ? issues.find((i) => i.id === activeId) : null
 
   return (
     <TooltipProvider>
@@ -120,33 +397,20 @@ export default function BoardPage() {
         <div className="flex items-center justify-between px-6 py-3 border-b">
           <div className="flex items-center gap-3">
             <h1 className="text-base font-semibold">{team.name}</h1>
-            <Badge variant="outline" className="text-[10px] font-mono">
-              {team.key}
-            </Badge>
+            <Badge variant="outline" className="text-[10px] font-mono">{team.key}</Badge>
             <Separator orientation="vertical" className="h-4" />
-            <span className="text-xs text-muted-foreground">
-              {teamIssues.length} issues
-            </span>
+            <span className="text-xs text-muted-foreground">{teamIssues.length} issues</span>
           </div>
           <div className="flex items-center gap-2">
-            {/* Priority filter */}
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant={filterPriority ? "secondary" : "ghost"}
-                    size="sm"
-                    className="h-7 text-xs gap-1"
-                  />
-                }
+                render={<Button variant={filterPriority ? "secondary" : "ghost"} size="sm" className="h-7 text-xs gap-1" />}
               >
                 <HugeiconsIcon icon={FilterIcon} className="size-3" />
                 {filterPriority ? PRIORITY_CONFIG[filterPriority].label : "Priority"}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setFilterPriority(null)}>
-                  All priorities
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterPriority(null)}>All priorities</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => (
                   <DropdownMenuItem key={key} onClick={() => setFilterPriority(key)}>
@@ -156,25 +420,14 @@ export default function BoardPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Assignee filter */}
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant={filterAssignee ? "secondary" : "ghost"}
-                    size="sm"
-                    className="h-7 text-xs gap-1"
-                  />
-                }
+                render={<Button variant={filterAssignee ? "secondary" : "ghost"} size="sm" className="h-7 text-xs gap-1" />}
               >
-                {filterAssignee
-                  ? members.find((m) => m.id === filterAssignee)?.name ?? "Assignee"
-                  : "Assignee"}
+                {filterAssignee ? members.find((m) => m.id === filterAssignee)?.name ?? "Assignee" : "Assignee"}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setFilterAssignee(null)}>
-                  All members
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterAssignee(null)}>All members</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {teamMembers.map((m) => (
                   <DropdownMenuItem key={m.id} onClick={() => setFilterAssignee(m.id)}>
@@ -189,167 +442,44 @@ export default function BoardPage() {
             </DropdownMenu>
 
             {hasFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs text-muted-foreground"
-                onClick={() => {
-                  setFilterPriority(null)
-                  setFilterAssignee(null)
-                }}
-              >
+              <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={() => { setFilterPriority(null); setFilterAssignee(null) }}>
                 Clear
               </Button>
             )}
           </div>
         </div>
 
-        {/* Board columns */}
-        <div className="flex flex-1 min-h-0 overflow-x-auto">
-          {STATUS_COLUMNS.map((col, colIdx) => {
-            const colIssues = teamIssues.filter((i) => i.status === col.key)
-            return (
-              <div
-                key={col.key}
-                className={`flex flex-col min-w-[260px] w-[260px] flex-shrink-0 ${
-                  colIdx < STATUS_COLUMNS.length - 1 ? "border-r" : ""
-                }`}
-              >
-                {/* Column header */}
-                <div className="flex items-center gap-2 px-3 py-2.5 border-b bg-muted/30">
-                  <span className={`text-sm ${col.color}`}>{col.icon}</span>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {col.label}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground/60 tabular-nums ml-auto font-mono">
-                    {colIssues.length}
-                  </span>
-                </div>
+        {/* Board columns with DnD */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex flex-1 min-h-0 overflow-x-auto">
+            {STATUS_COLUMNS.map((col, colIdx) => {
+              const colIssues = teamIssues.filter((i) => i.status === col.key)
+              return (
+                <DroppableColumn
+                  key={col.key}
+                  col={col}
+                  issues={colIssues}
+                  members={members}
+                  labels={labels}
+                  moveIssue={moveIssue}
+                  isLast={colIdx === STATUS_COLUMNS.length - 1}
+                />
+              )
+            })}
+          </div>
 
-                {/* Issue cards */}
-                <ScrollArea className="flex-1">
-                  <div className="flex flex-col gap-1.5 p-2">
-                    {colIssues.map((issue) => {
-                      const assignee = members.find((m) => m.id === issue.assigneeId)
-                      const issueLabels = labels.filter((l) => issue.labelIds.includes(l.id))
-                      const priority = PRIORITY_CONFIG[issue.priority]
-
-                      return (
-                        <Card
-                          key={issue.id}
-                          className="group hover:border-primary/30 transition-colors shadow-none"
-                        >
-                          <CardContent className="p-2.5">
-                            {/* Top row: identifier + actions */}
-                            <div className="flex items-center justify-between mb-1">
-                              <Link
-                                href={`/issues/${issue.identifier}`}
-                                className="font-mono text-[10px] text-muted-foreground hover:text-primary transition-colors"
-                              >
-                                {issue.identifier}
-                              </Link>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger
-                                  render={
-                                    <button className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted" />
-                                  }
-                                >
-                                  <HugeiconsIcon icon={MoreHorizontalIcon} className="size-3.5 text-muted-foreground" />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  {STATUS_COLUMNS.filter((s) => s.key !== col.key).map((s) => (
-                                    <DropdownMenuItem
-                                      key={s.key}
-                                      onClick={() => moveIssue(issue.id, s.key)}
-                                    >
-                                      <HugeiconsIcon icon={ArrowRight01Icon} className="size-3 mr-1.5" />
-                                      Move to {s.label}
-                                    </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-
-                            {/* Title */}
-                            <Link href={`/issues/${issue.identifier}`}>
-                              <p className="text-sm font-medium leading-snug mb-2 hover:text-primary transition-colors cursor-pointer line-clamp-2">
-                                {issue.title}
-                              </p>
-                            </Link>
-
-                            {/* Labels */}
-                            {issueLabels.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mb-2">
-                                {issueLabels.map((label) => (
-                                  <span
-                                    key={label.id}
-                                    className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white"
-                                    style={{ backgroundColor: label.color }}
-                                  >
-                                    {label.name}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Bottom row: priority + estimate + assignee */}
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1.5">
-                                <Tooltip>
-                                  <TooltipTrigger
-                                    render={
-                                      <span
-                                        className={`inline-flex items-center rounded border px-1 py-0.5 text-[9px] font-medium ${priority.style}`}
-                                      />
-                                    }
-                                  >
-                                    {priority.icon}
-                                  </TooltipTrigger>
-                                  <TooltipContent>{priority.label} priority</TooltipContent>
-                                </Tooltip>
-                                {issue.estimate != null && (
-                                  <Tooltip>
-                                    <TooltipTrigger
-                                      render={
-                                        <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 tabular-nums" />
-                                      }
-                                    >
-                                      {issue.estimate}
-                                    </TooltipTrigger>
-                                    <TooltipContent>{issue.estimate} points</TooltipContent>
-                                  </Tooltip>
-                                )}
-                              </div>
-                              {assignee && (
-                                <Tooltip>
-                                  <TooltipTrigger render={<span />}>
-                                    <Avatar className="size-5">
-                                      <AvatarImage src={assignee.avatar} />
-                                      <AvatarFallback className="text-[8px]">
-                                        {assignee.name.charAt(0)}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                  </TooltipTrigger>
-                                  <TooltipContent>{assignee.name}</TooltipContent>
-                                </Tooltip>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )
-                    })}
-                    {colIssues.length === 0 && (
-                      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground/50">
-                        <span className={`text-2xl mb-1 ${col.color}`}>{col.icon}</span>
-                        <span className="text-xs">No issues</span>
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              </div>
-            )
-          })}
-        </div>
+          <DragOverlay>
+            {activeIssue ? (
+              <DragOverlayCard issue={activeIssue} members={members} labels={labels} />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </div>
     </TooltipProvider>
   )
