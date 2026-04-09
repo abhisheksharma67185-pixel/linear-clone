@@ -57,6 +57,12 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton render={<Link href="/issues" />}>
+                <HugeiconsIcon icon={TaskEdit01Icon} />
+                <span>Issues</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton render={<Link href="/projects" />}>
                 <HugeiconsIcon icon={Layers01Icon} />
                 <span>Projects</span>
