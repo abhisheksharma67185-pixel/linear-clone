@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 
@@ -9,23 +10,28 @@ const recommendations = [
     title: "Add another admin",
     description: "Ensure you have another admin to avoid being locked out",
     badge: "1 organization admin",
+    href: "/admin/users",
   },
   {
     title: "Verify your domain",
     description: "Prove you own the domain of your user accounts",
+    href: "/admin/domains",
   },
   {
     title: "Claim your user accounts",
     description: "Claim accounts from your domain so you can apply authentication settings to managed accounts",
+    href: "/admin/managed-accounts",
   },
   {
     title: "Update your authentication policy",
     description: "Specify authentication settings for managed accounts",
+    href: "/admin/security/user-security/authentication-policies",
   },
   {
     title: "Control the location of your data",
     description: "Choose where you store app data to meet your privacy, security, and legal requirements",
     badge: "3 unpinned apps",
+    href: "/admin/data-management/data-residency",
   },
 ]
 
@@ -35,26 +41,31 @@ const guardRecommendations = [
     description: "Make it easy for users to log in from your identity provider and provision them automatically",
     bullets: ["Set up SAML single sign-on", "Set up user provisioning"],
     badge: "0 identity providers",
+    href: "/admin/security/user-security/identity-providers",
   },
   {
     title: "Create more authentication policies",
     description: "Create multiple policies to enforce different authentication settings for subsets of users",
     badge: "0 managed accounts",
+    href: "/admin/security/user-security/authentication-policies",
   },
   {
     title: "Set up your external user policy",
     description: "Control how users you don't manage access your apps",
     badge: "1 external user",
+    href: "/admin/security/user-security/external-users",
   },
   {
     title: "Activate a data security policy",
     description: "Control how users and other entities interact with your Atlassian app data",
     badge: "4 apps",
+    href: "/admin/security/data-protection/data-security-policy",
   },
   {
     title: "Create a mobile app policy",
     description: "Configure security controls for Jira Cloud, Confluence Cloud, and Opsgenie Cloud mobile apps",
     badge: "0 mobile app users",
+    href: "/admin/security/device-security/mobile-app-policies",
   },
 ]
 
@@ -63,6 +74,7 @@ const featureCards = [
     title: "Analytics",
     description: "View charts about the security of your accounts and the usage of your apps.",
     action: "View analytics",
+    href: "/admin/insights/analytics",
     iconBg: "bg-green-600",
     icon: (
       <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -74,6 +86,7 @@ const featureCards = [
     title: "Audit log",
     description: "Monitor changes to app access, organization settings, and more.",
     action: "View audit log",
+    href: "/admin/insights/audit-log",
     iconBg: "bg-red-500",
     icon: (
       <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -87,6 +100,7 @@ const featureCards = [
     title: "API token activity",
     description: "View API token activity and revoke the tokens you need to.",
     action: "View API tokens",
+    href: "/admin/insights/api-token-activity",
     iconBg: "bg-purple-600",
     icon: (
       <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -99,6 +113,7 @@ const featureCards = [
     title: "Get help",
     description: "Ask questions, share resources, and get tips from fellow admins in the Atlassian Community.",
     action: "Ask the community",
+    href: "/teams",
     iconBg: "bg-green-700",
     icon: (
       <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -126,9 +141,11 @@ export default function SecurityGuidePage() {
           <p className="text-sm text-muted-foreground mb-4">
             Prove you own your domain so you can claim and manage user accounts. Managed accounts are more secure.
           </p>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-            Verify domain
-          </Button>
+          <Link href="/admin/domains">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              Verify domain
+            </Button>
+          </Link>
         </div>
 
         {/* Users with access donut */}
@@ -204,7 +221,7 @@ export default function SecurityGuidePage() {
 
       <div className="rounded-lg border divide-y mb-6">
         {recommendations.map((item) => (
-          <div key={item.title} className="flex items-center gap-3 px-4 py-3.5 hover:bg-accent/50 cursor-pointer transition-colors">
+          <Link key={item.title} href={item.href} className="flex items-center gap-3 px-4 py-3.5 hover:bg-accent/50 cursor-pointer transition-colors">
             <div className="shrink-0 text-muted-foreground">
               <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -224,7 +241,7 @@ export default function SecurityGuidePage() {
                 <path d="M12 5l7 7-7 7" />
               </svg>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -237,7 +254,7 @@ export default function SecurityGuidePage() {
 
       <div className="rounded-lg border divide-y mb-6">
         {guardRecommendations.map((item) => (
-          <div key={item.title} className="flex items-center gap-3 px-4 py-3.5 hover:bg-accent/50 cursor-pointer transition-colors">
+          <Link key={item.title} href={item.href} className="flex items-center gap-3 px-4 py-3.5 hover:bg-accent/50 cursor-pointer transition-colors">
             <div className="shrink-0 text-muted-foreground">
               <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -264,7 +281,7 @@ export default function SecurityGuidePage() {
                 <path d="M12 5l7 7-7 7" />
               </svg>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -286,9 +303,11 @@ export default function SecurityGuidePage() {
             </div>
             <h3 className="text-sm font-semibold mb-1">{card.title}</h3>
             <p className="text-xs text-muted-foreground mb-4 flex-1">{card.description}</p>
-            <Button variant="outline" size="sm" className="w-fit">
-              {card.action}
-            </Button>
+            <Link href={card.href}>
+              <Button variant="outline" size="sm" className="w-fit">
+                {card.action}
+              </Button>
+            </Link>
           </div>
         ))}
       </div>

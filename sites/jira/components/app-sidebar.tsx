@@ -14,6 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import {
   Popover,
@@ -305,7 +306,15 @@ function CustomizeSidebarDialog({ open, onOpenChange }: { open: boolean; onOpenC
                 <span className="text-muted-foreground">{navIconMap[item.icon]}</span>
                 <span className="text-sm flex-1">{item.name}</span>
                 {!item.alwaysOn && (
-                  <button className="text-muted-foreground hover:text-foreground">
+                  <button
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      const next = [...jiraChecked]
+                      next[i] = !next[i]
+                      setJiraChecked(next)
+                    }}
+                    title="Toggle visibility"
+                  >
                     <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
                       <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
                     </svg>
@@ -335,7 +344,15 @@ function CustomizeSidebarDialog({ open, onOpenChange }: { open: boolean; onOpenC
                 />
                 <span className="text-muted-foreground">{navIconMap[item.icon]}</span>
                 <span className="text-sm flex-1">{item.name}</span>
-                <button className="text-muted-foreground hover:text-foreground">
+                <button
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    const next = [...appChecked]
+                    next[i] = !next[i]
+                    setAppChecked(next)
+                  }}
+                  title="Toggle visibility"
+                >
                   <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
                   </svg>
@@ -440,7 +457,9 @@ function MoreMenuPopover() {
 // ─── Main Sidebar ────────────────────────────────────────────────────────────
 export function AppSidebar() {
   const pathname = usePathname()
+  const { toggleSidebar } = useSidebar()
   const [appsOpen, setAppsOpen] = useState(false)
+  const [appsHidden, setAppsHidden] = useState(false)
   const [plansOpen, setPlansOpen] = useState(pathname.startsWith("/plans"))
   const [spacesOpen, setSpacesOpen] = useState(true)
   const [filtersOpen, setFiltersOpen] = useState(pathname.startsWith("/filters"))
@@ -455,22 +474,31 @@ export function AppSidebar() {
             {/* App switcher */}
             <AppSwitcher />
             {/* Jira blue diamond logo */}
-            <svg className="size-7" viewBox="0 0 32 32" fill="none">
-              <defs>
-                <linearGradient id="jira-blue-1" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stopColor="#2684FF" />
-                  <stop offset="100%" stopColor="#0052CC" />
-                </linearGradient>
-              </defs>
-              <path d="M27.545 15.2L16.8 4.454 16 3.654l-8.345 8.346-.855.854L4.454 15.2a1.547 1.547 0 000 2.189L12.2 25.135 16 28.935l8.345-8.346.354-.354 2.846-2.846a1.547 1.547 0 000-2.189zM16 20.6l-4.254-4.254L16 12.092l4.254 4.254L16 20.6z" fill="url(#jira-blue-1)" />
-            </svg>
-            <span className="text-base font-bold tracking-tight">Jira</span>
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <svg className="size-7" viewBox="0 0 32 32" fill="none">
+                <defs>
+                  <linearGradient id="jira-blue-1" x1="50%" y1="0%" x2="50%" y2="100%">
+                    <stop offset="0%" stopColor="#2684FF" />
+                    <stop offset="100%" stopColor="#0052CC" />
+                  </linearGradient>
+                </defs>
+                <path d="M27.545 15.2L16.8 4.454 16 3.654l-8.345 8.346-.855.854L4.454 15.2a1.547 1.547 0 000 2.189L12.2 25.135 16 28.935l8.345-8.346.354-.354 2.846-2.846a1.547 1.547 0 000-2.189zM16 20.6l-4.254-4.254L16 12.092l4.254 4.254L16 20.6z" fill="url(#jira-blue-1)" />
+              </svg>
+              <span className="text-base font-bold tracking-tight">Jira</span>
+            </Link>
           </div>
-          <button className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground">
+          <button
+            onClick={toggleSidebar}
+            className="group/collapse relative rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            title="Collapse sidebar (Ctrl+B)"
+          >
             <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="11 17 6 12 11 7" />
               <polyline points="18 17 13 12 18 7" />
             </svg>
+            <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-[11px] text-background opacity-0 group-hover/collapse:opacity-100 transition-opacity z-50">
+              Collapse sidebar <kbd className="ml-1 rounded border border-background/20 px-1 text-[10px]">Ctrl+B</kbd>
+            </span>
           </button>
         </div>
       </SidebarHeader>
@@ -481,13 +509,20 @@ export function AppSidebar() {
           <SidebarMenu>
             {/* For you */}
             <SidebarMenuItem>
-              <SidebarMenuButton render={<Link href="/dashboard" />} isActive={pathname === "/dashboard"}>
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <Link
+                href="/dashboard"
+                className={`flex w-full items-center gap-2 rounded-md p-2 text-xs transition-colors ${
+                  pathname === "/dashboard" || pathname.startsWith("/issue/")
+                    ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20 dark:text-blue-400"
+                    : "text-foreground hover:bg-accent"
+                }`}
+              >
+                <svg className={`size-4 ${pathname === "/dashboard" || pathname.startsWith("/issue/") ? "text-blue-600" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
                 </svg>
                 <span>For you</span>
-              </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
 
             {/* Recent */}
@@ -497,28 +532,64 @@ export function AppSidebar() {
             <StarredDropdown />
 
             {/* Apps - expandable */}
-            <SidebarMenuItem>
-              <div className="group/apps flex items-center">
-                <SidebarMenuButton className="flex-1" onClick={() => setAppsOpen(!appsOpen)}>
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-                  </svg>
-                  <span>Apps</span>
-                </SidebarMenuButton>
-                <button className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground group-hover/apps:opacity-100">
-                  {ThreeDotsIcon}
-                </button>
-              </div>
-            </SidebarMenuItem>
-            {appsOpen && (
-              <div className="ml-4 border-l pl-3 py-1">
-                <Link href="/apps" className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-blue-600 hover:bg-accent font-medium">
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  </svg>
-                  Explore more apps
-                </Link>
-              </div>
+            {!appsHidden && (
+              <>
+                <SidebarMenuItem>
+                  <div className="group/apps flex items-center">
+                    <SidebarMenuButton className="flex-1" onClick={() => setAppsOpen(!appsOpen)}>
+                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                      </svg>
+                      <span>Apps</span>
+                    </SidebarMenuButton>
+                    <Popover>
+                      <PopoverTrigger className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground group-hover/apps:opacity-100">
+                        {ThreeDotsIcon}
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[220px] p-1" align="start" side="bottom">
+                        <Link href="/admin/manage-apps" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                          <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                          </svg>
+                          Manage apps
+                        </Link>
+                        <Link href="/admin/insights/audit-log" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                          <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                          </svg>
+                          App audit logs
+                        </Link>
+                        <Link href="/admin/user-requests" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                          <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" /><line x1="4.93" y1="4.93" x2="9.17" y2="9.17" /><line x1="14.83" y1="14.83" x2="19.07" y2="19.07" /><line x1="14.83" y1="9.17" x2="19.07" y2="4.93" /><line x1="4.93" y1="19.07" x2="9.17" y2="14.83" />
+                          </svg>
+                          View app requests
+                        </Link>
+                        <div className="my-1 border-t" />
+                        <button
+                          onClick={() => { setAppsHidden(true); setAppsOpen(false) }}
+                          className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full"
+                        >
+                          <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" />
+                          </svg>
+                          Hide from sidebar
+                        </button>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </SidebarMenuItem>
+                {appsOpen && (
+                  <div className="ml-4 border-l pl-3 py-1">
+                    <Link href="/apps" className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-blue-600 hover:bg-accent font-medium">
+                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
+                      Explore more apps
+                    </Link>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Plans - expandable section */}
@@ -536,12 +607,12 @@ export function AppSidebar() {
                   <span>Plans</span>
                 </SidebarMenuButton>
                 <div className="mr-1 flex items-center gap-0.5 opacity-0 group-hover/plans:opacity-100">
-                  <Link href="/plans" className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground">
+                  <Link href="/plans" className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground" title="Create plan">
                     <HugeiconsIcon icon={Add01Icon} className="size-4" />
                   </Link>
-                  <button className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground">
+                  <Link href="/plans" className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground" title="View plans">
                     {ThreeDotsIcon}
-                  </button>
+                  </Link>
                 </div>
               </div>
             </SidebarMenuItem>
@@ -585,12 +656,12 @@ export function AppSidebar() {
                   </svg>
                 </SidebarMenuButton>
                 <div className="mr-1 flex items-center gap-0.5 opacity-0 group-hover/spaces:opacity-100">
-                  <Link href="/projects" className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground">
+                  <Link href="/projects" className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground" title="Create space">
                     <HugeiconsIcon icon={Add01Icon} className="size-4" />
                   </Link>
-                  <button className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground">
+                  <Link href="/projects" className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground" title="View all spaces">
                     {ThreeDotsIcon}
-                  </button>
+                  </Link>
                 </div>
               </div>
             </SidebarMenuItem>
@@ -629,7 +700,7 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton render={<Link href="/plans" />}>
                       <div className="flex size-5 items-center justify-center rounded bg-blue-100 dark:bg-blue-900/30">
                         <svg className="size-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
@@ -690,9 +761,9 @@ export function AppSidebar() {
                     </svg>
                     <span className="text-sm">Filters</span>
                   </SidebarMenuButton>
-                  <button className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground group-hover/filters:opacity-100">
+                  <Link href="/filters" className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground group-hover/filters:opacity-100" title="View all filters">
                     {ThreeDotsIcon}
-                  </button>
+                  </Link>
                 </div>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -751,9 +822,9 @@ export function AppSidebar() {
                           </svg>
                           <span className="text-sm truncate">{filter.name}</span>
                         </SidebarMenuButton>
-                        <button className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground group-hover/filter-item:opacity-100">
+                        <Link href={`/filters/${filter.slug}`} className="mr-1 rounded p-0.5 text-muted-foreground opacity-0 hover:bg-accent hover:text-foreground group-hover/filter-item:opacity-100" title="Open filter">
                           {ThreeDotsIcon}
-                        </button>
+                        </Link>
                       </div>
                     </SidebarMenuItem>
                   ))}
@@ -793,12 +864,12 @@ export function AppSidebar() {
                     <span className="text-sm">Dashboards</span>
                   </SidebarMenuButton>
                   <div className="mr-1 flex items-center gap-0.5 opacity-0 group-hover/dashboards:opacity-100">
-                    <button className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground">
+                    <Link href="/dashboards" className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground" title="Create dashboard">
                       <HugeiconsIcon icon={Add01Icon} className="size-4" />
-                    </button>
-                    <button className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground">
+                    </Link>
+                    <Link href="/dashboards" className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground" title="View all dashboards">
                       {ThreeDotsIcon}
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </SidebarMenuItem>

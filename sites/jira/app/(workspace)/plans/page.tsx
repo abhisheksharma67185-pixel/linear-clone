@@ -163,7 +163,7 @@ export default function PlansPage() {
             </div>
           </div>
 
-          <button className="mb-8 flex items-center gap-1.5 self-start text-sm text-muted-foreground hover:text-foreground">
+          <button onClick={() => { const v = prompt("Enter additional space/board name:"); if (v) setSpaceName((prev) => prev ? `${prev}, ${v}` : v) }} className="mb-8 flex items-center gap-1.5 self-start text-sm text-muted-foreground hover:text-foreground">
             <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
@@ -346,7 +346,7 @@ export default function PlansPage() {
           </p>
           <p className="mb-6 text-sm text-muted-foreground">
             For tips on making the best plans, check out the{" "}
-            <a href="#" className="font-medium text-blue-600 hover:underline">
+            <a href="/products" className="font-medium text-blue-600 hover:underline">
               Get Started with Plans
               <svg className="mb-0.5 ml-0.5 inline size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -385,7 +385,7 @@ export default function PlansPage() {
         {plans.map((plan) => (
           <Link
             key={plan.id}
-            href="#"
+            href="/plans"
             className="group rounded-lg border bg-card p-5 transition-shadow hover:shadow-md"
           >
             <h3 className="mb-1 text-sm font-semibold">{plan.name}</h3>

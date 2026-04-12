@@ -294,11 +294,12 @@ const weekLabels = ["3 weeks ago", "2 weeks ago", "Last week", "This week"]
 const monthLabels = ["January", "February", "March", "April", "May", "June"]
 
 export default function StatusUpdatesPage() {
-  const [tab, setTab] = useState<"projects" | "goals">("projects")
+  const [tab, setTab] = useState<"projects" | "goals" | "saved">("projects")
   const [catchUpOpen, setCatchUpOpen] = useState(false)
   const [writeOpen, setWriteOpen] = useState(false)
   const [weekIdx, setWeekIdx] = useState(2)
   const [monthIdx, setMonthIdx] = useState(3)
+  const [starred, setStarred] = useState(true)
 
   return (
     <>
@@ -327,12 +328,89 @@ export default function StatusUpdatesPage() {
         >
           Goals
         </button>
+        <button
+          onClick={() => setTab("saved")}
+          className={`flex items-center gap-1.5 pb-2.5 text-sm font-medium transition-colors ${tab === "saved" ? "border-b-2 border-blue-600 text-blue-600" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18" /><path d="M14 8h4" /><path d="M14 12h4" /><path d="M14 16h4" /></svg>
+          abhisheksharma67185
+        </button>
       </div>
 
       <div className="flex gap-8">
         {/* Main content */}
         <div className="flex-1">
-          {tab === "projects" ? (
+          {tab === "saved" ? (
+            <>
+              {/* Saved view header */}
+              <div className="mb-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <svg className="size-6 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18" /><path d="M14 8h4" /><path d="M14 12h4" /><path d="M14 16h4" /></svg>
+                  <h2 className="text-xl font-bold">abhisheksharma67185</h2>
+                  <button onClick={() => setStarred(!starred)} className="transition-colors">
+                    {starred ? (
+                      <svg className="size-5 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                    ) : (
+                      <svg className="size-5 text-muted-foreground hover:text-yellow-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                    )}
+                  </button>
+                </div>
+                <Link
+                  href="/project-directory"
+                  className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
+                >
+                  See directory view
+                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+                </Link>
+              </div>
+
+              <h3 className="mb-4 text-base font-semibold">Latest goal updates</h3>
+
+              {/* Empty state */}
+              <div className="flex flex-col items-center py-8">
+                <svg className="mb-6 size-48" viewBox="0 0 200 200" fill="none">
+                  <rect x="30" y="60" width="140" height="120" rx="8" fill="#f4f5f7" />
+                  <rect x="40" y="80" width="80" height="6" rx="3" fill="#dfe1e6" />
+                  <rect x="40" y="95" width="60" height="6" rx="3" fill="#dfe1e6" />
+                  <rect x="40" y="110" width="100" height="6" rx="3" fill="#dfe1e6" />
+                  <rect x="40" y="125" width="40" height="6" rx="3" fill="#dfe1e6" />
+                  <rect x="40" y="140" width="70" height="6" rx="3" fill="#dfe1e6" />
+                  <circle cx="50" cy="72" r="8" fill="#4FC3F7" />
+                  <circle cx="65" cy="165" r="10" fill="#F5A623" />
+                  <rect x="55" y="173" width="20" height="15" rx="4" fill="#F5A623" />
+                  <rect x="58" y="130" width="24" height="20" rx="10" fill="#F5A623" />
+                  <rect x="62" y="136" width="16" height="3" rx="1.5" fill="white" />
+                  <rect x="62" y="142" width="10" height="3" rx="1.5" fill="white" />
+                  <rect x="130" y="50" width="50" height="20" rx="6" fill="#26A69A" />
+                  <rect x="135" y="55" width="30" height="4" rx="2" fill="white" opacity="0.5" />
+                  <line x1="145" y1="70" x2="145" y2="160" stroke="#253858" strokeWidth="2" />
+                  <line x1="160" y1="70" x2="160" y2="160" stroke="#253858" strokeWidth="2" />
+                  <line x1="145" y1="85" x2="160" y2="85" stroke="#253858" strokeWidth="2" />
+                  <line x1="145" y1="100" x2="160" y2="100" stroke="#253858" strokeWidth="2" />
+                  <line x1="145" y1="115" x2="160" y2="115" stroke="#253858" strokeWidth="2" />
+                  <line x1="145" y1="130" x2="160" y2="130" stroke="#253858" strokeWidth="2" />
+                  <line x1="145" y1="145" x2="160" y2="145" stroke="#253858" strokeWidth="2" />
+                  <circle cx="152" cy="68" r="6" fill="#7C4DFF" />
+                  <rect x="147" y="74" width="10" height="12" rx="3" fill="#7C4DFF" />
+                </svg>
+
+                <h3 className="mb-2 text-lg font-bold text-center">No one wrote any updates?!</h3>
+                <p className="text-sm text-muted-foreground text-center max-w-lg">
+                  Oh no, we couldn&apos;t find any updates to show you for this view 😔
+                </p>
+                <p className="text-sm text-muted-foreground text-center max-w-lg mt-1">
+                  Project and goal owners need to know someone&apos;s listening to invest time in writing updates.
+                </p>
+                <p className="text-sm text-muted-foreground text-center max-w-lg mt-1">
+                  Learn how you can encourage more effective team-to-team communication via{" "}
+                  <Link href="/home/status-updates" className="text-blue-600 hover:underline inline-flex items-center gap-0.5">
+                    The Loop framework
+                    <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+                  </Link>
+                </p>
+              </div>
+            </>
+          ) : tab === "projects" ? (
             <>
               {/* Info banner */}
               <div className="mb-6 rounded-lg border bg-muted/30 px-5 py-4">
@@ -460,23 +538,38 @@ export default function StatusUpdatesPage() {
 
         {/* Right sidebar */}
         <div className="w-56 shrink-0">
-          <div className="mb-6">
-            <h3 className="mb-2 text-sm font-semibold">{tab === "projects" ? "New projects" : "New goals"}</h3>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="size-6 rounded bg-muted" />
-              <span>{tab === "projects" ? "No new projects this week" : "No new goals this month"}</span>
-              <div className="ml-auto size-4 rounded-full border" />
+          {tab === "saved" ? (
+            <div>
+              <h3 className="mb-3 text-sm font-semibold">Goals</h3>
+              <Link href="/goals" className="flex items-center justify-between rounded-md px-2 py-2 hover:bg-accent transition-colors">
+                <div className="flex items-center gap-2">
+                  <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg>
+                  <span className="text-sm">uvvigigi</span>
+                </div>
+                <Avatar className="size-6"><AvatarFallback className="bg-blue-600 text-[9px] font-semibold text-white">AS</AvatarFallback></Avatar>
+              </Link>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="mb-6">
+                <h3 className="mb-2 text-sm font-semibold">{tab === "projects" ? "New projects" : "New goals"}</h3>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="size-6 rounded bg-muted" />
+                  <span>{tab === "projects" ? "No new projects this week" : "No new goals this month"}</span>
+                  <div className="ml-auto size-4 rounded-full border" />
+                </div>
+              </div>
 
-          <div>
-            <h3 className="mb-2 text-sm font-semibold">{tab === "projects" ? "Completed projects" : "Completed goals"}</h3>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="size-6 rounded bg-muted" />
-              <span>{tab === "projects" ? "No completed projects this week" : "No completed goals this month"}</span>
-              <div className="ml-auto size-4 rounded-full border" />
-            </div>
-          </div>
+              <div>
+                <h3 className="mb-2 text-sm font-semibold">{tab === "projects" ? "Completed projects" : "Completed goals"}</h3>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="size-6 rounded bg-muted" />
+                  <span>{tab === "projects" ? "No completed projects this week" : "No completed goals this month"}</span>
+                  <div className="ml-auto size-4 rounded-full border" />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

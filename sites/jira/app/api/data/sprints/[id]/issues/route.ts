@@ -15,7 +15,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "issue_id (string) is required" }, { status: 400 });
   }
 
-  const result = store.moveIssueToSprint(id, issueId);
+  const result = store.moveIssueToSprint(issueId, id);
   if (!result.success) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }

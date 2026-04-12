@@ -6,6 +6,8 @@ import {
   issues as initialIssues,
   boards as initialBoards,
   filters as initialFilters,
+  comments as initialComments,
+  issueHistory as initialHistory,
   type User,
   type Project,
   type Sprint,
@@ -14,6 +16,8 @@ import {
   type Board,
   type SavedFilter,
   type Plan,
+  type Comment,
+  type IssueHistoryEntry,
 } from "./mock-data";
 
 // ---------------------------------------------------------------------------
@@ -85,15 +89,19 @@ let _issues: Issue[] = deepClone(initialIssues);
 let _boards: Board[] = deepClone(initialBoards);
 let _filters: SavedFilter[] = deepClone(initialFilters);
 let _plans: Plan[] = [];
+let _comments: Comment[] = deepClone(initialComments);
+let _history: IssueHistoryEntry[] = deepClone(initialHistory);
+let _nextHistoryId = 9;
 
 // Auto-increment counters per project key
-let _nextIssueCounters: Record<string, number> = { PROJ: 19, KANB: 8 };
-let _nextIssueId = 26;
+let _nextIssueCounters: Record<string, number> = { SCRUM: 19, KANB: 9 };
+let _nextIssueId = 27;
 let _nextProjectId = 3;
 let _nextSprintId = 4;
 let _nextEpicId = 4;
 let _nextFilterId = 4;
 let _nextPlanId = 1;
+let _nextCommentId = 8;
 
 // ---------------------------------------------------------------------------
 // Issues
@@ -624,6 +632,71 @@ export function deletePlan(id: string): Result<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Comments
+// ---------------------------------------------------------------------------
+
+export function getCommentsByIssue(issueId: string): Comment[] {
+  return deepClone(_comments.filter((c) => c.issueId === issueId));
+}
+
+export function createComment(fields: { issueId: string; authorId: string; body: string }): Result<Comment> {
+  if (!fields.body?.trim()) return { success: false, error: "Comment body is required" };
+  if (!fields.issueId) return { success: false, error: "issueId is required" };
+  const comment: Comment = {
+    id: `cmt-${_nextCommentId++}`,
+    issueId: fields.issueId,
+    authorId: fields.authorId || "usr-1",
+    body: fields.body.trim(),
+    createdAt: now(),
+    updatedAt: now(),
+  };
+  _comments.push(comment);
+  return { success: true, data: deepClone(comment) };
+}
+
+export function updateComment(id: string, fields: { body?: string }): Result<Comment> {
+  const comment = _comments.find((c) => c.id === id);
+  if (!comment) return { success: false, error: "Comment not found" };
+  if (fields.body !== undefined) {
+    if (!fields.body.trim()) return { success: false, error: "Comment body cannot be empty" };
+    comment.body = fields.body.trim();
+  }
+  comment.updatedAt = now();
+  return { success: true, data: deepClone(comment) };
+}
+
+export function deleteComment(id: string): Result<void> {
+  const idx = _comments.findIndex((c) => c.id === id);
+  if (idx === -1) return { success: false, error: "Comment not found" };
+  _comments.splice(idx, 1);
+  return { success: true, data: undefined };
+}
+
+// ---------------------------------------------------------------------------
+// Issue History
+// ---------------------------------------------------------------------------
+
+export function getHistoryByIssue(issueId: string): IssueHistoryEntry[] {
+  return deepClone(_history.filter((h) => h.issueId === issueId));
+}
+
+export function addHistoryEntry(fields: {
+  issueId: string; authorId: string; field: string; oldValue: string | null; newValue: string | null;
+}): IssueHistoryEntry {
+  const entry: IssueHistoryEntry = {
+    id: `hist-${_nextHistoryId++}`,
+    issueId: fields.issueId,
+    authorId: fields.authorId,
+    field: fields.field,
+    oldValue: fields.oldValue,
+    newValue: fields.newValue,
+    createdAt: now(),
+  };
+  _history.push(entry);
+  return deepClone(entry);
+}
+
+// ---------------------------------------------------------------------------
 // Reset — restores everything to initial state
 // ---------------------------------------------------------------------------
 
@@ -636,18 +709,22 @@ export function reset(seed?: number): void {
   _boards = deepClone(initialBoards);
   _filters = deepClone(initialFilters);
   _plans = [];
+  _comments = deepClone(initialComments);
+  _history = deepClone(initialHistory);
 
-  _nextIssueCounters = { PROJ: 19, KANB: 8 };
-  _nextIssueId = 26;
+  _nextIssueCounters = { SCRUM: 19, KANB: 9 };
+  _nextIssueId = 27;
   _nextProjectId = 3;
   _nextSprintId = 4;
   _nextEpicId = 4;
   _nextFilterId = 4;
   _nextPlanId = 1;
+  _nextCommentId = 8;
+  _nextHistoryId = 9;
 
   // Deterministic timestamps when seed is provided
   if (seed !== undefined) {
-    const base = new Date("2025-06-01T12:00:00.000Z");
+    const base = new Date("2026-06-01T12:00:00.000Z");
     base.setMinutes(base.getMinutes() + (seed % 1440));
     _dateOverride = base.toISOString();
   } else {

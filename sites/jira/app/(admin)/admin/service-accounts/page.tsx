@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 
 const appRoles = [
   { name: "Goals", sub: "abhisheksharma67185", plan: "Free", icon: "◎" },
@@ -73,7 +74,7 @@ export default function ServiceAccountsPage() {
 
               <div className="mb-4">
                 <label className="text-sm font-medium mb-1 block">Description</label>
-                <textarea className="w-full rounded-md border px-3 py-2 text-sm min-h-[80px] bg-background focus:outline-none focus:ring-2 focus:ring-ring" />
+                <Textarea className="min-h-[80px]" />
                 <p className="text-xs text-muted-foreground">For example, describe the purpose of the service account.</p>
               </div>
             </>

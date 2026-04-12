@@ -3,6 +3,20 @@
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface AppLink {
   id: string
@@ -13,54 +27,151 @@ interface AppLink {
   system: boolean
 }
 
-export default function ApplicationsPage() {
-  const [apps, setApps] = useState<AppLink[]>([
-    {
-      id: "app-1",
-      name: "Jira",
-      url: "https://abhisheksharma67185.atlassian.net/secure/MyJiraHome.jspa",
-      hidden: false,
-      groups: "",
-      system: true,
-    },
-  ])
+const initialApps: AppLink[] = [
+  {
+    id: "app-1",
+    name: "Jira",
+    url: "https://abhisheksharma67185.atlassian.net/secure/MyJiraHome.jspa",
+    hidden: false,
+    groups: "",
+    system: true,
+  },
+  {
+    id: "app-2",
+    name: "Confluence",
+    url: "https://abhisheksharma67185.atlassian.net/wiki",
+    hidden: false,
+    groups: "",
+    system: true,
+  },
+  {
+    id: "app-3",
+    name: "Bitbucket",
+    url: "https://bitbucket.org",
+    hidden: false,
+    groups: "",
+    system: true,
+  },
+]
 
+export default function ApplicationsPage() {
+  const [apps, setApps] = useState<AppLink[]>(initialApps)
+
+  // Add form state
   const [newName, setNewName] = useState("")
   const [newUrl, setNewUrl] = useState("")
   const [newHidden, setNewHidden] = useState(false)
   const [newGroups, setNewGroups] = useState("")
 
+  // Edit dialog state
+  const [editOpen, setEditOpen] = useState(false)
+  const [editApp, setEditApp] = useState<AppLink | null>(null)
+  const [editName, setEditName] = useState("")
+  const [editUrl, setEditUrl] = useState("")
+  const [editGroups, setEditGroups] = useState("")
+
+  // Delete dialog state
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteApp, setDeleteApp] = useState<AppLink | null>(null)
+
+  // Success message
+  const [message, setMessage] = useState<string | null>(null)
+
+  const showMessage = (msg: string) => {
+    setMessage(msg)
+    setTimeout(() => setMessage(null), 3000)
+  }
+
   const handleAdd = () => {
     if (!newName.trim() || !newUrl.trim()) return
-    setApps((prev) => [
-      ...prev,
-      {
-        id: `app-${Date.now()}`,
-        name: newName.trim(),
-        url: newUrl.trim(),
-        hidden: newHidden,
-        groups: newGroups.trim(),
-        system: false,
-      },
-    ])
+    const app: AppLink = {
+      id: `app-${Date.now()}`,
+      name: newName.trim(),
+      url: newUrl.trim(),
+      hidden: newHidden,
+      groups: newGroups.trim(),
+      system: false,
+    }
+    setApps((prev) => [...prev, app])
     setNewName("")
     setNewUrl("")
     setNewHidden(false)
     setNewGroups("")
+    showMessage(`"${app.name}" has been added.`)
+  }
+
+  const handleToggleHidden = (id: string) => {
+    setApps((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, hidden: !a.hidden } : a))
+    )
+  }
+
+  const handleEditOpen = (app: AppLink) => {
+    setEditApp(app)
+    setEditName(app.name)
+    setEditUrl(app.url)
+    setEditGroups(app.groups)
+    setEditOpen(true)
+  }
+
+  const handleEditSave = () => {
+    if (!editApp || !editName.trim() || !editUrl.trim()) return
+    setApps((prev) =>
+      prev.map((a) =>
+        a.id === editApp.id
+          ? { ...a, name: editName.trim(), url: editUrl.trim(), groups: editGroups.trim() }
+          : a
+      )
+    )
+    setEditOpen(false)
+    setEditApp(null)
+    showMessage(`"${editName.trim()}" has been updated.`)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!deleteApp) return
+    setApps((prev) => prev.filter((a) => a.id !== deleteApp.id))
+    setDeleteOpen(false)
+    const name = deleteApp.name
+    setDeleteApp(null)
+    showMessage(`"${name}" has been removed.`)
+  }
+
+  const handleMoveUp = (id: string) => {
+    setApps((prev) => {
+      const idx = prev.findIndex((a) => a.id === id)
+      if (idx <= 0) return prev
+      const next = [...prev]
+      ;[next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]
+      return next
+    })
+  }
+
+  const handleMoveDown = (id: string) => {
+    setApps((prev) => {
+      const idx = prev.findIndex((a) => a.id === id)
+      if (idx < 0 || idx >= prev.length - 1) return prev
+      const next = [...prev]
+      ;[next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]
+      return next
+    })
   }
 
   return (
     <div className="p-8">
+      {/* Toast message */}
+      {message && (
+        <div className="fixed top-4 right-4 z-50 rounded-lg border bg-background px-4 py-3 shadow-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <svg className="size-4 text-green-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+          {message}
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Applications</h1>
-        <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-          <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          Search Jira admin
-        </button>
       </div>
 
       {/* Application Navigator section */}
@@ -77,14 +188,9 @@ export default function ApplicationsPage() {
         <div className="grid grid-cols-[200px_1fr_80px_180px_80px] gap-2 border-b px-4 py-3 text-sm font-medium text-muted-foreground">
           <span>Name</span>
           <span>URL</span>
-          <span>Hide</span>
+          <span className="text-center">Hide</span>
           <span>Groups</span>
-          <span className="flex justify-end">
-            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09" />
-            </svg>
-          </span>
+          <span className="text-center">Actions</span>
         </div>
 
         {/* Add new row */}
@@ -93,33 +199,41 @@ export default function ApplicationsPage() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             className="h-8 text-sm bg-background"
-            placeholder=""
+            placeholder="App name"
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
           />
           <Input
             value={newUrl}
             onChange={(e) => setNewUrl(e.target.value)}
             className="h-8 text-sm bg-background"
-            placeholder=""
+            placeholder="https://..."
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
           />
           <div className="flex items-center justify-center">
-            <input
-              type="radio"
-              checked={newHidden}
-              onChange={() => setNewHidden(!newHidden)}
-              className="size-4 accent-blue-600"
-            />
+            <button
+              onClick={() => setNewHidden(!newHidden)}
+              className={`size-4 rounded border transition-colors ${newHidden ? "bg-blue-600 border-blue-600" : "border-muted-foreground/40"}`}
+            >
+              {newHidden && (
+                <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </button>
           </div>
           <Input
             value={newGroups}
             onChange={(e) => setNewGroups(e.target.value)}
             className="h-8 text-sm bg-background"
-            placeholder=""
+            placeholder="e.g. jira-users"
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
           />
-          <div className="flex items-center">
+          <div className="flex items-center justify-center">
             <Button
               size="sm"
               variant="outline"
               onClick={handleAdd}
+              disabled={!newName.trim() || !newUrl.trim()}
               className="text-sm"
             >
               Add
@@ -128,27 +242,153 @@ export default function ApplicationsPage() {
         </div>
 
         {/* Existing apps */}
-        {apps.map((app) => (
+        {apps.map((app, idx) => (
           <div
             key={app.id}
-            className="grid grid-cols-[200px_1fr_80px_180px_80px] gap-2 border-b last:border-b-0 px-4 py-3 items-center"
+            className={`grid grid-cols-[200px_1fr_80px_180px_80px] gap-2 border-b last:border-b-0 px-4 py-3 items-center ${app.hidden ? "opacity-50" : ""}`}
           >
             <div className="flex items-center gap-2">
-              {app.system && (
-                <svg className="size-4 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {app.system ? (
+                <svg className="size-4 text-blue-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
                   <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
                 </svg>
+              ) : (
+                <svg className="size-4 text-muted-foreground/50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
               )}
-              <span className="text-sm">{app.name}</span>
+              <span className="text-sm font-medium truncate">{app.name}</span>
+              {app.system && (
+                <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground shrink-0">System</span>
+              )}
             </div>
             <span className="text-sm text-muted-foreground truncate">{app.url}</span>
-            <div />
-            <div />
-            <div />
+            <div className="flex items-center justify-center">
+              <button
+                onClick={() => handleToggleHidden(app.id)}
+                className={`size-4 rounded border transition-colors ${app.hidden ? "bg-blue-600 border-blue-600" : "border-muted-foreground/40 hover:border-muted-foreground"}`}
+              >
+                {app.hidden && (
+                  <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            <span className="text-sm text-muted-foreground truncate">{app.groups || "—"}</span>
+            <div className="flex items-center justify-center">
+              {app.system ? (
+                <span className="text-xs text-muted-foreground">—</span>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="text-muted-foreground hover:text-foreground rounded p-1 hover:bg-accent transition-colors">
+                      <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                      </svg>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleEditOpen(app)}>
+                      <svg className="size-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                      Edit
+                    </DropdownMenuItem>
+                    {idx > 0 && (
+                      <DropdownMenuItem onClick={() => handleMoveUp(app.id)}>
+                        <svg className="size-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15" /></svg>
+                        Move up
+                      </DropdownMenuItem>
+                    )}
+                    {idx < apps.length - 1 && (
+                      <DropdownMenuItem onClick={() => handleMoveDown(app.id)}>
+                        <svg className="size-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
+                        Move down
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => { setDeleteApp(app); setDeleteOpen(true) }}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <svg className="size-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
         ))}
+
+        {apps.length === 0 && (
+          <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+            No applications configured. Add one above.
+          </div>
+        )}
       </div>
+
+      <p className="mt-4 text-xs text-muted-foreground">
+        {apps.length} application{apps.length !== 1 ? "s" : ""} configured &middot; {apps.filter((a) => a.system).length} system &middot; {apps.filter((a) => !a.system).length} custom
+      </p>
+
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Edit application link</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Name <span className="text-red-500">*</span></label>
+              <Input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">URL <span className="text-red-500">*</span></label>
+              <Input
+                value={editUrl}
+                onChange={(e) => setEditUrl(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Groups</label>
+              <Input
+                value={editGroups}
+                onChange={(e) => setEditGroups(e.target.value)}
+                placeholder="e.g. jira-users, developers"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button
+              className="bg-blue-600 text-white hover:bg-blue-700"
+              onClick={handleEditSave}
+              disabled={!editName.trim() || !editUrl.trim()}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Delete application link</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground py-2">
+            Are you sure you want to remove <span className="font-medium text-foreground">{deleteApp?.name}</span> from the application navigator?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

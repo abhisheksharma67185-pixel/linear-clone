@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 
 const mainApps = [
@@ -13,7 +13,6 @@ const mainApps = [
         <polyline points="9 22 9 12 15 12 15 22" />
       </svg>
     ),
-    color: "",
   },
   {
     name: "Jira",
@@ -26,7 +25,6 @@ const mainApps = [
         />
       </svg>
     ),
-    color: "text-blue-600",
   },
   {
     name: "Goals",
@@ -40,7 +38,6 @@ const mainApps = [
         </svg>
       </div>
     ),
-    color: "",
   },
   {
     name: "Projects",
@@ -54,7 +51,6 @@ const mainApps = [
         </svg>
       </div>
     ),
-    color: "",
   },
   {
     name: "Teams",
@@ -69,7 +65,6 @@ const mainApps = [
         </svg>
       </div>
     ),
-    color: "",
   },
   {
     name: "Administration",
@@ -82,7 +77,6 @@ const mainApps = [
         </svg>
       </div>
     ),
-    color: "",
   },
 ]
 
@@ -123,6 +117,49 @@ const recommendedApps = [
   },
 ]
 
+function RecommendedAppRow({ app, onClose }: { app: { name: string; description: string; icon: React.ReactNode }; onClose: () => void }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [menuOpen])
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-accent">
+      {app.icon}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium">{app.name}</p>
+        <p className="truncate text-xs text-muted-foreground">{app.description}</p>
+      </div>
+      <div className="relative" ref={menuRef}>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}
+          className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground"
+        >
+          <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="1.5" />
+            <circle cx="12" cy="12" r="1.5" />
+            <circle cx="12" cy="19" r="1.5" />
+          </svg>
+        </button>
+        {menuOpen && (
+          <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-lg border bg-popover shadow-lg py-1">
+            <button type="button" onClick={() => { setMenuOpen(false); onClose() }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors">Not interested</button>
+            <button type="button" onClick={() => { setMenuOpen(false); onClose() }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors">Why am I seeing this?</button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function AdminAppSwitcher({
   open,
   onClose,
@@ -139,7 +176,6 @@ export function AdminAppSwitcher({
       }
     }
     if (open) {
-      // Delay to avoid closing immediately from the click that opened it
       const timer = setTimeout(() => {
         document.addEventListener("mousedown", handleClickOutside)
       }, 0)
@@ -181,22 +217,7 @@ export function AdminAppSwitcher({
       </div>
       <div className="flex flex-col">
         {recommendedApps.map((app) => (
-          <button
-            key={app.name}
-            onClick={onClose}
-            className="flex items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-accent"
-          >
-            {app.icon}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">{app.name}</p>
-              <p className="truncate text-xs text-muted-foreground">{app.description}</p>
-            </div>
-            <svg className="size-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="12" cy="5" r="1.5" />
-              <circle cx="12" cy="12" r="1.5" />
-              <circle cx="12" cy="19" r="1.5" />
-            </svg>
-          </button>
+          <RecommendedAppRow key={app.name} app={app} onClose={onClose} />
         ))}
 
         {/* More Atlassian apps */}

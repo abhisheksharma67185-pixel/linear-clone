@@ -13,7 +13,7 @@ import {
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function RovoInsightsPage() {
-  const [activeTab, setActiveTab] = useState<"adoption" | "agents">("agents")
+  const [activeTab, setActiveTab] = useState<"adoption" | "agents">("adoption")
   const [featureGroup, setFeatureGroup] = useState("all")
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [feedbackChoice, setFeedbackChoice] = useState("")
@@ -25,7 +25,7 @@ export default function RovoInsightsPage() {
         <h1 className="text-2xl font-semibold">Rovo insights</h1>
         <div className="flex items-center gap-2">
           <Select defaultValue="4weeks">
-            <SelectTrigger className="w-[160px] h-9">
+            <SelectTrigger className="w-[170px] h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -90,9 +90,10 @@ export default function RovoInsightsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All feature groups</SelectItem>
-                    <SelectItem value="chat">Chat</SelectItem>
-                    <SelectItem value="search">Search</SelectItem>
-                    <SelectItem value="agents">Agents</SelectItem>
+                    <SelectItem value="creation">Creation and editing</SelectItem>
+                    <SelectItem value="discovery">Discovery and learning</SelectItem>
+                    <SelectItem value="insights">Insights and summaries</SelectItem>
+                    <SelectItem value="automation">Automation and agents</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -1,5 +1,4 @@
-"use client"
-
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export default function EncryptionPage() {
@@ -37,13 +36,13 @@ export default function EncryptionPage() {
 
         <p className="text-sm text-muted-foreground mb-4">
           Apps use Atlassian managed encryption keys by default. You can choose to use{" "}
-          <button type="button" className="text-blue-600 hover:underline">Customer-managed keys (CMK)</button>{" "}
+          <Link href="/admin/security/security-guide" className="text-blue-600 hover:underline">Customer-managed keys (CMK)</Link>{" "}
           encryption to maintain more control and management of your data.
         </p>
 
-        <button type="button" className="text-sm text-blue-600 hover:underline mb-8">
+        <Link href="/admin/security/security-guide" className="text-sm text-blue-600 hover:underline mb-8">
           Understand more about data managed with CMK
-        </button>
+        </Link>
 
         {/* CMK upsell card */}
         <div className="rounded-lg border bg-muted/30 p-6 w-full text-center">
@@ -53,9 +52,11 @@ export default function EncryptionPage() {
           <p className="text-sm text-muted-foreground mb-4">
             Scale your organization with confidence and flexibility using our CMK offerings.
           </p>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-            Explore CMK add-on
-          </Button>
+          <Link href="/admin/security/security-guide">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              Explore CMK add-on
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

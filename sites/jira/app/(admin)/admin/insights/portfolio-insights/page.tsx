@@ -238,7 +238,7 @@ function MoreActionsDropdown() {
             Manage data residency
           </button>
           <a
-            href="#"
+            href="/admin/settings"
             className="flex w-full items-center justify-between px-4 py-2 text-sm hover:bg-accent transition-colors"
             onClick={() => setOpen(false)}
           >

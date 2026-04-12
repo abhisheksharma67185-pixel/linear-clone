@@ -4,6 +4,13 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 const samplePeople = [
   { id: "1", name: "Abhishek Sharma", type: "person", avatar: "AS" },
@@ -92,8 +99,8 @@ function LinkDialog({ open, onClose, onInsert }: {
   const isUrl = linkUrl.startsWith("http://") || linkUrl.startsWith("https://") || linkUrl.startsWith("www.")
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-[480px] rounded-lg border bg-background shadow-xl">
+    <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
+      <DialogContent className="sm:max-w-[480px] p-0">
         <div className="p-5">
           <div className="mb-4">
             <label className="mb-1.5 block text-sm font-medium">
@@ -214,8 +221,8 @@ function LinkDialog({ open, onClose, onInsert }: {
             Insert
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 

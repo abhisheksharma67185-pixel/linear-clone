@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import type { Issue, User } from "@/app/lib/mock-data"
+import type { Issue, User, Sprint, Epic } from "@/app/lib/mock-data"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
+import { IssueLink } from "@/components/issue-link"
+import { statusDisplayLabel, priorityDisplayLabel } from "@/lib/badge-styles"
+import { resolveUserName, resolveSprintName, resolveEpicName } from "@/lib/resolve-user"
 
 const FILTER_CONFIGS: Record<string, {
   title: string
@@ -96,22 +99,36 @@ const FILTER_CONFIGS: Record<string, {
       return issues.filter((i) => new Date(i.updatedAt) >= oneWeekAgo)
     },
   },
+  // Saved filters
+  "my-open-issues": {
+    title: "My Open Issues",
+    activeFilters: [
+      { label: "Assignee = Current User", value: "assignee" },
+      { label: "Status != Done", value: "status" },
+    ],
+    filterFn: (issues) => issues.filter((i) => i.assigneeId === "usr-1" && i.status !== "done"),
+  },
+  "sprint-bugs": {
+    title: "Sprint Bugs",
+    activeFilters: [
+      { label: "Type = Bug", value: "type" },
+      { label: "Sprint in openSprints()", value: "sprint" },
+    ],
+    filterFn: (issues) => issues.filter((i) => i.type === "bug" && i.sprintId !== null),
+  },
+  "unassigned-tasks": {
+    title: "Unassigned Tasks",
+    activeFilters: [
+      { label: "Assignee is EMPTY", value: "assignee" },
+      { label: "Type = Task", value: "type" },
+    ],
+    filterFn: (issues) => issues.filter((i) => i.assigneeId === null && i.type === "task"),
+  },
 }
 
-const priorityLabel: Record<string, string> = {
-  highest: "Highest",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-  lowest: "Lowest",
-}
+const priorityLabel = priorityDisplayLabel
 
-const statusLabel: Record<string, string> = {
-  to_do: "To Do",
-  in_progress: "In Progress",
-  in_review: "In Review",
-  done: "Done",
-}
+const statusLabel = statusDisplayLabel
 
 export default function FilterViewPage() {
   const params = useParams<{ slug: string }>()
@@ -119,8 +136,15 @@ export default function FilterViewPage() {
 
   const [issues, setIssues] = useState<Issue[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [sprints, setSprints] = useState<Sprint[]>([])
+  const [epics, setEpics] = useState<Epic[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const [starred, setStarred] = useState(false)
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [queryMode, setQueryMode] = useState<"basic" | "jql">("basic")
+  const [activeFilters, setActiveFilters] = useState<{ label: string; value: string }[]>([])
+  const [filtersInitialized, setFiltersInitialized] = useState(false)
 
   const config = FILTER_CONFIGS[slug]
 
@@ -128,12 +152,22 @@ export default function FilterViewPage() {
     Promise.all([
       fetch("/api/data/issues").then((r) => r.json()),
       fetch("/api/data/users").then((r) => r.json()),
-    ]).then(([i, u]) => {
+      fetch("/api/data/sprints").then((r) => r.json()),
+      fetch("/api/data/epics").then((r) => r.json()),
+    ]).then(([i, u, s, e]) => {
       setIssues(i)
       setUsers(u)
+      setSprints(s)
+      setEpics(e)
       setLoading(false)
     })
   }, [])
+
+  // Initialize active filters from config once
+  if (config && !filtersInitialized) {
+    setActiveFilters(config.activeFilters)
+    setFiltersInitialized(true)
+  }
 
   if (!config) {
     return (
@@ -143,8 +177,18 @@ export default function FilterViewPage() {
     )
   }
 
-  const userName = (id: string | null) =>
-    users.find((u) => u.id === id)?.name ?? "Unassigned"
+  const removeFilter = (value: string) => {
+    setActiveFilters((prev) => prev.filter((f) => f.value !== value))
+  }
+
+  const clearFilters = () => setActiveFilters([])
+
+  const copyFilter = () => {
+    const url = window.location.href
+    navigator.clipboard.writeText(url).catch(() => {})
+  }
+
+  const userName = (id: string | null) => resolveUserName(id, users)
 
   const filtered = config.filterFn(issues).filter((i) =>
     search ? i.summary.toLowerCase().includes(search.toLowerCase()) || i.key.toLowerCase().includes(search.toLowerCase()) : true
@@ -158,39 +202,41 @@ export default function FilterViewPage() {
       <div className="flex items-center justify-between px-6 pt-6 pb-4">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-semibold">{config.title}</h1>
-          <button className="text-muted-foreground hover:text-yellow-500">
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button onClick={() => setStarred(!starred)} className={`transition-colors ${starred ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-500"}`}>
+            <svg className="size-5" viewBox="0 0 24 24" fill={starred ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1 text-xs">
-            Apps
-            <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1 text-xs">
+          <Link href="/apps">
+            <Button variant="outline" size="sm" className="gap-1 text-xs">
+              Apps
+              <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
+            </Button>
+          </Link>
+          <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={copyFilter}>
             Share
             <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
           </Button>
           <div className="flex rounded-md border">
-            <button className="bg-accent px-2 py-1">
+            <button onClick={() => setViewMode("grid")} className={`px-2 py-1 ${viewMode === "grid" ? "bg-accent" : "text-muted-foreground hover:bg-accent"}`}>
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
               </svg>
             </button>
-            <button className="px-2 py-1 text-muted-foreground hover:bg-accent">
+            <button onClick={() => setViewMode("list")} className={`px-2 py-1 ${viewMode === "list" ? "bg-accent" : "text-muted-foreground hover:bg-accent"}`}>
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
                 <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
               </svg>
             </button>
           </div>
-          <button className="text-muted-foreground hover:text-foreground">
+          <Link href="/filters" className="text-muted-foreground hover:text-foreground">
             <svg className="size-5" viewBox="0 0 16 16" fill="currentColor">
               <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
             </svg>
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -198,19 +244,19 @@ export default function FilterViewPage() {
       <div className="px-6 pb-2">
         <div className="flex flex-wrap items-center gap-2">
           {/* Ask AI button */}
-          <button className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm hover:bg-accent transition-colors">
+          <Link href="/search" className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm hover:bg-accent transition-colors">
             <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.636 5.636l2.122 2.122m8.484 8.484l2.122 2.122M5.636 18.364l2.122-2.122m8.484-8.484l2.122-2.122" />
             </svg>
             Ask AI
-          </button>
+          </Link>
 
           {/* Basic / JQL toggle */}
           <div className="flex rounded-md border">
-            <button className="bg-blue-600 px-3 py-1.5 text-sm font-medium text-white rounded-l-md">
+            <button onClick={() => setQueryMode("basic")} className={`px-3 py-1.5 text-sm font-medium rounded-l-md transition-colors ${queryMode === "basic" ? "bg-blue-600 text-white" : "text-muted-foreground hover:bg-accent"}`}>
               Basic
             </button>
-            <button className="px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent rounded-r-md">
+            <button onClick={() => setQueryMode("jql")} className={`px-3 py-1.5 text-sm font-medium rounded-r-md transition-colors ${queryMode === "jql" ? "bg-blue-600 text-white" : "text-muted-foreground hover:bg-accent"}`}>
               JQL
             </button>
           </div>
@@ -230,24 +276,25 @@ export default function FilterViewPage() {
 
           {/* Filter dropdowns */}
           {filterButtons.map((label) => (
-            <button
+            <Link
               key={label}
+              href={`/filters/${slug}`}
               className="flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm hover:bg-accent transition-colors"
             >
               {label}
               <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
-            </button>
+            </Link>
           ))}
 
           {/* Active filter chips */}
-          {config.activeFilters.map((af) => (
+          {activeFilters.map((af) => (
             <span
               key={af.value}
               className="inline-flex items-center gap-1 rounded-full border border-blue-300 bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
             >
               {af.label}
               <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
-              <button className="ml-0.5 hover:text-blue-900">
+              <button onClick={() => removeFilter(af.value)} className="ml-0.5 hover:text-blue-900">
                 <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                 </svg>
@@ -256,22 +303,22 @@ export default function FilterViewPage() {
           ))}
 
           {/* More filters */}
-          <button className="flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm hover:bg-accent transition-colors">
+          <Link href={`/filters/${slug}`} className="flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm hover:bg-accent transition-colors">
             More filters
             <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
-          </button>
+          </Link>
         </div>
 
         {/* Clear / Copy row */}
-        {config.activeFilters.length > 0 && (
+        {activeFilters.length > 0 && (
           <div className="mt-2 flex items-center gap-3">
-            <button className="text-sm text-muted-foreground hover:text-foreground">Clear filters</button>
-            <button className="text-sm font-medium text-blue-600 hover:underline">Copy filter</button>
+            <button onClick={clearFilters} className="text-sm text-muted-foreground hover:text-foreground">Clear filters</button>
+            <button onClick={copyFilter} className="text-sm font-medium text-blue-600 hover:underline">Copy filter</button>
           </div>
         )}
-        {config.activeFilters.length === 0 && (
+        {activeFilters.length === 0 && (
           <div className="mt-2 flex items-center gap-3">
-            <button className="text-sm font-medium text-blue-600 hover:underline">Copy filter</button>
+            <button onClick={copyFilter} className="text-sm font-medium text-blue-600 hover:underline">Copy filter</button>
           </div>
         )}
       </div>
@@ -290,6 +337,8 @@ export default function FilterViewPage() {
                 <TableHead className="font-medium w-[140px]">Reporter</TableHead>
                 <TableHead className="font-medium w-[100px]">Priority</TableHead>
                 <TableHead className="font-medium w-[100px]">Status</TableHead>
+                <TableHead className="font-medium w-[120px]">Sprint</TableHead>
+                <TableHead className="font-medium w-[120px]">Epic</TableHead>
                 <TableHead className="w-10">
                   <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
@@ -300,7 +349,7 @@ export default function FilterViewPage() {
             <TableBody>
               {!loading && filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-80">
+                  <TableCell colSpan={9} className="h-80">
                     <div className="flex flex-col items-center justify-center gap-3">
                       {/* Empty state X icon */}
                       <svg className="size-24 text-muted-foreground/30" viewBox="0 0 100 100" fill="none">
@@ -317,7 +366,7 @@ export default function FilterViewPage() {
               )}
               {loading && (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-40 text-center text-sm text-muted-foreground">
+                  <TableCell colSpan={9} className="h-40 text-center text-sm text-muted-foreground">
                     Loading...
                   </TableCell>
                 </TableRow>
@@ -326,10 +375,10 @@ export default function FilterViewPage() {
                 <TableRow key={issue.id}>
                   <TableCell><Checkbox /></TableCell>
                   <TableCell>
-                    <Link href={`/issue/${issue.key}`} className="flex items-center gap-2 hover:underline">
+                    <IssueLink issueKey={issue.key} className="flex items-center gap-2 hover:underline">
                       <span className="font-mono text-xs text-blue-600">{issue.key}</span>
                       <span className="text-sm truncate">{issue.summary}</span>
-                    </Link>
+                    </IssueLink>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{userName(issue.assigneeId)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{userName(issue.reporterId)}</TableCell>
@@ -339,6 +388,8 @@ export default function FilterViewPage() {
                       {statusLabel[issue.status] ?? issue.status}
                     </Badge>
                   </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{resolveSprintName(issue.sprintId, sprints)}</TableCell>
+                  <TableCell className="text-sm text-purple-600 dark:text-purple-400">{issue.epicId ? resolveEpicName(issue.epicId, epics) : ""}</TableCell>
                   <TableCell />
                 </TableRow>
               ))}

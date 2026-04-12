@@ -4,6 +4,13 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 const filterDefs = [
   { key: "project", label: "Filter by Project", activeLabel: "Project is", placeholder: "Choose a project", icon: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></>, options: [] as string[] },
@@ -36,21 +43,13 @@ function AddPeopleDialog({ open, onClose, onAdd }: { open: boolean; onClose: () 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-[420px] rounded-lg border bg-background shadow-xl">
-        <div className="flex items-center justify-between px-6 pt-5 pb-4">
-          <h2 className="text-lg font-semibold">Add people to Jira</h2>
-          <div className="flex items-center gap-1">
-            <button className="rounded p-1 text-muted-foreground hover:bg-accent">
-              <svg className="size-5" viewBox="0 0 16 16" fill="currentColor"><circle cx="3" cy="8" r="1.5" /><circle cx="8" cy="8" r="1.5" /><circle cx="13" cy="8" r="1.5" /></svg>
-            </button>
-            <button onClick={onClose} className="rounded p-1 text-muted-foreground hover:bg-accent">
-              <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-            </button>
-          </div>
-        </div>
+    <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
+      <DialogContent className="sm:max-w-[420px]">
+        <DialogHeader>
+          <DialogTitle>Add people to Jira</DialogTitle>
+        </DialogHeader>
 
-        <div className="px-6 pb-4">
+        <div>
           <label className="mb-1.5 block text-sm font-medium">
             Names or emails <span className="text-red-500">*</span>
           </label>
@@ -69,12 +68,12 @@ function AddPeopleDialog({ open, onClose, onAdd }: { open: boolean; onClose: () 
           </p>
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t px-6 py-3">
+        <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={handleAdd} disabled={!input.trim()}>Add</Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

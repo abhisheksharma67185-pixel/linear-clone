@@ -1,7 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -35,98 +37,387 @@ import {
 } from "@/components/ui/sheet"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Add01Icon } from "@hugeicons/core-free-icons"
-import type { Project, User, Sprint, Epic } from "@/app/lib/mock-data"
+import type { Issue, Project, User, Sprint, Epic } from "@/app/lib/mock-data"
+import { useIssueDrawer } from "@/components/issue-drawer-provider"
+
+// ─── Search Bar ─────────────────────────────────────────────────────────────
+
+interface SearchResults {
+  issues: Issue[]
+  projects: Project[]
+  users: User[]
+}
+
+function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
+  const router = useRouter()
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [query, setQuery] = useState("")
+  const [results, setResults] = useState<SearchResults | null>(null)
+  const [recentIssues, setRecentIssues] = useState<Issue[]>([])
+  const [loading, setLoading] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Load recent issues when dialog opens
+  useEffect(() => {
+    if (!dialogOpen) return
+    fetch("/api/data/issues")
+      .then((r) => r.json())
+      .then((data: Issue[]) => {
+        const sorted = [...data].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        setRecentIssues(sorted.slice(0, 5))
+      })
+      .catch(() => {})
+  }, [dialogOpen])
+
+  // Keyboard shortcut: / to open search
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault()
+        setDialogOpen(true)
+      }
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [])
+
+  const doSearch = useCallback((q: string) => {
+    if (!q.trim()) { setResults(null); return }
+    setLoading(true)
+    fetch(`/api/data/search?q=${encodeURIComponent(q.trim())}`)
+      .then((r) => r.json())
+      .then((data: SearchResults) => { setResults(data); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const handleInput = (val: string) => {
+    setQuery(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => doSearch(val), 200)
+  }
+
+  const go = (href: string) => {
+    setDialogOpen(false)
+    setQuery("")
+    setResults(null)
+    router.push(href)
+  }
+
+  const hasResults = results && (results.issues.length > 0 || results.projects.length > 0 || results.users.length > 0)
+
+  return (
+    <>
+      {/* Fake search bar — click to open dialog */}
+      <button
+        onClick={() => setDialogOpen(true)}
+        className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors ${isBlue ? "w-48 bg-white/15 border border-white/20 text-white/60 hover:bg-white/25" : "w-64 bg-muted/50 border border-input text-muted-foreground hover:bg-muted"}`}
+      >
+        <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+        Search
+      </button>
+
+      {/* Search modal — manual overlay for reliability */}
+      {dialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]" onClick={() => { setDialogOpen(false); setQuery(""); setResults(null) }}>
+          <div className="fixed inset-0 bg-black/50" />
+          <div className="relative z-10 w-full max-w-[560px] rounded-lg border bg-popover shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          {/* Search input */}
+          <div className="flex items-center gap-3 border-b px-4 py-3">
+            <svg className="size-5 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => handleInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") { setDialogOpen(false); setQuery(""); setResults(null) }
+                if (e.key === "Enter" && query.trim()) go(`/search?q=${encodeURIComponent(query.trim())}`)
+              }}
+              placeholder="Search issues, projects, people..."
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+            {loading && (
+              <div className="size-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+            )}
+            <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">Esc</kbd>
+          </div>
+
+          {/* Results area */}
+          <div className="max-h-[400px] overflow-y-auto">
+            {/* No query — show recent issues */}
+            {!query.trim() && (
+              <div>
+                <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Recent issues
+                </div>
+                {recentIssues.map((issue) => (
+                  <button
+                    key={issue.id}
+                    onClick={() => go(`/issue/${issue.key}`)}
+                    className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors"
+                  >
+                    <div className={`flex size-5 shrink-0 items-center justify-center rounded-sm ${
+                      issue.type === "bug" ? "bg-red-500" : issue.type === "story" ? "bg-green-500" : "bg-blue-500"
+                    }`}>
+                      <svg className="size-3 text-white" viewBox="0 0 16 16" fill="currentColor">
+                        {issue.type === "bug" ? <circle cx="8" cy="8" r="4" /> : <path d="M3 3h10v10H3z" />}
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm truncate block">{issue.summary}</span>
+                      <span className="text-xs text-muted-foreground">{issue.key}</span>
+                    </div>
+                  </button>
+                ))}
+                {recentIssues.length === 0 && (
+                  <div className="px-4 py-6 text-center text-sm text-muted-foreground">No recent issues</div>
+                )}
+              </div>
+            )}
+
+            {/* Query entered but no results */}
+            {query.trim() && !hasResults && !loading && (
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                No results for &ldquo;{query}&rdquo;
+              </div>
+            )}
+
+            {/* Issues results */}
+            {results && results.issues.length > 0 && (
+              <div>
+                <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/30">
+                  Issues
+                </div>
+                {results.issues.map((issue) => (
+                  <button
+                    key={issue.id}
+                    onClick={() => go(`/issue/${issue.key}`)}
+                    className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors"
+                  >
+                    <div className={`flex size-5 shrink-0 items-center justify-center rounded-sm ${
+                      issue.type === "bug" ? "bg-red-500" : issue.type === "story" ? "bg-green-500" : "bg-blue-500"
+                    }`}>
+                      <svg className="size-3 text-white" viewBox="0 0 16 16" fill="currentColor">
+                        {issue.type === "bug" ? <circle cx="8" cy="8" r="4" /> : <path d="M3 3h10v10H3z" />}
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm truncate block">{issue.summary}</span>
+                      <span className="text-xs text-muted-foreground">{issue.key}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Projects results */}
+            {results && results.projects.length > 0 && (
+              <div>
+                <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/30">
+                  Spaces
+                </div>
+                {results.projects.map((project) => (
+                  <button
+                    key={project.id}
+                    onClick={() => go(`/projects/${project.key}/board`)}
+                    className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors"
+                  >
+                    <div className="flex size-5 shrink-0 items-center justify-center rounded-sm bg-blue-100 dark:bg-blue-900/30">
+                      <svg className="size-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /></svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm truncate block">{project.name}</span>
+                      <span className="text-xs text-muted-foreground">{project.key}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* People results */}
+            {results && results.users.length > 0 && (
+              <div>
+                <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/30">
+                  People
+                </div>
+                {results.users.map((user) => (
+                  <button
+                    key={user.id}
+                    onClick={() => go("/teams/people")}
+                    className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors"
+                  >
+                    <Avatar className="size-5">
+                      <AvatarFallback className="text-[9px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                        {(user.displayName ?? user.name).charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm truncate block">{user.displayName ?? user.name}</span>
+                      <span className="text-xs text-muted-foreground">{user.email}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="border-t px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
+            <span>
+              <kbd className="rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">↑↓</kbd> to navigate
+              <kbd className="ml-2 rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">↵</kbd> to open
+            </span>
+            <span>
+              <kbd className="rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">/</kbd> to search
+            </span>
+          </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
 
 // ─── Settings Dropdown ──────────────────────────────────────────────────────
 
-function SettingsDropdown() {
+function SettingsDropdown({ isBlue = true }: { isBlue?: boolean }) {
+  const [open, setOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [open])
+
   return (
-    <Popover>
-      <PopoverTrigger
-        className="rounded-full p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-      >
-        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-        </svg>
-      </PopoverTrigger>
-      <PopoverContent side="bottom" align="end" sideOffset={8} className="w-[420px] p-0">
-        <div className="p-5">
-          {/* Header */}
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">Personal Jira settings</h3>
-            <span className="flex items-center gap-1 rounded border px-2 py-1 text-xs text-muted-foreground">
-              Search (
-              <kbd className="font-mono text-[10px]">⌘</kbd>
-              <span className="text-[10px]">+</span>
-              <kbd className="font-mono text-[10px]">K</kbd>
-              )
-            </span>
-          </div>
+    <>
+      <div className="relative" ref={ref}>
+        <button
+          onClick={() => setOpen(!open)}
+          className={`rounded-full p-1.5 ${isBlue ? "text-white/80 hover:bg-white/15 hover:text-white" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+        >
+          <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09" />
+          </svg>
+        </button>
 
-          {/* Personal Settings */}
-          <div className="flex flex-col gap-0.5">
-            <SettingsItem
-              icon={<svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>}
-              title="General settings"
-              description="Manage language, time zone, and other personal preferences"
-            />
-            <SettingsItem
-              icon={<svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>}
-              title="Notification settings"
-              description="Manage email and in-app notifications from Jira"
-            />
-          </div>
+        {open && (
+          <div className="absolute right-0 top-full mt-2 z-50 w-[380px] rounded-lg border bg-popover shadow-xl max-h-[80vh] overflow-y-auto">
+            <div className="p-4">
+              {/* Header */}
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-semibold">Personal Jira settings</h3>
+              </div>
 
-          {/* Jira Admin Settings */}
-          <p className="mt-5 mb-2 text-[11px] font-semibold text-muted-foreground">Jira admin settings</p>
-          <div className="flex flex-col gap-0.5">
-            <SettingsItem
-              icon={<svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M9 9h6M9 13h6M9 17h4" /></svg>}
-              title="System"
-              description="Manage general configuration, security, automation, user interface, and more"
-            />
-            <SettingsItem
-              icon={<svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>}
-              title="Jira apps"
-              description="Manage access, settings, and integrations across Jira"
-            />
-            <SettingsItem
-              icon={<svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 2L11 13" /><path d="M22 2l-7 20-4-9-9-4 20-7z" /></svg>}
-              title="Spaces"
-              description="Manage space settings, categories, and more"
-            />
-            <SettingsItem
-              icon={<svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><path d="M9 14l2 2 4-4" /></svg>}
-              title="Work items"
-              description="Configure work types, workflows, screens, fields, and more"
-            />
-            <SettingsItem
-              icon={<svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>}
-              title="Marketplace apps"
-              description="Add and manage Jira Marketplace apps and integrations"
-            />
-          </div>
+              {/* Personal */}
+              <div className="flex flex-col gap-0.5">
+                <Link href="/admin/settings/profile" onClick={() => setOpen(false)} className="flex items-start gap-3 rounded-md px-2 py-2 text-left hover:bg-accent transition-colors">
+                  <svg className="size-5 mt-0.5 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
+                  <div><p className="text-sm font-medium">Personal settings</p><p className="text-xs text-muted-foreground">Language, time zone, preferences</p></div>
+                </Link>
+                <Link href="/admin/settings" onClick={() => setOpen(false)} className="flex items-start gap-3 rounded-md px-2 py-2 text-left hover:bg-accent transition-colors">
+                  <svg className="size-5 mt-0.5 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M9 9h6M9 13h6M9 17h4" /></svg>
+                  <div><p className="text-sm font-medium">Jira settings</p><p className="text-xs text-muted-foreground">General configuration, security, automation</p></div>
+                </Link>
+                <button onClick={() => { setOpen(false); setShortcutsOpen(true) }} className="flex items-start gap-3 rounded-md px-2 py-2 text-left hover:bg-accent transition-colors w-full">
+                  <svg className="size-5 mt-0.5 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="6" width="20" height="12" rx="2" /><line x1="6" y1="10" x2="6" y2="10" /><line x1="10" y1="10" x2="10" y2="10" /><line x1="14" y1="10" x2="14" y2="10" /><line x1="18" y1="10" x2="18" y2="10" /><line x1="8" y1="14" x2="16" y2="14" /></svg>
+                  <div><p className="text-sm font-medium">Keyboard shortcuts</p><p className="text-xs text-muted-foreground">View all keyboard shortcuts</p></div>
+                </button>
+              </div>
 
-          {/* Atlassian Admin Settings */}
-          <p className="mt-5 mb-2 text-[11px] font-semibold text-muted-foreground">Atlassian admin settings</p>
-          <div className="flex flex-col gap-0.5">
-            <SettingsItem
-              icon={<svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>}
-              title="User management"
-              description="Manage users, groups, and access requests"
-              external
-            />
-            <SettingsItem
-              icon={<svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>}
-              title="Billing"
-              description="Update your billing details, manage subscriptions, and more"
-              external
-            />
+              <div className="my-3 border-t" />
+
+              {/* Jira admin */}
+              <p className="mb-2 text-[11px] font-semibold text-muted-foreground">Jira admin</p>
+              <div className="flex flex-col gap-0.5">
+                <Link href="/admin/manage-apps" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors">
+                  <svg className="size-4 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                  Jira apps
+                </Link>
+                <Link href="/projects" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors">
+                  <svg className="size-4 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                  Spaces
+                </Link>
+                <Link href="/apps" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors">
+                  <svg className="size-4 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                  Marketplace apps
+                </Link>
+              </div>
+
+              <div className="my-3 border-t" />
+
+              {/* Atlassian admin */}
+              <p className="mb-2 text-[11px] font-semibold text-muted-foreground">Atlassian admin</p>
+              <div className="flex flex-col gap-0.5">
+                <Link href="/admin/users" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors">
+                  <svg className="size-4 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                  User management
+                </Link>
+                <Link href="/admin/billing" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors">
+                  <svg className="size-4 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+                  Billing
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+        )}
+      </div>
+
+      {/* Keyboard shortcuts dialog */}
+      <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
+        <DialogContent className="sm:max-w-[480px] max-h-[70vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Keyboard shortcuts</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {[
+              { section: "Global", shortcuts: [
+                { keys: ["C"], desc: "Create issue" },
+                { keys: ["/"], desc: "Focus search" },
+                { keys: ["G", "then", "D"], desc: "Go to dashboard" },
+                { keys: ["G", "then", "B"], desc: "Go to board" },
+                { keys: ["G", "then", "K"], desc: "Go to backlog" },
+                { keys: ["?"], desc: "Open keyboard shortcuts" },
+              ]},
+              { section: "Board", shortcuts: [
+                { keys: ["N"], desc: "Next column" },
+                { keys: ["P"], desc: "Previous column" },
+                { keys: ["T"], desc: "Toggle detail view" },
+              ]},
+              { section: "Issue", shortcuts: [
+                { keys: ["A"], desc: "Assign to me" },
+                { keys: ["E"], desc: "Edit" },
+                { keys: ["M"], desc: "Comment" },
+              ]},
+            ].map((s) => (
+              <div key={s.section}>
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{s.section}</h4>
+                {s.shortcuts.map((sc) => (
+                  <div key={sc.desc} className="flex items-center justify-between py-1.5">
+                    <span className="text-sm">{sc.desc}</span>
+                    <div className="flex items-center gap-1">
+                      {sc.keys.map((k, i) => (
+                        k === "then" ? <span key={i} className="text-xs text-muted-foreground mx-0.5">then</span> :
+                        <kbd key={i} className="rounded border bg-muted px-1.5 py-0.5 text-[11px] font-mono">{k}</kbd>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
@@ -135,14 +426,16 @@ function SettingsItem({
   title,
   description,
   external,
+  href,
 }: {
   icon: React.ReactNode
   title: string
   description: string
   external?: boolean
+  href?: string
 }) {
-  return (
-    <button className="flex items-start gap-3 rounded-md px-2 py-2.5 text-left hover:bg-accent transition-colors w-full">
+  const content = (
+    <>
       <span className="mt-0.5 text-muted-foreground shrink-0">{icon}</span>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground">{title}</p>
@@ -155,122 +448,168 @@ function SettingsItem({
           <line x1="10" y1="14" x2="21" y2="3" />
         </svg>
       )}
+    </>
+  )
+  if (href) {
+    return (
+      <Link href={href} className="flex items-start gap-3 rounded-md px-2 py-2.5 text-left hover:bg-accent transition-colors w-full">
+        {content}
+      </Link>
+    )
+  }
+  return (
+    <button className="flex items-start gap-3 rounded-md px-2 py-2.5 text-left hover:bg-accent transition-colors w-full">
+      {content}
     </button>
   )
 }
 
 // ─── Notifications Panel ────────────────────────────────────────────────────
 
-function NotificationsPanel() {
+function NotificationsPanel({ isBlue = true }: { isBlue?: boolean }) {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<"direct" | "watching">("direct")
+  const ref = useRef<HTMLDivElement>(null)
+
+  const [notifications, setNotifications] = useState([
+    { id: "n1", text: "Priya Patel assigned SCRUM-5 to you", issueKey: "SCRUM-5", time: "2 hours ago", category: "direct" as const, read: false, initials: "PP", color: "bg-violet-500" },
+    { id: "n2", text: "Ravi Kumar commented on SCRUM-3", issueKey: "SCRUM-3", time: "5 hours ago", category: "watching" as const, read: false, initials: "RK", color: "bg-emerald-500" },
+    { id: "n3", text: "Sprint 'Sprint 13' has been started", issueKey: "SCRUM-1", time: "1 day ago", category: "watching" as const, read: false, initials: "JS", color: "bg-blue-500" },
+    { id: "n4", text: "You were mentioned in SCRUM-8", issueKey: "SCRUM-8", time: "2 days ago", category: "direct" as const, read: true, initials: "AS", color: "bg-orange-500" },
+    { id: "n5", text: "Liam Chen changed SCRUM-12 to Done", issueKey: "SCRUM-12", time: "3 days ago", category: "watching" as const, read: true, initials: "LC", color: "bg-rose-500" },
+  ])
+
+  const filteredNotifs = notifications.filter((n) => activeTab === "direct" ? n.category === "direct" : n.category === "watching")
+  const unreadCount = notifications.filter((n) => !n.read).length
+
+  const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+  const markRead = (id: string) => setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n))
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [open])
 
   return (
-    <Popover>
-      <PopoverTrigger
-        className="rounded-full p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={`relative rounded-full p-1.5 ${isBlue ? "text-white/80 hover:bg-white/15 hover:text-white" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}
       >
         <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
-      </PopoverTrigger>
-      <PopoverContent side="bottom" align="end" sideOffset={8} className="w-[460px] p-0">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          <h3 className="text-lg font-semibold">Notifications</h3>
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">
-              Only show unread
-              <Switch size="sm" />
-            </label>
-            <button className="text-muted-foreground hover:text-foreground">
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" y1="14" x2="21" y2="3" />
-              </svg>
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">{unreadCount}</span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 z-50 w-[400px] rounded-lg border bg-popover shadow-xl">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <h3 className="text-base font-semibold">Notifications</h3>
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button onClick={markAllRead} className="text-xs text-blue-600 hover:underline">Mark all as read</button>
+              )}
+              <Link href="/home/notifications" onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground" title="View all">
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-b px-4">
+            <button
+              onClick={() => setActiveTab("direct")}
+              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "direct" ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Direct
             </button>
-            <button className="text-muted-foreground hover:text-foreground">
-              <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-              </svg>
+            <button
+              onClick={() => setActiveTab("watching")}
+              className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === "watching" ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Watching
             </button>
           </div>
-        </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 border-b px-5">
-          <button
-            onClick={() => setActiveTab("direct")}
-            className={`pb-2.5 text-sm font-medium transition-colors ${
-              activeTab === "direct"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Direct
-          </button>
-          <button
-            onClick={() => setActiveTab("watching")}
-            className={`pb-2.5 text-sm font-medium transition-colors ${
-              activeTab === "watching"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Watching
-          </button>
-        </div>
+          {/* Notification list */}
+          <div className="max-h-[320px] overflow-y-auto">
+            {filteredNotifs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 px-6">
+                <svg className="mb-3 size-16 text-muted-foreground/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                <p className="text-sm text-muted-foreground">No {activeTab} notifications</p>
+              </div>
+            ) : (
+              filteredNotifs.map((n) => (
+                <button
+                  key={n.id}
+                  onClick={() => { markRead(n.id); setOpen(false); router.push(`/issue/${n.issueKey}`) }}
+                  className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent ${!n.read ? "bg-blue-50/50 dark:bg-blue-900/10" : ""}`}
+                >
+                  <Avatar className="size-7 shrink-0 mt-0.5">
+                    <AvatarFallback className={`text-[9px] font-medium text-white ${n.color}`}>{n.initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm leading-snug ${!n.read ? "font-medium" : ""}`}>{n.text}</p>
+                    <span className="text-xs text-muted-foreground">{n.time}</span>
+                  </div>
+                  {!n.read && <div className="mt-2 size-2 shrink-0 rounded-full bg-blue-600" />}
+                </button>
+              ))
+            )}
+          </div>
 
-        {/* Empty state */}
-        <div className="flex flex-col items-center justify-center px-8 py-12">
-          {/* Blue flag illustration */}
-          <svg className="mb-4 size-28" viewBox="0 0 120 120" fill="none">
-            <rect x="25" y="20" width="70" height="55" rx="4" fill="#4C9AFF" />
-            <rect x="30" y="25" width="60" height="45" rx="2" fill="#2684FF" />
-            <path d="M30 25h60v10H30z" fill="#0052CC" />
-            <rect x="38" y="42" width="20" height="3" rx="1.5" fill="white" opacity="0.6" />
-            <rect x="38" y="50" width="35" height="3" rx="1.5" fill="white" opacity="0.4" />
-            <rect x="38" y="58" width="15" height="3" rx="1.5" fill="white" opacity="0.3" />
-            <line x1="22" y1="18" x2="22" y2="95" stroke="#0052CC" strokeWidth="3" strokeLinecap="round" />
-            <circle cx="95" cy="15" r="6" fill="#FFAB00" />
-          </svg>
-          <p className="text-sm text-muted-foreground text-center">
-            You have no notifications from<br />the last 30 days.
-          </p>
+          {/* Footer */}
+          <div className="border-t px-4 py-2.5 flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">
+              <kbd className="rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">↓</kbd>{" "}
+              <kbd className="rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">↑</kbd> to navigate
+            </span>
+            <Link href="/home/notifications" onClick={() => setOpen(false)} className="text-xs text-blue-600 hover:underline">
+              View all notifications
+            </Link>
+          </div>
         </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between border-t px-5 py-3">
-          <p className="text-xs text-muted-foreground">
-            Press <kbd className="mx-0.5 rounded border bg-muted px-1 py-0.5 font-mono text-[10px]">↓</kbd>{" "}
-            <kbd className="mx-0.5 rounded border bg-muted px-1 py-0.5 font-mono text-[10px]">↑</kbd>{" "}
-            to move through notifications.
-          </p>
-          <button className="rounded border px-2.5 py-1 text-xs font-medium hover:bg-accent transition-colors">
-            See all shortcuts
-          </button>
-        </div>
-      </PopoverContent>
-    </Popover>
+      )}
+    </div>
   )
 }
 
 // ─── Help Panel ─────────────────────────────────────────────────────────────
 
-function HelpPanel() {
+function HelpPanel({ isBlue = true }: { isBlue?: boolean }) {
   const [open, setOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
 
   const helpLinks = [
-    { label: "Find out what's changed in Jira", external: true, icon: "lightbulb" },
-    { label: "Read about the new navigation", external: true, icon: "doc" },
-    { label: "Browse complete documentation", external: true, icon: "file" },
-    { label: "Build skills with Atlassian Learning", external: true, icon: "graduation" },
-    { label: "Ask our Community forums", external: true, icon: "chat" },
-    { label: "Contact support", external: true, icon: "warning" },
-    { label: "Give feedback about Jira", external: false, icon: "feedback" },
-    { label: "Keyboard shortcuts", external: false, icon: "keyboard" },
-    { label: "Get Jira Mobile", external: true, icon: "mobile" },
+    { label: "Find out what's changed in Jira", external: true, icon: "lightbulb", href: "/products" },
+    { label: "Read about the new navigation", external: true, icon: "doc", href: "/products" },
+    { label: "Browse complete documentation", external: true, icon: "file", href: "/products" },
+    { label: "Build skills with Atlassian Learning", external: true, icon: "graduation", href: "/products" },
+    { label: "Ask our Community forums", external: true, icon: "chat", href: "/teams" },
+    { label: "Contact support", external: true, icon: "warning", href: "/admin" },
+    { label: "Give feedback about Jira", external: false, icon: "feedback", href: "/home/notifications" },
+    { label: "Keyboard shortcuts", external: false, icon: "keyboard", href: "" },
+    { label: "Get Jira Mobile", external: true, icon: "mobile", href: "/products" },
   ]
 
   const iconMap: Record<string, React.ReactNode> = {
@@ -337,7 +676,7 @@ function HelpPanel() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="rounded-full p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+        className={`rounded-full p-1.5 ${isBlue ? "text-white/80 hover:bg-white/15 hover:text-white" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}
       >
         <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="10" />
@@ -354,46 +693,51 @@ function HelpPanel() {
 
           <div className="flex-1 overflow-y-auto px-2">
             <div className="flex flex-col gap-0.5">
-              {helpLinks.map((link) => (
-                <button
-                  key={link.label}
-                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm hover:bg-accent transition-colors w-full"
-                >
-                  <span className="text-muted-foreground shrink-0">
-                    {iconMap[link.icon]}
-                  </span>
-                  <span className="flex-1">{link.label}</span>
-                  {link.external && (
-                    <svg className="size-3.5 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                      <polyline points="15 3 21 3 21 9" />
-                      <line x1="10" y1="14" x2="21" y2="3" />
-                    </svg>
-                  )}
-                </button>
-              ))}
+              {helpLinks.map((link) => {
+                const cls = "flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm hover:bg-accent transition-colors w-full"
+                const children = (
+                  <>
+                    <span className="text-muted-foreground shrink-0">{iconMap[link.icon]}</span>
+                    <span className="flex-1">{link.label}</span>
+                    {link.external && (
+                      <svg className="size-3.5 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    )}
+                  </>
+                )
+                if (link.label === "Keyboard shortcuts") {
+                  return <button key={link.label} onClick={() => { setOpen(false); setShortcutsOpen(true) }} className={cls}>{children}</button>
+                }
+                return <Link key={link.label} href={link.href} onClick={() => setOpen(false)} className={cls}>{children}</Link>
+              })}
             </div>
           </div>
 
           {/* Footer */}
           <div className="border-t px-5 py-4">
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              <button className="hover:text-foreground hover:underline">About Jira</button>
-              <button className="hover:text-foreground hover:underline">Terms of use</button>
-              <button className="hover:text-foreground hover:underline">Privacy policy</button>
-              <button className="hover:text-foreground hover:underline">Notice at collection</button>
+              <Link href="/products" className="hover:text-foreground hover:underline">About Jira</Link>
+              <Link href="/admin/settings" className="hover:text-foreground hover:underline">Terms of use</Link>
+              <Link href="/admin/security" className="hover:text-foreground hover:underline">Privacy policy</Link>
+              <Link href="/admin/security/data-protection" className="hover:text-foreground hover:underline">Notice at collection</Link>
             </div>
           </div>
         </SheetContent>
       </Sheet>
+
+      <KeyboardShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </>
   )
 }
 
 // ─── Create Issue Dialog ────────────────────────────────────────────────────
 
-function CreateIssueDialog() {
+function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
   const router = useRouter()
+  const { openIssue } = useIssueDrawer()
   const [open, setOpen] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [users, setUsers] = useState<User[]>([])
@@ -408,9 +752,11 @@ function CreateIssueDialog() {
   const [description, setDescription] = useState("")
   const [priority, setPriority] = useState("medium")
   const [assigneeId, setAssigneeId] = useState("__none__")
-  const [sprintId, setSprintId] = useState("__none__")
-  const [epicId, setEpicId] = useState("__none__")
+  const [reporterId, setReporterId] = useState("usr-1")
+  const [sprintId, setSprintId] = useState("")
+  const [epicId, setEpicId] = useState("")
   const [storyPoints, setStoryPoints] = useState("")
+  const [labelsStr, setLabelsStr] = useState("")
 
   useEffect(() => {
     if (!open) return
@@ -434,36 +780,52 @@ function CreateIssueDialog() {
     setIssueType("task")
     setPriority("medium")
     setAssigneeId("__none__")
-    setSprintId("__none__")
-    setEpicId("__none__")
+    setReporterId("usr-1")
+    setSprintId("")
+    setEpicId("")
     setStoryPoints("")
+    setLabelsStr("")
   }
+
+  const [error, setError] = useState("")
 
   const handleCreate = async () => {
     if (!summary.trim()) return
+    setError("")
     setSaving(true)
-    const res = await fetch("/api/data/issues", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        summary: summary.trim(),
-        description,
-        type: issueType,
-        priority,
-        projectId: projectId || undefined,
-        assigneeId: assigneeId === "__none__" ? null : assigneeId,
-        reporterId: "usr-1",
-        sprintId: sprintId === "__none__" ? null : sprintId,
-        epicId: epicId === "__none__" ? null : epicId,
-        storyPoints: storyPoints ? Number(storyPoints) : null,
-      }),
-    })
-    setSaving(false)
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/data/issues", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          summary: summary.trim(),
+          description,
+          type: issueType,
+          priority,
+          projectId: projectId || undefined,
+          assigneeId: assigneeId && assigneeId !== "__none__" ? assigneeId : null,
+          reporterId: reporterId || "usr-1",
+          sprintId: sprintId || null,
+          epicId: epicId || null,
+          storyPoints: storyPoints ? Number(storyPoints) : null,
+          labels: labelsStr.split(",").map((l) => l.trim()).filter(Boolean),
+        }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        setError(body.error || `Failed to create issue (${res.status})`)
+        setSaving(false)
+        return
+      }
       const issue = await res.json()
       resetForm()
+      setError("")
+      setSaving(false)
       setOpen(false)
-      router.push(`/issue/${issue.key}`)
+      openIssue(issue.key)
+    } catch (err) {
+      setError("Network error — could not create issue")
+      setSaving(false)
     }
   }
 
@@ -471,7 +833,7 @@ function CreateIssueDialog() {
     <>
       <Button
         size="sm"
-        className="gap-1.5 bg-blue-600 text-white hover:bg-blue-700"
+        className={`gap-1.5 border-0 ${isBlue ? "bg-white/20 text-white hover:bg-white/30" : "bg-blue-600 text-white hover:bg-blue-700"}`}
         onClick={() => setOpen(true)}
       >
         <HugeiconsIcon icon={Add01Icon} className="size-4" />
@@ -484,34 +846,54 @@ function CreateIssueDialog() {
             <DialogTitle className="text-base">Create issue</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 pt-1">
+          <div className="space-y-4 pt-1 max-h-[70vh] overflow-y-auto pr-1">
             {/* Project */}
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Project <span className="text-red-500">*</span></Label>
               <Select value={projectId} onValueChange={(v) => v && setProjectId(v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select project" />
+                  {(() => { const p = projects.find((p) => p.id === projectId); return p ? <span className="truncate">{p.name} ({p.key})</span> : <span className="text-muted-foreground">Select project</span> })()}
                 </SelectTrigger>
                 <SelectContent>
                   {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.name} ({p.key})</SelectItem>
+                    <SelectItem key={p.id} value={p.id} label={`${p.name} (${p.key})`}>
+                      <span className="flex items-center gap-2">
+                        <span className="flex size-5 items-center justify-center rounded bg-blue-100 dark:bg-blue-900/30 shrink-0">
+                          <svg className="size-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /></svg>
+                        </span>
+                        {p.name} <span className="text-muted-foreground">({p.key})</span>
+                      </span>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Issue Type */}
+            {/* Issue Type with icons */}
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Issue type <span className="text-red-500">*</span></Label>
               <Select value={issueType} onValueChange={(v) => v && setIssueType(v)}>
                 <SelectTrigger>
-                  <SelectValue />
+                  {(() => { const labels: Record<string,string> = { story: "Story", task: "Task", bug: "Bug", subtask: "Sub-task" }; return <span>{labels[issueType] ?? issueType}</span> })()}
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="story">Story</SelectItem>
-                  <SelectItem value="task">Task</SelectItem>
-                  <SelectItem value="bug">Bug</SelectItem>
-                  <SelectItem value="subtask">Sub-task</SelectItem>
+                  {[
+                    { value: "story", label: "Story", color: "bg-green-500" },
+                    { value: "task", label: "Task", color: "bg-blue-500" },
+                    { value: "bug", label: "Bug", color: "bg-red-500" },
+                    { value: "subtask", label: "Sub-task", color: "bg-cyan-500" },
+                  ].map((t) => (
+                    <SelectItem key={t.value} value={t.value} label={t.label}>
+                      <span className="flex items-center gap-2">
+                        <span className={`flex size-4 items-center justify-center rounded-sm ${t.color} shrink-0`}>
+                          <svg className="size-2.5 text-white" viewBox="0 0 16 16" fill="currentColor">
+                            {t.value === "bug" ? <circle cx="8" cy="8" r="4" /> : <path d="M3 3h10v10H3z" />}
+                          </svg>
+                        </span>
+                        {t.label}
+                      </span>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -522,6 +904,7 @@ function CreateIssueDialog() {
               <Input
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && summary.trim()) { e.preventDefault(); handleCreate() } }}
                 placeholder="What needs to be done?"
                 autoFocus
               />
@@ -544,14 +927,20 @@ function CreateIssueDialog() {
                 <Label className="text-xs font-medium">Priority</Label>
                 <Select value={priority} onValueChange={(v) => v && setPriority(v)}>
                   <SelectTrigger>
-                    <SelectValue />
+                    {(() => { const labels: Record<string,string> = { highest: "Highest", high: "High", medium: "Medium", low: "Low", lowest: "Lowest" }; return <span>{labels[priority] ?? priority}</span> })()}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="highest">Highest</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="lowest">Lowest</SelectItem>
+                    {[
+                      { value: "highest", label: "Highest", icon: <svg className="size-3.5 text-red-600" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5H7z" /></svg> },
+                      { value: "high", label: "High", icon: <svg className="size-3.5 text-orange-500" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5H7z" /></svg> },
+                      { value: "medium", label: "Medium", icon: <svg className="size-3.5 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M7 11h10v2H7z" /></svg> },
+                      { value: "low", label: "Low", icon: <svg className="size-3.5 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5H7z" /></svg> },
+                      { value: "lowest", label: "Lowest", icon: <svg className="size-3.5 text-blue-400" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5H7z" /></svg> },
+                    ].map((p) => (
+                      <SelectItem key={p.value} value={p.value} label={p.label}>
+                        <span className="flex items-center gap-2">{p.icon} {p.label}</span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -559,67 +948,97 @@ function CreateIssueDialog() {
                 <Label className="text-xs font-medium">Assignee</Label>
                 <Select value={assigneeId} onValueChange={(v) => v && setAssigneeId(v)}>
                   <SelectTrigger>
-                    <SelectValue />
+                    {(() => { const u = users.find((u) => u.id === assigneeId); return u ? <span className="truncate">{u.displayName ?? u.name}</span> : <span className="text-muted-foreground">Unassigned</span> })()}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">Unassigned</SelectItem>
+                    <SelectItem value="__none__" label="Unassigned">Unassigned</SelectItem>
                     {users.map((u) => (
-                      <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                      <SelectItem key={u.id} value={u.id} label={u.displayName ?? u.name}>{u.displayName ?? u.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Reporter */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Reporter</Label>
+              <Select value={reporterId || undefined} onValueChange={(v) => v && setReporterId(v)}>
+                <SelectTrigger>
+                  {(() => { const u = users.find((u) => u.id === reporterId); return u ? <span className="truncate">{u.displayName ?? u.name}</span> : <span className="text-muted-foreground">Select reporter</span> })()}
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((u) => (
+                    <SelectItem key={u.id} value={u.id} label={u.displayName ?? u.name}>{u.displayName ?? u.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Two-column row: Sprint + Epic */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">Sprint</Label>
-                <Select value={sprintId} onValueChange={(v) => v && setSprintId(v)}>
+                <Select value={sprintId || undefined} onValueChange={(v) => setSprintId(v ?? "")}>
                   <SelectTrigger>
-                    <SelectValue />
+                    {(() => { const s = sprints.find((s) => s.id === sprintId); return s ? <span className="truncate">{s.name}</span> : <span className="text-muted-foreground">No sprint</span> })()}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">No Sprint</SelectItem>
+                    <SelectItem value="" label="No sprint">No sprint</SelectItem>
                     {sprints.filter((s) => s.state !== "closed").map((s) => (
-                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      <SelectItem key={s.id} value={s.id} label={s.name}>{s.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">Epic</Label>
-                <Select value={epicId} onValueChange={(v) => v && setEpicId(v)}>
+                <Select value={epicId || undefined} onValueChange={(v) => setEpicId(v ?? "")}>
                   <SelectTrigger>
-                    <SelectValue />
+                    {(() => { const ep = epics.find((e) => e.id === epicId); return ep ? <span className="truncate">{ep.name}</span> : <span className="text-muted-foreground">No epic</span> })()}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">No Epic</SelectItem>
+                    <SelectItem value="" label="No epic">No epic</SelectItem>
                     {epics.map((e) => (
-                      <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                      <SelectItem key={e.id} value={e.id} label={e.name}>{e.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Story Points */}
-            <div className="space-y-1.5 w-1/2">
-              <Label className="text-xs font-medium">Story Points</Label>
-              <Input
-                type="number"
-                value={storyPoints}
-                onChange={(e) => setStoryPoints(e.target.value)}
-                placeholder="0"
-              />
+            {/* Two-column row: Story Points + Labels */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Story Points</Label>
+                <Input
+                  type="number"
+                  value={storyPoints}
+                  onChange={(e) => setStoryPoints(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Labels</Label>
+                <Input
+                  value={labelsStr}
+                  onChange={(e) => setLabelsStr(e.target.value)}
+                  placeholder="frontend, bug"
+                />
+              </div>
             </div>
           </div>
 
+          {error && (
+            <p className="text-xs text-red-600 dark:text-red-400 px-1">{error}</p>
+          )}
+
           <DialogFooter className="pt-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => { setOpen(false); setError("") }}>Cancel</Button>
             <Button
+              type="button"
               className="bg-blue-600 text-white hover:bg-blue-700"
-              onClick={handleCreate}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCreate() }}
               disabled={!summary.trim() || saving}
             >
               {saving ? "Creating..." : "Create"}
@@ -631,55 +1050,403 @@ function CreateIssueDialog() {
   )
 }
 
+// ─── Chevron Icon ───────────────────────────────────────────────────────────
+
+function ChevronDown({ className }: { className?: string }) {
+  return (
+    <svg className={className ?? "size-3.5"} viewBox="0 0 16 16" fill="currentColor">
+      <path d="M4 6l4 4 4-4" />
+    </svg>
+  )
+}
+
+// ─── Nav Dropdown ───────────────────────────────────────────────────────────
+
+function NavDropdown({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <Popover>
+      <PopoverTrigger className="flex items-center gap-1 rounded px-2.5 py-1.5 text-[13px] font-medium text-white/90 hover:bg-white/15 hover:text-white transition-colors">
+        {label}
+        <ChevronDown className="size-3 text-white/60" />
+      </PopoverTrigger>
+      <PopoverContent side="bottom" align="start" sideOffset={4} className="w-[280px] p-0">
+        {children}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+// ─── Primary Nav ────────────────────────────────────────────────────────────
+
+function PrimaryNav() {
+  return (
+    <nav className="hidden md:flex items-center gap-0.5">
+      {/* Your Work */}
+      <NavDropdown label="Your work">
+        <div className="py-1">
+          <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Recent</div>
+          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></svg>
+            For you
+          </Link>
+          <Link href="/home/recent" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            Recent
+          </Link>
+          <Link href="/home/starred" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+            Starred
+          </Link>
+        </div>
+        <div className="border-t px-3 py-2">
+          <Link href="/dashboard" className="text-xs text-blue-600 hover:underline">Go to Your Work</Link>
+        </div>
+      </NavDropdown>
+
+      {/* Projects */}
+      <NavDropdown label="Projects">
+        <div className="py-1">
+          <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Recent</div>
+          <ProjectsNavList />
+        </div>
+        <div className="border-t px-3 py-2 flex items-center justify-between">
+          <Link href="/projects" className="text-xs text-blue-600 hover:underline">View all projects</Link>
+          <Link href="/projects/templates" className="text-xs text-blue-600 hover:underline">Create project</Link>
+        </div>
+      </NavDropdown>
+
+      {/* Filters */}
+      <NavDropdown label="Filters">
+        <div className="py-1">
+          <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Starred</div>
+          <div className="px-3 py-3 text-xs text-muted-foreground text-center">No starred filters</div>
+          <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Recent</div>
+          <Link href="/filters/my-open-work-items" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            My open work items
+          </Link>
+          <Link href="/filters/reported-by-me" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            Reported by me
+          </Link>
+          <Link href="/filters/all-work-items" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            All work items
+          </Link>
+        </div>
+        <div className="border-t px-3 py-2 flex items-center justify-between">
+          <Link href="/filters" className="text-xs text-blue-600 hover:underline">View all filters</Link>
+        </div>
+      </NavDropdown>
+
+      {/* Dashboards */}
+      <NavDropdown label="Dashboards">
+        <div className="py-1">
+          <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Starred</div>
+          <div className="px-3 py-3 text-xs text-muted-foreground text-center">No starred dashboards</div>
+          <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Recent</div>
+          <Link href="/dashboards/dash-1" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /></svg>
+            Default dashboard
+          </Link>
+        </div>
+        <div className="border-t px-3 py-2 flex items-center justify-between">
+          <Link href="/dashboards" className="text-xs text-blue-600 hover:underline">View all dashboards</Link>
+          <Link href="/dashboards" className="text-xs text-blue-600 hover:underline">Create dashboard</Link>
+        </div>
+      </NavDropdown>
+
+      {/* Teams */}
+      <NavDropdown label="Teams">
+        <div className="py-1">
+          <Link href="/teams" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            Your team
+          </Link>
+          <Link href="/teams/people" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+            People
+          </Link>
+          <Link href="/teams/directory" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+            Team directory
+          </Link>
+        </div>
+        <div className="border-t px-3 py-2">
+          <Link href="/teams" className="text-xs text-blue-600 hover:underline">Search people and teams</Link>
+        </div>
+      </NavDropdown>
+
+      {/* Plans */}
+      <NavDropdown label="Plans">
+        <div className="py-1">
+          <Link href="/plans" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+            View all plans
+          </Link>
+        </div>
+        <div className="border-t px-3 py-2">
+          <Link href="/plans" className="text-xs text-blue-600 hover:underline">Create plan</Link>
+        </div>
+      </NavDropdown>
+
+      {/* Apps */}
+      <NavDropdown label="Apps">
+        <div className="py-1">
+          <Link href="/apps" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+            Explore apps
+          </Link>
+          <Link href="/applications" className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9" /></svg>
+            Manage apps
+          </Link>
+        </div>
+        <div className="border-t px-3 py-2">
+          <Link href="/apps" className="text-xs text-blue-600 hover:underline">View all apps</Link>
+        </div>
+      </NavDropdown>
+    </nav>
+  )
+}
+
+// ─── Projects nav list (fetches recent projects for the dropdown) ───────────
+
+function ProjectsNavList() {
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    if (loaded) return
+    setLoaded(true)
+    fetch("/api/data/projects")
+      .then((r) => r.json())
+      .then((data: Project[]) => setProjects(data.slice(0, 5)))
+      .catch(() => {})
+  }, [loaded])
+
+  if (projects.length === 0) {
+    return <div className="px-3 py-3 text-xs text-muted-foreground text-center">No recent projects</div>
+  }
+
+  return (
+    <>
+      {projects.map((p) => (
+        <Link
+          key={p.id}
+          href={`/projects/${p.key}/board`}
+          className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors"
+        >
+          <div className="flex size-6 shrink-0 items-center justify-center rounded bg-blue-100 text-[10px] font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+            {p.key.charAt(0)}
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm truncate">{p.name}</div>
+            <div className="text-[11px] text-muted-foreground">{p.type === "scrum" ? "Scrum" : "Kanban"} project</div>
+          </div>
+        </Link>
+      ))}
+    </>
+  )
+}
+
 // ─── Top Nav ────────────────────────────────────────────────────────────────
 
 export function TopNav() {
+  const { open: sidebarOpen } = useSidebar()
+
+  // Blue header when sidebar open, white when collapsed (matches real Jira)
+  const isBlue = sidebarOpen
+
   return (
-    <header className="flex h-14 items-center justify-between border-b px-4">
-      {/* Left - Search */}
-      <div className="relative w-full max-w-md">
-        <svg
-          className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={2}
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-          />
-        </svg>
-        <Input placeholder="Search" className="h-9 pl-9 bg-muted/50" />
+    <header className={`flex h-14 items-center justify-between px-4 transition-colors overflow-hidden ${isBlue ? "bg-[#0052CC]" : "border-b bg-background"}`}>
+      {/* Left */}
+      <div className="flex items-center gap-2 min-w-0">
+        {/* Jira logo */}
+        <Link href="/dashboard" className="flex items-center gap-1 shrink-0">
+          <svg className="size-7" viewBox="0 0 32 32" fill="none">
+            <defs>
+              <linearGradient id="jira-grad-1" x1="20.87" y1="4.58" x2="12.19" y2="13.7">
+                <stop offset="0.18" stopColor={isBlue ? "#0052CC" : "#DEEBFF"} stopOpacity={isBlue ? "0" : "1"} />
+                <stop offset="1" stopColor="#2684FF" />
+              </linearGradient>
+              <linearGradient id="jira-grad-2" x1="11.28" y1="27.56" x2="19.96" y2="18.44">
+                <stop offset="0.18" stopColor={isBlue ? "#0052CC" : "#DEEBFF"} stopOpacity={isBlue ? "0" : "1"} />
+                <stop offset="1" stopColor="#2684FF" />
+              </linearGradient>
+            </defs>
+            <path d="M27.55 15.1L17.29 4.47 16 3.13 6.45 13.01l-2.14 2.2a.73.73 0 000 1.02l6.97 7.17L16 28.87l5.35-5.5.39-.4 5.81-5.98a.73.73 0 000-1.02zM16 20.28l-4.07-4.18L16 11.92l4.07 4.18L16 20.28z" fill={isBlue ? "white" : "#2684FF"}/>
+            <path d="M16 11.92a6.03 6.03 0 01-.04-8.46l-9.51 9.78 6.52 6.7L16 16.1l-.04-4.18z" fill="url(#jira-grad-1)"/>
+            <path d="M20.11 16.06L16 20.28a6.03 6.03 0 01.04 8.46l9.51-9.78-5.44-2.9z" fill="url(#jira-grad-2)"/>
+          </svg>
+          <span className={`text-[15px] font-bold tracking-tight ${isBlue ? "text-white" : "text-foreground"}`}>Jira</span>
+        </Link>
+        {/* Sidebar collapse/expand toggle */}
+        <SidebarTrigger className={`size-7 ${isBlue ? "text-white/70 hover:text-white hover:bg-white/15" : "text-muted-foreground hover:text-foreground hover:bg-accent"}`} />
+        {/* Primary nav items — only when sidebar is open (blue mode) */}
+        {isBlue && <PrimaryNav />}
+        {/* Search */}
+        <SearchBar isBlue={isBlue} />
       </div>
 
       {/* Right - Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         {/* Create Issue */}
-        <CreateIssueDialog />
+        <CreateIssueDialog isBlue={isBlue} />
 
-        <span className="ml-1 rounded border px-2 py-0.5 text-[11px] font-medium text-blue-600">
-          Premium trial
-        </span>
+        {isBlue && (
+          <span className="ml-1 rounded border border-white/30 px-2 py-0.5 text-[11px] font-medium text-white/90">
+            Premium trial
+          </span>
+        )}
 
         {/* Notifications */}
-        <NotificationsPanel />
+        <NotificationsPanel isBlue={isBlue} />
 
         {/* Help */}
-        <HelpPanel />
+        <HelpPanel isBlue={isBlue} />
 
         {/* Settings */}
-        <SettingsDropdown />
+        <SettingsDropdown isBlue={isBlue} />
 
-        {/* User Avatar */}
-        <Avatar className="size-8 cursor-pointer">
-          <AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">
-            AS
-          </AvatarFallback>
-        </Avatar>
+        {/* User Avatar + Profile Menu */}
+        <UserMenu />
       </div>
     </header>
+  )
+}
+
+// ─── Keyboard shortcuts dialog ──────────────────────────────────────────────
+
+const SHORTCUT_SECTIONS = [
+  {
+    title: "Global",
+    shortcuts: [
+      { keys: ["C"], description: "Create issue" },
+      { keys: ["/"], description: "Focus search" },
+      { keys: ["G", "then", "D"], description: "Go to dashboard" },
+      { keys: ["G", "then", "B"], description: "Go to board" },
+      { keys: ["G", "then", "K"], description: "Go to backlog" },
+      { keys: ["?"], description: "Open keyboard shortcuts" },
+    ],
+  },
+  {
+    title: "Board",
+    shortcuts: [
+      { keys: ["J"], description: "Select next issue" },
+      { keys: ["K"], description: "Select previous issue" },
+      { keys: ["T"], description: "Change status" },
+      { keys: ["A"], description: "Assign to me" },
+    ],
+  },
+  {
+    title: "Issue detail",
+    shortcuts: [
+      { keys: ["E"], description: "Edit summary" },
+      { keys: ["M"], description: "Add comment" },
+      { keys: ["⌘", "+", "Enter"], description: "Save comment" },
+      { keys: ["Esc"], description: "Close panel" },
+    ],
+  },
+]
+
+function KeyboardShortcutsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
+      <DialogContent className="sm:max-w-[540px] max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Keyboard shortcuts</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-6 py-2">
+          {SHORTCUT_SECTIONS.map((section) => (
+            <div key={section.title}>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">{section.title}</h3>
+              <div className="space-y-1.5">
+                {section.shortcuts.map((s) => (
+                  <div key={s.description} className="flex items-center justify-between py-1.5">
+                    <span className="text-sm text-foreground">{s.description}</span>
+                    <div className="flex items-center gap-1">
+                      {s.keys.map((k, i) => (
+                        k === "then" || k === "+" ? (
+                          <span key={i} className="text-xs text-muted-foreground">{k}</span>
+                        ) : (
+                          <kbd key={i} className="inline-flex h-6 min-w-6 items-center justify-center rounded border bg-muted px-1.5 text-[11px] font-mono font-medium text-muted-foreground">
+                            {k}
+                          </kbd>
+                        )
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ─── User Menu ──────────────────────────────────────────────────────────────
+
+function UserMenu() {
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+
+  return (
+    <>
+      <Popover>
+        <PopoverTrigger className="rounded-full">
+          <Avatar className="size-8 cursor-pointer hover:ring-2 hover:ring-white/50 hover:ring-offset-1 hover:ring-offset-[#0052CC] transition-all">
+            <AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">
+              AS
+            </AvatarFallback>
+          </Avatar>
+        </PopoverTrigger>
+        <PopoverContent side="bottom" align="end" sideOffset={8} className="w-[280px] p-0">
+          {/* Profile header */}
+          <div className="p-4 border-b">
+            <div className="flex items-center gap-3">
+              <Avatar className="size-10">
+                <AvatarFallback className="bg-blue-600 text-sm font-semibold text-white">AS</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm font-medium text-foreground">Abhishek Sharma</p>
+                <p className="text-xs text-muted-foreground">abhishek@company.io</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Menu items */}
+          <div className="p-1">
+            <Link href="/admin/settings" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+              <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
+              Profile
+            </Link>
+            <Link href="/admin/settings" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+              <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              Personal settings
+            </Link>
+            <button
+              onClick={() => setShortcutsOpen(true)}
+              className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full"
+            >
+              <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" /></svg>
+              Keyboard shortcuts
+              <kbd className="ml-auto text-[10px] font-mono text-muted-foreground border rounded px-1 py-0.5">?</kbd>
+            </button>
+          </div>
+
+          <div className="border-t p-1">
+            <Link href="/switch-account" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+              <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><path d="M20 8v6M23 11h-6" /></svg>
+              Switch account
+            </Link>
+            <Link href="/login" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full">
+              <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+              Log out
+            </Link>
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      <KeyboardShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+    </>
   )
 }

@@ -1,49 +1,352 @@
 "use client"
 
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+
+const people = [
+  { name: "Sam Williams", initials: "SW" },
+  { name: "Jordan Lee", initials: "JL" },
+  { name: "Taylor Brown", initials: "TB" },
+  { name: "Priya Patel", initials: "PP" },
+  { name: "Engineering Team", initials: "ET" },
+  { name: "Ravi Kumar", initials: "RK" },
+  { name: "Liam Chen", initials: "LC" },
+]
+
+const BADGES = [
+  { key: "hammer", label: "Ship It", emoji: "🔨" },
+  { key: "heart", label: "Team Player", emoji: "💛" },
+  { key: "crayons", label: "Creative", emoji: "🖍️" },
+  { key: "rocket", label: "Above & Beyond", emoji: "🚀" },
+  { key: "brain", label: "Problem Solver", emoji: "🧠" },
+  { key: "star", label: "Star", emoji: "⭐" },
+]
+
+const initialKudos = [
+  {
+    id: "k-1",
+    from: { name: "Abhishek Sharma", initials: "AS" },
+    to: { name: "Sam Williams", initials: "SW" },
+    message: "Amazing work on the sprint board! The drag-and-drop is super smooth now.",
+    card: "hammer",
+    createdAt: "2026-05-21T10:00:00.000Z",
+    reactions: [{ emoji: "🎉", count: 3 }, { emoji: "💪", count: 2 }],
+  },
+  {
+    id: "k-2",
+    from: { name: "Jordan Lee", initials: "JL" },
+    to: { name: "Abhishek Sharma", initials: "AS" },
+    message: "Thanks for helping debug the authentication flow — saved us hours!",
+    card: "heart",
+    createdAt: "2026-05-20T14:30:00.000Z",
+    reactions: [{ emoji: "❤️", count: 4 }, { emoji: "🙌", count: 1 }],
+  },
+  {
+    id: "k-3",
+    from: { name: "Taylor Brown", initials: "TB" },
+    to: { name: "Engineering Team", initials: "ET" },
+    message: "Great collaboration on the release! Everyone pulled together to ship on time.",
+    card: "crayons",
+    createdAt: "2026-05-19T09:00:00.000Z",
+    reactions: [{ emoji: "🏆", count: 5 }, { emoji: "🔥", count: 3 }],
+  },
+  {
+    id: "k-4",
+    from: { name: "Sam Williams", initials: "SW" },
+    to: { name: "Jordan Lee", initials: "JL" },
+    message: "Your code review feedback is always thorough and constructive. Really appreciate it!",
+    card: "heart",
+    createdAt: "2026-05-18T16:00:00.000Z",
+    reactions: [{ emoji: "👏", count: 2 }],
+  },
+]
+
+const CARD_COLORS: Record<string, string> = {
+  hammer: "from-orange-400 to-amber-300",
+  heart: "from-yellow-400 to-yellow-300",
+  crayons: "from-green-400 to-emerald-300",
+  rocket: "from-blue-400 to-indigo-300",
+  brain: "from-purple-400 to-violet-300",
+  star: "from-pink-400 to-rose-300",
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const days = Math.floor(diff / 86400000)
+  if (days === 0) return "Today"
+  if (days === 1) return "Yesterday"
+  if (days < 7) return `${days}d ago`
+  return `${Math.floor(days / 7)}w ago`
+}
 
 export default function KudosPage() {
+  const [tab, setTab] = useState<"all" | "received" | "given">("all")
+  const [kudos, setKudos] = useState(initialKudos)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+
+  // Modal form state
+  const [recipientSearch, setRecipientSearch] = useState("")
+  const [selectedRecipient, setSelectedRecipient] = useState<{ name: string; initials: string } | null>(null)
+  const [message, setMessage] = useState("")
+  const [selectedBadge, setSelectedBadge] = useState("hammer")
+  const [recipientDropOpen, setRecipientDropOpen] = useState(false)
+  const recipientRef = useRef<HTMLDivElement>(null)
+
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
+
+  useEffect(() => {
+    if (!modalOpen) return
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") closeModal() }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [modalOpen])
+
+  useEffect(() => {
+    if (!recipientDropOpen) return
+    const handler = (e: MouseEvent) => {
+      if (recipientRef.current && !recipientRef.current.contains(e.target as Node)) setRecipientDropOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [recipientDropOpen])
+
+  const closeModal = () => {
+    setModalOpen(false)
+    setRecipientSearch("")
+    setSelectedRecipient(null)
+    setMessage("")
+    setSelectedBadge("hammer")
+    setRecipientDropOpen(false)
+  }
+
+  const handleSend = () => {
+    if (!selectedRecipient || !message.trim()) return
+    setKudos((prev) => [{
+      id: `k-${Date.now()}`,
+      from: { name: "Abhishek Sharma", initials: "AS" },
+      to: selectedRecipient,
+      message: message.trim(),
+      card: selectedBadge,
+      createdAt: new Date().toISOString(),
+      reactions: [],
+    }, ...prev])
+    closeModal()
+    showToast("Kudos sent!")
+  }
+
+  const filteredPeople = people.filter((p) =>
+    p.name.toLowerCase().includes(recipientSearch.toLowerCase())
+  )
+
+  const filtered = tab === "received"
+    ? kudos.filter((k) => k.to.name === "Abhishek Sharma")
+    : tab === "given"
+    ? kudos.filter((k) => k.from.name === "Abhishek Sharma")
+    : kudos
+
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="p-8 max-w-3xl mx-auto">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-[10000] rounded-lg border bg-background px-4 py-3 shadow-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <svg className="size-4 text-green-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+          {toast}
+        </div>
+      )}
+
+      {/* Give Kudos Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50" onClick={(e) => { if (e.target === e.currentTarget) closeModal() }}>
+          <div className="w-full max-w-md rounded-lg border bg-background shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="border-b px-6 py-4">
+              <h2 className="text-lg font-semibold">Give kudos</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Recognize a teammate for their great work.</p>
+            </div>
+
+            <div className="space-y-4 px-6 py-5">
+              {/* Recipient */}
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">To <span className="text-red-500">*</span></label>
+                <div className="relative" ref={recipientRef}>
+                  {selectedRecipient ? (
+                    <div className="flex items-center gap-2 rounded-md border px-3 py-2">
+                      <Avatar className="size-6"><AvatarFallback className="text-[9px] bg-blue-100 text-blue-700">{selectedRecipient.initials}</AvatarFallback></Avatar>
+                      <span className="text-sm flex-1">{selectedRecipient.name}</span>
+                      <button type="button" onClick={() => { setSelectedRecipient(null); setRecipientSearch("") }} className="text-muted-foreground hover:text-foreground">
+                        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      autoFocus
+                      value={recipientSearch}
+                      onChange={(e) => { setRecipientSearch(e.target.value); setRecipientDropOpen(true) }}
+                      onFocus={() => setRecipientDropOpen(true)}
+                      placeholder="Search people or teams..."
+                      className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                    />
+                  )}
+                  {recipientDropOpen && !selectedRecipient && (
+                    <div className="absolute left-0 right-0 top-full mt-1 z-50 max-h-48 overflow-y-auto rounded-lg border bg-popover shadow-lg">
+                      {filteredPeople.length === 0 ? (
+                        <p className="px-3 py-2 text-sm text-muted-foreground">No results</p>
+                      ) : filteredPeople.map((p) => (
+                        <button
+                          key={p.name}
+                          type="button"
+                          onClick={() => { setSelectedRecipient(p); setRecipientSearch(""); setRecipientDropOpen(false) }}
+                          className="flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-accent transition-colors text-left"
+                        >
+                          <Avatar className="size-6"><AvatarFallback className="text-[9px] bg-blue-100 text-blue-700">{p.initials}</AvatarFallback></Avatar>
+                          {p.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Message */}
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Message <span className="text-red-500">*</span></label>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={3}
+                  placeholder="What did they do that was awesome?"
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm resize-none outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                />
+              </div>
+
+              {/* Badge selector */}
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Badge</label>
+                <div className="flex flex-wrap gap-2">
+                  {BADGES.map((b) => (
+                    <button
+                      key={b.key}
+                      type="button"
+                      onClick={() => setSelectedBadge(b.key)}
+                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                        selectedBadge === b.key
+                          ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                          : "hover:bg-accent"
+                      }`}
+                    >
+                      <span>{b.emoji}</span>
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t px-6 py-4">
+              <button type="button" onClick={closeModal} className="rounded-md border px-4 py-2 text-sm hover:bg-accent transition-colors">Cancel</button>
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={!selectedRecipient || !message.trim()}
+                className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Kudos</h1>
-        <Link href="/kudos">
-          <Button variant="outline">Give kudos</Button>
-        </Link>
+        <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setModalOpen(true)}>
+          <svg className="size-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          Give kudos
+        </Button>
       </div>
 
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        {/* Search/magnifier illustration with question marks */}
-        <svg className="mb-6 size-36" viewBox="0 0 150 150" fill="none">
-          {/* Question marks */}
-          <text x="40" y="30" fill="currentColor" className="text-muted-foreground/20" fontSize="24" fontWeight="bold">?</text>
-          <text x="110" y="35" fill="currentColor" className="text-muted-foreground/20" fontSize="18" fontWeight="bold">?</text>
-          <text x="25" y="90" fill="currentColor" className="text-muted-foreground/15" fontSize="20" fontWeight="bold">?</text>
-          <text x="120" y="100" fill="currentColor" className="text-muted-foreground/20" fontSize="22" fontWeight="bold">?</text>
-          <text x="100" y="130" fill="currentColor" className="text-muted-foreground/15" fontSize="16" fontWeight="bold">?</text>
-
-          {/* Dashed circle */}
-          <circle cx="70" cy="70" r="40" stroke="currentColor" className="text-muted-foreground/20" strokeWidth="3" strokeDasharray="8 6" fill="none" />
-
-          {/* X inside circle */}
-          <line x1="55" y1="55" x2="85" y2="85" stroke="currentColor" className="text-muted-foreground/30" strokeWidth="6" strokeLinecap="round" />
-          <line x1="85" y1="55" x2="55" y2="85" stroke="currentColor" className="text-muted-foreground/30" strokeWidth="6" strokeLinecap="round" />
-
-          {/* Magnifier handle */}
-          <line x1="100" y1="100" x2="120" y2="120" stroke="currentColor" className="text-muted-foreground/25" strokeWidth="8" strokeLinecap="round" />
-        </svg>
-
-        <p className="mb-2 max-w-lg text-sm text-muted-foreground">
-          We couldn&apos;t find any teams matching your search. Try changing your search criteria or{" "}
-          <button type="button" className="font-medium text-blue-600 hover:underline">clear all filters</button>.
-        </p>
-        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-          Some teams may not be found on this site due to{" "}
-          <button type="button" className="font-medium text-blue-600 hover:underline">changes in team visibility</button>.
-        </p>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 border-b">
+        {([
+          { key: "all", label: "All" },
+          { key: "received", label: "Received" },
+          { key: "given", label: "Given" },
+        ] as const).map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              tab === t.key
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
+
+      {/* Kudos feed */}
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center py-16 text-center">
+          <svg className="size-16 text-muted-foreground/30 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          <p className="text-sm font-medium">No kudos yet</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {tab === "given" ? "You haven't given any kudos yet." : "No kudos received yet."}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map((kudo) => (
+            <div key={kudo.id} className="rounded-xl border overflow-hidden">
+              {/* Card gradient banner */}
+              <div className={`h-2 bg-gradient-to-r ${CARD_COLORS[kudo.card] ?? CARD_COLORS.hammer}`} />
+
+              <div className="p-4">
+                {/* From → To */}
+                <div className="flex items-center gap-2 mb-3">
+                  <Avatar className="size-7">
+                    <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{kudo.from.initials}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">{kudo.from.name}</span>
+                  <svg className="size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                  <Avatar className="size-7">
+                    <AvatarFallback className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">{kudo.to.initials}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">{kudo.to.name}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{timeAgo(kudo.createdAt)}</span>
+                </div>
+
+                {/* Message */}
+                <p className="text-sm text-foreground mb-3">{kudo.message}</p>
+
+                {/* Reactions */}
+                <div className="flex items-center gap-2">
+                  {kudo.reactions.map((r) => (
+                    <button
+                      key={r.emoji}
+                      className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs hover:bg-accent transition-colors"
+                    >
+                      <span>{r.emoji}</span>
+                      <span className="text-muted-foreground">{r.count}</span>
+                    </button>
+                  ))}
+                  <button className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent transition-colors">
+                    <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
