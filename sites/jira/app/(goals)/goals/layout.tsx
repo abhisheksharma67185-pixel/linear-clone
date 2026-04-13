@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Input } from "@/components/ui/input"
@@ -39,6 +40,7 @@ const iconMap: Record<string, React.ReactNode> = {
 
 export default function GoalsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
     <div className="flex h-screen flex-col">
@@ -52,10 +54,17 @@ export default function GoalsLayout({ children }: { children: React.ReactNode })
             </svg>
             <span className="text-sm font-semibold">Goals</span>
           </div>
-          <button className="rounded p-1 text-muted-foreground hover:bg-accent">
-            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="group/collapse relative rounded p-1 text-muted-foreground hover:bg-accent"
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <svg className={`size-4 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" />
             </svg>
+            <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-[11px] text-background opacity-0 group-hover/collapse:opacity-100 transition-opacity z-50">
+              {sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            </span>
           </button>
         </div>
 
@@ -88,7 +97,7 @@ export default function GoalsLayout({ children }: { children: React.ReactNode })
 
       <div className="flex flex-1 min-h-0">
         {/* Goals sidebar */}
-        <aside className="w-64 shrink-0 border-r overflow-y-auto">
+        <aside className={`shrink-0 border-r overflow-y-auto transition-all duration-200 ${sidebarCollapsed ? "w-0 border-r-0 overflow-hidden" : "w-64"}`}>
           <nav className="flex flex-col gap-0.5 p-2">
             {sidebarItems.map((item) => (
               <Link

@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
+import { useState, useRef, useEffect } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const projectStatusStyle: Record<string, string> = {
   "ON TRACK": "border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
@@ -12,20 +12,340 @@ const projectStatusStyle: Record<string, string> = {
 }
 
 const mockProjects = [
-  { id: 1, name: "New employee onboarding update", status: "ON TRACK", icon: "🎨", lastUpdated: "1 day ago" },
-  { id: 2, name: "Cloud migration phase 2", status: "AT RISK", icon: "☁️", lastUpdated: "3 days ago" },
-  { id: 3, name: "Customer portal redesign", status: "AT RISK", icon: "🤝", lastUpdated: "5 days ago" },
-  { id: 4, name: "Mobile app performance optimization", status: "ON TRACK", icon: "🌱", lastUpdated: "1 week ago" },
+  { id: 1, key: "SCRUM", name: "New employee onboarding update", status: "ON TRACK", icon: "🎨", lastUpdated: "1 day ago", tag: "onboarding", goal: "Employee experience", team: "HR", owner: "Abhishek Sharma" },
+  { id: 2, key: "KANB", name: "Cloud migration phase 2", status: "AT RISK", icon: "☁️", lastUpdated: "3 days ago", tag: "infrastructure", goal: "Platform reliability", team: "Engineering", owner: "Sam Williams" },
+  { id: 3, key: "SCRUM", name: "Customer portal redesign", status: "AT RISK", icon: "🤝", lastUpdated: "5 days ago", tag: "design", goal: "Customer experience", team: "Design", owner: "Jordan Lee" },
+  { id: 4, key: "SCRUM", name: "Mobile app performance optimization", status: "ON TRACK", icon: "🌱", lastUpdated: "1 week ago", tag: "performance", goal: "Platform reliability", team: "Engineering", owner: "Taylor Brown" },
 ]
 
+const allStatuses = ["ON TRACK", "AT RISK", "OFF TRACK"]
+const allGoals = ["Employee experience", "Platform reliability", "Customer experience"]
+const allTags = ["onboarding", "infrastructure", "design", "performance"]
+const allTeams = ["HR", "Engineering", "Design", "QA", "Product"]
+const allOwners = ["Abhishek Sharma", "Sam Williams", "Jordan Lee", "Taylor Brown"]
+
 const tabs = ["All projects", "My projects", "Archived"]
-const filterButtons = ["Filter by Tag", "Status", "Goal", "Team", "Owner"]
+
+type FilterKey = "status" | "goal" | "tag" | "team" | "owner"
+
+interface FilterConfig {
+  key: FilterKey
+  label: string
+  options: string[]
+  icon: React.ReactNode
+}
+
+const filterConfigs: FilterConfig[] = [
+  {
+    key: "tag", label: "Filter by Tag", options: allTags,
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></svg>,
+  },
+  {
+    key: "status", label: "Status", options: allStatuses,
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /></svg>,
+  },
+  {
+    key: "goal", label: "Goal", options: allGoals,
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg>,
+  },
+  {
+    key: "team", label: "Team", options: allTeams,
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+  },
+  {
+    key: "owner", label: "Owner", options: allOwners,
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>,
+  },
+]
+
+function ProjectRowMenu({ project, onArchive, onDelete, onToast, following, onToggleFollow }: {
+  project: { id: number; key: string; name: string }
+  onArchive: (id: number) => void
+  onDelete: (id: number) => void
+  onToast: (msg: string) => void
+  following: boolean
+  onToggleFollow: (id: number) => void
+}) {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+
+  // Position the dropdown using fixed coords from the trigger button
+  const openMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (open) { setOpen(false); return }
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect()
+      setPos({ top: rect.bottom + 4, left: rect.right - 192 }) // 192 = w-48
+    }
+    setOpen(true)
+  }
+
+  // Close on outside click — listen on mousedown so it fires before click
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (btnRef.current?.contains(target)) return // let the toggle handle it
+      if (menuRef.current && !menuRef.current.contains(target)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [open])
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={openMenu}
+        onMouseDown={(e) => e.stopPropagation()}
+        className="text-muted-foreground hover:text-foreground rounded p-1 hover:bg-accent transition-colors"
+      >
+        <svg className="size-4 pointer-events-none" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
+      </button>
+
+      {/* Fixed-position dropdown — escapes all parent overflow/clipping */}
+      {open && (
+        <div
+          ref={menuRef}
+          style={{ position: "fixed", top: pos.top, left: pos.left }}
+          className="z-[9999] w-48 rounded-lg border bg-popover shadow-lg py-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={() => { setOpen(false); router.push(`/projects/${project.key}/board`) }}
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent transition-colors text-left"
+          >
+            <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+            View project
+          </button>
+          <button
+            type="button"
+            onClick={() => { setOpen(false); onToast("Edit details coming soon") }}
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent transition-colors text-left"
+          >
+            <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+            Edit details
+          </button>
+          <button
+            type="button"
+            onClick={() => { setOpen(false); onArchive(project.id) }}
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent transition-colors text-left"
+          >
+            <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8" /><rect x="1" y="3" width="22" height="5" /><line x1="10" y1="12" x2="14" y2="12" /></svg>
+            Archive
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false)
+              onToggleFollow(project.id)
+              onToast(following ? `Unfollowed ${project.name}` : `Now following ${project.name}`)
+            }}
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent transition-colors text-left"
+          >
+            <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {following
+                ? <><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /><line x1="2" y1="2" x2="22" y2="22" /></>
+                : <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+              }
+            </svg>
+            {following ? "Unfollow" : "Follow"}
+          </button>
+          <div className="my-1 h-px bg-border" />
+          <button
+            type="button"
+            onClick={() => { setOpen(false); setDeleteOpen(true) }}
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+          >
+            <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+            Delete project
+          </button>
+        </div>
+      )}
+
+      {/* Delete confirmation overlay */}
+      {deleteOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50" onClick={(e) => { e.stopPropagation(); setDeleteOpen(false) }}>
+          <div className="w-full max-w-[400px] rounded-lg border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold">Delete project</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Are you sure you want to delete <span className="font-medium text-foreground">{project.name}</span>? This action cannot be undone.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" onClick={() => setDeleteOpen(false)} className="rounded-md border px-4 py-2 text-sm hover:bg-accent transition-colors">Cancel</button>
+              <button type="button" onClick={() => { onDelete(project.id); setDeleteOpen(false) }} className="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 transition-colors">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+function FilterPopover({ config, selected, onToggle, onClear }: {
+  config: FilterConfig
+  selected: Set<string>
+  onToggle: (value: string) => void
+  onClear: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [filterSearch, setFilterSearch] = useState("")
+  const ref = useRef<HTMLDivElement>(null)
+  const hasSelection = selected.size > 0
+  const filtered = config.options.filter((o) => o.toLowerCase().includes(filterSearch.toLowerCase()))
+
+  useEffect(() => {
+    if (!open) return
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setFilterSearch("") }
+    }
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setOpen(false); setFilterSearch("") }
+    }
+    document.addEventListener("mousedown", handleOutsideClick)
+    document.addEventListener("keydown", handleEscape)
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick)
+      document.removeEventListener("keydown", handleEscape)
+    }
+  }, [open])
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors ${hasSelection ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "text-muted-foreground hover:bg-accent"}`}
+      >
+        {config.icon}
+        {config.label}
+        {hasSelection && <span className="ml-0.5 rounded-full bg-blue-600 px-1.5 text-[10px] font-bold text-white">{selected.size}</span>}
+        <svg className="size-3 text-muted-foreground" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full mt-1 z-50 w-56 rounded-lg border bg-popover shadow-lg">
+          {/* Search */}
+          <div className="p-2 border-b">
+            <div className="relative">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+              <input
+                type="text"
+                placeholder={`Search ${config.label.toLowerCase()}...`}
+                value={filterSearch}
+                onChange={(e) => setFilterSearch(e.target.value)}
+                autoFocus
+                className="w-full rounded-md border bg-background py-1.5 pl-8 pr-2 text-xs outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+              />
+            </div>
+          </div>
+          {/* Options */}
+          <div className="max-h-48 overflow-y-auto py-1">
+            {filtered.length === 0 && (
+              <p className="px-3 py-2 text-xs text-muted-foreground">No matches</p>
+            )}
+            {filtered.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => onToggle(option)}
+                className="flex w-full items-center gap-2.5 px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+              >
+                <span className={`flex size-4 items-center justify-center rounded border ${selected.has(option) ? "bg-blue-600 border-blue-600 text-white" : "border-muted-foreground/40"}`}>
+                  {selected.has(option) && <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>}
+                </span>
+                <span className="truncate">{option}</span>
+              </button>
+            ))}
+          </div>
+          {/* Footer */}
+          {hasSelection && (
+            <div className="border-t px-3 py-2">
+              <button type="button" onClick={() => { onClear(); setOpen(false); setFilterSearch("") }} className="text-xs text-blue-600 hover:underline">Clear filter</button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function ProjectDirectoryPage() {
+  const router = useRouter()
   const [search, setSearch] = useState("")
+  const [projects, setProjects] = useState(mockProjects)
+  const [toast, setToast] = useState<string | null>(null)
+  const [filters, setFilters] = useState<Record<FilterKey, Set<string>>>({
+    status: new Set(),
+    goal: new Set(),
+    tag: new Set(),
+    team: new Set(),
+    owner: new Set(),
+  })
+  const [viewMode, setViewMode] = useState<"list" | "board">("list")
+  const [activeTab, setActiveTab] = useState<"all" | "my" | "archived">("all")
+  const [followedProjects, setFollowedProjects] = useState<Set<number>>(new Set())
+
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
+  const handleArchive = (id: number) => { setProjects((p) => p.filter((x) => x.id !== id)); showToast("Project archived") }
+  const handleDelete = (id: number) => { setProjects((p) => p.filter((x) => x.id !== id)); showToast("Project deleted") }
+  const toggleFollow = (id: number) => {
+    setFollowedProjects((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleFilter = (key: FilterKey, value: string) => {
+    setFilters((prev) => {
+      const next = new Set(prev[key])
+      if (next.has(value)) next.delete(value)
+      else next.add(value)
+      return { ...prev, [key]: next }
+    })
+  }
+
+  const clearFilter = (key: FilterKey) => {
+    setFilters((prev) => ({ ...prev, [key]: new Set() }))
+  }
+
+  const clearAllFilters = () => {
+    setFilters({ status: new Set(), goal: new Set(), tag: new Set(), team: new Set(), owner: new Set() })
+  }
+
+  const hasAnyFilter = Object.values(filters).some((s) => s.size > 0)
+
+  const filteredProjects = projects.filter((p) => {
+    // Tab filter
+    if (activeTab === "my" && p.owner !== "Abhishek Sharma") return false
+    if (activeTab === "archived") return false // archived tab shows empty — archived projects live at /project-directory/archived
+    if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
+    if (filters.status.size > 0 && !filters.status.has(p.status)) return false
+    if (filters.goal.size > 0 && !filters.goal.has(p.goal)) return false
+    if (filters.tag.size > 0 && !filters.tag.has(p.tag)) return false
+    if (filters.team.size > 0 && !filters.team.has(p.team)) return false
+    if (filters.owner.size > 0 && !filters.owner.has(p.owner)) return false
+    return true
+  })
 
   return (
     <div className="p-6">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 rounded-lg border bg-background px-4 py-3 shadow-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <svg className="size-4 text-green-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+          {toast}
+        </div>
+      )}
       {/* Banner */}
       <div className="mb-6 flex items-center justify-between rounded-lg border bg-blue-50/50 px-5 py-4 dark:bg-blue-900/10">
         <div className="flex items-center gap-3">
@@ -37,27 +357,44 @@ export default function ProjectDirectoryPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-4">
-          <Button className="bg-blue-600 text-white hover:bg-blue-700">
-            Create your first project
-          </Button>
-          <button className="text-sm text-muted-foreground hover:text-foreground hover:underline">
+          <Link href="/projects">
+            <Button className="bg-blue-600 text-white hover:bg-blue-700">Create your first project</Button>
+          </Link>
+          <Link href="/products" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
             More about projects
-          </button>
+          </Link>
         </div>
       </div>
 
       {/* Title + tabs */}
       <div className="mb-4 flex items-center gap-4">
         <h1 className="text-2xl font-semibold text-muted-foreground">Projects</h1>
-        <Tabs defaultValue="All projects">
-          <TabsList variant="line">
-            {tabs.map((tab) => (
-              <TabsTrigger key={tab} value={tab}>
-                {tab}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center gap-0 border-b">
+          {([
+            { key: "all" as const, label: "All projects" },
+            { key: "my" as const, label: "My projects" },
+            { key: "archived" as const, label: "Archived" },
+          ]).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => {
+                if (tab.key === "archived") {
+                  router.push("/project-directory/archived")
+                } else {
+                  setActiveTab(tab.key)
+                }
+              }}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+                activeTab === tab.key
+                  ? "border-blue-600 text-blue-700"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-gray-300"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Search */}
@@ -65,64 +402,79 @@ export default function ProjectDirectoryPage() {
         <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-        <Input placeholder="Search projects" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        <input
+          type="text"
+          placeholder="Search projects"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-md border bg-background py-2 pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+        />
       </div>
 
-      {/* Filter buttons */}
+      {/* Filter buttons — each is a Popover */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        {filterButtons.map((label) => (
-          <button key={label} className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors">
-            {label === "Filter by Tag" && <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></svg>}
-            {label === "Status" && <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /></svg>}
-            {label === "Goal" && <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg>}
-            {label === "Team" && <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>}
-            {label === "Owner" && <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>}
-            {label}
-          </button>
+        {filterConfigs.map((config) => (
+          <FilterPopover
+            key={config.key}
+            config={config}
+            selected={filters[config.key]}
+            onToggle={(v) => toggleFilter(config.key, v)}
+            onClear={() => clearFilter(config.key)}
+          />
         ))}
-        <button className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors">
+
+        {/* Reporting line — static link */}
+        <Link href="/teams/people" className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors">
           <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
           Reporting line
-        </button>
+        </Link>
+
+        {hasAnyFilter && (
+          <button onClick={clearAllFilters} className="text-xs text-blue-600 hover:underline ml-1">Clear all</button>
+        )}
       </div>
 
       {/* Count + sort */}
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{mockProjects.length} projects</p>
+        <p className="text-sm text-muted-foreground">{filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}</p>
         <div className="flex items-center gap-2">
           <div className="flex rounded border">
-            <button className="bg-accent px-2 py-1">
+            <button onClick={() => setViewMode("list")} className={`px-2 py-1 ${viewMode === "list" ? "bg-accent" : "text-muted-foreground hover:bg-accent"}`}>
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
             </button>
-            <button className="px-2 py-1 text-muted-foreground hover:bg-accent">
+            <button onClick={() => setViewMode("board")} className={`px-2 py-1 ${viewMode === "board" ? "bg-accent" : "text-muted-foreground hover:bg-accent"}`}>
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
             </button>
           </div>
-          <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <Link href="/project-directory" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             Sort by following
             <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12l-4-4h8z" /></svg>
-          </button>
-          <button className="flex items-center gap-1 rounded border px-2 py-1 text-sm text-muted-foreground hover:bg-accent">
+          </Link>
+          <Link href="/project-directory" className="flex items-center gap-1 rounded border px-2 py-1 text-sm text-muted-foreground hover:bg-accent">
             <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
             Columns
-          </button>
-          <button className="text-muted-foreground hover:text-foreground">
+          </Link>
+          <Link href="/project-directory" className="text-muted-foreground hover:text-foreground">
             <svg className="size-5" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
-          </button>
+          </Link>
         </div>
       </div>
 
       {/* Table */}
       <div className="rounded-lg border">
         <div className="grid grid-cols-[1fr_100px_100px_80px_100px_100px] gap-4 border-b px-4 py-2 text-xs font-medium text-muted-foreground">
-          <span>Project</span><span>Status</span><span>Target date</span><span>Owner</span><span>Following</span><span>Last updated</span>
+          <span>Project</span><span>Status</span><span>Target date</span><span>Owner</span><span>Team</span><span>Last updated</span>
         </div>
-        {mockProjects.map((project) => (
-          <div key={project.id} className="grid grid-cols-[1fr_100px_100px_80px_100px_100px] gap-4 border-b last:border-b-0 px-4 py-3 items-center hover:bg-accent/50 transition-colors">
-            <div className="flex items-center gap-2">
+        {filteredProjects.map((project) => (
+          <div
+            key={project.id}
+            onClick={() => router.push(`/projects/${project.key}/board`)}
+            className="grid grid-cols-[1fr_100px_100px_80px_100px_100px] gap-4 border-b last:border-b-0 px-4 py-3 items-center hover:bg-accent/50 transition-colors cursor-pointer"
+          >
+            <Link href={`/projects/${project.key}/board`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 hover:text-blue-600">
               <span className="text-base">{project.icon}</span>
               <span className="text-sm truncate">{project.name}</span>
-            </div>
+            </Link>
             <div>
               <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase ${projectStatusStyle[project.status]}`}>
                 {project.status}
@@ -132,18 +484,19 @@ export default function ProjectDirectoryPage() {
               <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
               <div className="h-2.5 w-12 rounded bg-muted" />
             </div>
-            <div>
-              <svg className="size-6 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
-            </div>
-            <div><div className="h-2.5 w-16 rounded bg-muted" /></div>
+            <div className="text-xs text-muted-foreground truncate">{project.owner.split(" ")[0]}</div>
+            <div className="text-xs text-muted-foreground truncate">{project.team}</div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">{project.lastUpdated}</span>
-              <button className="text-muted-foreground hover:text-foreground">
-                <svg className="size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
-              </button>
+              <ProjectRowMenu project={project} onArchive={handleArchive} onDelete={handleDelete} onToast={showToast} following={followedProjects.has(project.id)} onToggleFollow={toggleFollow} />
             </div>
           </div>
         ))}
+        {filteredProjects.length === 0 && (
+          <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+            No projects match your filters.
+          </div>
+        )}
       </div>
     </div>
   )

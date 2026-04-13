@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { AdminHelpPanel } from "@/components/admin-help-panel"
 import { AdminSearchPanel } from "@/components/admin-search-panel"
@@ -110,6 +109,86 @@ const bottomItems = [
   { name: "Organization settings", href: "#", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09" /></svg> },
 ]
 
+const searchableItems = [
+  { name: "Overview", href: "/admin" },
+  { name: "Users", href: "/admin/users" },
+  { name: "Groups", href: "/admin/groups" },
+  { name: "Teams", href: "/admin/admin-teams" },
+  { name: "Managed accounts", href: "/admin/managed-accounts" },
+  { name: "Service accounts", href: "/admin/service-accounts" },
+  { name: "Domains", href: "/admin/domains" },
+  { name: "Authentication policies", href: "/admin/security/user-security/authentication-policies" },
+  { name: "External users", href: "/admin/security/user-security/external-users" },
+  { name: "Access policies", href: "/admin/security/user-security/access-policies" },
+  { name: "Identity providers", href: "/admin/security/user-security/identity-providers" },
+  { name: "Security guide", href: "/admin/security/security-guide" },
+  { name: "Billing", href: "/admin/billing" },
+  { name: "Organization settings", href: "/admin/settings" },
+  { name: "Atlassian apps", href: "/admin/atlassian-apps" },
+  { name: "Audit log", href: "/admin/insights/audit-log" },
+  { name: "Platform usage", href: "/admin/insights/platform-usage" },
+]
+
+function AdminSearchBar() {
+  const router = useRouter()
+  const [query, setQuery] = useState("")
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  const results = query.trim()
+    ? searchableItems.filter((item) =>
+        item.name.toLowerCase().includes(query.toLowerCase()),
+      )
+    : []
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false) }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [open])
+
+  return (
+    <div className="relative w-full max-w-lg mx-4" ref={ref}>
+      <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+      <input
+        type="text"
+        placeholder="Search"
+        aria-label="Search administration"
+        value={query}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
+        onFocus={() => { if (query.trim()) setOpen(true) }}
+        className="h-9 w-full rounded-md border bg-muted/50 pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+      />
+      {open && results.length > 0 && (
+        <div role="listbox" className="absolute left-0 right-0 top-full z-50 mt-1 max-h-64 overflow-y-auto rounded-lg border bg-popover shadow-lg">
+          {results.map((item) => (
+            <div
+              key={item.href}
+              role="option"
+              aria-selected={false}
+              onClick={() => { setOpen(false); setQuery(""); router.push(item.href) }}
+              className="flex cursor-pointer items-center justify-between px-3 py-2 text-sm hover:bg-accent transition-colors"
+            >
+              <span>{item.name}</span>
+              <span className="text-xs text-muted-foreground truncate ml-4 max-w-[200px]">{item.href}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -141,6 +220,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [shadowOpen, setShadowOpen] = useState(isShadowPage)
   const [sitesOpen, setSitesOpen] = useState(pathname === "/admin/sites")
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -149,26 +229,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const bellRef = useRef<HTMLButtonElement>(null)
   const profileRef = useRef<HTMLDivElement>(null)
 
+  // Close mobile sidebar on route change
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
-        setProfileOpen(false)
-      }
+    setMobileNavOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!profileOpen) return
+    const handler = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false)
     }
-    if (profileOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
-      return () => document.removeEventListener("mousedown", handleClickOutside)
-    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
   }, [profileOpen])
 
   return (
     <div className="flex h-screen flex-col">
       <header className="flex h-14 items-center justify-between border-b px-4 shrink-0">
         <div className="flex items-center gap-3">
+          {/* Mobile hamburger — visible only at sm and below */}
+          <button
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileNavOpen}
+            className="block sm:hidden rounded p-1 text-muted-foreground hover:bg-accent"
+          >
+            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+          </button>
+          {/* Desktop sidebar toggle — hidden on mobile */}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="group relative rounded p-1 text-muted-foreground hover:bg-accent"
+            className="group relative hidden sm:block rounded p-1 text-muted-foreground hover:bg-accent"
             title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="3" x2="9" y2="21" />{sidebarCollapsed && <polyline points="13 8 16 12 13 16" />}{!sidebarCollapsed && <polyline points="16 8 13 12 16 16" />}</svg>
             <span className="pointer-events-none absolute left-1/2 top-full z-50 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-xs text-background opacity-0 transition-opacity group-hover:opacity-100">
@@ -180,6 +273,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               onClick={() => { router.back(); router.refresh() }}
               className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors"
               title="Go back"
+              aria-label="Go back"
             >
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
             </button>
@@ -187,12 +281,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               onClick={() => { router.forward(); router.refresh() }}
               className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors"
               title="Go forward"
+              aria-label="Go forward"
             >
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
             </button>
           </div>
           <button
             onClick={() => setAppSwitcherOpen(!appSwitcherOpen)}
+            aria-label="App switcher"
             className={`rounded p-1 transition-colors ${appSwitcherOpen ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent"}`}
           >
             <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
@@ -205,14 +301,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className="text-sm font-semibold">Administration</span>
           </button>
         </div>
-        <div className="relative w-full max-w-lg mx-4">
-          <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-          <Input placeholder="Search" className="h-9 pl-9 bg-muted/50" />
-        </div>
+        <AdminSearchBar />
         <div className="flex items-center gap-2">
           <button
             ref={bellRef}
             onClick={() => setNotificationsOpen(!notificationsOpen)}
+            aria-label="Notifications"
             className={`rounded-full p-1.5 transition-colors ${notificationsOpen ? "bg-blue-100 text-blue-600 ring-2 ring-blue-600 dark:bg-blue-900/30" : "text-muted-foreground hover:bg-accent"}`}
           >
             <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
@@ -221,42 +315,45 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             onClick={() => {
               if (helpOpen || searchOpen) { setHelpOpen(false); setSearchOpen(false) } else { setHelpOpen(true); setSearchOpen(false) }
             }}
+            aria-label="Help"
             className="group relative rounded-full p-1.5 text-muted-foreground hover:bg-accent"
           >
             <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
             <span className="pointer-events-none absolute left-1/2 top-full z-50 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-xs text-background opacity-0 transition-opacity group-hover:opacity-100">Help</span>
           </button>
           <div className="relative" ref={profileRef}>
-            <Avatar className="size-8 cursor-pointer" onClick={() => setProfileOpen(!profileOpen)}><AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">AS</AvatarFallback></Avatar>
+            <button onClick={() => setProfileOpen(!profileOpen)} aria-label="User profile" className="rounded-full">
+              <Avatar className="size-8 cursor-pointer"><AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">AS</AvatarFallback></Avatar>
+            </button>
             {profileOpen && (
-              <div className="absolute right-0 top-10 z-50 w-72 rounded-lg border bg-background py-3 shadow-lg">
-                <div className="flex items-center gap-3 px-4 pb-3 border-b">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">AS</div>
-                  <div>
+              <div className="absolute right-0 top-full mt-2 z-[9999] w-72 rounded-lg border bg-popover shadow-lg">
+                <div className="flex items-center gap-3 px-4 py-3 border-b">
+                  <div className="flex size-10 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white shrink-0">AS</div>
+                  <div className="min-w-0">
                     <p className="text-sm font-semibold">Abhishek Sharma</p>
-                    <p className="text-xs text-muted-foreground">abhisheksharma67185@gmail.com</p>
+                    <p className="text-xs text-muted-foreground truncate">abhisheksharma67185@gmail.com</p>
                   </div>
                 </div>
                 <div className="flex flex-col py-1">
-                  <button className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-accent text-left transition-colors">
+                  <Link href="/admin/settings/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-accent text-left transition-colors">
                     <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09" /></svg>
                     Account settings
-                  </button>
-                  <button className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-accent text-left transition-colors">
+                  </Link>
+                  <Link href="/admin/settings" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-accent text-left transition-colors">
                     <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
                     Theme
                     <svg className="ml-auto size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-                  </button>
+                  </Link>
                 </div>
                 <div className="border-t py-1">
-                  <button className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-accent text-left w-full transition-colors">
+                  <Link href="/switch-account" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-accent text-left w-full transition-colors">
                     <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                     Switch account
-                  </button>
-                  <button className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-accent text-left w-full transition-colors">
+                  </Link>
+                  <Link href="/login" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-accent text-left w-full transition-colors">
                     <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
                     Log out
-                  </button>
+                  </Link>
                 </div>
               </div>
             )}
@@ -265,8 +362,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </header>
 
       <div className="flex flex-1 min-h-0">
+        {/* Mobile overlay backdrop */}
+        {mobileNavOpen && (
+          <div className="fixed inset-0 z-40 bg-black/50 sm:hidden" onClick={() => setMobileNavOpen(false)} />
+        )}
         {!sidebarCollapsed && (
-        <aside className="w-56 shrink-0 border-r overflow-y-auto transition-all duration-200">
+        <aside
+          className={`w-56 shrink-0 border-r overflow-y-auto transition-all duration-200 ${
+            mobileNavOpen
+              ? "fixed inset-y-14 left-0 z-50 bg-background shadow-lg sm:relative sm:inset-auto sm:z-auto sm:shadow-none"
+              : "hidden sm:block"
+          }`}
+          onClick={(e) => {
+            // Close mobile nav when a link is clicked
+            if ((e.target as HTMLElement).closest("a")) setMobileNavOpen(false)
+          }}
+        >
           <div className="p-3">
             {/* Org name */}
             <div className="flex items-center gap-2 rounded-md px-3 py-2 mb-2">
@@ -275,7 +386,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
 
             {/* Overview */}
-            <Link href="/admin" className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${pathname === "/admin" ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-foreground hover:bg-accent"}`}>
+            <Link href="/admin" aria-current={pathname === "/admin" ? "page" : undefined} className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${pathname === "/admin" ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-foreground hover:bg-accent"}`}>
               {mainItems[0].icon}
               Overview
             </Link>
@@ -292,7 +403,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {directoryOpen && (
               <div className="ml-4 flex flex-col gap-0.5 py-1">
                 {directoryItems.map((item) => (
-                  <Link key={item.href} href={item.href} className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                  <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                     {item.name}
                   </Link>
                 ))}
@@ -311,11 +422,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {appsOpen && (
               <div className="ml-4 flex flex-col gap-0.5 py-1">
                 {appsSubItems.map((item) => (
-                  <Link key={item.href} href={item.href} className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                  <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                     {item.name}
                   </Link>
                 ))}
-                <Link href="/admin/platform-experiences" className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === "/admin/platform-experiences" ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                <Link href="/admin/platform-experiences" aria-current={pathname === "/admin/platform-experiences" ? "page" : undefined} className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === "/admin/platform-experiences" ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                   Platform experiences
                 </Link>
 
@@ -327,7 +438,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {releaseOpen && (
                   <div className="ml-5 flex flex-col gap-0.5">
                     {releaseItems.map((item) => (
-                      <Link key={item.href} href={item.href} className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                      <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                         • {item.name}
                       </Link>
                     ))}
@@ -342,7 +453,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {shadowOpen && (
                   <div className="ml-5 flex flex-col gap-0.5">
                     {shadowItems.map((item) => (
-                      <Link key={item.href} href={item.href} className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                      <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                         • {item.name}
                       </Link>
                     ))}
@@ -380,7 +491,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {rovoOpen && (
               <div className="ml-4 flex flex-col gap-0.5 py-1">
                 {rovoItems.map((item) => (
-                  <Link key={item.href} href={item.href} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                  <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                     {item.name}
                     {item.badge && <span className="ml-auto rounded border px-1 py-0.5 text-[9px] font-bold">{item.badge}</span>}
                   </Link>
@@ -400,7 +511,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </button>
               {securityOpen && (
                 <div className="ml-4 flex flex-col gap-0.5 py-1">
-                  <Link href="/admin/security/security-guide" className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === "/admin/security/security-guide" ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                  <Link href="/admin/security/security-guide" aria-label="Security guide" aria-current={pathname === "/admin/security/security-guide" ? "page" : undefined} className={`rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === "/admin/security/security-guide" ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                     Security guide
                   </Link>
 
@@ -412,7 +523,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {userSecurityOpen && (
                     <div className="ml-5 flex flex-col gap-0.5">
                       {userSecurityItems.map((item) => (
-                        <Link key={item.href} href={item.href} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                        <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                           <span className="mr-1">•</span>
                           {item.name}
                           {item.badge && <span className="ml-auto rounded border px-1 py-0.5 text-[9px] font-bold">{item.badge}</span>}
@@ -429,7 +540,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {dataProtectionOpen && (
                     <div className="ml-5 flex flex-col gap-0.5">
                       {dataProtectionItems.map((item) => (
-                        <Link key={item.href} href={item.href} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                        <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                           <span className="mr-1">•</span>
                           {item.name}
                         </Link>
@@ -445,7 +556,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {deviceSecurityOpen && (
                     <div className="ml-5 flex flex-col gap-0.5">
                       {deviceSecurityItems.map((item) => (
-                        <Link key={item.href} href={item.href} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                        <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                           <span className="mr-1">•</span>
                           {item.name}
                         </Link>
@@ -465,7 +576,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {dataManagementOpen && (
                 <div className="ml-4 flex flex-col gap-0.5 py-1">
                   {dataManagementItems.map((item) => (
-                    <Link key={item.href} href={item.href} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                    <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                       {item.name}
                       {item.badge && <span className="ml-auto rounded border px-1 py-0.5 text-[9px] font-bold">{item.badge}</span>}
                     </Link>
@@ -479,7 +590,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {dataSourcesOpen && (
                     <div className="ml-5 flex flex-col gap-0.5">
                       {dataSourcesItems.map((item) => (
-                        <Link key={item.href} href={item.href} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                        <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                           <span className="mr-1">•</span>
                           {item.name}
                         </Link>
@@ -499,7 +610,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {insightsOpen && (
                 <div className="ml-4 flex flex-col gap-0.5 py-1">
                   {insightsItems.map((item) => (
-                    <Link key={item.href} href={item.href} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                    <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                       {item.name}
                       {item.badge && <span className="ml-auto rounded border px-1 py-0.5 text-[9px] font-bold">{item.badge}</span>}
                     </Link>
@@ -507,7 +618,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
               )}
               {/* Billing */}
-              <Link href="/admin/billing" className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${pathname === "/admin/billing" ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-foreground hover:bg-accent"}`}>
+              <Link href="/admin/billing" aria-current={pathname === "/admin/billing" ? "page" : undefined} className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors ${pathname === "/admin/billing" ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-foreground hover:bg-accent"}`}>
                 <span className="text-muted-foreground">{bottomItems[3].icon}</span>
                 Billing
               </Link>
@@ -522,7 +633,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {orgSettingsOpen && (
                 <div className="ml-4 flex flex-col gap-0.5 py-1">
                   {orgSettingsItems.map((item) => (
-                    <Link key={item.href} href={item.href} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
+                    <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors ${pathname === item.href ? "bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>
                       {item.name}
                       {item.badge && <span className="ml-auto rounded border px-1 py-0.5 text-[9px] font-bold">{item.badge}</span>}
                     </Link>

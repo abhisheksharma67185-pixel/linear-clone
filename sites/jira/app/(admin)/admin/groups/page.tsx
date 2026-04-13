@@ -1,10 +1,9 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 
-const mockGroups = [
+const initialGroups = [
   { name: "goals-admins-abhisheksharma67185", desc: "Grants access to Goals and Goals administrat...", members: 0, apps: "1 app", team: "None" },
   { name: "goals-user-access-admins-abhisheksharma67185", desc: "Grants access to administer users and groups...", members: 0, apps: "1 app", team: "None" },
   { name: "goals-users-abhisheksharma67185", desc: "Grants access to Goals on abhisheksharma67...", members: 0, apps: "1 app", team: "None" },
@@ -25,9 +24,15 @@ const appOptions = [
 ]
 
 export default function AdminGroupsPage() {
+  const [groups, setGroups] = useState(initialGroups)
   const [appsOpen, setAppsOpen] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+  const [newGroupName, setNewGroupName] = useState("")
+  const [newGroupDesc, setNewGroupDesc] = useState("")
   const filterRef = useRef<HTMLDivElement>(null)
+
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -39,8 +44,34 @@ export default function AdminGroupsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  // Escape closes modal
+  useEffect(() => {
+    if (!dialogOpen) return
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setDialogOpen(false) }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [dialogOpen])
+
+  const handleCreate = () => {
+    const name = newGroupName.trim()
+    if (!name) return
+    setGroups((prev) => [{ name, desc: newGroupDesc.trim() || "No description", members: 0, apps: "0 apps", team: "None" }, ...prev])
+    setDialogOpen(false)
+    setNewGroupName("")
+    setNewGroupDesc("")
+    showToast(`Group "${name}" created successfully`)
+  }
+
   return (
     <div className="p-8 max-w-5xl">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-[10000] rounded-lg border bg-background px-4 py-3 shadow-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <svg className="size-4 text-green-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+          {toast}
+        </div>
+      )}
+
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Groups</h1>
         <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setDialogOpen(true)}>Create group</Button>
@@ -57,7 +88,7 @@ export default function AdminGroupsPage() {
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <Input placeholder="Search by group name" className="pl-9" />
+          <input type="text" placeholder="Search by group name" className="w-full rounded-md border bg-background py-2 pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
         </div>
         <div className="relative" ref={filterRef}>
           <button
@@ -70,7 +101,7 @@ export default function AdminGroupsPage() {
             <div className="absolute left-0 top-full mt-1 w-64 rounded-lg border bg-background shadow-lg z-10">
               <div className="p-2">
                 <div className="relative">
-                  <Input placeholder="Search" className="h-8 text-xs pr-8" />
+                  <input type="text" placeholder="Search" className="h-8 w-full rounded-md border bg-background pl-3 pr-8 text-xs outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
                   <svg className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -97,11 +128,8 @@ export default function AdminGroupsPage() {
         </div>
       </div>
 
-      <p className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
-        Showing results
-        <svg className="size-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-        </svg>
+      <p className="mb-3 text-sm text-muted-foreground">
+        Showing {groups.length} results
       </p>
 
       <div className="rounded-md border">
@@ -116,7 +144,7 @@ export default function AdminGroupsPage() {
             </tr>
           </thead>
           <tbody>
-            {mockGroups.map((g) => (
+            {groups.map((g) => (
               <tr key={g.name} className="border-b last:border-b-0 hover:bg-accent/30 transition-colors">
                 <td className="px-4 py-3">
                   <p className="text-sm font-medium">{g.name}</p>
@@ -149,37 +177,60 @@ export default function AdminGroupsPage() {
         </table>
       </div>
 
-      {/* Create group dialog */}
+      {/* Create group modal — manual overlay, not base-ui Dialog */}
       {dialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setDialogOpen(false)}>
-          <div className="w-full max-w-lg rounded-lg border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-xl font-semibold mb-2">Create group</h2>
-            <p className="text-sm text-muted-foreground mb-1">Groups give users the same app access and permissions.</p>
-            <p className="text-sm text-muted-foreground mb-4">
-              Required fields are marked with an asterisk <span className="text-red-500">*</span>
-            </p>
-
-            <div className="mb-4">
-              <label className="text-sm font-medium mb-1 block">
-                Name <span className="text-red-500">*</span>
-              </label>
-              <Input className="mb-1" />
-              <p className="text-xs text-muted-foreground">This will be visible to anyone in the organization</p>
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
+          onClick={(e) => { if (e.target === e.currentTarget) setDialogOpen(false) }}
+        >
+          <div className="w-full max-w-lg rounded-lg border bg-background shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="border-b px-6 py-4">
+              <h2 className="text-lg font-semibold">Create group</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Groups give users the same app access and permissions.
+                Required fields are marked with an asterisk <span className="text-red-500">*</span>
+              </p>
             </div>
 
-            <div className="mb-4">
-              <label className="text-sm font-medium mb-1 block">Description</label>
-              <textarea className="w-full rounded-md border px-3 py-2 text-sm min-h-[80px] bg-background focus:outline-none focus:ring-2 focus:ring-ring" />
+            <div className="space-y-4 px-6 py-5">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">
+                  Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  autoFocus
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleCreate() }}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">This will be visible to anyone in the organization</p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Description</label>
+                <textarea
+                  rows={3}
+                  value={newGroupDesc}
+                  onChange={(e) => setNewGroupDesc(e.target.value)}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Users</label>
+                <input
+                  type="text"
+                  placeholder="Search users to add"
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                />
+              </div>
             </div>
 
-            <div className="mb-6">
-              <label className="text-sm font-medium mb-1 block">Users</label>
-              <Input placeholder="Search" />
-            </div>
-
-            <div className="flex items-center justify-end gap-2">
-              <Button variant="ghost" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">Create</Button>
+            <div className="flex items-center justify-end gap-2 border-t px-6 py-4">
+              <button type="button" onClick={() => { setDialogOpen(false); setNewGroupName(""); setNewGroupDesc("") }} className="rounded-md border px-4 py-2 text-sm hover:bg-accent transition-colors">Cancel</button>
+              <button type="button" onClick={handleCreate} disabled={!newGroupName.trim()} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors disabled:opacity-50">Create</button>
             </div>
           </div>
         </div>

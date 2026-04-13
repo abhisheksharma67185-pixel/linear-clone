@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import type { Issue, User, Project, Epic } from "@/app/lib/mock-data"
 import { Card, CardContent } from "@/components/ui/card"
@@ -78,6 +78,7 @@ function SortableIssueCard({
   colKey: StatusKey
   moveIssue: (key: string, status: StatusKey) => void
 }) {
+  const router = useRouter()
   const {
     attributes,
     listeners,
@@ -99,7 +100,7 @@ function SortableIssueCard({
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
-      <Card className="group hover:border-primary/30 transition-colors shadow-none cursor-grab active:cursor-grabbing" {...listeners}>
+      <Card className="group hover:border-primary/30 transition-colors shadow-none cursor-grab active:cursor-grabbing" {...listeners} onClick={() => { if (!isDragging) router.push(`/issue/${issue.key}`) }}>
         <CardContent className="p-2.5">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1.5">

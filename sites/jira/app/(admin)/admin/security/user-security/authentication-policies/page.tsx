@@ -1,6 +1,9 @@
-"use client"
+import type { Metadata } from "next"
+import Link from "next/link"
 
-import { Button } from "@/components/ui/button"
+export const metadata: Metadata = {
+  title: "Authentication policies",
+}
 
 export default function AuthenticationPoliciesPage() {
   return (
@@ -34,12 +37,16 @@ export default function AuthenticationPoliciesPage() {
 
       <p className="text-sm text-muted-foreground mb-6 max-w-md">
         You need to verify ownership of your company domain and claim your user accounts. You can then set up an authentication policy to secure log in for your users.{" "}
-        <button type="button" className="text-blue-600 hover:underline">Explore authentication policies</button>
+        <a href="https://support.atlassian.com/security-and-access-policies/docs/understand-authentication-policies/" target="_blank" rel="noopener noreferrer" aria-label="Learn more about authentication policies, opens in new tab" className="text-blue-600 hover:underline">Explore authentication policies</a>
       </p>
 
-      <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+      <Link
+        href="/admin/domains"
+        aria-label="Verify your company domain to set up authentication policies"
+        className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+      >
         Verify domain
-      </Button>
+      </Link>
     </div>
   )
 }

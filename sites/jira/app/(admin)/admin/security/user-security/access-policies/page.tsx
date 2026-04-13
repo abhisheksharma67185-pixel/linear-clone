@@ -1,6 +1,9 @@
-"use client"
+import type { Metadata } from "next"
+import Link from "next/link"
 
-import { Button } from "@/components/ui/button"
+export const metadata: Metadata = {
+  title: "Access policies",
+}
 
 export default function AccessPoliciesPage() {
   return (
@@ -25,9 +28,12 @@ export default function AccessPoliciesPage() {
           Start a free trial of an Atlassian Guard subscription. Get security and user management features to scale your organization with confidence.
         </p>
 
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+        <Link
+          href="/admin/security/security-guide"
+          className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+        >
           Learn more
-        </Button>
+        </Link>
       </div>
     </div>
   )

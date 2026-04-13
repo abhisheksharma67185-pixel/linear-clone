@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Input } from "@/components/ui/input"
+// Input replaced with plain <input> — base-ui Input unreliable
 
 const helpLinks = [
   {
@@ -117,12 +117,13 @@ export function AdminSearchPanel({
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <Input
+          <input
+            type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search help articles"
-            className="pl-9"
             autoFocus
+            className="w-full rounded-md border bg-background py-2 pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
           />
         </div>
       </div>

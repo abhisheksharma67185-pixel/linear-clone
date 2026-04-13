@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Input } from "@/components/ui/input"
+// Input replaced with plain <input> — base-ui Input unreliable
 
 interface Message {
   role: "assistant" | "user"
@@ -229,13 +229,14 @@ export function AdminHelpPanel({
       {/* Input */}
       <div className="border-t px-4 py-3">
         <div className="relative">
-          <Input
+          <input
+            type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Ask a question to get started"
-            className="pr-10"
             disabled={isTyping}
+            className="w-full rounded-md border bg-background py-2 pl-3 pr-10 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring disabled:opacity-50"
           />
           <button
             onClick={handleSend}

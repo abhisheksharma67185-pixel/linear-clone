@@ -93,13 +93,13 @@ export default function ProductsPage() {
               </p>
               <div className="flex items-center gap-4">
                 <Link
-                  href="#"
+                  href="/dashboard"
                   className="rounded-md bg-[#0052CC] px-6 py-3 text-sm font-semibold text-white hover:bg-[#0747A6] transition-colors"
                 >
                   Try now
                 </Link>
                 <Link
-                  href="#"
+                  href="/products"
                   className="text-sm font-medium text-[#0052CC] hover:underline"
                 >
                   Learn more →
@@ -205,10 +205,10 @@ export default function ProductsPage() {
                       {product.description}
                     </p>
                     <div className="flex items-center gap-4">
-                      <button className="rounded-md border-2 border-[#253858] px-4 py-2 text-sm font-medium text-[#253858] hover:bg-[#253858] hover:text-white transition-colors">
+                      <Link href="/dashboard" className="rounded-md border-2 border-[#253858] px-4 py-2 text-sm font-medium text-[#253858] hover:bg-[#253858] hover:text-white transition-colors">
                         Try now
-                      </button>
-                      <Link href="#" className="text-sm font-medium text-[#0052CC] hover:underline">
+                      </Link>
+                      <Link href="/products" className="text-sm font-medium text-[#0052CC] hover:underline">
                         Learn more →
                       </Link>
                     </div>
@@ -236,10 +236,10 @@ export default function ProductsPage() {
                     <p className="mb-2 text-sm text-[#42526E]">{col.description}</p>
                     <p className="mb-6 flex-1 text-xs text-[#6B778C]">{col.products}</p>
                     <div className="flex items-center gap-4">
-                      <button className="rounded-md border-2 border-[#253858] px-4 py-2 text-sm font-medium text-[#253858] hover:bg-[#253858] hover:text-white transition-colors">
+                      <Link href="/dashboard" className="rounded-md border-2 border-[#253858] px-4 py-2 text-sm font-medium text-[#253858] hover:bg-[#253858] hover:text-white transition-colors">
                         {col.cta}
-                      </button>
-                      <Link href="#" className="text-sm font-medium text-[#0052CC] hover:underline">
+                      </Link>
+                      <Link href="/products" className="text-sm font-medium text-[#0052CC] hover:underline">
                         Learn more →
                       </Link>
                     </div>

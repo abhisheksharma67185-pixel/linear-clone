@@ -2,6 +2,17 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const mainApps = [
   { name: "Home", href: "/home", icon: <div className="flex size-8 items-center justify-center rounded-md bg-blue-100 dark:bg-blue-900/30"><svg className="size-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg></div> },
@@ -31,107 +42,85 @@ const initialRecommended = [
 ]
 
 export function AppSwitcher() {
-  const [open, setOpen] = useState(false)
-  const [menuOpenIdx, setMenuOpenIdx] = useState<number | null>(null)
   const [hidden, setHidden] = useState<Set<string>>(new Set())
 
   const visibleRecommended = initialRecommended.filter((r) => !hidden.has(r.name))
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => { setOpen(!open); setMenuOpenIdx(null) }}
-        className="rounded-md border p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-      >
-        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <Popover>
+      <PopoverTrigger aria-label="App switcher" className="rounded-md border p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+        <svg aria-hidden="true" className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
           <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
         </svg>
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => { setOpen(false); setMenuOpenIdx(null) }} />
-          <div className="absolute left-0 top-full z-50 mt-2 w-80 rounded-lg border bg-popover shadow-lg">
-            <div className="p-3">
-              <div className="flex flex-col gap-0.5">
-                {mainApps.map((app) => (
-                  <Link
-                    key={app.name}
-                    href={app.href}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors"
-                  >
-                    {app.icon}
-                    <span className="font-medium">{app.name}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="border-t" />
-
-            <div className="p-3">
-              <p className="mb-2 px-2 text-[11px] font-semibold text-muted-foreground">Recommended for your team</p>
-              <div className="flex flex-col gap-0.5">
-                {visibleRecommended.map((item, idx) => (
-                  <div
-                    key={item.name}
-                    className="relative flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent transition-colors"
-                  >
-                    {item.icon}
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm font-medium">{item.name}</span>
-                      <p className="text-xs text-muted-foreground truncate">{item.description}</p>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setMenuOpenIdx(menuOpenIdx === idx ? null : idx) }}
-                      className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-accent shrink-0"
-                    >
-                      <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-                      </svg>
-                    </button>
-
-                    {/* Three-dot menu dropdown */}
-                    {menuOpenIdx === idx && (
-                      <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-md border bg-popover py-1 shadow-lg">
-                        <button
-                          onClick={() => { setHidden((prev) => new Set(prev).add(item.name)); setMenuOpenIdx(null) }}
-                          className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
-                        >
-                          Not interested
-                        </button>
-                        <button
-                          onClick={() => setMenuOpenIdx(null)}
-                          className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
-                        >
-                          Why am I seeing this?
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                <Link href="/home/apps" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors">
-                  <div className="flex size-8 items-center justify-center rounded-md bg-muted">
-                    <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-                      <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-                    </svg>
-                  </div>
-                  <span className="font-medium">More Atlassian apps</span>
-                </Link>
-              </div>
-            </div>
-
-            <div className="border-t px-4 py-3">
-              <button onClick={() => setOpen(false)} className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors">
-                Manage list
-              </button>
-            </div>
+      </PopoverTrigger>
+      <PopoverContent side="bottom" align="start" sideOffset={8} className="w-80 p-0">
+        <div className="p-3">
+          <div className="flex flex-col gap-0.5">
+            {mainApps.map((app) => (
+              <Link
+                key={app.name}
+                href={app.href}
+                className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors"
+              >
+                {app.icon}
+                <span className="font-medium">{app.name}</span>
+              </Link>
+            ))}
           </div>
-        </>
-      )}
-    </div>
+        </div>
+
+        <div className="border-t" />
+
+        <div className="p-3">
+          <p className="mb-2 px-2 text-[11px] font-semibold text-muted-foreground">Recommended for your team</p>
+          <div className="flex flex-col gap-0.5">
+            {visibleRecommended.map((item) => (
+              <div
+                key={item.name}
+                className="relative flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent transition-colors"
+              >
+                {item.icon}
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium">{item.name}</span>
+                  <p className="text-xs text-muted-foreground truncate">{item.description}</p>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-accent shrink-0">
+                    <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                    </svg>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setHidden((prev) => new Set(prev).add(item.name))}>
+                      Not interested
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      Why am I seeing this?
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ))}
+
+            <Link href="/home/apps" className="flex items-center gap-3 rounded-md px-2 py-2 text-sm hover:bg-accent transition-colors">
+              <div className="flex size-8 items-center justify-center rounded-md bg-muted">
+                <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                </svg>
+              </div>
+              <span className="font-medium">More Atlassian apps</span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="border-t px-4 py-3">
+          <Link href="/home/apps" className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors">
+            Manage list
+          </Link>
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }

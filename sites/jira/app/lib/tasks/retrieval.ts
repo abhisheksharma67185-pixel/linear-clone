@@ -109,7 +109,7 @@ export const retrievalTasks: TaskDefinition[] = [
       groundTruth: "Start: 2025-04-15, End: 2025-04-28",
       acceptableVariations: [
         "April 15 to April 28",
-        "2025-04-15 to 2025-04-28",
+        "2026-04-15 to 2025-04-28",
         "Apr 15 - Apr 28",
       ],
       rubric: "Sprint 13 runs from 2025-04-15 to 2025-04-28.",

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
@@ -26,11 +25,127 @@ const appOptions = [
 
 const statusOptions = ["ACTIVE", "SUSPENDED", "DEACTIVATED"]
 
+function InviteUsersModal({ onClose, onToast }: { onClose: () => void; onToast: (msg: string) => void }) {
+  const emailRef = useRef<HTMLInputElement>(null)
+  const [role, setRole] = useState("member")
+  const [roleOpen, setRoleOpen] = useState(false)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const roleRef = useRef<HTMLDivElement>(null)
+
+  // Escape key closes modal
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+    }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [onClose])
+
+  // Outside click closes role dropdown
+  useEffect(() => {
+    if (!roleOpen) return
+    const handler = (e: MouseEvent) => {
+      if (roleRef.current && !roleRef.current.contains(e.target as Node)) setRoleOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [roleOpen])
+
+  const handleSubmit = () => {
+    const raw = emailRef.current?.value.trim() || ""
+    if (!raw) return
+    const emails = raw.split(",").map((e) => e.trim()).filter(Boolean)
+    if (emails.length === 0) return
+    const label = emails.length === 1 ? emails[0] : `${emails.length} users`
+    onToast(`Invitation sent to ${label}`)
+    onClose()
+  }
+
+  return (
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50"
+      onClick={(e) => { if (e.target === overlayRef.current) onClose() }}
+    >
+      <div className="w-full max-w-lg rounded-lg border bg-background shadow-lg" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between border-b px-6 py-4">
+          <h2 className="text-lg font-semibold">Invite users</h2>
+          <button type="button" onClick={onClose} className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors">
+            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-5 space-y-4">
+          {/* Email input */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium">Email addresses</label>
+            <input
+              ref={emailRef}
+              type="text"
+              autoFocus
+              placeholder="e.g. jane@company.com, john@company.com"
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Separate multiple emails with commas</p>
+          </div>
+
+          {/* Role dropdown */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium">Role</label>
+            <div className="relative" ref={roleRef}>
+              <button
+                type="button"
+                onClick={() => setRoleOpen(!roleOpen)}
+                className="flex w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm hover:bg-accent/50 transition-colors"
+              >
+                <span>{role === "admin" ? "Admin" : "Member"}</span>
+                <svg className="size-4 text-muted-foreground" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
+              </button>
+              {roleOpen && (
+                <div className="absolute left-0 top-full mt-1 z-50 w-full rounded-lg border bg-popover shadow-lg py-1">
+                  <button
+                    type="button"
+                    onClick={() => { setRole("member"); setRoleOpen(false) }}
+                    className={`flex w-full flex-col px-3 py-2 text-left hover:bg-accent transition-colors ${role === "member" ? "bg-accent/50" : ""}`}
+                  >
+                    <span className="text-sm font-medium">Member</span>
+                    <span className="text-xs text-muted-foreground">Can access products and basic features</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setRole("admin"); setRoleOpen(false) }}
+                    className={`flex w-full flex-col px-3 py-2 text-left hover:bg-accent transition-colors ${role === "admin" ? "bg-accent/50" : ""}`}
+                  >
+                    <span className="text-sm font-medium">Admin</span>
+                    <span className="text-xs text-muted-foreground">Full organization administration access</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-2 border-t px-6 py-4">
+          <button type="button" onClick={onClose} className="rounded-md border px-4 py-2 text-sm hover:bg-accent transition-colors">Cancel</button>
+          <button type="button" onClick={handleSubmit} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors">Send invite</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminUsersPage() {
   const [activeFilter, setActiveFilter] = useState<FilterType>(null)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
   const filterRef = useRef<HTMLDivElement>(null)
   const moreRef = useRef<HTMLDivElement>(null)
+
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -47,10 +162,21 @@ export default function AdminUsersPage() {
 
   return (
     <div className="p-8 max-w-5xl">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-[10000] rounded-lg border bg-background px-4 py-3 shadow-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <svg className="size-4 text-green-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+          {toast}
+        </div>
+      )}
+
+      {/* Invite modal */}
+      {inviteOpen && <InviteUsersModal onClose={() => setInviteOpen(false)} onToast={showToast} />}
+
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Users</h1>
         <div className="flex items-center gap-2">
-          <Button className="bg-blue-600 text-white hover:bg-blue-700">Invite users</Button>
+          <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setInviteOpen(true)}>Invite users</Button>
           <Button variant="outline">Approve requests <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-xs">0</span></Button>
           <div className="relative" ref={moreRef}>
             <button
@@ -102,7 +228,7 @@ export default function AdminUsersPage() {
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <Input placeholder="Search by name or email" className="pl-9" />
+          <input type="text" placeholder="Search by name or email" className="w-full rounded-md border bg-background py-2 pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
         </div>
 
         {/* Role filter */}
@@ -117,7 +243,7 @@ export default function AdminUsersPage() {
             <div className="absolute left-0 top-full mt-1 w-64 rounded-lg border bg-background shadow-lg z-10">
               <div className="p-2">
                 <div className="relative">
-                  <Input placeholder="Search" className="h-8 text-xs pr-8" />
+                  <input type="text" placeholder="Search" className="h-8 w-full rounded-md border bg-background pl-3 pr-8 text-xs outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
                   <svg className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -151,7 +277,7 @@ export default function AdminUsersPage() {
             <div className="absolute left-0 top-full mt-1 w-64 rounded-lg border bg-background shadow-lg z-10">
               <div className="p-2">
                 <div className="relative">
-                  <Input placeholder="Search" className="h-8 text-xs pr-8" />
+                  <input type="text" placeholder="Search" className="h-8 w-full rounded-md border bg-background pl-3 pr-8 text-xs outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
                   <svg className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -192,7 +318,7 @@ export default function AdminUsersPage() {
             <div className="absolute left-0 top-full mt-1 w-56 rounded-lg border bg-background shadow-lg z-10">
               <div className="p-2">
                 <div className="relative">
-                  <Input placeholder="Search" className="h-8 text-xs pr-8" />
+                  <input type="text" placeholder="Search" className="h-8 w-full rounded-md border bg-background pl-3 pr-8 text-xs outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
                   <svg className="absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />

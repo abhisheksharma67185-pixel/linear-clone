@@ -1,42 +1,42 @@
 import Link from "next/link"
 
 const companyLinks = [
-  { label: "Company", href: "#" },
-  { label: "Careers", href: "#" },
-  { label: "Events", href: "#" },
-  { label: "Blogs", href: "#" },
-  { label: "Investor Relations", href: "#" },
-  { label: "Atlassian Foundation", href: "#" },
-  { label: "Press kit", href: "#" },
-  { label: "Contact us", href: "#" },
+  { label: "Company", href: "/products" },
+  { label: "Careers", href: "/products" },
+  { label: "Events", href: "/products" },
+  { label: "Blogs", href: "/products" },
+  { label: "Investor Relations", href: "/products" },
+  { label: "Atlassian Foundation", href: "/products" },
+  { label: "Press kit", href: "/products" },
+  { label: "Contact us", href: "/admin/settings/contacts" },
 ]
 
 const productLinks = [
-  { label: "Rovo", href: "#" },
+  { label: "Rovo", href: "/products" },
   { label: "Jira", href: "/dashboard" },
-  { label: "Jira Align", href: "#" },
-  { label: "Jira Service Management", href: "#" },
-  { label: "Confluence", href: "#" },
-  { label: "Loom", href: "#" },
-  { label: "Trello", href: "#" },
-  { label: "Bitbucket", href: "#" },
+  { label: "Jira Align", href: "/products" },
+  { label: "Jira Service Management", href: "/products" },
+  { label: "Confluence", href: "/products" },
+  { label: "Loom", href: "/products" },
+  { label: "Trello", href: "/products" },
+  { label: "Bitbucket", href: "/products" },
 ]
 
 const resourceLinks = [
-  { label: "Technical support", href: "#" },
-  { label: "Purchasing & licensing", href: "#" },
-  { label: "Atlassian Community", href: "#" },
-  { label: "Knowledge base", href: "#" },
-  { label: "Marketplace", href: "#" },
-  { label: "My account", href: "#" },
+  { label: "Technical support", href: "/admin" },
+  { label: "Purchasing & licensing", href: "/admin/billing" },
+  { label: "Atlassian Community", href: "/teams" },
+  { label: "Knowledge base", href: "/products" },
+  { label: "Marketplace", href: "/home/apps" },
+  { label: "My account", href: "/admin/settings/profile" },
 ]
 
 const learnLinks = [
-  { label: "Partners", href: "#" },
-  { label: "Training & certification", href: "#" },
-  { label: "Documentation", href: "#" },
-  { label: "Developer resources", href: "#" },
-  { label: "Enterprise services", href: "#" },
+  { label: "Partners", href: "/products" },
+  { label: "Training & certification", href: "/products" },
+  { label: "Documentation", href: "/products" },
+  { label: "Developer resources", href: "/products" },
+  { label: "Enterprise services", href: "/products" },
 ]
 
 function FooterColumn({
@@ -50,7 +50,7 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-[#253858]">
+      <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-800">
         {title}
       </h3>
       <ul className="space-y-3">
@@ -58,7 +58,7 @@ function FooterColumn({
           <li key={link.label}>
             <Link
               href={link.href}
-              className="text-sm font-medium text-[#253858] hover:text-[#0052CC] hover:underline transition-colors"
+              className="text-sm font-medium text-slate-800 transition-colors hover:text-slate-600"
             >
               {link.label}
             </Link>
@@ -81,13 +81,12 @@ function FooterColumn({
 
 export function AtlassianFooter() {
   return (
-    <footer className="border-t border-[#dfe1e6] bg-[#f4f5f7]">
+    <footer className="border-t border-slate-200 bg-slate-100">
       {/* Main footer content */}
       <div className="mx-auto max-w-[1200px] px-8 py-12">
         <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr] gap-8">
           {/* Atlassian logo + Company links */}
           <div>
-            {/* Atlassian logo mark */}
             <div className="mb-6">
               <svg className="h-7 w-7" viewBox="0 0 32 32" fill="#2684FF">
                 <path
@@ -102,7 +101,7 @@ export function AtlassianFooter() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm font-semibold text-[#253858] hover:text-[#0052CC] hover:underline transition-colors"
+                    className="text-sm font-semibold text-slate-800 transition-colors hover:text-slate-600"
                   >
                     {link.label}
                   </Link>
@@ -114,39 +113,39 @@ export function AtlassianFooter() {
           <FooterColumn
             title="Products"
             links={productLinks}
-            seeAll={{ label: "See all products", href: "#" }}
+            seeAll={{ label: "See all products", href: "/products" }}
           />
           <FooterColumn
             title="Resources"
             links={resourceLinks}
-            seeAll={{ label: "Create support ticket", href: "#" }}
+            seeAll={{ label: "Create support ticket", href: "/admin" }}
           />
           <FooterColumn
             title="Learn"
             links={learnLinks}
-            seeAll={{ label: "See all resources", href: "#" }}
+            seeAll={{ label: "See all resources", href: "/products" }}
           />
 
-          {/* Empty column for spacing like the real site */}
+          {/* Empty column for spacing */}
           <div />
         </div>
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-[#dfe1e6]">
+      <div className="border-t border-slate-200">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between px-8 py-4">
-          <p className="text-xs text-[#6B778C]">Copyright &copy; 2026 Atlassian</p>
+          <p className="text-xs text-slate-500">Copyright &copy; 2026 Atlassian</p>
           <div className="flex items-center gap-6">
-            <Link href="#" className="text-xs text-[#6B778C] hover:text-[#253858] hover:underline">
+            <Link href="/admin/security" className="text-xs text-slate-500 hover:text-slate-700 transition-colors">
               Privacy policy
             </Link>
-            <Link href="#" className="text-xs text-[#6B778C] hover:text-[#253858] hover:underline">
+            <Link href="/admin/settings" className="text-xs text-slate-500 hover:text-slate-700 transition-colors">
               Terms
             </Link>
-            <Link href="#" className="text-xs text-[#6B778C] hover:text-[#253858] hover:underline">
+            <Link href="/products" className="text-xs text-slate-500 hover:text-slate-700 transition-colors">
               Impressum
             </Link>
-            <button className="flex items-center gap-1.5 text-xs text-[#6B778C] hover:text-[#253858]">
+            <Link href="/admin/settings" className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 transition-colors">
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="2" y1="12" x2="22" y2="12" />
@@ -156,7 +155,7 @@ export function AtlassianFooter() {
               <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
-            </button>
+            </Link>
           </div>
         </div>
       </div>

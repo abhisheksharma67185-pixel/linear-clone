@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import type { SavedFilter, User } from "@/app/lib/mock-data"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -21,8 +22,13 @@ export default function FiltersPage() {
     })
   }, [])
 
-  const userName = (id: string) =>
-    users.find((u) => u.id === id)?.name ?? id
+  const userName = (id: string) => {
+    const u = users.find((u) => u.id === id)
+    return u?.displayName ?? u?.name ?? id
+  }
+
+  const toSlug = (name: string) =>
+    name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
 
   if (loading) {
     return (
@@ -44,24 +50,26 @@ export default function FiltersPage() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filters.map((filter) => (
-            <Card key={filter.id}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {filter.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <code className="block text-xs text-muted-foreground bg-muted rounded px-2 py-1.5 mb-3 font-mono break-all">
-                  {filter.jql}
-                </code>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Owner:</span>
-                  <Badge variant="outline" className="text-[10px]">
-                    {userName(filter.owner)}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
+            <Link key={filter.id} href={`/filters/${toSlug(filter.name)}`}>
+              <Card className="h-full hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all cursor-pointer">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                    {filter.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <code className="block text-xs text-muted-foreground bg-muted rounded px-2 py-1.5 mb-3 font-mono break-all">
+                    {filter.jql}
+                  </code>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>Owner:</span>
+                    <Badge variant="outline" className="text-[10px]">
+                      {userName(filter.owner)}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       </div>

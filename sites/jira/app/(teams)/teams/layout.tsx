@@ -146,6 +146,7 @@ function CreateTeamPanel({ open, onClose }: { open: boolean; onClose: () => void
 export default function TeamsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [createOpen, setCreateOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     const handler = () => setCreateOpen(true)
@@ -162,8 +163,15 @@ export default function TeamsLayout({ children }: { children: React.ReactNode })
             <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
             <span className="text-sm font-semibold">Teams</span>
           </div>
-          <button className="rounded p-1 text-muted-foreground hover:bg-accent">
-            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></svg>
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="group/collapse relative rounded p-1 text-muted-foreground hover:bg-accent"
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <svg className={`size-4 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></svg>
+            <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-[11px] text-background opacity-0 group-hover/collapse:opacity-100 transition-opacity z-50">
+              {sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            </span>
           </button>
         </div>
         <div className="flex flex-1 items-center gap-2 mx-4">
@@ -189,7 +197,7 @@ export default function TeamsLayout({ children }: { children: React.ReactNode })
       </header>
 
       <div className="flex flex-1 min-h-0">
-        <aside className="w-64 shrink-0 border-r overflow-y-auto flex flex-col">
+        <aside className={`shrink-0 border-r overflow-y-auto flex flex-col transition-all duration-200 ${sidebarCollapsed ? "w-0 border-r-0 overflow-hidden" : "w-64"}`}>
           <nav className="flex flex-col gap-0.5 p-2">
             {sidebarItems.map((item) => {
               const isActive = pathname === item.href

@@ -4,9 +4,9 @@ import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import type { Project, User } from "@/app/lib/mock-data"
+import { resolveUser } from "@/lib/resolve-user"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -15,14 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ArrowDown01Icon,
@@ -93,79 +85,51 @@ function SpaceActionsDropdown({ projectKey, projectName }: { projectKey: string;
         )}
       </div>
 
-      {/* Move to trash dialog */}
-      <Dialog open={trashOpen} onOpenChange={setTrashOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Move to trash</DialogTitle>
-            <DialogDescription>
+      {/* Move to trash dialog — manual modal */}
+      {trashOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50" onClick={(e) => { if (e.target === e.currentTarget) setTrashOpen(false) }}>
+          <div className="w-full max-w-sm rounded-lg border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold">Move to trash</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
               Are you sure you want to move <strong>{projectName}</strong> to trash? The space will be deleted after 60 days if not restored.
-            </DialogDescription>
-          </DialogHeader>
-          {actionDone ? (
-            <div className="flex flex-col items-center gap-2 py-3">
-              <svg className="size-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
-              <p className="text-sm font-medium">Moved to trash</p>
-            </div>
-          ) : (
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setTrashOpen(false)}>Cancel</Button>
-              <Button
-                className="bg-red-600 hover:bg-red-700 text-white"
-                onClick={() => {
-                  setActionDone(true)
-                  setTimeout(() => {
-                    setTrashOpen(false)
-                    setActionDone(false)
-                  }, 1500)
-                }}
-              >
-                Move to trash
-              </Button>
-            </DialogFooter>
-          )}
-        </DialogContent>
-      </Dialog>
+            </p>
+            {actionDone ? (
+              <div className="flex flex-col items-center gap-2 py-3 mt-2">
+                <svg className="size-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                <p className="text-sm font-medium">Moved to trash</p>
+              </div>
+            ) : (
+              <div className="mt-4 flex justify-end gap-2">
+                <button type="button" onClick={() => setTrashOpen(false)} className="rounded-md border px-4 py-2 text-sm hover:bg-accent transition-colors">Cancel</button>
+                <button type="button" onClick={() => { setActionDone(true); setTimeout(() => { setTrashOpen(false); setActionDone(false) }, 1500) }} className="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 transition-colors">Move to trash</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-      {/* Archive dialog */}
-      <Dialog open={archiveOpen} onOpenChange={setArchiveOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Archive space</DialogTitle>
-            <DialogDescription>
+      {/* Archive dialog — manual modal */}
+      {archiveOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50" onClick={(e) => { if (e.target === e.currentTarget) setArchiveOpen(false) }}>
+          <div className="w-full max-w-sm rounded-lg border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold">Archive space</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
               Are you sure you want to archive <strong>{projectName}</strong>? Archived spaces are read-only and hidden from navigation.
-            </DialogDescription>
-          </DialogHeader>
-          {actionDone ? (
-            <div className="flex flex-col items-center gap-2 py-3">
-              <svg className="size-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
-              <p className="text-sm font-medium">Space archived</p>
-            </div>
-          ) : (
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setArchiveOpen(false)}>Cancel</Button>
-              <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={() => {
-                  setActionDone(true)
-                  setTimeout(() => {
-                    setArchiveOpen(false)
-                    setActionDone(false)
-                  }, 1500)
-                }}
-              >
-                Archive
-              </Button>
-            </DialogFooter>
-          )}
-        </DialogContent>
-      </Dialog>
+            </p>
+            {actionDone ? (
+              <div className="flex flex-col items-center gap-2 py-3 mt-2">
+                <svg className="size-8 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                <p className="text-sm font-medium">Space archived</p>
+              </div>
+            ) : (
+              <div className="mt-4 flex justify-end gap-2">
+                <button type="button" onClick={() => setArchiveOpen(false)} className="rounded-md border px-4 py-2 text-sm hover:bg-accent transition-colors">Cancel</button>
+                <button type="button" onClick={() => { setActionDone(true); setTimeout(() => { setArchiveOpen(false); setActionDone(false) }, 1500) }} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors">Archive</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   )
 }
@@ -174,47 +138,61 @@ const templateList = [
   {
     name: "Scrum",
     description: "Deliver work in short time blocks",
+    fullDescription: "Sprint toward your project goals with a board, backlog, and timeline.",
     color: "bg-blue-100 dark:bg-blue-900/30",
     iconColor: "text-blue-600",
+    previewColor: "from-green-400 to-green-600",
   },
   {
     name: "Work requests",
     description: "Quickly manage incoming requests",
+    fullDescription: "Set up a service desk to manage and track incoming work requests from your team.",
     badge: "TRY",
     color: "bg-purple-100 dark:bg-purple-900/30",
     iconColor: "text-purple-600",
+    previewColor: "from-purple-400 to-purple-600",
   },
   {
     name: "IT service",
     description: "Manage requests and incidents",
+    fullDescription: "Manage IT service requests, incidents, problems, and changes with an ITIL-ready project.",
     badge: "TRY",
     color: "bg-green-100 dark:bg-green-900/30",
     iconColor: "text-green-600",
+    previewColor: "from-teal-400 to-teal-600",
   },
   {
     name: "Kanban",
     description: "Visualize your work on a board",
+    fullDescription: "Visualize and advance your project forward using issues on a powerful board.",
     color: "bg-teal-100 dark:bg-teal-900/30",
     iconColor: "text-teal-600",
+    previewColor: "from-blue-400 to-blue-600",
   },
   {
     name: "Personal tasks",
     description: "Create your to-do list",
+    fullDescription: "Track your personal tasks and to-dos in a simple, focused project just for you.",
     color: "bg-orange-100 dark:bg-orange-900/30",
     iconColor: "text-orange-600",
+    previewColor: "from-orange-400 to-orange-600",
   },
   {
     name: "Business project",
     description: "Manage tasks with due dates",
+    fullDescription: "Manage activities like budgets, goals, and tasks with a calendar and list view.",
     color: "bg-emerald-100 dark:bg-emerald-900/30",
     iconColor: "text-emerald-600",
+    previewColor: "from-emerald-400 to-emerald-600",
   },
   {
     name: "Top-level planning",
     description: "Monitor work from many projects",
+    fullDescription: "Plan, track, and manage work across multiple teams and projects from a single view.",
     badge: "PREMIUM",
     color: "bg-pink-100 dark:bg-pink-900/30",
     iconColor: "text-pink-600",
+    previewColor: "from-pink-400 to-pink-600",
   },
 ]
 
@@ -234,6 +212,31 @@ export default function SpacesPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [newSpaceName, setNewSpaceName] = useState("")
   const [newSpaceKey, setNewSpaceKey] = useState("")
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
+  const [spaceToast, setSpaceToast] = useState<string | null>(null)
+
+  const handleCreateSpace = () => {
+    const name = newSpaceName.trim()
+    if (!name) return
+    const key = newSpaceKey.trim() || name.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 5) || "PROJ"
+    fetch("/api/data/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, key, type: "scrum" }),
+    })
+      .then((r) => r.json())
+      .then((created) => {
+        if (created && !created.error) setProjects((prev) => [...prev, created])
+      })
+      .catch(() => {})
+    setCreateOpen(false)
+    setNewSpaceName("")
+    setNewSpaceKey("")
+    setSpaceToast(`Space "${name}" created`)
+    setTimeout(() => setSpaceToast(null), 3000)
+  }
+
+  const activeTemplate = templateList.find((t) => t.name === selectedTemplate)
 
   const toggleStar = (projectId: string) => {
     setStarredProjects((prev) => {
@@ -280,24 +283,95 @@ export default function SpacesPage() {
     <div className="flex h-full">
       {/* Main Content */}
       <div className="flex-1 p-8">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight">Spaces</h1>
-          <div className="flex items-center gap-2">
-            <Button
-              className="bg-blue-600 text-white hover:bg-blue-700"
-              onClick={() => setCreateOpen(true)}
+        {/* Header - always visible */}
+        {!activeTemplate && (
+          <div className="mb-6 flex items-center justify-between">
+            <h1 className="text-2xl font-semibold tracking-tight">Spaces</h1>
+            <div className="flex items-center gap-2">
+              <Button
+                className="bg-blue-600 text-white hover:bg-blue-700"
+                onClick={() => setCreateOpen(true)}
+              >
+                Create space
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => { setShowTemplates(!showTemplates); setSelectedTemplate(null) }}
+              >
+                Templates
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Template Preview */}
+        {activeTemplate ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <button
+              onClick={() => setSelectedTemplate(null)}
+              className="mb-8 self-start text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
             >
-              Create space
-            </Button>
+              <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
+                <path fillRule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+              </svg>
+              Back to Spaces
+            </button>
+            <h2 className="text-2xl font-semibold text-foreground mb-2">{activeTemplate.name}</h2>
+            <p className="text-sm text-muted-foreground text-center max-w-md mb-8">
+              {activeTemplate.fullDescription}
+            </p>
+            {/* Template illustration */}
+            <div className={`w-[480px] h-[320px] rounded-xl bg-gradient-to-br ${activeTemplate.previewColor} p-1 shadow-lg`}>
+              <div className="h-full w-full rounded-lg bg-white dark:bg-card p-4 overflow-hidden">
+                {/* Fake backlog/board UI */}
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-foreground">Backlog</span>
+                  <div className="flex gap-1">
+                    <div className="size-3 rounded-sm bg-blue-200" />
+                    <div className="size-3 rounded-sm bg-green-200" />
+                    <div className="size-3 rounded-sm bg-orange-200" />
+                  </div>
+                </div>
+                <div className="rounded-md border bg-[#f9fafb] dark:bg-muted/30 p-3 mb-2">
+                  <div className="text-xs text-muted-foreground mb-2">2 Sep – 15 Sep</div>
+                  {[
+                    { colors: ["bg-blue-500", "bg-blue-300", "bg-pink-400", "bg-green-400"], pts: 3 },
+                    { colors: ["bg-green-500", "bg-green-300", "bg-orange-400"], pts: 2 },
+                    { colors: ["bg-blue-500", "bg-blue-300", "bg-orange-400", "bg-purple-300", "bg-gray-300"], pts: 5 },
+                    { colors: ["bg-green-500", "bg-green-300", "bg-pink-400"], pts: 2 },
+                    { colors: ["bg-blue-400", "bg-gray-300", "bg-gray-200"], pts: 1 },
+                  ].map((row, i) => (
+                    <div key={i} className="flex items-center gap-1.5 mb-1.5">
+                      {row.colors.map((c, j) => (
+                        <div key={j} className={`h-4 flex-1 rounded-sm ${c}`} />
+                      ))}
+                      <span className="text-[10px] text-muted-foreground w-4 text-right">{row.pts}</span>
+                      <div className="size-3 rounded-full border border-muted-foreground/30" />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-center mt-4">
+                  <div className="size-12 rounded-full border-2 border-muted-foreground/20 flex items-center justify-center">
+                    <svg className="size-6 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
             <Button
-              variant="outline"
-              onClick={() => setShowTemplates(!showTemplates)}
+              className="mt-8 bg-blue-600 text-white hover:bg-blue-700"
+              onClick={() => {
+                setSelectedTemplate(null)
+                setCreateOpen(true)
+              }}
             >
-              Templates
+              Use template
             </Button>
           </div>
-        </div>
+        ) : (
+          <>
+        {/* Spaces list content below */}
 
         {/* Search */}
         <div className="mb-4">
@@ -316,11 +390,12 @@ export default function SpacesPage() {
                 d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
               />
             </svg>
-            <Input
+            <input
+              type="text"
               placeholder="Search spaces"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              className="w-full rounded-md border bg-background py-2 pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
             />
           </div>
         </div>
@@ -384,7 +459,7 @@ export default function SpacesPage() {
             </TableHeader>
             <TableBody>
               {filteredProjects.map((project) => {
-                const lead = users.find((u) => u.id === project.lead)
+                const lead = resolveUser(project.lead, users)
                 const typeLabel =
                   project.type === "scrum"
                     ? "Team-managed software"
@@ -404,14 +479,20 @@ export default function SpacesPage() {
                     <TableCell>
                       <Link
                         href={`/projects/${project.key}/board`}
-                        className="flex items-center gap-2 font-medium text-blue-600 hover:underline"
+                        className="flex items-center gap-2.5 font-medium text-blue-600 hover:underline"
                       >
-                        <div className="flex size-6 items-center justify-center rounded bg-blue-100 dark:bg-blue-900/30">
-                          <HugeiconsIcon
-                            icon={Layers01Icon}
-                            className="size-3.5 text-blue-600"
-                          />
-                        </div>
+                        {(() => {
+                          const colors = [
+                            "bg-red-500", "bg-orange-500", "bg-green-500", "bg-blue-500",
+                            "bg-purple-500", "bg-pink-500", "bg-teal-500", "bg-indigo-500",
+                          ]
+                          const idx = project.key.charCodeAt(0) % colors.length
+                          return (
+                            <div className={`flex size-7 items-center justify-center rounded ${colors[idx]} text-[11px] font-bold text-white shrink-0`}>
+                              {project.key.slice(0, 2)}
+                            </div>
+                          )
+                        })()}
                         {project.name}
                       </Link>
                     </TableCell>
@@ -426,13 +507,13 @@ export default function SpacesPage() {
                         <div className="flex items-center gap-2">
                           <Avatar className="size-6">
                             <AvatarFallback className="bg-blue-100 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                              {lead.name
+                              {(lead.displayName ?? lead.name)
                                 .split(" ")
                                 .map((n) => n[0])
                                 .join("")}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-sm">{lead.name}</span>
+                          <span className="text-sm">{(lead.displayName ?? lead.name)}</span>
                         </div>
                       )}
                     </TableCell>
@@ -472,6 +553,9 @@ export default function SpacesPage() {
             </svg>
           </button>
         </div>
+      {/* Close the spaces list conditional */}
+          </>
+        )}
       </div>
 
       {/* Templates Panel */}
@@ -480,7 +564,7 @@ export default function SpacesPage() {
           <div className="mb-1 flex items-center justify-between">
             <h2 className="text-base font-semibold">Templates</h2>
             <button
-              onClick={() => setShowTemplates(false)}
+              onClick={() => { setShowTemplates(false); setSelectedTemplate(null) }}
               className="text-muted-foreground hover:text-foreground"
             >
               <svg className="size-5" viewBox="0 0 16 16" fill="currentColor">
@@ -496,7 +580,13 @@ export default function SpacesPage() {
             {templateList.map((tmpl) => (
               <button
                 key={tmpl.name}
-                className="flex items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-accent transition-colors"
+                onMouseEnter={() => setSelectedTemplate(tmpl.name)}
+                onClick={() => setSelectedTemplate(tmpl.name)}
+                className={`flex items-center gap-3 rounded-md px-2 py-2.5 text-left transition-colors ${
+                  selectedTemplate === tmpl.name
+                    ? "bg-blue-50 dark:bg-blue-900/20"
+                    : "hover:bg-accent"
+                }`}
               >
                 <div
                   className={`flex size-8 items-center justify-center rounded-md ${tmpl.color}`}
@@ -529,71 +619,68 @@ export default function SpacesPage() {
             ))}
           </div>
 
-          <button className="mt-4 text-sm font-medium text-blue-600 hover:underline">
+          <Link href="/templates" className="mt-4 inline-block text-sm font-medium text-blue-600 hover:underline">
             More templates
-          </button>
+          </Link>
         </div>
       )}
 
-      {/* Create space dialog */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create space</DialogTitle>
-            <DialogDescription>
-              Create a new space to organize and manage your work.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium" htmlFor="space-name">
-                Space name <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="space-name"
-                value={newSpaceName}
-                onChange={(e) => {
-                  setNewSpaceName(e.target.value)
-                  setNewSpaceKey(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 5))
-                }}
-                placeholder="e.g. Marketing"
-              />
+      {/* Create space dialog — manual modal */}
+      {createOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50" onClick={(e) => { if (e.target === e.currentTarget) { setCreateOpen(false); setNewSpaceName(""); setNewSpaceKey("") } }}>
+          <div className="w-full max-w-md rounded-lg border bg-background shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="border-b px-6 py-4">
+              <h3 className="text-lg font-semibold">Create space</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Create a new space to organize and manage your work.</p>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium" htmlFor="space-key">
-                Key
-              </label>
-              <Input
-                id="space-key"
-                value={newSpaceKey}
-                onChange={(e) => setNewSpaceKey(e.target.value.toUpperCase())}
-                placeholder="e.g. MARK"
-                className="font-mono"
-              />
+            <div className="flex flex-col gap-3 px-6 py-5">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium">Space name <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  autoFocus
+                  value={newSpaceName}
+                  onChange={(e) => {
+                    setNewSpaceName(e.target.value)
+                    setNewSpaceKey(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 5))
+                  }}
+                  placeholder="e.g. Marketing"
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium">Key</label>
+                <input
+                  type="text"
+                  value={newSpaceKey}
+                  onChange={(e) => setNewSpaceKey(e.target.value.toUpperCase())}
+                  placeholder="e.g. MARK"
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm font-mono outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t px-6 py-4">
+              <button type="button" onClick={() => { setCreateOpen(false); setNewSpaceName(""); setNewSpaceKey("") }} className="rounded-md border px-4 py-2 text-sm hover:bg-accent transition-colors">Cancel</button>
+              <button
+                type="button"
+                disabled={!newSpaceName.trim()}
+                onClick={handleCreateSpace}
+                className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                Create
+              </button>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setCreateOpen(false)
-              setNewSpaceName("")
-              setNewSpaceKey("")
-            }}>
-              Cancel
-            </Button>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={!newSpaceName.trim()}
-              onClick={() => {
-                setCreateOpen(false)
-                setNewSpaceName("")
-                setNewSpaceKey("")
-              }}
-            >
-              Create
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
+
+      {/* Toast */}
+      {spaceToast && (
+        <div className="fixed top-4 right-4 z-[10000] rounded-lg border bg-background px-4 py-3 shadow-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <svg className="size-4 text-green-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+          {spaceToast}
+        </div>
+      )}
     </div>
   )
 }

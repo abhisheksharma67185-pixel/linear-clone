@@ -10,6 +10,15 @@ const nextConfig = {
   turbopack: {
     root: path.resolve(__dirname, "../.."),
   },
+  async redirects() {
+    return [
+      {
+        source: "/jira",
+        destination: "/projects/SCRUM/board",
+        permanent: false,
+      },
+    ]
+  },
 }
 
 export default nextConfig

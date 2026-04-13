@@ -31,6 +31,15 @@ export const typeLabel: Record<string, string> = {
   subtask: "Sub-task",
 }
 
+// Priority display labels
+export const priorityDisplayLabel: Record<string, string> = {
+  highest: "Highest",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+  lowest: "Lowest",
+}
+
 // Sprint state badges
 export const sprintStateVariant: Record<string, string> = {
   active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
@@ -38,10 +47,23 @@ export const sprintStateVariant: Record<string, string> = {
   future: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
 }
 
+// Sprint state display labels
+export const sprintStateLabel: Record<string, string> = {
+  active: "Active",
+  closed: "Closed",
+  future: "Future",
+}
+
 // Project type badges
 export const projectTypeVariant: Record<string, string> = {
   scrum: "border-blue-300 text-blue-700 dark:text-blue-400",
   kanban: "border-purple-300 text-purple-700 dark:text-purple-400",
+}
+
+// Project type display labels
+export const projectTypeLabel: Record<string, string> = {
+  scrum: "Scrum",
+  kanban: "Kanban",
 }
 
 // Project status badges (for project directory)
@@ -58,7 +80,15 @@ export const goalStatusVariant: Record<string, string> = {
   "Off track": "bg-red-500",
 }
 
-// Format status for display (e.g., "to_do" -> "To Do")
+// Canonical display labels for issue statuses
+export const statusDisplayLabel: Record<string, string> = {
+  to_do: "TO DO",
+  in_progress: "IN PROGRESS",
+  in_review: "IN REVIEW",
+  done: "DONE",
+}
+
+// Format status for display — uses the canonical map, falls back to title-casing
 export function formatStatus(status: string): string {
-  return status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+  return statusDisplayLabel[status] ?? status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
 }

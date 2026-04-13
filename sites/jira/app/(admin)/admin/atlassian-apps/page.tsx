@@ -4,6 +4,13 @@ import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 const apps = [
   { name: "Goals", slug: "goals", url: "https://abhisheksharma67185.atlassian.net", plan: "Free", users: 1, icon: "◎" },
@@ -216,37 +223,37 @@ export default function AtlassianAppsPage() {
       </div>
 
       {/* Add app dialog */}
-      {addAppOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setAddAppOpen(false)}>
-          <div className="w-full max-w-lg rounded-lg border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-xl font-semibold mb-4">Add an app</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              Choose an Atlassian app to add to your organization. You can manage access and settings after adding it.
-            </p>
+      <Dialog open={addAppOpen} onOpenChange={setAddAppOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add an app</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Choose an Atlassian app to add to your organization. You can manage access and settings after adding it.
+          </p>
 
-            <div className="flex flex-col gap-3 mb-6">
-              {[
-                { name: "Jira Service Management", desc: "IT service management", icon: "⚡" },
-                { name: "Confluence", desc: "Document collaboration", icon: "📝" },
-                { name: "Jira Product Discovery", desc: "Product management", icon: "🔍" },
-                { name: "Opsgenie", desc: "Incident management", icon: "🔔" },
-              ].map((item) => (
-                <button key={item.name} className="flex items-center gap-3 rounded-lg border p-3 text-left hover:bg-accent transition-colors">
-                  <span className="text-xl">{item.icon}</span>
-                  <div>
-                    <p className="text-sm font-medium">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.desc}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-end gap-2">
-              <Button variant="ghost" onClick={() => setAddAppOpen(false)}>Cancel</Button>
-            </div>
+          <div className="flex flex-col gap-3">
+            {[
+              { name: "Jira Service Management", desc: "IT service management", icon: "⚡" },
+              { name: "Confluence", desc: "Document collaboration", icon: "📝" },
+              { name: "Jira Product Discovery", desc: "Product management", icon: "🔍" },
+              { name: "Opsgenie", desc: "Incident management", icon: "🔔" },
+            ].map((item) => (
+              <button key={item.name} className="flex items-center gap-3 rounded-lg border p-3 text-left hover:bg-accent transition-colors">
+                <span className="text-xl">{item.icon}</span>
+                <div>
+                  <p className="text-sm font-medium">{item.name}</p>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
+                </div>
+              </button>
+            ))}
           </div>
-        </div>
-      )}
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setAddAppOpen(false)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -40,9 +40,9 @@ export function AdminNotificationsPanel({
 }) {
   const [notifications, setNotifications] = useState(initialNotifications)
   const [showUnreadOnly, setShowUnreadOnly] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const moreRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -62,16 +62,13 @@ export function AdminNotificationsPanel({
   }, [open, onClose, anchorRef])
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false)
-      }
+    if (!moreOpen) return
+    const handler = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false)
     }
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
-      return () => document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [menuOpen])
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [moreOpen])
 
   const dateStr = useMemo(() => {
     return new Date().toLocaleDateString("en-US", {
@@ -107,22 +104,20 @@ export function AdminNotificationsPanel({
           <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
             Only show unread
             <button
+              type="button"
+              role="switch"
+              aria-checked={showUnreadOnly}
               onClick={() => setShowUnreadOnly(!showUnreadOnly)}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                showUnreadOnly ? "bg-blue-600" : "bg-muted-foreground/30"
-              }`}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${showUnreadOnly ? "bg-blue-600" : "bg-muted-foreground/30"}`}
             >
-              <span
-                className={`inline-block size-3.5 rounded-full bg-white transition-transform ${
-                  showUnreadOnly ? "translate-x-4.5" : "translate-x-1"
-                }`}
-              />
+              <span className={`inline-block size-3.5 rounded-full bg-white transition-transform ${showUnreadOnly ? "translate-x-[18px]" : "translate-x-[3px]"}`} />
             </button>
           </label>
-          <div className="relative" ref={menuRef}>
+          <div className="relative" ref={moreRef}>
             <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className={`rounded p-1 transition-colors ${menuOpen ? "bg-accent" : "text-muted-foreground hover:bg-accent"}`}
+              type="button"
+              onClick={() => setMoreOpen(!moreOpen)}
+              className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors"
             >
               <svg className="size-5" viewBox="0 0 24 24" fill="currentColor">
                 <circle cx="12" cy="5" r="1.5" />
@@ -130,20 +125,10 @@ export function AdminNotificationsPanel({
                 <circle cx="12" cy="19" r="1.5" />
               </svg>
             </button>
-            {menuOpen && (
-              <div className="absolute right-0 top-8 z-10 w-44 rounded-md border bg-background py-1 shadow-lg">
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
-                >
-                  About this feature
-                </button>
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
-                >
-                  Give feedback
-                </button>
+            {moreOpen && (
+              <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-lg border bg-popover shadow-lg py-1">
+                <button type="button" onClick={() => setMoreOpen(false)} className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors">About this feature</button>
+                <button type="button" onClick={() => setMoreOpen(false)} className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors">Give feedback</button>
               </div>
             )}
           </div>

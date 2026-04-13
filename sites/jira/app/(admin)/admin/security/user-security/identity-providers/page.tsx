@@ -1,5 +1,16 @@
 "use client"
 
+import { useState } from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+
 const providers = [
   {
     name: "Google Workspace",
@@ -141,20 +152,29 @@ const providers = [
 ]
 
 export default function IdentityProvidersPage() {
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(null)
+  const [confirmed, setConfirmed] = useState(false)
+
+  const selected = providers.find((p) => p.name === selectedProvider)
+
   return (
     <div className="p-8 max-w-5xl">
       <h1 className="text-2xl font-semibold mb-4">Identity providers</h1>
 
       <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
         Manage users in Atlassian apps from one place, your identity provider. Set up single sign-on and user sync after you connect your identity provider.{" "}
-        <button type="button" className="text-blue-600 hover:underline">Explore identity providers</button>
+        <Link href="/admin/security/security-guide" className="text-blue-600 hover:underline">Explore identity providers</Link>
       </p>
 
       <h2 className="text-base font-semibold mb-4">Choose an identity provider</h2>
 
       <div className="grid grid-cols-4 gap-4">
         {providers.map((provider) => (
-          <div key={provider.name} className="rounded-lg border p-4 hover:bg-accent/50 cursor-pointer transition-colors">
+          <button
+            key={provider.name}
+            onClick={() => setSelectedProvider(provider.name)}
+            className="rounded-lg border p-4 hover:bg-accent/50 cursor-pointer transition-colors text-left"
+          >
             <div className="flex items-center justify-between mb-3">
               <div className="size-10 rounded flex items-center justify-center overflow-hidden">
                 {provider.icon}
@@ -172,9 +192,88 @@ export default function IdentityProvidersPage() {
                 Requires an Atlassian Guard subscription
               </p>
             )}
-          </div>
+          </button>
         ))}
       </div>
+
+      {/* Provider selection dialog */}
+      <Dialog open={!!selectedProvider} onOpenChange={(open) => { if (!open) { setSelectedProvider(null); setConfirmed(false) } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              {selected && (
+                <div className="size-8 rounded flex items-center justify-center overflow-hidden shrink-0">
+                  {selected.icon}
+                </div>
+              )}
+              {selectedProvider}
+            </DialogTitle>
+          </DialogHeader>
+
+          {!confirmed ? (
+            <div>
+              {selected?.guardRequired ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 px-4 py-3">
+                    <svg className="size-5 text-yellow-600 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 4l7.53 13H4.47L12 6z" /><path d="M11 10h2v5h-2zm0 6h2v2h-2z" /></svg>
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">This provider requires an Atlassian Guard subscription.</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Start a free trial of Atlassian Guard to connect {selectedProvider} as your identity provider.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Connect {selectedProvider} to manage users, enable single sign-on, and sync user directories with your Atlassian organization.
+                  </p>
+                  <div className="rounded-lg border bg-muted/30 p-4">
+                    <h4 className="text-sm font-medium mb-2">What happens next:</h4>
+                    <ul className="space-y-1.5 text-sm text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <svg className="size-4 text-green-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+                        Configure SSO settings
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <svg className="size-4 text-green-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+                        Set up user provisioning
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <svg className="size-4 text-green-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+                        Verify domain ownership
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center py-4">
+              <div className="size-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                <svg className="size-8 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+              </div>
+              <p className="text-sm font-medium text-center">Setup initiated for {selectedProvider}</p>
+              <p className="text-xs text-muted-foreground text-center mt-1">Configuration steps will appear in your admin panel.</p>
+            </div>
+          )}
+
+          <DialogFooter>
+            {!confirmed ? (
+              <>
+                <Button variant="outline" onClick={() => setSelectedProvider(null)}>Cancel</Button>
+                <Button
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  onClick={() => setConfirmed(true)}
+                >
+                  {selected?.guardRequired ? "Start free trial" : "Connect"}
+                </Button>
+              </>
+            ) : (
+              <Button variant="outline" onClick={() => { setSelectedProvider(null); setConfirmed(false) }}>Done</Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
