@@ -474,7 +474,7 @@ export function AppSidebar() {
             {/* App switcher */}
             <AppSwitcher />
             {/* Jira blue diamond logo */}
-            <Link href="/dashboard" className="flex items-center gap-2">
+            <Link href="/projects" className="flex items-center gap-2">
               <svg className="size-7" viewBox="0 0 32 32" fill="none">
                 <defs>
                   <linearGradient id="jira-blue-1" x1="50%" y1="0%" x2="50%" y2="100%">
