@@ -96,7 +96,7 @@ export const retrievalTasks: TaskDefinition[] = [
     difficulty: "medium",
     curriculumStage: 3,
     title: "User title lookup",
-    goal: "What is Sneha Iyer's job title?",
+    goal: "What is Sneha Reddy's job title?",
     retrievalRubric: {
       question: "Sneha's title",
       groundTruth: "Design Lead",

@@ -102,7 +102,7 @@ export const dmTasks: TaskDefinition[] = [
     difficulty: "hard",
     curriculumStage: 6,
     title: "Open DM and send first message",
-    goal: "Open a DM with Sanjay Verma (usr-13) and send 'Quick legal question about the new vendor contract.'",
+    goal: "Open a DM with Sanjay Gupta (usr-13) and send 'Quick legal question about the new vendor contract.'",
     evalChecks: [
       {
         type: "state_predicate",

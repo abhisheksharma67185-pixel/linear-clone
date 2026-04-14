@@ -32,7 +32,7 @@ export const searchTasks: TaskDefinition[] = [
     difficulty: "medium",
     curriculumStage: 6,
     title: "Count messages by Arjun",
-    goal: "How many top-level messages has Arjun Patel (usr-2) posted in #engineering (ch-4)?",
+    goal: "How many top-level messages has Arjun Mehta (usr-2) posted in #engineering (ch-4)?",
     retrievalRubric: {
       question: "Arjun's top-level messages in #engineering",
       groundTruth: "4",
@@ -115,11 +115,11 @@ export const searchTasks: TaskDefinition[] = [
     goal: "Find the message mentioning 'PLT-101 (OAuth2 PKCE flow) merged'. Who posted it and in which channel?",
     retrievalRubric: {
       question: "Author and channel of OAuth PR message",
-      groundTruth: "Arjun Patel in #engineering",
+      groundTruth: "Arjun Mehta in #engineering",
       acceptableVariations: [
         "Arjun in #engineering",
         "usr-2 #engineering",
-        "Arjun Patel #engineering",
+        "Arjun Mehta #engineering",
       ],
       rubric: "msg-31 by usr-2 in ch-4",
     },
@@ -159,8 +159,8 @@ export const searchTasks: TaskDefinition[] = [
     goal: "Which user has a 'palm_tree' status indicating vacation?",
     retrievalRubric: {
       question: "User with palm_tree status",
-      groundTruth: "Ananya Gupta",
-      acceptableVariations: ["Ananya", "Ananya Gupta", "usr-6"],
+      groundTruth: "Ananya Iyer",
+      acceptableVariations: ["Ananya", "Ananya Iyer", "usr-6"],
       rubric: "usr-6 has :palm_tree: 'On vacation until Monday' status",
     },
     evalChecks: [],

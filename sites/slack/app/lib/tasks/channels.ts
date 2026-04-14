@@ -101,7 +101,7 @@ export const channelTasks: TaskDefinition[] = [
     difficulty: "medium",
     curriculumStage: 4,
     title: "Invite user to channel",
-    goal: "Invite Sanjay Verma (usr-13) to #engineering (ch-4).",
+    goal: "Invite Sanjay Gupta (usr-13) to #engineering (ch-4).",
     evalChecks: [
       {
         type: "state_predicate",
@@ -124,7 +124,7 @@ export const channelTasks: TaskDefinition[] = [
     difficulty: "medium",
     curriculumStage: 5,
     title: "Remove user from channel",
-    goal: "Remove Thomas Joseph (usr-14) from #engineering (ch-4).",
+    goal: "Remove Thomas Weber (usr-14) from #engineering (ch-4).",
     evalChecks: [
       {
         type: "state_predicate",

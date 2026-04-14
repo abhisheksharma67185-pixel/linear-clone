@@ -316,7 +316,7 @@ export const users: User[] = [
   {
     id: "usr-2",
     cessId: "SU002",
-    name: "Arjun Patel",
+    name: "Arjun Mehta",
     displayName: "arjun",
     email: "arjun@theta.internal",
     avatar: avatar("arjun"),
@@ -342,7 +342,7 @@ export const users: User[] = [
   {
     id: "usr-4",
     cessId: "SU004",
-    name: "Sneha Iyer",
+    name: "Sneha Reddy",
     displayName: "sneha",
     email: "sneha@theta.internal",
     avatar: avatar("sneha"),
@@ -355,7 +355,7 @@ export const users: User[] = [
   {
     id: "usr-5",
     cessId: "SU005",
-    name: "Kiran Menon",
+    name: "Kiran Patel",
     displayName: "kiran",
     email: "kiran@theta.internal",
     avatar: avatar("kiran"),
@@ -368,7 +368,7 @@ export const users: User[] = [
   {
     id: "usr-6",
     cessId: "SU006",
-    name: "Ananya Gupta",
+    name: "Ananya Iyer",
     displayName: "ananya",
     email: "ananya@theta.internal",
     avatar: avatar("ananya"),
@@ -415,7 +415,7 @@ export const users: User[] = [
   {
     id: "usr-9",
     cessId: "SU009",
-    name: "Amit Desai",
+    name: "Amit Verma",
     displayName: "amit",
     email: "amit@theta.internal",
     avatar: avatar("amit"),
@@ -454,7 +454,7 @@ export const users: User[] = [
   {
     id: "usr-12",
     cessId: "SU012",
-    name: "Nikhil Reddy",
+    name: "Nikhil Joshi",
     displayName: "nikhil",
     email: "nikhil@theta.internal",
     avatar: avatar("nikhil"),
@@ -467,7 +467,7 @@ export const users: User[] = [
   {
     id: "usr-13",
     cessId: "SU013",
-    name: "Sanjay Verma",
+    name: "Sanjay Gupta",
     displayName: "sanjay",
     email: "sanjay@theta.internal",
     avatar: avatar("sanjay"),
@@ -480,7 +480,7 @@ export const users: User[] = [
   {
     id: "usr-14",
     cessId: "SU014",
-    name: "Thomas Joseph",
+    name: "Thomas Weber",
     displayName: "thomas",
     email: "thomas@theta.internal",
     avatar: avatar("thomas"),

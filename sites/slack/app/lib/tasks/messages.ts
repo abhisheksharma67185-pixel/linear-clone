@@ -125,7 +125,7 @@ export const messageTasks: TaskDefinition[] = [
     difficulty: "easy",
     curriculumStage: 3,
     title: "Send DM to Arjun",
-    goal: "Send the message 'Ready for standup?' in your direct message with Arjun Patel (dm-1).",
+    goal: "Send the message 'Ready for standup?' in your direct message with Arjun Mehta (dm-1).",
     evalChecks: [
       {
         type: "state_predicate",
