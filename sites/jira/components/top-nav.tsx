@@ -929,7 +929,7 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
       setSaving(false)
       setOpen(false)
       openIssue(issue.key)
-    } catch (err) {
+    } catch {
       setError("Network error — could not create issue")
       setSaving(false)
     }
@@ -1223,7 +1223,7 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">Sprint</Label>
-                <Select value={sprintId || "__none__"} onValueChange={(v) => setSprintId(v === "__none__" ? "" : v)}>
+                <Select value={sprintId || "__none__"} onValueChange={(v) => setSprintId(v === "__none__" || v === null ? "" : v)}>
                   <SelectTrigger>
                     {(() => { const s = sprints.find((s) => s.id === sprintId); return s ? <span className="truncate">{s.name}</span> : <span className="text-muted-foreground">No sprint</span> })()}
                   </SelectTrigger>
@@ -1237,7 +1237,7 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">Epic</Label>
-                <Select value={epicId || "__none__"} onValueChange={(v) => setEpicId(v === "__none__" ? "" : v)}>
+                <Select value={epicId || "__none__"} onValueChange={(v) => setEpicId(v === "__none__" || v === null ? "" : v)}>
                   <SelectTrigger>
                     {(() => { const ep = epics.find((e) => e.id === epicId); return ep ? <span className="truncate">{ep.name}</span> : <span className="text-muted-foreground">No epic</span> })()}
                   </SelectTrigger>
@@ -1455,16 +1455,16 @@ function PrimaryNav() {
 
 function ProjectsNavList() {
   const [projects, setProjects] = useState<Project[]>([])
-  const [loaded, setLoaded] = useState(false)
+  const loadedRef = useRef(false)
 
   useEffect(() => {
-    if (loaded) return
-    setLoaded(true)
+    if (loadedRef.current) return
+    loadedRef.current = true
     fetch("/api/data/projects")
       .then((r) => r.json())
       .then((data: Project[]) => setProjects(data.slice(0, 5)))
       .catch(() => {})
-  }, [loaded])
+  }, [])
 
   if (projects.length === 0) {
     return <div className="px-3 py-3 text-xs text-muted-foreground text-center">No recent projects</div>
@@ -1622,10 +1622,7 @@ function ThreeDotsMenu() {
 // ─── Top Nav ────────────────────────────────────────────────────────────────
 
 export function TopNav() {
-  const { open: sidebarOpen } = useSidebar()
-
-  // Compact dark nav bar matching real Jira's new navigation
-  const isBlue = false
+  useSidebar() // keep sidebar context connected
 
   return (
     <header className="flex h-12 items-center justify-between px-3 border-b bg-background overflow-hidden">
@@ -1657,13 +1654,13 @@ export function TopNav() {
         </Link>
 
         {/* Search icon */}
-        <SearchBar isBlue={isBlue} />
+        <SearchBar isBlue={false} />
       </div>
 
       {/* Right - Actions */}
       <div className="flex items-center gap-1.5 shrink-0">
         {/* Create Issue */}
-        <CreateIssueDialog isBlue={isBlue} />
+        <CreateIssueDialog isBlue={false} />
 
         {/* Three-dot menu */}
         <ThreeDotsMenu />
