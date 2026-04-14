@@ -108,15 +108,15 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
 
   return (
     <>
-      {/* Fake search bar — click to open dialog */}
+      {/* Search icon — click to open dialog */}
       <button
         onClick={() => setDialogOpen(true)}
-        className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors ${isBlue ? "w-48 bg-white/15 border border-white/20 text-white/60 hover:bg-white/25" : "w-64 bg-muted/50 border border-input text-muted-foreground hover:bg-muted"}`}
+        className="flex size-8 items-center justify-center rounded-md text-[#9FADBC] hover:text-white hover:bg-white/10 transition-colors"
+        title="Search (press /)"
       >
-        <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
         </svg>
-        Search
       </button>
 
       {/* Search modal — manual overlay for reliability */}
@@ -1322,65 +1322,127 @@ function ProjectsNavList() {
   )
 }
 
+// ─── App Switcher Icon (grid) ───────────────────────────────────────────────
+
+function AppSwitcherIcon() {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen(!open)} className="flex size-8 items-center justify-center rounded-md text-[#9FADBC] hover:text-white hover:bg-white/10 transition-colors">
+        <svg className="size-5" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+        </svg>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-lg border bg-popover shadow-lg p-3">
+            <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Switch to</p>
+            <div className="space-y-0.5">
+              {[
+                { name: "Home", href: "/home", color: "bg-blue-600", icon: <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg> },
+                { name: "Jira", href: "/projects", color: "bg-gradient-to-br from-blue-500 to-blue-700", icon: <svg className="size-3.5 text-white" viewBox="0 0 32 32" fill="white"><path d="M27.545 15.2L16.8 4.454 16 3.654l-8.345 8.346-.855.854L4.454 15.2a1.547 1.547 0 000 2.189L12.2 25.135 16 28.935l8.345-8.346.354-.354 2.846-2.846a1.547 1.547 0 000-2.189zM16 20.6l-4.254-4.254L16 12.092l4.254 4.254L16 20.6z" /></svg> },
+                { name: "Goals", href: "/goals", color: "bg-purple-600", icon: <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg> },
+                { name: "Teams", href: "/teams", color: "bg-teal-600", icon: <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg> },
+              ].map((app) => (
+                <Link key={app.name} href={app.href} onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent transition-colors">
+                  <div className={`flex size-8 items-center justify-center rounded-md ${app.color}`}>{app.icon}</div>
+                  <span className="text-sm font-medium">{app.name}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ─── Three Dots Menu (notifications, help, settings, profile) ───────────────
+
+function ThreeDotsMenu() {
+  const [open, setOpen] = useState(false)
+  const router = useRouter()
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen(!open)} className="flex size-8 items-center justify-center rounded-md border border-[#3B4046] text-[#9FADBC] hover:text-white hover:bg-white/10 transition-colors">
+        <svg className="size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border bg-popover shadow-lg py-1">
+            {[
+              { label: "Notifications", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>, action: () => router.push("/home/notifications") },
+              { label: "Help", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>, action: () => {} },
+              { label: "Settings", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>, action: () => router.push("/admin") },
+              { label: "Premium trial", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>, action: () => {} },
+            ].map((item) => (
+              <button key={item.label} onClick={() => { setOpen(false); item.action() }} className="flex w-full items-center gap-3 px-3 py-2 text-sm text-left hover:bg-accent transition-colors">
+                <span className="text-muted-foreground">{item.icon}</span>
+                {item.label}
+              </button>
+            ))}
+            <div className="border-t my-1" />
+            <button onClick={() => { setOpen(false); router.push("/home/profile") }} className="flex w-full items-center gap-3 px-3 py-2 text-sm text-left hover:bg-accent transition-colors">
+              <Avatar className="size-5"><AvatarFallback className="bg-blue-600 text-[8px] font-semibold text-white">AS</AvatarFallback></Avatar>
+              Profile
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ─── Top Nav ────────────────────────────────────────────────────────────────
 
 export function TopNav() {
   const { open: sidebarOpen } = useSidebar()
 
-  // Always white nav bar with all items visible
+  // Compact dark nav bar matching real Jira's new navigation
   const isBlue = false
 
   return (
-    <header className="flex h-14 items-center justify-between px-4 border-b bg-background overflow-hidden">
+    <header className="flex h-12 items-center justify-between px-3 bg-[#1D2125] dark:bg-[#1D2125] overflow-hidden">
       {/* Left */}
-      <div className="flex items-center gap-2 min-w-0">
-        {/* Jira logo */}
-        <Link href="/projects" className="flex items-center gap-1 shrink-0">
-          <svg className="size-7" viewBox="0 0 32 32" fill="none">
+      <div className="flex items-center gap-1.5 min-w-0">
+        {/* Sidebar collapse/expand toggle */}
+        <SidebarTrigger className="size-8 rounded-md text-[#9FADBC] hover:text-white hover:bg-white/10" />
+
+        {/* App switcher grid */}
+        <AppSwitcherIcon />
+
+        {/* Jira logo — diamond only, no text */}
+        <Link href="/projects" className="flex items-center shrink-0 rounded-md p-1.5 hover:bg-white/10 transition-colors">
+          <svg className="size-6" viewBox="0 0 32 32" fill="none">
+            <path d="M27.55 15.1L17.29 4.47 16 3.13 6.45 13.01l-2.14 2.2a.73.73 0 000 1.02l6.97 7.17L16 28.87l5.35-5.5.39-.4 5.81-5.98a.73.73 0 000-1.02zM16 20.28l-4.07-4.18L16 11.92l4.07 4.18L16 20.28z" fill="#579DFF"/>
             <defs>
               <linearGradient id="jira-grad-1" x1="20.87" y1="4.58" x2="12.19" y2="13.7">
-                <stop offset="0.18" stopColor="#DEEBFF" stopOpacity="1" />
-                <stop offset="1" stopColor="#2684FF" />
+                <stop offset="0.18" stopColor="#1D2125" stopOpacity="0" />
+                <stop offset="1" stopColor="#579DFF" />
               </linearGradient>
               <linearGradient id="jira-grad-2" x1="11.28" y1="27.56" x2="19.96" y2="18.44">
-                <stop offset="0.18" stopColor="#DEEBFF" stopOpacity="1" />
-                <stop offset="1" stopColor="#2684FF" />
+                <stop offset="0.18" stopColor="#1D2125" stopOpacity="0" />
+                <stop offset="1" stopColor="#579DFF" />
               </linearGradient>
             </defs>
-            <path d="M27.55 15.1L17.29 4.47 16 3.13 6.45 13.01l-2.14 2.2a.73.73 0 000 1.02l6.97 7.17L16 28.87l5.35-5.5.39-.4 5.81-5.98a.73.73 0 000-1.02zM16 20.28l-4.07-4.18L16 11.92l4.07 4.18L16 20.28z" fill="#2684FF"/>
             <path d="M16 11.92a6.03 6.03 0 01-.04-8.46l-9.51 9.78 6.52 6.7L16 16.1l-.04-4.18z" fill="url(#jira-grad-1)"/>
             <path d="M20.11 16.06L16 20.28a6.03 6.03 0 01.04 8.46l9.51-9.78-5.44-2.9z" fill="url(#jira-grad-2)"/>
           </svg>
-          <span className="text-[15px] font-bold tracking-tight text-foreground">Jira</span>
         </Link>
-        {/* Sidebar collapse/expand toggle */}
-        <SidebarTrigger className="size-7 text-muted-foreground hover:text-foreground hover:bg-accent" />
-        {/* Primary nav items — always visible */}
-        <PrimaryNav />
-        {/* Search */}
+
+        {/* Search icon */}
         <SearchBar isBlue={isBlue} />
       </div>
 
       {/* Right - Actions */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0">
         {/* Create Issue */}
         <CreateIssueDialog isBlue={isBlue} />
 
-        <span className="ml-1 rounded border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-          Premium trial
-        </span>
-
-        {/* Notifications */}
-        <NotificationsPanel isBlue={isBlue} />
-
-        {/* Help */}
-        <HelpPanel isBlue={isBlue} />
-
-        {/* Settings */}
-        <SettingsDropdown isBlue={isBlue} />
-
-        {/* User Avatar + Profile Menu */}
-        <UserMenu />
+        {/* Three-dot menu — notifications, help, settings, profile inside */}
+        <ThreeDotsMenu />
       </div>
     </header>
   )
