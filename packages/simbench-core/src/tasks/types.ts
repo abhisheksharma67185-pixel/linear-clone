@@ -20,7 +20,14 @@ export type TaskDomain =
   | "views"
   | "boards"
   | "labels"
-  | "teams";
+  | "teams"
+  | "messages"
+  | "channels"
+  | "dms"
+  | "reactions"
+  | "huddles"
+  | "canvases"
+  | "lists";
 
 export type TaskDifficulty = "easy" | "medium" | "hard" | "expert";
 
