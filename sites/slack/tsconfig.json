@@ -20,7 +20,8 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@simbench/core": ["../../packages/simbench-core/src/index.ts"]
     }
   },
   "include": [
