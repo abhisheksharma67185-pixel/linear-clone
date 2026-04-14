@@ -1327,11 +1327,11 @@ function ProjectsNavList() {
 export function TopNav() {
   const { open: sidebarOpen } = useSidebar()
 
-  // Always blue nav bar — matches real Jira
-  const isBlue = true
+  // Always white nav bar with all items visible
+  const isBlue = false
 
   return (
-    <header className="flex h-14 items-center justify-between px-4 bg-[#0052CC] overflow-hidden">
+    <header className="flex h-14 items-center justify-between px-4 border-b bg-background overflow-hidden">
       {/* Left */}
       <div className="flex items-center gap-2 min-w-0">
         {/* Jira logo */}
@@ -1339,22 +1339,22 @@ export function TopNav() {
           <svg className="size-7" viewBox="0 0 32 32" fill="none">
             <defs>
               <linearGradient id="jira-grad-1" x1="20.87" y1="4.58" x2="12.19" y2="13.7">
-                <stop offset="0.18" stopColor="#0052CC" stopOpacity="0" />
+                <stop offset="0.18" stopColor="#DEEBFF" stopOpacity="1" />
                 <stop offset="1" stopColor="#2684FF" />
               </linearGradient>
               <linearGradient id="jira-grad-2" x1="11.28" y1="27.56" x2="19.96" y2="18.44">
-                <stop offset="0.18" stopColor="#0052CC" stopOpacity="0" />
+                <stop offset="0.18" stopColor="#DEEBFF" stopOpacity="1" />
                 <stop offset="1" stopColor="#2684FF" />
               </linearGradient>
             </defs>
-            <path d="M27.55 15.1L17.29 4.47 16 3.13 6.45 13.01l-2.14 2.2a.73.73 0 000 1.02l6.97 7.17L16 28.87l5.35-5.5.39-.4 5.81-5.98a.73.73 0 000-1.02zM16 20.28l-4.07-4.18L16 11.92l4.07 4.18L16 20.28z" fill="white"/>
+            <path d="M27.55 15.1L17.29 4.47 16 3.13 6.45 13.01l-2.14 2.2a.73.73 0 000 1.02l6.97 7.17L16 28.87l5.35-5.5.39-.4 5.81-5.98a.73.73 0 000-1.02zM16 20.28l-4.07-4.18L16 11.92l4.07 4.18L16 20.28z" fill="#2684FF"/>
             <path d="M16 11.92a6.03 6.03 0 01-.04-8.46l-9.51 9.78 6.52 6.7L16 16.1l-.04-4.18z" fill="url(#jira-grad-1)"/>
             <path d="M20.11 16.06L16 20.28a6.03 6.03 0 01.04 8.46l9.51-9.78-5.44-2.9z" fill="url(#jira-grad-2)"/>
           </svg>
-          <span className="text-[15px] font-bold tracking-tight text-white">Jira</span>
+          <span className="text-[15px] font-bold tracking-tight text-foreground">Jira</span>
         </Link>
         {/* Sidebar collapse/expand toggle */}
-        <SidebarTrigger className="size-7 text-white/70 hover:text-white hover:bg-white/15" />
+        <SidebarTrigger className="size-7 text-muted-foreground hover:text-foreground hover:bg-accent" />
         {/* Primary nav items — always visible */}
         <PrimaryNav />
         {/* Search */}
@@ -1366,7 +1366,7 @@ export function TopNav() {
         {/* Create Issue */}
         <CreateIssueDialog isBlue={isBlue} />
 
-        <span className="ml-1 rounded border border-white/30 px-2 py-0.5 text-[11px] font-medium text-white/90">
+        <span className="ml-1 rounded border px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
           Premium trial
         </span>
 
