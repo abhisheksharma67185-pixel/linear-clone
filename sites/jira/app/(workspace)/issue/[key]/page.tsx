@@ -106,6 +106,8 @@ export default function IssueDetailPage() {
   const [comments, setComments] = useState<Array<{ id: string; body: string; authorId: string; createdAt: string; updatedAt: string; author: { name: string; displayName?: string } | null }>>([])
   const [commentBody, setCommentBody] = useState("")
   const [commentPosting, setCommentPosting] = useState(false)
+  const [history, setHistory] = useState<PopulatedHistory[]>([])
+  const [activityTab, setActivityTab] = useState<"all" | "comments" | "history">("all")
 
   // Editable fields
   const [summary, setSummary] = useState("")
@@ -133,13 +135,15 @@ export default function IssueDetailPage() {
       fetch("/api/data/sprints").then((r) => r.json()),
       fetch("/api/data/epics").then((r) => r.json()),
       fetch(`/api/data/issues/${issueKey}/comments`).then((r) => r.json()).catch(() => []),
-    ]).then(([i, u, p, s, e, c]) => {
+      fetch(`/api/data/issues/${issueKey}/history`).then((r) => r.json()).catch(() => []),
+    ]).then(([i, u, p, s, e, c, h]) => {
       setIssue(i)
       setUsers(u)
       setProjects(p)
       setSprints(s)
       setEpics(e)
       if (Array.isArray(c)) setComments(c)
+      if (Array.isArray(h)) setHistory(h)
       setSummary(i.summary ?? "")
       setDescription(i.description ?? "")
       setStatus(i.status ?? "to_do")
@@ -286,35 +290,85 @@ export default function IssueDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Comments — inline for reliability */}
+          {/* Activity — comments + history */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Activity ({comments.length})</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">Activity</CardTitle>
+                <div className="flex gap-1">
+                  {(["all", "comments", "history"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActivityTab(tab)}
+                      className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${activityTab === tab ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" : "text-muted-foreground hover:bg-accent"}`}
+                    >
+                      {tab === "all" ? "All" : tab === "comments" ? `Comments (${comments.length})` : `History (${history.length})`}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 mb-4">
-                {comments.length === 0 && (
-                  <p className="text-sm text-muted-foreground py-2">No activity yet.</p>
-                )}
-                {comments.map((c) => {
-                  const authorName = c.author?.displayName ?? c.author?.name ?? "Unknown"
-                  return (
-                    <div key={c.id} className="flex gap-3">
-                      <Avatar className="size-7 shrink-0 mt-0.5">
-                        <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{authorName.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium">{authorName}</span>
-                          <span className="text-xs text-muted-foreground">{new Date(c.createdAt).toLocaleDateString()}</span>
+                {(() => {
+                  const items: Array<{ type: "comment" | "history"; date: string; data: (typeof comments)[number] | PopulatedHistory }> = []
+                  if (activityTab === "all" || activityTab === "comments") {
+                    comments.forEach((c) => items.push({ type: "comment", date: c.createdAt, data: c }))
+                  }
+                  if (activityTab === "all" || activityTab === "history") {
+                    history.forEach((h) => items.push({ type: "history", date: h.createdAt, data: h }))
+                  }
+                  items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+                  if (items.length === 0) {
+                    return <p className="text-sm text-muted-foreground py-2">No activity yet.</p>
+                  }
+
+                  return items.map((item) => {
+                    if (item.type === "comment") {
+                      const c = item.data as (typeof comments)[number]
+                      const authorName = c.author?.displayName ?? c.author?.name ?? "Unknown"
+                      return (
+                        <div key={`c-${c.id}`} className="flex gap-3">
+                          <Avatar className="size-7 shrink-0 mt-0.5">
+                            <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{authorName.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium">{authorName}</span>
+                              <span className="text-xs text-muted-foreground">{new Date(c.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <div className="rounded-md border bg-muted/30 px-3 py-2">
+                              <p className="text-sm whitespace-pre-wrap">{c.body}</p>
+                            </div>
+                          </div>
                         </div>
-                        <div className="rounded-md border bg-muted/30 px-3 py-2">
-                          <p className="text-sm whitespace-pre-wrap">{c.body}</p>
+                      )
+                    }
+                    const h = item.data as PopulatedHistory
+                    const authorName = h.author?.displayName ?? h.author?.name ?? "System"
+                    const fieldLabel = FIELD_LABELS[h.field] ?? h.field
+                    return (
+                      <div key={`h-${h.id}`} className="flex gap-3">
+                        <Avatar className="size-7 shrink-0 mt-0.5">
+                          <AvatarFallback className="text-[10px] bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">{authorName.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0 py-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{authorName}</span>
+                            <span className="text-xs text-muted-foreground">changed {fieldLabel}</span>
+                            <span className="text-xs text-muted-foreground">{timeAgo(h.createdAt)}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
+                            <span className="line-through">{formatFieldValue(h.field, h.oldValue)}</span>
+                            <span>→</span>
+                            <span className="font-medium text-foreground">{formatFieldValue(h.field, h.newValue)}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })
+                })()}
               </div>
               {/* New comment form */}
               <div className="flex gap-3">

@@ -206,7 +206,7 @@ export default function SpacesPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [showTemplates, setShowTemplates] = useState(true)
+  const [showTemplates, setShowTemplates] = useState(false)
   const [activeFilters, setActiveFilters] = useState<string[]>([...filterChips])
   const [starredProjects, setStarredProjects] = useState<Set<string>>(new Set())
   const [createOpen, setCreateOpen] = useState(false)

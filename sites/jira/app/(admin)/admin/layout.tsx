@@ -335,7 +335,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </div>
                 </div>
                 <div className="flex flex-col py-1">
-                  <Link href="/admin/settings/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-accent text-left transition-colors">
+                  <Link href="/home/account-settings" onClick={() => setProfileOpen(false)} className="flex items-center gap-3 px-4 py-2 text-sm hover:bg-accent text-left transition-colors">
                     <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09" /></svg>
                     Account settings
                   </Link>

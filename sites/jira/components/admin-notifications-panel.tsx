@@ -218,19 +218,27 @@ export function AdminNotificationsPanel({
               </div>
             ))}
           </div>
-        ) : null}
-
-        {/* Empty state */}
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <svg className="mb-3 size-12 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-            <path d="M22 12h-6l-2 3h-4l-2-3H2" />
-            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-          </svg>
-          <p className="text-sm text-muted-foreground">
-            That&apos;s all your notifications from
-          </p>
-          <p className="text-sm text-muted-foreground">the last 90 days</p>
-        </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            {/* Atlassian flag illustration */}
+            <svg className="mb-4 size-24" viewBox="0 0 120 120" fill="none">
+              <rect x="36" y="18" width="4" height="90" rx="2" fill="#FFC400" />
+              <circle cx="38" cy="16" r="5" fill="#FF8B00" />
+              <g transform="translate(40, 28) rotate(8)">
+                <path d="M0 0L48 8L42 40L0 48Z" fill="#0747A6" rx="3" />
+              </g>
+              <g transform="translate(40, 22) rotate(-4)">
+                <path d="M0 0L50 6L46 42L0 48Z" fill="#2684FF" rx="3" />
+                <path d="M16 28c-1-1.6-2.8-1.4-3.4.4l-5 12c-.3.6 0 1.2.6 1.2h7.4c.3 0 .6-.2.7-.5 1.2-3 .6-8.6-0.3-13.1z" fill="rgba(255,255,255,0.6)" />
+                <path d="M22 16c-3.6 6.4-3.8 14-.4 20.4l4.2 8c.2.3.5.5.8.5h7.4c.6 0 .9-.7.6-1.2L23.4 16c-.3-.6-1-.6-1.4 0z" fill="rgba(255,255,255,0.8)" />
+              </g>
+            </svg>
+            <p className="text-sm text-muted-foreground">
+              That&apos;s all your notifications from
+            </p>
+            <p className="text-sm text-muted-foreground">the last 30 days.</p>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -14,7 +14,7 @@ function UserDropdown() {
 
   const menuItems = [
     { label: "Switch Account", href: "/switch-account" },
-    { label: "Profile", href: "/admin/settings/profile" },
+    { label: "Profile", href: "/home/profile" },
     { label: "Licenses", href: "/admin/billing" },
     { label: "Log out", href: "/login" },
   ]
