@@ -403,7 +403,7 @@ export function createSprint(fields: {
   return { success: true, data: deepClone(sprint) };
 }
 
-export function startSprint(id: string): Result<Sprint> {
+export function startSprint(id: string, opts?: { name?: string; goal?: string; durationWeeks?: number }): Result<Sprint> {
   const sprint = _sprints.find((s) => s.id === id);
   if (!sprint) return { success: false, error: "Sprint not found" };
 
@@ -425,8 +425,14 @@ export function startSprint(id: string): Result<Sprint> {
     };
   }
 
+  if (opts?.name) sprint.name = opts.name;
+  if (opts?.goal !== undefined) sprint.goal = opts.goal;
   sprint.state = "active";
   sprint.startDate = today();
+  const weeks = opts?.durationWeeks && opts.durationWeeks > 0 ? opts.durationWeeks : 2;
+  const end = new Date();
+  end.setDate(end.getDate() + weeks * 7);
+  sprint.endDate = end.toISOString().slice(0, 10);
   return { success: true, data: deepClone(sprint) };
 }
 
@@ -439,6 +445,14 @@ export function completeSprint(id: string): Result<Sprint> {
   }
   if (sprint.state === "future") {
     return { success: false, error: "Cannot complete a sprint that has not started" };
+  }
+
+  // Move incomplete issues to backlog
+  for (const issue of _issues) {
+    if (issue.sprintId === id && issue.status !== "done") {
+      issue.sprintId = null;
+      issue.updatedAt = now();
+    }
   }
 
   sprint.state = "closed";

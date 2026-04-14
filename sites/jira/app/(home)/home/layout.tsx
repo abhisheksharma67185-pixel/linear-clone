@@ -27,6 +27,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useTheme } from "next-themes"
 
 const homeNavItems = [
   { id: "recent", name: "Recent", enabled: true },
@@ -155,8 +156,27 @@ const appLinks = [
 ]
 
 function UserAvatarDropdown() {
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false)
+  const { theme, setTheme } = useTheme()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } catch {
+      // no-op — redirect to login regardless
+    }
+    router.push("/login")
+  }
+
+  const themeOptions = [
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Dark" },
+    { value: "system", label: "Match system" },
+  ] as const
+
   return (
-    <Popover>
+    <Popover onOpenChange={(open) => { if (!open) setThemeMenuOpen(false) }}>
       <PopoverTrigger aria-label="User profile - Abhishek Sharma" className="rounded-full transition-colors hover:ring-2 hover:ring-blue-200">
           <Avatar className="size-8 cursor-pointer"><AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">AS</AvatarFallback></Avatar>
       </PopoverTrigger>
@@ -172,43 +192,84 @@ function UserAvatarDropdown() {
 
         <div className="border-t" />
 
-        {/* Menu items */}
-        <div className="py-1.5">
-          <Link href="/admin/settings/profile" className="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors">
-            <svg className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-            Profile
-          </Link>
-          <Link href="/admin/settings" className="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors">
-            <svg className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09" /></svg>
-            Account settings
-          </Link>
-          <button
-            onClick={() => {
-              const html = document.documentElement
-              html.classList.toggle("dark")
-            }}
-            className="flex w-full items-center justify-between gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors"
-          >
-            <span className="flex items-center gap-3">
-              <svg className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
+        {themeMenuOpen ? (
+          /* Theme sub-menu */
+          <div className="py-1.5">
+            <button
+              onClick={() => setThemeMenuOpen(false)}
+              aria-label="Back to menu"
+              className="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors w-full"
+            >
+              <svg aria-hidden="true" className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="15 18 9 12 15 6" /></svg>
               Theme
-            </span>
-            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-          </button>
-        </div>
+            </button>
+            <div className="border-t my-1" />
+            {themeOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  setTheme(option.value)
+                  setThemeMenuOpen(false)
+                }}
+                aria-label={`Set theme to ${option.label}`}
+                className="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors w-full"
+              >
+                <span className="flex size-5 items-center justify-center">
+                  {theme === option.value && (
+                    <svg aria-hidden="true" className="size-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+                  )}
+                </span>
+                {option.label}
+                {option.value === "system" && (
+                  <span className="ml-auto text-xs text-muted-foreground">default</span>
+                )}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* Menu items */}
+            <div className="py-1.5">
+              <Link href="/home/profile" aria-label="Go to your profile" className="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors">
+                <svg aria-hidden="true" className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                Profile
+              </Link>
+              <Link href="/home/account-settings" aria-label="Go to account settings" className="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors">
+                <svg aria-hidden="true" className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09" /></svg>
+                Account settings
+              </Link>
+              <button
+                onClick={() => setThemeMenuOpen(true)}
+                aria-label="Change theme"
+                aria-haspopup="true"
+                className="flex w-full items-center justify-between gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors"
+              >
+                <span className="flex items-center gap-3">
+                  <svg aria-hidden="true" className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
+                  Theme
+                </span>
+                <svg aria-hidden="true" className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+              </button>
+            </div>
 
-        <div className="border-t" />
+            <div className="border-t" />
 
-        <div className="py-1.5">
-          <Link href="/switch-account" className="flex w-full items-center gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors">
-            <svg className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-            Switch account
-          </Link>
-          <Link href="/" className="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors">
-            <svg className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
-            Log out
-          </Link>
-        </div>
+            <div className="py-1.5">
+              <Link href="/switch-account" aria-label="Switch to another account" className="flex w-full items-center gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors">
+                <svg aria-hidden="true" className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                Switch account
+              </Link>
+              <button
+                onClick={handleLogout}
+                aria-label="Log out of your account"
+                className="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-accent transition-colors w-full"
+              >
+                <svg aria-hidden="true" className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                Log out
+              </button>
+            </div>
+          </>
+        )}
       </PopoverContent>
     </Popover>
   )
@@ -271,15 +332,17 @@ function HelpButton() {
       {open && (
         <div className="fixed right-0 top-14 bottom-0 z-50 w-80 border-l bg-background shadow-xl flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-4">
-            {view === "shortcuts" && (
+          <div className="flex items-center px-5 pt-5 pb-4">
+            {view === "shortcuts" ? (
               <button onClick={() => setView("menu")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mr-2">
                 <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
                 Back
               </button>
+            ) : (
+              <div className="w-6" />
             )}
-            <h3 className="text-base font-semibold">{view === "menu" ? "Help" : ""}</h3>
-            <button onClick={() => setOpen(false)} className="rounded p-1 text-muted-foreground hover:bg-accent ml-auto">
+            <h3 className="text-base font-semibold flex-1 text-center">{view === "menu" ? "Help" : ""}</h3>
+            <button onClick={() => setOpen(false)} className="rounded p-1 text-muted-foreground hover:bg-accent">
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
             </button>
           </div>
@@ -299,11 +362,11 @@ function HelpButton() {
                     {ExtIcon}
                   </Link>
                   <button onClick={() => { setFeedbackOpen(true); setFeedbackSent(false); setFeedbackType("") }} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm hover:bg-accent transition-colors w-full text-left">
-                    <span className="text-muted-foreground"><svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" /></svg></span>
+                    <span className="text-muted-foreground"><svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 12V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8l-4 4" /><path d="M14 10l-4 0" /><path d="M14 7l-4 0" /></svg></span>
                     Give feedback
                   </button>
                   <Link href="/admin" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm hover:bg-accent transition-colors">
-                    <span className="text-muted-foreground"><svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg></span>
+                    <span className="text-muted-foreground"><svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg></span>
                     Get support
                     {ExtIcon}
                   </Link>
@@ -313,7 +376,7 @@ function HelpButton() {
                     {ExtIcon}
                   </Link>
                   <button onClick={() => setView("shortcuts")} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm hover:bg-accent transition-colors w-full text-left">
-                    <span className="text-muted-foreground"><svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="6" width="20" height="12" rx="2" /><line x1="6" y1="10" x2="6" y2="10" /><line x1="10" y1="10" x2="10" y2="10" /><line x1="14" y1="10" x2="14" y2="10" /><line x1="18" y1="10" x2="18" y2="10" /><line x1="8" y1="14" x2="16" y2="14" /></svg></span>
+                    <span className="text-muted-foreground"><svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg></span>
                     Keyboard shortcuts
                   </button>
                 </div>
@@ -475,14 +538,21 @@ function NotificationsPopover() {
         {/* Content — empty state with illustration */}
         <div className="flex flex-col items-center justify-center py-10 px-6">
           <svg className="w-28 h-28 mb-4" viewBox="0 0 120 120" fill="none">
-            <rect x="35" y="20" width="4" height="80" rx="2" fill="#B3D4FF" />
-            <path d="M39 20 L85 32 L39 50 Z" fill="#2684FF" />
-            <path d="M39 20 L85 32 L39 50 Z" fill="#0052CC" opacity="0.3" />
-            <path d="M65 28 L85 32 L65 38 Z" fill="#DEEBFF" />
-            <circle cx="90" cy="25" r="3" fill="#FFC400" />
-            <circle cx="95" cy="40" r="2" fill="#FFC400" opacity="0.6" />
-            <rect x="80" y="55" width="8" height="3" rx="1.5" fill="#B3D4FF" transform="rotate(-15 84 56.5)" />
-            <circle cx="25" cy="45" r="2.5" fill="#DEEBFF" />
+            {/* Flag pole */}
+            <rect x="36" y="18" width="4" height="90" rx="2" fill="#FFC400" />
+            {/* Orange dot on pole top */}
+            <circle cx="38" cy="16" r="5" fill="#FF8B00" />
+            {/* Back flag (darker blue, rotated) */}
+            <g transform="translate(40, 28) rotate(8)">
+              <path d="M0 0L48 8L42 40L0 48Z" fill="#0747A6" rx="3" />
+            </g>
+            {/* Front flag (blue) */}
+            <g transform="translate(40, 22) rotate(-4)">
+              <path d="M0 0L50 6L46 42L0 48Z" fill="#2684FF" rx="3" />
+              {/* Atlassian logo mark on flag */}
+              <path d="M16 28c-1-1.6-2.8-1.4-3.4.4l-5 12c-.3.6 0 1.2.6 1.2h7.4c.3 0 .6-.2.7-.5 1.2-3 .6-8.6-0.3-13.1z" fill="rgba(255,255,255,0.6)" />
+              <path d="M22 16c-3.6 6.4-3.8 14-.4 20.4l4.2 8c.2.3.5.5.8.5h7.4c.6 0 .9-.7.6-1.2L23.4 16c-.3-.6-1-.6-1.4 0z" fill="rgba(255,255,255,0.8)" />
+            </g>
           </svg>
 
           <p className="text-sm text-muted-foreground text-center">
@@ -1523,14 +1593,14 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 p-0 py-3">
               <p className="px-5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Atlassian Home settings</p>
-              <Link href="/admin/organization-settings" className="flex w-full items-start gap-4 px-5 py-3 text-left transition-colors hover:bg-accent">
+              <Link href="/admin/organization-settings" aria-label="Workspace settings - Manage workspace name, domains, user groups and time zone" className="flex w-full items-start gap-4 px-5 py-3 text-left transition-colors hover:bg-accent">
                 <svg aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
                 <div>
                   <p className="text-sm font-medium">Workspace settings</p>
                   <p className="text-xs text-muted-foreground">Manage workspace name, domains, user groups and time zone</p>
                 </div>
               </Link>
-              <Link href="/admin/settings/profile" className="flex w-full items-start gap-4 px-5 py-3 text-left transition-colors hover:bg-accent">
+              <Link href="/home/account-settings" aria-label="Personal settings - Manage notification preferences and themes" className="flex w-full items-start gap-4 px-5 py-3 text-left transition-colors hover:bg-accent">
                 <svg aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                 <div>
                   <p className="text-sm font-medium">Personal settings</p>
@@ -1541,21 +1611,21 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
               <div className="my-2 border-t" />
 
               <p className="px-5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Atlassian admin settings</p>
-              <Link href="/admin/users" className="flex w-full items-start gap-4 px-5 py-3 text-left transition-colors hover:bg-accent">
+              <Link href="/admin/users" aria-label="User management - Manage users, groups, and access requests" className="flex w-full items-start gap-4 px-5 py-3 text-left transition-colors hover:bg-accent">
                 <svg aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                 <div>
                   <p className="text-sm font-medium">User management</p>
                   <p className="text-xs text-muted-foreground">Manage users, groups, and access requests</p>
                 </div>
               </Link>
-              <Link href="/admin/billing" className="flex w-full items-start gap-4 px-5 py-3 text-left transition-colors hover:bg-accent">
+              <Link href="/admin/licensing" aria-label="Licensing - Server and Data Center licensing" className="flex w-full items-start gap-4 px-5 py-3 text-left transition-colors hover:bg-accent">
                 <svg aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M2 10h20" /></svg>
                 <div>
                   <p className="text-sm font-medium">Licensing</p>
                   <p className="text-xs text-muted-foreground">Server and Data Center licensing</p>
                 </div>
               </Link>
-              <Link href="/admin/billing" className="flex w-full items-start gap-4 px-5 py-3 text-left transition-colors hover:bg-accent">
+              <Link href="/admin/billing" aria-label="Billing - Update your billing details, manage subscriptions, and more" className="flex w-full items-start gap-4 px-5 py-3 text-left transition-colors hover:bg-accent">
                 <svg aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
                 <div>
                   <p className="text-sm font-medium">Billing</p>

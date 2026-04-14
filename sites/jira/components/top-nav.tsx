@@ -39,6 +39,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Add01Icon } from "@hugeicons/core-free-icons"
 import type { Issue, Project, User, Sprint, Epic } from "@/app/lib/mock-data"
 import { useIssueDrawer } from "@/components/issue-drawer-provider"
+import { useTheme } from "next-themes"
 
 // ─── Search Bar ─────────────────────────────────────────────────────────────
 
@@ -320,7 +321,7 @@ function SettingsDropdown({ isBlue = true }: { isBlue?: boolean }) {
 
               {/* Personal */}
               <div className="flex flex-col gap-0.5">
-                <Link href="/admin/settings/profile" onClick={() => setOpen(false)} className="flex items-start gap-3 rounded-md px-2 py-2 text-left hover:bg-accent transition-colors">
+                <Link href="/home/account-settings" onClick={() => setOpen(false)} className="flex items-start gap-3 rounded-md px-2 py-2 text-left hover:bg-accent transition-colors">
                   <svg className="size-5 mt-0.5 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
                   <div><p className="text-sm font-medium">Personal settings</p><p className="text-xs text-muted-foreground">Language, time zone, preferences</p></div>
                 </Link>
@@ -470,7 +471,10 @@ function NotificationsPanel({ isBlue = true }: { isBlue?: boolean }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<"direct" | "watching">("direct")
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false)
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
 
   const [notifications, setNotifications] = useState([
     { id: "n1", text: "Priya Patel assigned SCRUM-5 to you", issueKey: "SCRUM-5", time: "2 hours ago", category: "direct" as const, read: false, initials: "PP", color: "bg-violet-500" },
@@ -480,7 +484,9 @@ function NotificationsPanel({ isBlue = true }: { isBlue?: boolean }) {
     { id: "n5", text: "Liam Chen changed SCRUM-12 to Done", issueKey: "SCRUM-12", time: "3 days ago", category: "watching" as const, read: true, initials: "LC", color: "bg-rose-500" },
   ])
 
-  const filteredNotifs = notifications.filter((n) => activeTab === "direct" ? n.category === "direct" : n.category === "watching")
+  const filteredNotifs = notifications
+    .filter((n) => activeTab === "direct" ? n.category === "direct" : n.category === "watching")
+    .filter((n) => !showUnreadOnly || !n.read)
   const unreadCount = notifications.filter((n) => !n.read).length
 
   const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
@@ -494,6 +500,15 @@ function NotificationsPanel({ isBlue = true }: { isBlue?: boolean }) {
     document.addEventListener("mousedown", handler)
     return () => document.removeEventListener("mousedown", handler)
   }, [open])
+
+  useEffect(() => {
+    if (!moreMenuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) setMoreMenuOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [moreMenuOpen])
 
   return (
     <div className="relative" ref={ref}>
@@ -512,20 +527,59 @@ function NotificationsPanel({ isBlue = true }: { isBlue?: boolean }) {
 
       {open && (
         <div className="absolute right-0 top-full mt-2 z-50 w-[400px] rounded-lg border bg-popover shadow-xl">
-          {/* Header */}
+          {/* Header — matches real Jira: title, "Only show unread" toggle, expand icon, three-dot menu */}
           <div className="flex items-center justify-between px-4 pt-4 pb-2">
             <h3 className="text-base font-semibold">Notifications</h3>
-            <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
-                <button onClick={markAllRead} className="text-xs text-blue-600 hover:underline">Mark all as read</button>
-              )}
-              <Link href="/home/notifications" onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground" title="View all">
+            <div className="flex items-center gap-3">
+              {/* Only show unread toggle */}
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                Only show unread
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showUnreadOnly}
+                  onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${showUnreadOnly ? "bg-blue-600" : "bg-muted-foreground/30"}`}
+                >
+                  <span className={`inline-block size-3 rounded-full bg-white transition-transform ${showUnreadOnly ? "translate-x-[14px]" : "translate-x-[2px]"}`} />
+                </button>
+              </label>
+              {/* Expand icon — open full notifications page */}
+              <Link href="/home/notifications" onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors" title="Open notifications">
                 <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 3h6v6" />
+                  <path d="M10 14L21 3" />
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
                 </svg>
               </Link>
+              {/* Three-dot menu */}
+              <div className="relative" ref={moreMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+                  className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors"
+                >
+                  <svg className="size-5" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="5" r="1.5" />
+                    <circle cx="12" cy="12" r="1.5" />
+                    <circle cx="12" cy="19" r="1.5" />
+                  </svg>
+                </button>
+                {moreMenuOpen && (
+                  <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-lg border bg-popover shadow-lg py-1">
+                    <button
+                      type="button"
+                      onClick={() => setMoreMenuOpen(false)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-accent transition-colors"
+                    >
+                      <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                      </svg>
+                      Give feedback
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -550,13 +604,33 @@ function NotificationsPanel({ isBlue = true }: { isBlue?: boolean }) {
           </div>
 
           {/* Notification list */}
-          <div className="max-h-[320px] overflow-y-auto">
+          <div className="max-h-[380px] overflow-y-auto">
             {filteredNotifs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 px-6">
-                <svg className="mb-3 size-16 text-muted-foreground/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              <div className="flex flex-col items-center justify-center py-12 px-6">
+                {/* Atlassian flag illustration — matches real Jira empty state */}
+                <svg className="mb-4 size-28" viewBox="0 0 120 120" fill="none">
+                  {/* Flag pole */}
+                  <rect x="36" y="18" width="4" height="90" rx="2" fill="#FFC400" />
+                  {/* Orange dot on pole top */}
+                  <circle cx="38" cy="16" r="5" fill="#FF8B00" />
+                  {/* Back flag (darker blue, rotated) */}
+                  <g transform="translate(40, 28) rotate(8)">
+                    <path d="M0 0L48 8L42 40L0 48Z" fill="#0747A6" rx="3" />
+                  </g>
+                  {/* Front flag (blue) */}
+                  <g transform="translate(40, 22) rotate(-4)">
+                    <path d="M0 0L50 6L46 42L0 48Z" fill="#2684FF" rx="3" />
+                    {/* Atlassian logo mark on flag */}
+                    <path d="M16 28c-1-1.6-2.8-1.4-3.4.4l-5 12c-.3.6 0 1.2.6 1.2h7.4c.3 0 .6-.2.7-.5 1.2-3 .6-8.6-0.3-13.1z" fill="rgba(255,255,255,0.6)" />
+                    <path d="M22 16c-3.6 6.4-3.8 14-.4 20.4l4.2 8c.2.3.5.5.8.5h7.4c.6 0 .9-.7.6-1.2L23.4 16c-.3-.6-1-.6-1.4 0z" fill="rgba(255,255,255,0.8)" />
+                  </g>
                 </svg>
-                <p className="text-sm text-muted-foreground">No {activeTab} notifications</p>
+                <p className="text-sm text-muted-foreground text-center">
+                  You have no notifications from
+                </p>
+                <p className="text-sm text-muted-foreground text-center">
+                  the last 30 days.
+                </p>
               </div>
             ) : (
               filteredNotifs.map((n) => (
@@ -578,14 +652,16 @@ function NotificationsPanel({ isBlue = true }: { isBlue?: boolean }) {
             )}
           </div>
 
-          {/* Footer */}
+          {/* Footer — matches real Jira: keyboard hint + "See all shortcuts" */}
           <div className="border-t px-4 py-2.5 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              <kbd className="rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">↓</kbd>{" "}
-              <kbd className="rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">↑</kbd> to navigate
-            </span>
-            <Link href="/home/notifications" onClick={() => setOpen(false)} className="text-xs text-blue-600 hover:underline">
-              View all notifications
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              Press
+              <kbd className="inline-flex min-w-[20px] items-center justify-center rounded border bg-muted px-1 py-0.5 font-mono text-[10px]">↓</kbd>
+              <kbd className="inline-flex min-w-[20px] items-center justify-center rounded border bg-muted px-1 py-0.5 font-mono text-[10px]">↑</kbd>
+              to move through notifications.
+            </div>
+            <Link href="/home/notifications" onClick={() => setOpen(false)} className="text-xs text-muted-foreground hover:text-foreground border rounded px-2 py-1 hover:bg-accent transition-colors">
+              See all shortcuts
             </Link>
           </div>
         </div>
@@ -652,17 +728,16 @@ function HelpPanel({ isBlue = true }: { isBlue?: boolean }) {
     ),
     feedback: (
       <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+        <path d="M4 12V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8l-4 4" />
+        <path d="M14 10l-4 0" />
+        <path d="M14 7l-4 0" />
       </svg>
     ),
     keyboard: (
       <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <rect x="2" y="6" width="20" height="12" rx="2" />
-        <line x1="6" y1="10" x2="6" y2="10" />
-        <line x1="10" y1="10" x2="10" y2="10" />
-        <line x1="14" y1="10" x2="14" y2="10" />
-        <line x1="18" y1="10" x2="18" y2="10" />
-        <line x1="8" y1="14" x2="16" y2="14" />
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+        <line x1="8" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="17" x2="12" y2="21" />
       </svg>
     ),
     mobile: (
@@ -1260,7 +1335,7 @@ export function TopNav() {
       {/* Left */}
       <div className="flex items-center gap-2 min-w-0">
         {/* Jira logo */}
-        <Link href="/dashboard" className="flex items-center gap-1 shrink-0">
+        <Link href="/projects" className="flex items-center gap-1 shrink-0">
           <svg className="size-7" viewBox="0 0 32 32" fill="none">
             <defs>
               <linearGradient id="jira-grad-1" x1="20.87" y1="4.58" x2="12.19" y2="13.7">
@@ -1388,10 +1463,28 @@ function KeyboardShortcutsDialog({ open, onClose }: { open: boolean; onClose: ()
 
 function UserMenu() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false)
+  const { theme, setTheme } = useTheme()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } catch {
+      // no-op — redirect to login regardless
+    }
+    router.push("/login")
+  }
+
+  const themeOptions = [
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Dark" },
+    { value: "system", label: "Match system" },
+  ] as const
 
   return (
     <>
-      <Popover>
+      <Popover onOpenChange={(open) => { if (!open) setThemeMenuOpen(false) }}>
         <PopoverTrigger className="rounded-full">
           <Avatar className="size-8 cursor-pointer hover:ring-2 hover:ring-white/50 hover:ring-offset-1 hover:ring-offset-[#0052CC] transition-all">
             <AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">
@@ -1408,41 +1501,85 @@ function UserMenu() {
               </Avatar>
               <div>
                 <p className="text-sm font-medium text-foreground">Abhishek Sharma</p>
-                <p className="text-xs text-muted-foreground">abhishek@company.io</p>
+                <p className="text-xs text-muted-foreground">abhisheksharma67185@gmail.com</p>
               </div>
             </div>
           </div>
 
-          {/* Menu items */}
-          <div className="p-1">
-            <Link href="/admin/settings" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
-              <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
-              Profile
-            </Link>
-            <Link href="/admin/settings" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
-              <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
-              Personal settings
-            </Link>
-            <button
-              onClick={() => setShortcutsOpen(true)}
-              className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full"
-            >
-              <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" /></svg>
-              Keyboard shortcuts
-              <kbd className="ml-auto text-[10px] font-mono text-muted-foreground border rounded px-1 py-0.5">?</kbd>
-            </button>
-          </div>
+          {themeMenuOpen ? (
+            /* Theme sub-menu */
+            <div className="p-1">
+              <button
+                onClick={() => setThemeMenuOpen(false)}
+                aria-label="Back to menu"
+                className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full"
+              >
+                <svg aria-hidden="true" className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
+                Theme
+              </button>
+              <div className="border-t my-1" />
+              {themeOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    setTheme(option.value)
+                    setThemeMenuOpen(false)
+                  }}
+                  aria-label={`Set theme to ${option.label}`}
+                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full"
+                >
+                  <span className="flex size-4 items-center justify-center">
+                    {theme === option.value && (
+                      <svg aria-hidden="true" className="size-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+                    )}
+                  </span>
+                  {option.label}
+                  {option.value === "system" && (
+                    <span className="ml-auto text-xs text-muted-foreground">default</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Menu items */}
+              <div className="p-1">
+                <Link href="/home/profile" aria-label="Go to your profile" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                  <svg aria-hidden="true" className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
+                  Profile
+                </Link>
+                <Link href="/home/account-settings" aria-label="Go to account settings" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                  <svg aria-hidden="true" className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+                  Account settings
+                </Link>
+                <button
+                  onClick={() => setThemeMenuOpen(true)}
+                  aria-label="Change theme"
+                  aria-haspopup="true"
+                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full"
+                >
+                  <svg aria-hidden="true" className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
+                  Theme
+                  <svg aria-hidden="true" className="size-4 text-muted-foreground ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+                </button>
+              </div>
 
-          <div className="border-t p-1">
-            <Link href="/switch-account" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
-              <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><path d="M20 8v6M23 11h-6" /></svg>
-              Switch account
-            </Link>
-            <Link href="/login" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full">
-              <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
-              Log out
-            </Link>
-          </div>
+              <div className="border-t p-1">
+                <Link href="/switch-account" aria-label="Switch to another account" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                  <svg aria-hidden="true" className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><path d="M20 8v6M23 11h-6" /></svg>
+                  Switch account
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  aria-label="Log out of your account"
+                  className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full"
+                >
+                  <svg aria-hidden="true" className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                  Log out
+                </button>
+              </div>
+            </>
+          )}
         </PopoverContent>
       </Popover>
 

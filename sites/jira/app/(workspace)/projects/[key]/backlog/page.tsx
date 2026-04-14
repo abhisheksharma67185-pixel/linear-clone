@@ -134,9 +134,15 @@ export default function BacklogPage() {
     if (!startDialogSprint) return
     const id = startDialogSprint.id
     setSprintAction(id)
-    const res = await fetch(`/api/data/sprints/${id}/start`, { method: "POST" })
+    const durationWeeks = startDuration === "custom" ? 2 : Number(startDuration)
+    const res = await fetch(`/api/data/sprints/${id}/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: startName, goal: startGoal, durationWeeks }),
+    })
     if (res.ok) {
-      setSprints((prev) => prev.map((s) => s.id === id ? { ...s, state: "active" as const, name: startName || s.name, goal: startGoal } : s))
+      const updated = await res.json()
+      setSprints((prev) => prev.map((s) => s.id === id ? updated : s))
     }
     setSprintAction(null)
     setStartDialogSprint(null)
@@ -153,6 +159,9 @@ export default function BacklogPage() {
     const res = await fetch(`/api/data/sprints/${id}/complete`, { method: "POST" })
     if (res.ok) {
       setSprints((prev) => prev.map((s) => s.id === id ? { ...s, state: "closed" as const } : s))
+      // Incomplete issues were moved to backlog on the server — re-fetch issues
+      const updatedIssues = await fetch("/api/data/issues").then((r) => r.json())
+      setIssues(updatedIssues)
     }
     setSprintAction(null)
     setCompleteDialogSprint(null)

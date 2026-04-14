@@ -28,7 +28,7 @@ const resourceLinks = [
   { label: "Atlassian Community", href: "/teams" },
   { label: "Knowledge base", href: "/products" },
   { label: "Marketplace", href: "/home/apps" },
-  { label: "My account", href: "/admin/settings/profile" },
+  { label: "My account", href: "/home/account-settings" },
 ]
 
 const learnLinks = [
