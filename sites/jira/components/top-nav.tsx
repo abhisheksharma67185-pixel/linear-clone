@@ -111,7 +111,7 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
       {/* Search icon — click to open dialog */}
       <button
         onClick={() => setDialogOpen(true)}
-        className="flex size-8 items-center justify-center rounded-md text-[#9FADBC] hover:text-white hover:bg-white/10 transition-colors"
+        className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         title="Search (press /)"
       >
         <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -1328,7 +1328,7 @@ function AppSwitcherIcon() {
   const [open, setOpen] = useState(false)
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)} className="flex size-8 items-center justify-center rounded-md text-[#9FADBC] hover:text-white hover:bg-white/10 transition-colors">
+      <button onClick={() => setOpen(!open)} className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
         <svg className="size-5" viewBox="0 0 24 24" fill="currentColor">
           <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
         </svg>
@@ -1365,7 +1365,7 @@ function ThreeDotsMenu() {
   const router = useRouter()
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)} className="flex size-8 items-center justify-center rounded-md border border-[#3B4046] text-[#9FADBC] hover:text-white hover:bg-white/10 transition-colors">
+      <button onClick={() => setOpen(!open)} className="flex size-8 items-center justify-center rounded-md border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
         <svg className="size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
       </button>
       {open && (
@@ -1404,27 +1404,27 @@ export function TopNav() {
   const isBlue = false
 
   return (
-    <header className="flex h-12 items-center justify-between px-3 bg-[#1D2125] dark:bg-[#1D2125] overflow-hidden">
+    <header className="flex h-12 items-center justify-between px-3 border-b bg-background overflow-hidden">
       {/* Left */}
       <div className="flex items-center gap-1.5 min-w-0">
         {/* Sidebar collapse/expand toggle */}
-        <SidebarTrigger className="size-8 rounded-md text-[#9FADBC] hover:text-white hover:bg-white/10" />
+        <SidebarTrigger className="size-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" />
 
         {/* App switcher grid */}
         <AppSwitcherIcon />
 
         {/* Jira logo — diamond only, no text */}
-        <Link href="/projects" className="flex items-center shrink-0 rounded-md p-1.5 hover:bg-white/10 transition-colors">
+        <Link href="/projects" className="flex items-center shrink-0 rounded-md p-1.5 hover:bg-accent transition-colors">
           <svg className="size-6" viewBox="0 0 32 32" fill="none">
-            <path d="M27.55 15.1L17.29 4.47 16 3.13 6.45 13.01l-2.14 2.2a.73.73 0 000 1.02l6.97 7.17L16 28.87l5.35-5.5.39-.4 5.81-5.98a.73.73 0 000-1.02zM16 20.28l-4.07-4.18L16 11.92l4.07 4.18L16 20.28z" fill="#579DFF"/>
+            <path d="M27.55 15.1L17.29 4.47 16 3.13 6.45 13.01l-2.14 2.2a.73.73 0 000 1.02l6.97 7.17L16 28.87l5.35-5.5.39-.4 5.81-5.98a.73.73 0 000-1.02zM16 20.28l-4.07-4.18L16 11.92l4.07 4.18L16 20.28z" fill="#2684FF"/>
             <defs>
               <linearGradient id="jira-grad-1" x1="20.87" y1="4.58" x2="12.19" y2="13.7">
-                <stop offset="0.18" stopColor="#1D2125" stopOpacity="0" />
-                <stop offset="1" stopColor="#579DFF" />
+                <stop offset="0.18" stopColor="#DEEBFF" stopOpacity="1" />
+                <stop offset="1" stopColor="#2684FF" />
               </linearGradient>
               <linearGradient id="jira-grad-2" x1="11.28" y1="27.56" x2="19.96" y2="18.44">
-                <stop offset="0.18" stopColor="#1D2125" stopOpacity="0" />
-                <stop offset="1" stopColor="#579DFF" />
+                <stop offset="0.18" stopColor="#DEEBFF" stopOpacity="1" />
+                <stop offset="1" stopColor="#2684FF" />
               </linearGradient>
             </defs>
             <path d="M16 11.92a6.03 6.03 0 01-.04-8.46l-9.51 9.78 6.52 6.7L16 16.1l-.04-4.18z" fill="url(#jira-grad-1)"/>
@@ -1441,7 +1441,7 @@ export function TopNav() {
         {/* Create Issue */}
         <CreateIssueDialog isBlue={isBlue} />
 
-        {/* Three-dot menu — notifications, help, settings, profile inside */}
+        {/* Three-dot menu */}
         <ThreeDotsMenu />
       </div>
     </header>
