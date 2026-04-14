@@ -108,7 +108,7 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
 
   return (
     <>
-      {/* Search icon — click to open dialog */}
+      {/* Search icon — click to open dropdown */}
       <button
         onClick={() => setDialogOpen(true)}
         className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
@@ -119,13 +119,12 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
         </svg>
       </button>
 
-      {/* Search modal — manual overlay for reliability */}
+      {/* Search dropdown — inline from top like real Jira */}
       {dialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]" onClick={() => { setDialogOpen(false); setQuery(""); setResults(null) }}>
-          <div className="fixed inset-0 bg-black/50" />
-          <div className="relative z-10 w-full max-w-[560px] rounded-lg border bg-popover shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50" onClick={() => { setDialogOpen(false); setQuery(""); setResults(null) }}>
+          <div className="fixed left-0 right-0 top-0 z-10 bg-background border-b shadow-lg" onClick={(e) => e.stopPropagation()}>
           {/* Search input */}
-          <div className="flex items-center gap-3 border-b px-4 py-3">
+          <div className="flex items-center gap-3 px-4 py-2.5 max-w-2xl">
             <svg className="size-5 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
@@ -137,28 +136,32 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
                 if (e.key === "Escape") { setDialogOpen(false); setQuery(""); setResults(null) }
                 if (e.key === "Enter" && query.trim()) go(`/search?q=${encodeURIComponent(query.trim())}`)
               }}
-              placeholder="Search issues, projects, people..."
+              placeholder="Search Jira"
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
             {loading && (
               <div className="size-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
             )}
-            <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">Esc</kbd>
           </div>
 
           {/* Results area */}
-          <div className="max-h-[400px] overflow-y-auto">
-            {/* No query — show recent issues */}
+          <div className="max-h-[400px] overflow-y-auto border-t max-w-2xl">
+            {/* Breadcrumb */}
+            <div className="px-4 py-2 text-xs text-muted-foreground">
+              Jira &gt; Home
+            </div>
+
+            {/* No query — show recent items like real Jira */}
             {!query.trim() && (
               <div>
-                <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Recent issues
+                <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Recently viewed
                 </div>
-                {recentIssues.map((issue) => (
+                {recentIssues.slice(0, 3).map((issue) => (
                   <button
                     key={issue.id}
                     onClick={() => go(`/issue/${issue.key}`)}
-                    className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors"
+                    className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors"
                   >
                     <div className={`flex size-5 shrink-0 items-center justify-center rounded-sm ${
                       issue.type === "bug" ? "bg-red-500" : issue.type === "story" ? "bg-green-500" : "bg-blue-500"
@@ -168,14 +171,52 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className="text-sm truncate block">{issue.summary}</span>
-                      <span className="text-xs text-muted-foreground">{issue.key}</span>
+                      <span className="text-sm">{issue.key} {issue.summary}</span>
+                      <p className="text-xs text-muted-foreground">Task · Recently visited</p>
                     </div>
                   </button>
                 ))}
-                {recentIssues.length === 0 && (
-                  <div className="px-4 py-6 text-center text-sm text-muted-foreground">No recent issues</div>
-                )}
+
+                <div className="px-4 py-1.5 mt-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Recent boards, projects, filters and plans
+                </div>
+                <button onClick={() => go("/projects/SCRUM/board")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                  <div className="flex size-5 shrink-0 items-center justify-center rounded-sm bg-blue-100 dark:bg-blue-900/30">
+                    <svg className="size-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm">SCRUM board</span>
+                    <p className="text-xs text-muted-foreground">Board · My Scrum Project</p>
+                  </div>
+                </button>
+                <button onClick={() => go("/projects/SCRUM/board")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                  <div className="flex size-5 shrink-0 items-center justify-center rounded-sm bg-blue-100 dark:bg-blue-900/30">
+                    <svg className="size-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm">My Team (SCRUM)</span>
+                    <p className="text-xs text-muted-foreground">Team-managed software project</p>
+                  </div>
+                </button>
+
+                {/* Go to all links */}
+                <div className="px-4 py-2 mt-1 text-xs text-muted-foreground">
+                  Go to all: {" "}
+                  <button onClick={() => go("/projects")} className="text-blue-600 hover:underline">Boards</button>
+                  <span className="mx-1">·</span>
+                  <button onClick={() => go("/projects")} className="text-blue-600 hover:underline">Projects</button>
+                  <span className="mx-1">·</span>
+                  <button onClick={() => go("/filters")} className="text-blue-600 hover:underline">Filters</button>
+                  <span className="mx-1">·</span>
+                  <button onClick={() => go("/teams/people")} className="text-blue-600 hover:underline">People</button>
+                </div>
+
+                {/* View all work items */}
+                <div className="border-t px-4 py-2.5">
+                  <button onClick={() => go("/filters/all-work-items")} className="text-sm text-blue-600 hover:underline">
+                    View all work items
+                  </button>
+                </div>
               </div>
             )}
 
@@ -265,16 +306,6 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
             )}
           </div>
 
-          {/* Footer */}
-          <div className="border-t px-4 py-2 flex items-center justify-between text-xs text-muted-foreground">
-            <span>
-              <kbd className="rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">↑↓</kbd> to navigate
-              <kbd className="ml-2 rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">↵</kbd> to open
-            </span>
-            <span>
-              <kbd className="rounded border bg-muted px-1 py-0.5 text-[10px] font-mono">/</kbd> to search
-            </span>
-          </div>
           </div>
         </div>
       )}
