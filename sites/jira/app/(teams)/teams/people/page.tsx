@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -12,19 +12,174 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 
-const filterDefs = [
-  { key: "project", label: "Filter by Project", activeLabel: "Project is", placeholder: "Choose a project", icon: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></>, options: [] as string[] },
-  { key: "goal", label: "Goal", activeLabel: "Goal is", placeholder: "Choose a goal", icon: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></>, options: [] as string[] },
-  { key: "team", label: "Team", activeLabel: "Team is", placeholder: "Choose a team", icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>, options: [] as string[] },
-  { key: "jobtitle", label: "Job title", activeLabel: "Job title is", placeholder: "Choose a job title", icon: <><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></>, options: [] as string[] },
-  { key: "manager", label: "Manager", activeLabel: "Manager is", placeholder: "Choose a manager", icon: <><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></>, options: ["Abhishek Sharma"] },
-  { key: "department", label: "Department", activeLabel: "Department is", placeholder: "Choose a department", icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>, options: [] as string[] },
-  { key: "location", label: "Location", activeLabel: "Location is", placeholder: "Choose a location", icon: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></>, options: [] as string[] },
+// ─── People data ─────────────────────────────────────────────────────────────
+
+interface Person {
+  name: string
+  initials: string
+  jobTitle: string
+  manager: string
+  department: string
+  location: string
+  teams: string[]
+  projects: string[]
+  goals: string[]
+}
+
+const initialPeople: Person[] = [
+  { name: "Abhishek Sharma", initials: "AS", jobTitle: "Engineering Manager", manager: "", department: "Engineering", location: "Bangalore, India", teams: ["Platform", "Infrastructure"], projects: ["My Scrum Project", "Kanban Project"], goals: ["Ship v2.0", "Improve reliability"] },
+  { name: "Sam Williams", initials: "SW", jobTitle: "Senior Developer", manager: "Abhishek Sharma", department: "Engineering", location: "San Francisco, USA", teams: ["Platform"], projects: ["My Scrum Project"], goals: ["Ship v2.0"] },
+  { name: "Priya Patel", initials: "PP", jobTitle: "Product Designer", manager: "Abhishek Sharma", department: "Design", location: "Bangalore, India", teams: ["Design System"], projects: ["My Scrum Project", "Kanban Project"], goals: ["Design system v3"] },
+  { name: "Alex Chen", initials: "AC", jobTitle: "Frontend Developer", manager: "Sam Williams", department: "Engineering", location: "Toronto, Canada", teams: ["Platform", "Design System"], projects: ["Kanban Project"], goals: ["Ship v2.0"] },
+  { name: "Maria Garcia", initials: "MG", jobTitle: "Backend Developer", manager: "Abhishek Sharma", department: "Engineering", location: "Madrid, Spain", teams: ["Infrastructure"], projects: ["My Scrum Project"], goals: ["Improve reliability"] },
+  { name: "James Wilson", initials: "JW", jobTitle: "QA Engineer", manager: "Sam Williams", department: "Quality", location: "London, UK", teams: ["Platform"], projects: ["My Scrum Project", "Kanban Project"], goals: ["Ship v2.0"] },
+  { name: "Riya Gupta", initials: "RG", jobTitle: "Data Analyst", manager: "Abhishek Sharma", department: "Analytics", location: "Bangalore, India", teams: ["Analytics"], projects: ["Kanban Project"], goals: ["Data-driven decisions"] },
+  { name: "Tom Baker", initials: "TB", jobTitle: "DevOps Engineer", manager: "Sam Williams", department: "Engineering", location: "Sydney, Australia", teams: ["Infrastructure"], projects: ["My Scrum Project"], goals: ["Improve reliability"] },
+  { name: "Emily Davis", initials: "ED", jobTitle: "Product Manager", manager: "", department: "Product", location: "New York, USA", teams: ["Platform", "Analytics"], projects: ["My Scrum Project", "Kanban Project"], goals: ["Ship v2.0", "Data-driven decisions"] },
+  { name: "Raj Mehta", initials: "RM", jobTitle: "Senior Developer", manager: "Abhishek Sharma", department: "Engineering", location: "Mumbai, India", teams: ["Infrastructure", "Platform"], projects: ["My Scrum Project"], goals: ["Ship v2.0", "Improve reliability"] },
+  { name: "Sophie Turner", initials: "ST", jobTitle: "UX Researcher", manager: "Emily Davis", department: "Design", location: "London, UK", teams: ["Design System"], projects: ["Kanban Project"], goals: ["Design system v3"] },
+  { name: "Kevin Park", initials: "KP", jobTitle: "Full Stack Developer", manager: "Sam Williams", department: "Engineering", location: "Seoul, South Korea", teams: ["Platform"], projects: ["My Scrum Project", "Kanban Project"], goals: ["Ship v2.0"] },
 ]
 
-const initialPeople = [
-  { name: "Abhishek Sharma", initials: "AS", jobTitle: "", manager: "", department: "" },
+// ─── Filter definitions ──────────────────────────────────────────────────────
+
+function deriveOptions(people: Person[], field: keyof Person): string[] {
+  const set = new Set<string>()
+  for (const p of people) {
+    const val = p[field]
+    if (Array.isArray(val)) val.forEach((v) => { if (v) set.add(v) })
+    else if (val) set.add(val)
+  }
+  return [...set].sort()
+}
+
+interface FilterDef {
+  key: string
+  field: keyof Person
+  label: string
+  activeLabel: string
+  placeholder: string
+  icon: React.ReactNode
+}
+
+const filterDefs: FilterDef[] = [
+  { key: "project", field: "projects", label: "Filter by Project", activeLabel: "Project", placeholder: "Search projects...", icon: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></> },
+  { key: "goal", field: "goals", label: "Goal", activeLabel: "Goal", placeholder: "Search goals...", icon: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></> },
+  { key: "team", field: "teams", label: "Team", activeLabel: "Team", placeholder: "Search teams...", icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
+  { key: "jobtitle", field: "jobTitle", label: "Job title", activeLabel: "Job title", placeholder: "Search job titles...", icon: <><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></> },
+  { key: "manager", field: "manager", label: "Manager", activeLabel: "Manager", placeholder: "Search managers...", icon: <><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></> },
+  { key: "department", field: "department", label: "Department", activeLabel: "Department", placeholder: "Search departments...", icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
+  { key: "location", field: "location", label: "Location", activeLabel: "Location", placeholder: "Search locations...", icon: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></> },
 ]
+
+// ─── Filter dropdown component ───────────────────────────────────────────────
+
+function FilterDropdown({
+  def,
+  options,
+  selectedValues,
+  onToggleValue,
+  onRemoveFilter,
+}: {
+  def: FilterDef
+  options: string[]
+  selectedValues: Set<string>
+  onToggleValue: (key: string, value: string) => void
+  onRemoveFilter: (key: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false)
+        setSearch("")
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [open])
+
+  const hasSelection = selectedValues.size > 0
+  const filteredOptions = options.filter((o) => o.toLowerCase().includes(search.toLowerCase()))
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+          hasSelection
+            ? "border-blue-600 bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-500"
+            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+        }`}
+      >
+        <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
+        {hasSelection ? (
+          <>
+            {def.activeLabel}: {[...selectedValues].join(", ")}
+            <button
+              onClick={(e) => { e.stopPropagation(); onRemoveFilter(def.key) }}
+              className="ml-0.5 rounded-full p-0.5 hover:bg-blue-200 dark:hover:bg-blue-800"
+            >
+              <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            </button>
+          </>
+        ) : (
+          def.label
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border bg-popover shadow-lg">
+          <div className="flex items-center border-b px-3 py-2">
+            <svg className="size-4 text-muted-foreground mr-2 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={def.placeholder}
+              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              autoFocus
+            />
+          </div>
+          <div className="max-h-56 overflow-y-auto py-1">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => {
+                const isSelected = selectedValues.has(opt)
+                return (
+                  <button
+                    key={opt}
+                    onClick={() => onToggleValue(def.key, opt)}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
+                  >
+                    <div className={`flex size-4 shrink-0 items-center justify-center rounded border transition-colors ${isSelected ? "border-blue-600 bg-blue-600" : "border-muted-foreground/40"}`}>
+                      {isSelected && (
+                        <svg className="size-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                      )}
+                    </div>
+                    <span className={isSelected ? "font-medium" : ""}>{opt}</span>
+                  </button>
+                )
+              })
+            ) : (
+              <p className="px-3 py-4 text-center text-sm text-muted-foreground">No results found</p>
+            )}
+          </div>
+          {selectedValues.size > 0 && (
+            <div className="border-t px-3 py-2">
+              <button onClick={() => onRemoveFilter(def.key)} className="text-xs text-blue-600 hover:underline">
+                Clear selection
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Add People Dialog ───────────────────────────────────────────────────────
 
 function AddPeopleDialog({ open, onClose, onAdd }: { open: boolean; onClose: () => void; onAdd: (name: string) => void }) {
   const [input, setInput] = useState("")
@@ -77,6 +232,8 @@ function AddPeopleDialog({ open, onClose, onAdd }: { open: boolean; onClose: () 
   )
 }
 
+// ─── Main Page ───────────────────────────────────────────────────────────────
+
 export default function PeoplePage() {
   const [search, setSearch] = useState("")
   const [view, setView] = useState<"grid" | "list">("grid")
@@ -84,14 +241,37 @@ export default function PeoplePage() {
   const [copied, setCopied] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
   const [people, setPeople] = useState(initialPeople)
-  const [activeFilter, setActiveFilter] = useState<string | null>(null)
-  const [filterSearch, setFilterSearch] = useState("")
   const [columnsOpen, setColumnsOpen] = useState(false)
   const [colSearch, setColSearch] = useState("")
   const [wrapText, setWrapText] = useState(false)
   const [visibleCols, setVisibleCols] = useState<Record<string, boolean>>({
     name: true, jobTitle: true, manager: true, department: true, location: false, teams: false,
   })
+
+  // Multi-filter state: { filterKey -> Set of selected values }
+  const [activeFilters, setActiveFilters] = useState<Record<string, Set<string>>>({})
+
+  const toggleFilterValue = (key: string, value: string) => {
+    setActiveFilters((prev) => {
+      const next = { ...prev }
+      const set = new Set(next[key] ?? [])
+      if (set.has(value)) set.delete(value)
+      else set.add(value)
+      if (set.size === 0) delete next[key]
+      else next[key] = set
+      return next
+    })
+  }
+
+  const removeFilter = (key: string) => {
+    setActiveFilters((prev) => {
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+  }
+
+  const clearAllFilters = () => setActiveFilters({})
 
   const toggleCol = (key: string) => {
     if (key === "name") return
@@ -109,12 +289,27 @@ export default function PeoplePage() {
 
   const addPerson = (name: string) => {
     const initials = name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
-    setPeople((prev) => [...prev, { name, initials, jobTitle: "", manager: "", department: "" }])
+    setPeople((prev) => [...prev, { name, initials, jobTitle: "", manager: "", department: "", location: "", teams: [], projects: [], goals: [] }])
   }
 
-  const filtered = people.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()),
-  )
+  // Apply search + all active filters
+  const filtered = people.filter((p) => {
+    if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
+    for (const [key, values] of Object.entries(activeFilters)) {
+      if (values.size === 0) continue
+      const def = filterDefs.find((f) => f.key === key)
+      if (!def) continue
+      const personVal = p[def.field]
+      if (Array.isArray(personVal)) {
+        if (!personVal.some((v) => values.has(v))) return false
+      } else {
+        if (!values.has(personVal as string)) return false
+      }
+    }
+    return true
+  })
+
+  const activeFilterCount = Object.keys(activeFilters).length
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href).catch(() => {})
@@ -123,7 +318,9 @@ export default function PeoplePage() {
   }
 
   const handleExportCSV = () => {
-    const csv = "Name,Job title,Manager,Department\n" + filtered.map((p) => `${p.name},${p.jobTitle},${p.manager},${p.department}`).join("\n")
+    const csv = "Name,Job title,Manager,Department,Location,Teams\n" + filtered.map((p) =>
+      `"${p.name}","${p.jobTitle}","${p.manager}","${p.department}","${p.location}","${p.teams.join("; ")}"`
+    ).join("\n")
     const blob = new Blob([csv], { type: "text/csv" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -132,6 +329,12 @@ export default function PeoplePage() {
     a.click()
     URL.revokeObjectURL(url)
     setMenuOpen(false)
+  }
+
+  // Derive options from current people data
+  const optionsMap: Record<string, string[]> = {}
+  for (const def of filterDefs) {
+    optionsMap[def.key] = deriveOptions(people, def.field)
   }
 
   return (
@@ -152,66 +355,34 @@ export default function PeoplePage() {
         <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search people" className="pl-9" />
       </div>
 
-      {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-2">
-        {activeFilter ? (
-          (() => {
-            const def = filterDefs.find((f) => f.key === activeFilter)!
-            const filteredOptions = def.options.filter((o) => o.toLowerCase().includes(filterSearch.toLowerCase()))
-            return (
-              <div className="relative">
-                <button
-                  onClick={() => { setActiveFilter(null); setFilterSearch("") }}
-                  className="flex items-center gap-1.5 rounded-full border-2 border-blue-600 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-                >
-                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
-                  {def.activeLabel}
-                  <svg className="size-3.5 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                </button>
-                <div className="absolute left-0 top-full z-10 mt-1 w-60 rounded-lg border bg-popover shadow-lg">
-                  <div className="flex items-center border-b px-3 py-2">
-                    <input
-                      value={filterSearch}
-                      onChange={(e) => setFilterSearch(e.target.value)}
-                      placeholder={def.placeholder}
-                      className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                      autoFocus
-                    />
-                    <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                  </div>
-                  <div className="max-h-48 overflow-y-auto py-1">
-                    {filteredOptions.length > 0 ? (
-                      filteredOptions.map((opt) => (
-                        <button key={opt} onClick={() => { setActiveFilter(null); setFilterSearch("") }} className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent transition-colors">
-                          <Avatar className="size-5"><AvatarFallback className="bg-blue-600 text-[8px] font-semibold text-white">{opt.split(" ").map((w) => w[0]).join("").slice(0, 2)}</AvatarFallback></Avatar>
-                          {opt}
-                        </button>
-                      ))
-                    ) : (
-                      <p className="px-3 py-3 text-center text-sm text-muted-foreground">No options</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )
-          })()
-        ) : (
-          filterDefs.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => { setActiveFilter(f.key); setFilterSearch("") }}
-              className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            >
-              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{f.icon}</svg>
-              {f.label}
-            </button>
-          ))
+      {/* Filters — all shown at once, each independently toggleable */}
+      <div className="mb-6 flex flex-wrap items-center gap-2">
+        {filterDefs.map((def) => (
+          <FilterDropdown
+            key={def.key}
+            def={def}
+            options={optionsMap[def.key]}
+            selectedValues={activeFilters[def.key] ?? new Set()}
+            onToggleValue={toggleFilterValue}
+            onRemoveFilter={removeFilter}
+          />
+        ))}
+        {activeFilterCount > 0 && (
+          <button
+            onClick={clearAllFilters}
+            className="text-xs text-blue-600 hover:underline ml-1"
+          >
+            Clear all
+          </button>
         )}
       </div>
 
       {/* Results header */}
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm font-medium">{filtered.length} people</p>
+        <p className="text-sm font-medium">
+          {filtered.length} {filtered.length === 1 ? "person" : "people"}
+          {activeFilterCount > 0 && <span className="text-muted-foreground font-normal"> (filtered)</span>}
+        </p>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setView("grid")}
@@ -315,15 +486,28 @@ export default function PeoplePage() {
 
       {/* Content */}
       {view === "grid" ? (
-        <div className="grid grid-cols-3 gap-3">
-          {filtered.map((person) => (
-            <div key={person.name} className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-accent/50 cursor-pointer">
-              <Avatar className="size-14 rounded-md">
-                <AvatarFallback className="rounded-md bg-blue-600 text-lg font-semibold text-white">{person.initials}</AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium">{person.name}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {filtered.length > 0 ? (
+            filtered.map((person) => (
+              <div key={person.name} className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-accent/50 cursor-pointer">
+                <Avatar className="size-14 rounded-md">
+                  <AvatarFallback className="rounded-md bg-blue-600 text-lg font-semibold text-white">{person.initials}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{person.name}</p>
+                  {person.jobTitle && <p className="text-xs text-muted-foreground truncate">{person.jobTitle}</p>}
+                  {person.department && <p className="text-xs text-muted-foreground truncate">{person.department}</p>}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full py-12 text-center">
+              <p className="text-sm text-muted-foreground">No people match the current filters.</p>
+              {activeFilterCount > 0 && (
+                <button onClick={clearAllFilters} className="mt-2 text-sm text-blue-600 hover:underline">Clear all filters</button>
+              )}
             </div>
-          ))}
+          )}
         </div>
       ) : (
         <div className="rounded-lg border overflow-x-auto">
@@ -339,23 +523,34 @@ export default function PeoplePage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((person) => (
-                <tr key={person.name} className="border-b last:border-b-0 hover:bg-accent/50 cursor-pointer transition-colors">
-                  {visibleCols.name && (
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="size-6"><AvatarFallback className="bg-blue-600 text-[9px] font-semibold text-white">{person.initials}</AvatarFallback></Avatar>
-                        <span className={`text-sm ${wrapText ? "" : "truncate max-w-[200px]"}`}>{person.name}</span>
-                      </div>
-                    </td>
-                  )}
-                  {visibleCols.jobTitle && <td className={`px-4 py-3 text-sm text-muted-foreground ${wrapText ? "" : "truncate max-w-[150px]"}`}>{person.jobTitle || "—"}</td>}
-                  {visibleCols.manager && <td className={`px-4 py-3 text-sm text-muted-foreground ${wrapText ? "" : "truncate max-w-[150px]"}`}>{person.manager || "—"}</td>}
-                  {visibleCols.department && <td className={`px-4 py-3 text-sm text-muted-foreground ${wrapText ? "" : "truncate max-w-[150px]"}`}>{person.department || "—"}</td>}
-                  {visibleCols.location && <td className={`px-4 py-3 text-sm text-muted-foreground ${wrapText ? "" : "truncate max-w-[150px]"}`}>—</td>}
-                  {visibleCols.teams && <td className={`px-4 py-3 text-sm text-muted-foreground ${wrapText ? "" : "truncate max-w-[150px]"}`}>—</td>}
+              {filtered.length > 0 ? (
+                filtered.map((person) => (
+                  <tr key={person.name} className="border-b last:border-b-0 hover:bg-accent/50 cursor-pointer transition-colors">
+                    {visibleCols.name && (
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="size-6"><AvatarFallback className="bg-blue-600 text-[9px] font-semibold text-white">{person.initials}</AvatarFallback></Avatar>
+                          <span className={`text-sm ${wrapText ? "" : "truncate max-w-[200px]"}`}>{person.name}</span>
+                        </div>
+                      </td>
+                    )}
+                    {visibleCols.jobTitle && <td className={`px-4 py-3 text-sm text-muted-foreground ${wrapText ? "" : "truncate max-w-[150px]"}`}>{person.jobTitle || "—"}</td>}
+                    {visibleCols.manager && <td className={`px-4 py-3 text-sm text-muted-foreground ${wrapText ? "" : "truncate max-w-[150px]"}`}>{person.manager || "—"}</td>}
+                    {visibleCols.department && <td className={`px-4 py-3 text-sm text-muted-foreground ${wrapText ? "" : "truncate max-w-[150px]"}`}>{person.department || "—"}</td>}
+                    {visibleCols.location && <td className={`px-4 py-3 text-sm text-muted-foreground ${wrapText ? "" : "truncate max-w-[150px]"}`}>{person.location || "—"}</td>}
+                    {visibleCols.teams && <td className={`px-4 py-3 text-sm text-muted-foreground ${wrapText ? "" : "truncate max-w-[150px]"}`}>{person.teams.length > 0 ? person.teams.join(", ") : "—"}</td>}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                    No people match the current filters.
+                    {activeFilterCount > 0 && (
+                      <button onClick={clearAllFilters} className="ml-1 text-blue-600 hover:underline">Clear all filters</button>
+                    )}
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

@@ -714,14 +714,15 @@ function CreateDropdown() {
     if (!name.trim()) return
     setSaving(true)
     if (createType === "goal") {
-      // Persist goal as a plan (goals share the plans API in this sim)
-      await fetch("/api/data/plans", {
+      const ownerMap: Record<string, string> = { "Abhishek Sharma": "usr-1", "Sam Williams": "usr-2", "Jordan Lee": "usr-3", "Taylor Brown": "usr-4" }
+      await fetch("/api/data/goals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
-          access: "open",
-          workSources: [{ type: "space", name: goalTeam }],
+          owner: ownerMap[selectedOwner] ?? "usr-1",
+          team: goalTeam,
+          targetDate: targetDate || "",
         }),
       })
       setSaving(false); setCreateType(null); setName(""); setGoalDescription(""); setGoalTeam("Engineering"); setSelectedOwner("Abhishek Sharma"); setTargetDate("")

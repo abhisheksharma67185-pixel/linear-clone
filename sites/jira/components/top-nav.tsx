@@ -845,9 +845,9 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
       setUsers(u)
       setSprints(s)
       setEpics(e)
-      if (p.length > 0 && !projectId) setProjectId(p[0].id)
+      if (p.length > 0) setProjectId((prev) => prev || p[0].id)
     })
-  }, [open, projectId])
+  }, [open])
 
   const resetForm = () => {
     setSummary("")
@@ -925,7 +925,7 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
             {/* Project */}
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Project <span className="text-red-500">*</span></Label>
-              <Select value={projectId} onValueChange={(v) => v && setProjectId(v)}>
+              <Select value={projectId || undefined} onValueChange={(v) => v && setProjectId(v)}>
                 <SelectTrigger>
                   {(() => { const p = projects.find((p) => p.id === projectId); return p ? <span className="truncate">{p.name} ({p.key})</span> : <span className="text-muted-foreground">Select project</span> })()}
                 </SelectTrigger>
@@ -1054,12 +1054,12 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">Sprint</Label>
-                <Select value={sprintId || undefined} onValueChange={(v) => setSprintId(v ?? "")}>
+                <Select value={sprintId || "__none__"} onValueChange={(v) => setSprintId(v === "__none__" ? "" : v)}>
                   <SelectTrigger>
                     {(() => { const s = sprints.find((s) => s.id === sprintId); return s ? <span className="truncate">{s.name}</span> : <span className="text-muted-foreground">No sprint</span> })()}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="" label="No sprint">No sprint</SelectItem>
+                    <SelectItem value="__none__" label="No sprint">No sprint</SelectItem>
                     {sprints.filter((s) => s.state !== "closed").map((s) => (
                       <SelectItem key={s.id} value={s.id} label={s.name}>{s.name}</SelectItem>
                     ))}
@@ -1068,12 +1068,12 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">Epic</Label>
-                <Select value={epicId || undefined} onValueChange={(v) => setEpicId(v ?? "")}>
+                <Select value={epicId || "__none__"} onValueChange={(v) => setEpicId(v === "__none__" ? "" : v)}>
                   <SelectTrigger>
                     {(() => { const ep = epics.find((e) => e.id === epicId); return ep ? <span className="truncate">{ep.name}</span> : <span className="text-muted-foreground">No epic</span> })()}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="" label="No epic">No epic</SelectItem>
+                    <SelectItem value="__none__" label="No epic">No epic</SelectItem>
                     {epics.map((e) => (
                       <SelectItem key={e.id} value={e.id} label={e.name}>{e.name}</SelectItem>
                     ))}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
@@ -44,80 +44,16 @@ const owners = [
   { id: "1", name: "Abhishek Sharma", initials: "AS" },
 ]
 
-const mockGoals = [
-  {
-    id: 1,
-    name: "Increase platform uptime to 99.9%",
-    status: "ON TRACK",
-    progress: 72,
-    targetDate: "Jun 2026",
-    owner: { name: "Abhishek Sharma", initials: "AS" },
-    following: true,
-  },
-  {
-    id: 2,
-    name: "Reduce customer churn by 15%",
-    status: "AT RISK",
-    progress: 38,
-    targetDate: "Sep 2026",
-    owner: { name: "Sam Williams", initials: "SW" },
-    following: true,
-  },
-  {
-    id: 3,
-    name: "Launch mobile app v2.0",
-    status: "ON TRACK",
-    progress: 55,
-    targetDate: "Jul 2026",
-    owner: { name: "Jordan Lee", initials: "JL" },
-    following: false,
-  },
-  {
-    id: 4,
-    name: "Migrate infrastructure to Kubernetes",
-    status: "PENDING",
-    progress: 10,
-    targetDate: "Dec 2026",
-    owner: { name: "Taylor Brown", initials: "TB" },
-    following: false,
-  },
-  {
-    id: 5,
-    name: "Achieve SOC 2 Type II compliance",
-    status: "AT RISK",
-    progress: 45,
-    targetDate: "Aug 2026",
-    owner: { name: "Abhishek Sharma", initials: "AS" },
-    following: true,
-  },
-  {
-    id: 6,
-    name: "Grow monthly active users to 50K",
-    status: "OFF TRACK",
-    progress: 22,
-    targetDate: "Oct 2026",
-    owner: { name: "Sam Williams", initials: "SW" },
-    following: false,
-  },
-  {
-    id: 7,
-    name: "Reduce average API response time below 200ms",
-    status: "DONE",
-    progress: 100,
-    targetDate: "Apr 2026",
-    owner: { name: "Jordan Lee", initials: "JL" },
-    following: true,
-  },
-  {
-    id: 8,
-    name: "Ship redesigned onboarding flow",
-    status: "ON TRACK",
-    progress: 68,
-    targetDate: "May 2026",
-    owner: { name: "Taylor Brown", initials: "TB" },
-    following: true,
-  },
-]
+interface GoalRow {
+  id: string
+  name: string
+  status: string
+  progress: number
+  targetDate: string
+  owner: { name: string; initials: string }
+  team: string
+  following: boolean
+}
 
 type FilterType = "tag" | "status" | "owner" | "team" | "starred" | "metric" | "reporting" | null
 
@@ -253,7 +189,8 @@ function InlineFilterDropdown({ filter, onClose }: { filter: typeof filterConfig
 
 export default function GoalsPage() {
   const router = useRouter()
-  const [goals, setGoals] = useState(mockGoals)
+  const [goals, setGoals] = useState<GoalRow[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [createOpen, setCreateOpen] = useState(false)
   const [goalName, setGoalName] = useState("")
@@ -264,25 +201,59 @@ export default function GoalsPage() {
   const [toast, setToast] = useState<string | null>(null)
   const goalNameRef = useRef<HTMLInputElement>(null)
 
-  const handleCreateGoal = () => {
-    // Read from DOM directly — bypasses any React state issues
+  const fetchGoals = useCallback(() => {
+    fetch("/api/data/goals")
+      .then((r) => r.json())
+      .then((data) => {
+        const rows: GoalRow[] = data.map((g: Record<string, unknown>) => {
+          const ou = g.ownerUser as { displayName?: string; name?: string } | null
+          const ownerName = ou?.displayName ?? ou?.name ?? "Unknown"
+          return {
+            id: g.id as string,
+            name: g.name as string,
+            status: g.status as string,
+            progress: g.progress as number,
+            targetDate: (g.targetDate as string) || "No date",
+            owner: {
+              name: ownerName,
+              initials: ownerName.split(" ").map((n: string) => n[0]).join("").slice(0, 2),
+            },
+            team: (g.team as string) || "",
+            following: g.following as boolean,
+          }
+        })
+        setGoals(rows)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  useEffect(() => { fetchGoals() }, [fetchGoals])
+
+  const handleCreateGoal = async () => {
     const nameFromDOM = goalNameRef.current?.value?.trim() ?? ""
     const name = nameFromDOM || goalName.trim()
     if (!name) return
 
-    // 1. Add to state FIRST (synchronous, guaranteed)
-    const newGoal = {
-      id: goals.length + 1,
-      name,
-      status: "PENDING",
-      progress: 0,
-      targetDate: "TBD",
-      owner: { name: goalOwner, initials: goalOwner.split(" ").map((n) => n[0]).join("") },
-      following: true,
+    // Map owner name to user id
+    const ownerMap: Record<string, string> = {
+      "Abhishek Sharma": "usr-1",
+      "Sam Williams": "usr-2",
+      "Jordan Lee": "usr-3",
+      "Taylor Brown": "usr-4",
     }
-    setGoals((prev) => [...prev, newGoal])
 
-    // 2. Close modal + reset
+    const res = await fetch("/api/data/goals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        owner: ownerMap[goalOwner] ?? "usr-1",
+        team: goalTeam,
+      }),
+    }).catch(() => null)
+
+    // Close modal + reset
     setCreateOpen(false)
     setGoalName("")
     setGoalDesc("")
@@ -291,16 +262,12 @@ export default function GoalsPage() {
     setGoalOwner("Abhishek Sharma")
     if (goalNameRef.current) goalNameRef.current.value = ""
 
-    // 3. Show toast
+    // Show toast
     setToast("Goal created")
     setTimeout(() => setToast(null), 3000)
 
-    // 4. Persist to API (fire-and-forget)
-    fetch("/api/data/plans", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, access: "open", workSources: [{ type: "space", name: goalTeam }] }),
-    }).catch(() => {})
+    // Re-fetch goals to get the updated list with proper owner data
+    fetchGoals()
   }
   const [openFilter, setOpenFilter] = useState<FilterType>(null)
   const [activeFilters, setActiveFilters] = useState<{ type: string; label: string }[]>([])
@@ -351,6 +318,10 @@ export default function GoalsPage() {
     if (activeTab === "at-risk") return g.status === "AT RISK"
     return true
   })
+
+  if (loading) {
+    return <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">Loading goals...</div>
+  }
 
   return (
     <div className="p-6">
@@ -750,17 +721,17 @@ export default function GoalsPage() {
           <div className="flex rounded-md border">
             <button
               onClick={() => { setViewMode("list"); setSortBy("following") }}
-              className={`px-2 py-1 rounded-l-md transition-colors ${viewMode === "list" ? "bg-accent" : "text-muted-foreground hover:bg-accent"}`}
+              className={`px-2 py-1 rounded-l-md border-r transition-colors ${viewMode === "list" ? "bg-blue-50 dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent"}`}
               title="Display as list"
             >
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+              <svg className={`size-4 ${viewMode === "list" ? "text-blue-600" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="9" y1="6" x2="21" y2="6" /><line x1="9" y1="12" x2="21" y2="12" /><line x1="9" y1="18" x2="21" y2="18" /><circle cx="5" cy="6" r="1" fill="currentColor" /><circle cx="5" cy="12" r="1" fill="currentColor" /><circle cx="5" cy="18" r="1" fill="currentColor" /></svg>
             </button>
             <button
               onClick={() => { setViewMode("timeline"); setSortBy("name") }}
-              className={`px-2 py-1 rounded-r-md transition-colors ${viewMode === "timeline" ? "bg-accent" : "text-muted-foreground hover:bg-accent"}`}
+              className={`px-2 py-1 rounded-r-md transition-colors ${viewMode === "timeline" ? "bg-blue-50 dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent"}`}
               title="Display as timeline"
             >
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
+              <svg className={`size-4 ${viewMode === "timeline" ? "text-blue-600" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6" /><line x1="7" y1="12" x2="21" y2="12" /><line x1="11" y1="18" x2="21" y2="18" /></svg>
             </button>
           </div>
 
@@ -806,7 +777,7 @@ export default function GoalsPage() {
           <Popover open={showColumns} onOpenChange={(open) => { setShowColumns(open); if (!open) setColSearch("") }}>
             <PopoverTrigger render={
               <button className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm transition-colors ${showColumns ? "border-blue-500 text-blue-600" : "text-muted-foreground hover:bg-accent"}`}>
-                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="1" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /></svg>
                 Columns
               </button>
             } />
@@ -912,19 +883,17 @@ export default function GoalsPage() {
                 </svg>
                 <span className="text-sm truncate">{goal.name}</span>
               </Link>
-              {/* Status — clickable, stops propagation */}
-              <div onClick={(e) => e.stopPropagation()}>
-                <select
-                  value={goal.status}
-                  onChange={() => {}}
-                  className="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border-0 cursor-pointer"
-                >
-                  <option value="PENDING">Pending</option>
-                  <option value="ON TRACK">On Track</option>
-                  <option value="AT RISK">At Risk</option>
-                  <option value="OFF TRACK">Off Track</option>
-                  <option value="DONE">Done</option>
-                </select>
+              {/* Status badge */}
+              <div>
+                <span className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
+                  goal.status === "ON TRACK" ? "bg-green-400 text-white" :
+                  goal.status === "AT RISK" ? "bg-yellow-300 text-yellow-900" :
+                  goal.status === "OFF TRACK" ? "bg-red-400 text-white" :
+                  goal.status === "DONE" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                  "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                }`}>
+                  {goal.status}
+                </span>
               </div>
               {/* Progress */}
               <div className="flex items-center gap-2">
