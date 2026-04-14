@@ -1499,23 +1499,25 @@ export function TopNav() {
         {/* App switcher grid */}
         <AppSwitcherIcon />
 
-        {/* Jira logo — diamond only, no text */}
-        <Link href="/projects" className="flex items-center shrink-0 rounded-md p-1.5 hover:bg-accent transition-colors">
-          <svg className="size-6" viewBox="0 0 32 32" fill="none">
-            <path d="M27.55 15.1L17.29 4.47 16 3.13 6.45 13.01l-2.14 2.2a.73.73 0 000 1.02l6.97 7.17L16 28.87l5.35-5.5.39-.4 5.81-5.98a.73.73 0 000-1.02zM16 20.28l-4.07-4.18L16 11.92l4.07 4.18L16 20.28z" fill="#2684FF"/>
-            <defs>
-              <linearGradient id="jira-grad-1" x1="20.87" y1="4.58" x2="12.19" y2="13.7">
-                <stop offset="0.18" stopColor="#DEEBFF" stopOpacity="1" />
-                <stop offset="1" stopColor="#2684FF" />
-              </linearGradient>
-              <linearGradient id="jira-grad-2" x1="11.28" y1="27.56" x2="19.96" y2="18.44">
-                <stop offset="0.18" stopColor="#DEEBFF" stopOpacity="1" />
-                <stop offset="1" stopColor="#2684FF" />
-              </linearGradient>
-            </defs>
-            <path d="M16 11.92a6.03 6.03 0 01-.04-8.46l-9.51 9.78 6.52 6.7L16 16.1l-.04-4.18z" fill="url(#jira-grad-1)"/>
-            <path d="M20.11 16.06L16 20.28a6.03 6.03 0 01.04 8.46l9.51-9.78-5.44-2.9z" fill="url(#jira-grad-2)"/>
-          </svg>
+        {/* Jira logo — blue background app icon like real Jira */}
+        <Link href="/projects" className="flex items-center shrink-0 rounded-lg hover:opacity-90 transition-opacity">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-b from-[#357DE8] to-[#1D68D9]">
+            <svg className="size-5" viewBox="0 0 32 32" fill="none">
+              <path d="M27.55 15.1L17.29 4.47 16 3.13 6.45 13.01l-2.14 2.2a.73.73 0 000 1.02l6.97 7.17L16 28.87l5.35-5.5.39-.4 5.81-5.98a.73.73 0 000-1.02zM16 20.28l-4.07-4.18L16 11.92l4.07 4.18L16 20.28z" fill="white"/>
+              <defs>
+                <linearGradient id="jira-grad-1" x1="20.87" y1="4.58" x2="12.19" y2="13.7">
+                  <stop offset="0.18" stopColor="white" stopOpacity="0" />
+                  <stop offset="1" stopColor="white" stopOpacity="0.4" />
+                </linearGradient>
+                <linearGradient id="jira-grad-2" x1="11.28" y1="27.56" x2="19.96" y2="18.44">
+                  <stop offset="0.18" stopColor="white" stopOpacity="0" />
+                  <stop offset="1" stopColor="white" stopOpacity="0.4" />
+                </linearGradient>
+              </defs>
+              <path d="M16 11.92a6.03 6.03 0 01-.04-8.46l-9.51 9.78 6.52 6.7L16 16.1l-.04-4.18z" fill="url(#jira-grad-1)"/>
+              <path d="M20.11 16.06L16 20.28a6.03 6.03 0 01.04 8.46l9.51-9.78-5.44-2.9z" fill="url(#jira-grad-2)"/>
+            </svg>
+          </div>
         </Link>
 
         {/* Search icon */}
