@@ -16,7 +16,7 @@ export const viewTasks: TaskDefinition[] = [
     difficulty: "medium",
     curriculumStage: 5,
     title: "Create a custom view",
-    goal: "Create a custom view named 'High Priority Bugs' with filter query 'label = bug AND priority in (urgent, high)' in team Engineering (team-1).",
+    goal: "Create a custom view named 'High Priority Bugs' with filter query 'label = bug AND priority in (urgent, high)' in team Platform (team-1).",
     evalChecks: [
       {
         type: "state_diff",
@@ -39,7 +39,7 @@ export const viewTasks: TaskDefinition[] = [
     difficulty: "medium",
     curriculumStage: 5,
     title: "Create cycle progress view",
-    goal: "Create a custom view named 'Cycle Progress' with filter query 'cycle = activeCycle() AND status != done' owned by Sam Williams (usr-2) in team Engineering (team-1).",
+    goal: "Create a custom view named 'Cycle Progress' with filter query 'cycle = activeCycle() AND status != done' owned by Arjun Mehta (usr-2) in team Platform (team-1).",
     evalChecks: [
       {
         type: "state_diff",
@@ -62,7 +62,7 @@ export const viewTasks: TaskDefinition[] = [
     difficulty: "medium",
     curriculumStage: 5,
     title: "Create team workload view",
-    goal: "Create a custom view named 'Team Workload' with filter query 'assignee is NOT EMPTY ORDER BY assignee' in team Engineering (team-1).",
+    goal: "Create a custom view named 'Team Workload' with filter query 'assignee is NOT EMPTY ORDER BY assignee' in team Platform (team-1).",
     evalChecks: [
       {
         type: "state_diff",
@@ -71,6 +71,29 @@ export const viewTasks: TaskDefinition[] = [
         expected: "Team Workload",
         weight: 1.0,
         description: "View 'Team Workload' exists",
+      },
+    ],
+    maxSteps: 15,
+    rewardProfile: R5,
+    tags: ["create", "view"],
+  },
+  {
+    id: "linear-view-004",
+    site: "linear",
+    domain: "views",
+    type: "action",
+    difficulty: "medium",
+    curriculumStage: 5,
+    title: "Create customer-reported view",
+    goal: "Create a custom view named 'Customer Escalations' with filter query 'label = customer-reported AND status != done' in team Platform (team-1).",
+    evalChecks: [
+      {
+        type: "state_diff",
+        entity: "views",
+        field: "name",
+        expected: "Customer Escalations",
+        weight: 1.0,
+        description: "View 'Customer Escalations' exists",
       },
     ],
     maxSteps: 15,

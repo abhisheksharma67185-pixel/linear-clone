@@ -134,6 +134,8 @@ export function createIssue(fields: {
   projectId?: string;
   storyPoints?: number | null;
   labels?: string[];
+  componentIds?: string[];
+  fixVersionIds?: string[];
 }): Result<Issue> {
   if (!fields.summary || String(fields.summary).trim() === "") {
     return { success: false, error: "Summary is required" };
@@ -168,7 +170,7 @@ export function createIssue(fields: {
     summary: fields.summary.trim(),
     description: fields.description ?? "",
     type: fields.type ?? "task",
-    status: fields.status ?? "to_do",
+    status: fields.status ?? "Open",
     priority: fields.priority ?? "medium",
     assigneeId: fields.assigneeId ?? null,
     reporterId: fields.reporterId ?? "usr-1",
@@ -177,6 +179,8 @@ export function createIssue(fields: {
     projectId,
     storyPoints: fields.storyPoints ?? null,
     labels: fields.labels ?? [],
+    componentIds: fields.componentIds ?? [],
+    fixVersionIds: fields.fixVersionIds ?? [],
     createdAt: timestamp,
     updatedAt: timestamp,
   };
@@ -317,6 +321,8 @@ export function createProject(fields: {
     type: fields.type ?? "scrum",
     description: fields.description ?? "",
     createdAt: now(),
+    workflow: fields.type === "kanban" ? ["To Do", "In Progress", "Done"] : ["Open", "In Development", "Code Review", "QA", "Done"],
+    teamManaged: false,
   };
 
   _projects.push(project);
@@ -485,12 +491,15 @@ export function createEpic(fields: {
     return { success: false, error: `Invalid status: ${fields.status}` };
   }
 
+  const epicId = _nextEpicId++;
   const epic: Epic = {
-    id: `epic-${_nextEpicId++}`,
+    id: `epic-${epicId}`,
+    key: `${project.key}-E${epicId}`,
     name: fields.name.trim(),
     summary: fields.summary ?? "",
     projectId,
-    status: fields.status ?? "to_do",
+    status: fields.status ?? "Open",
+    fixVersionId: null,
   };
 
   _epics.push(epic);
@@ -582,6 +591,7 @@ export function createFilter(fields: {
     jql: fields.jql.trim(),
     owner: fields.owner ?? "usr-1",
     createdAt: now(),
+    sharedWith: "all",
   };
 
   _filters.push(filter);

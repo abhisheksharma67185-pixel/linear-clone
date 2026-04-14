@@ -82,14 +82,16 @@ let _issues: Issue[] = deepClone(initialIssues);
 let _labels: Label[] = deepClone(initialLabels);
 let _views: View[] = deepClone(initialViews);
 
-// Auto-increment counters per team key
-let _nextIssueCounters: Record<string, number> = { ENG: 19, DES: 8 };
-let _nextIssueId = 26;
-let _nextProjectId = 3;
-let _nextCycleId = 4;
-let _nextLabelId = 7;
-let _nextTeamId = 3;
-let _nextViewId = 4;
+// Auto-increment counters per team key. Start above spec-defined ranges so
+// newly-created issues don't collide with seed data.
+// Platform uses 3 discrete ranges (100s, 200s, 300s) — new issues go in 400s.
+let _nextIssueCounters: Record<string, number> = { PLT: 400, FE: 55, INF: 1, LEG: 86 };
+let _nextIssueId = 181;
+let _nextProjectId = 4;
+let _nextCycleId = 15;
+let _nextLabelId = 13;
+let _nextTeamId = 5;
+let _nextViewId = 5;
 
 // ---------------------------------------------------------------------------
 // Issues
@@ -452,6 +454,8 @@ export function createCycle(fields: {
     startDate: fields.startDate ?? today(),
     endDate: fields.endDate ?? "",
     state: "upcoming",
+    plannedPoints: 0,
+    completedPoints: 0,
   };
 
   _cycles.push(cycle);
@@ -554,6 +558,7 @@ export function createLabel(fields: {
     name: fields.name.trim(),
     color: fields.color.trim(),
     teamId,
+    group: "Type",
   };
 
   _labels.push(label);
