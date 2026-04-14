@@ -1336,20 +1336,75 @@ function AppSwitcherIcon() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-lg border bg-popover shadow-lg p-3">
-            <p className="text-xs font-medium text-muted-foreground mb-2 px-1">Switch to</p>
-            <div className="space-y-0.5">
+          <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-lg border bg-popover shadow-xl p-0">
+            {/* Main apps */}
+            <div className="p-3 space-y-0.5">
               {[
-                { name: "Home", href: "/home", color: "bg-blue-600", icon: <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg> },
+                { name: "Home", href: "/home", color: "bg-blue-600", icon: <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg> },
                 { name: "Jira", href: "/projects", color: "bg-gradient-to-br from-blue-500 to-blue-700", icon: <svg className="size-3.5 text-white" viewBox="0 0 32 32" fill="white"><path d="M27.545 15.2L16.8 4.454 16 3.654l-8.345 8.346-.855.854L4.454 15.2a1.547 1.547 0 000 2.189L12.2 25.135 16 28.935l8.345-8.346.354-.354 2.846-2.846a1.547 1.547 0 000-2.189zM16 20.6l-4.254-4.254L16 12.092l4.254 4.254L16 20.6z" /></svg> },
                 { name: "Goals", href: "/goals", color: "bg-purple-600", icon: <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg> },
-                { name: "Teams", href: "/teams", color: "bg-teal-600", icon: <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg> },
+                { name: "Projects", href: "/project-directory", color: "bg-green-600", icon: <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg> },
+                { name: "Teams", href: "/teams", color: "bg-teal-600", icon: <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
+                { name: "Administration", href: "/admin", color: "bg-gray-600", icon: <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9" /></svg> },
               ].map((app) => (
                 <Link key={app.name} href={app.href} onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent transition-colors">
                   <div className={`flex size-8 items-center justify-center rounded-md ${app.color}`}>{app.icon}</div>
                   <span className="text-sm font-medium">{app.name}</span>
                 </Link>
               ))}
+            </div>
+
+            {/* Recommended section */}
+            <div className="border-t px-3 py-3">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-2">Recommended for your team</p>
+              <div className="space-y-0.5">
+                <Link href="/apps" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent transition-colors">
+                  <div className="flex size-8 items-center justify-center rounded-md bg-orange-100 dark:bg-orange-900/30">
+                    <svg className="size-4 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-medium">1 collection, 4 tools</span>
+                      <span className="rounded bg-blue-100 px-1 py-0.5 text-[9px] font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">NEW</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">Run your whole team seamlessly</span>
+                  </div>
+                  <svg className="size-4 text-muted-foreground shrink-0" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
+                </Link>
+                <Link href="/apps" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent transition-colors">
+                  <div className="flex size-8 items-center justify-center rounded-md bg-purple-100 dark:bg-purple-900/30">
+                    <svg className="size-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium">Work requests</span>
+                    <p className="text-xs text-muted-foreground">Set up a place to manage requests</p>
+                  </div>
+                </Link>
+                <Link href="/plans" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent transition-colors">
+                  <div className="flex size-8 items-center justify-center rounded-md bg-green-100 dark:bg-green-900/30">
+                    <svg className="size-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium">Product roadmap</span>
+                    <p className="text-xs text-muted-foreground">Map out product with custom roadmaps</p>
+                  </div>
+                </Link>
+                <Link href="/apps" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-accent transition-colors">
+                  <div className="flex size-8 items-center justify-center rounded-md bg-blue-100 dark:bg-blue-900/30">
+                    <svg className="size-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium">More Atlassian apps</span>
+                  </div>
+                </Link>
+              </div>
+            </div>
+
+            {/* Manage list */}
+            <div className="border-t px-3 py-2">
+              <button onClick={() => setOpen(false)} className="w-full rounded-md px-2 py-2 text-left text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+                Manage list
+              </button>
             </div>
           </div>
         </>
