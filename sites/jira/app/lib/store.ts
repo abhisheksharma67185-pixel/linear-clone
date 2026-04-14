@@ -64,19 +64,19 @@ function today(): string {
 // Enum validators
 // ---------------------------------------------------------------------------
 
-const VALID_ISSUE_TYPE = new Set<string>(["story", "task", "bug", "subtask"]);
-const VALID_ISSUE_STATUS = new Set<string>(["to_do", "in_progress", "in_review", "done"]);
+const VALID_ISSUE_TYPE = new Set<string>(["story", "task", "bug", "subtask", "epic"]);
 const VALID_ISSUE_PRIORITY = new Set<string>(["highest", "high", "medium", "low", "lowest"]);
 const VALID_PROJECT_TYPE = new Set<string>(["scrum", "kanban"]);
-const VALID_EPIC_STATUS = new Set<string>(["to_do", "in_progress", "done"]);
 
-// Valid status transitions
-const VALID_TRANSITIONS: Record<string, string[]> = {
-  to_do: ["in_progress"],
-  in_progress: ["in_review", "to_do", "done"],
-  in_review: ["done", "in_progress"],
-  done: ["to_do"],
-};
+// Issue and epic statuses are validated against the project's workflow list
+// (Project.workflow) rather than a global enum, because each project has its
+// own workflow (PLAT: Open/In Development/..., LCRM: To Do/Doing/..., etc).
+// isValidStatusForProject returns true if `status` is in the project's workflow.
+function isValidStatusForProject(projectId: string, status: string): boolean {
+  const project = _projects.find((p) => p.id === projectId);
+  if (!project) return false;
+  return project.workflow.includes(status);
+}
 
 // ---------------------------------------------------------------------------
 // Module-level state
@@ -155,9 +155,6 @@ export function createIssue(fields: {
   if (fields.type !== undefined && !VALID_ISSUE_TYPE.has(fields.type)) {
     return { success: false, error: `Invalid type: ${fields.type}` };
   }
-  if (fields.status !== undefined && !VALID_ISSUE_STATUS.has(fields.status)) {
-    return { success: false, error: `Invalid status: ${fields.status}` };
-  }
   if (fields.priority !== undefined && !VALID_ISSUE_PRIORITY.has(fields.priority)) {
     return { success: false, error: `Invalid priority: ${fields.priority}` };
   }
@@ -167,6 +164,14 @@ export function createIssue(fields: {
   const project = _projects.find((p) => p.id === projectId);
   if (!project) {
     return { success: false, error: `Project not found: ${projectId}` };
+  }
+
+  // Status must be a valid workflow state for the chosen project
+  if (fields.status !== undefined && !project.workflow.includes(fields.status)) {
+    return {
+      success: false,
+      error: `Invalid status '${fields.status}' for project ${project.key}. Valid workflow states: ${project.workflow.join(", ")}.`,
+    };
   }
 
   const projectKey = project.key;
@@ -235,8 +240,12 @@ export function updateIssue(
     issue.type = fields.type;
   }
   if (fields.status !== undefined) {
-    if (!VALID_ISSUE_STATUS.has(fields.status)) {
-      return { success: false, error: `Invalid status: ${fields.status}` };
+    if (!isValidStatusForProject(issue.projectId, fields.status)) {
+      const project = _projects.find((p) => p.id === issue.projectId);
+      return {
+        success: false,
+        error: `Invalid status '${fields.status}' for project ${project?.key ?? issue.projectId}. Valid workflow states: ${project?.workflow.join(", ") ?? "(unknown)"}.`,
+      };
     }
     issue.status = fields.status;
   }
@@ -269,19 +278,15 @@ export function transitionIssue(id: string, newStatus: string): Result<Issue> {
   const issue = _issues.find((i) => i.id === id);
   if (!issue) return { success: false, error: "Issue not found" };
 
-  if (!VALID_ISSUE_STATUS.has(newStatus)) {
-    return { success: false, error: `Invalid status: ${newStatus}` };
-  }
-
-  const allowed = VALID_TRANSITIONS[issue.status];
-  if (!allowed || !allowed.includes(newStatus)) {
+  if (!isValidStatusForProject(issue.projectId, newStatus)) {
+    const project = _projects.find((p) => p.id === issue.projectId);
     return {
       success: false,
-      error: `Invalid transition: ${issue.status} -> ${newStatus}. Allowed: ${allowed?.join(", ") ?? "none"}`,
+      error: `Invalid status '${newStatus}' for project ${project?.key ?? issue.projectId}. Valid workflow states: ${project?.workflow.join(", ") ?? "(unknown)"}.`,
     };
   }
 
-  issue.status = newStatus as Issue["status"];
+  issue.status = newStatus;
   issue.updatedAt = now();
   return { success: true, data: deepClone(issue) };
 }
@@ -568,8 +573,11 @@ export function createEpic(fields: {
   const project = _projects.find((p) => p.id === projectId);
   if (!project) return { success: false, error: `Project not found: ${projectId}` };
 
-  if (fields.status !== undefined && !VALID_EPIC_STATUS.has(fields.status)) {
-    return { success: false, error: `Invalid status: ${fields.status}` };
+  if (fields.status !== undefined && !isValidStatusForProject(projectId, fields.status)) {
+    return {
+      success: false,
+      error: `Invalid status '${fields.status}' for project ${project.key}. Valid workflow states: ${project.workflow.join(", ")}.`,
+    };
   }
 
   const epicId = _nextEpicId++;
@@ -606,8 +614,12 @@ export function updateEpic(
   }
   if (fields.summary !== undefined) epic.summary = fields.summary;
   if (fields.status !== undefined) {
-    if (!VALID_EPIC_STATUS.has(fields.status)) {
-      return { success: false, error: `Invalid status: ${fields.status}` };
+    if (!isValidStatusForProject(epic.projectId, fields.status)) {
+      const project = _projects.find((p) => p.id === epic.projectId);
+      return {
+        success: false,
+        error: `Invalid status '${fields.status}' for project ${project?.key ?? epic.projectId}. Valid workflow states: ${project?.workflow.join(", ") ?? "(unknown)"}.`,
+      };
     }
     epic.status = fields.status;
   }

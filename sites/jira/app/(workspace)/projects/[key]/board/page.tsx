@@ -40,12 +40,52 @@ import {
 import { useSortable, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 
-const STATUS_COLUMNS = [
-  { key: "to_do", label: "TO DO", icon: "○", color: "text-gray-400" },
-  { key: "in_progress", label: "IN PROGRESS", icon: "◐", color: "text-blue-500" },
-  { key: "in_review", label: "IN REVIEW", icon: "◑", color: "text-yellow-500" },
-  { key: "done", label: "DONE", icon: "●", color: "text-green-500" },
-] as const
+// Map each spec workflow state to an icon + color. Unknown states fall through
+// to a neutral default so agents can add custom workflow states and still get
+// a sensible column visualization.
+const STATUS_DISPLAY: Record<string, { icon: string; color: string }> = {
+  // Open / not-started family
+  "Open":             { icon: "○", color: "text-gray-400" },
+  "Backlog":          { icon: "○", color: "text-gray-400" },
+  "To Do":            { icon: "○", color: "text-gray-400" },
+  "Ready":            { icon: "○", color: "text-gray-400" },
+  "Intake":           { icon: "○", color: "text-gray-400" },
+  // In progress family
+  "In Development":   { icon: "◐", color: "text-blue-500" },
+  "In Progress":      { icon: "◐", color: "text-blue-500" },
+  "Doing":            { icon: "◐", color: "text-blue-500" },
+  "Triage":           { icon: "◐", color: "text-blue-500" },
+  "Investigation":    { icon: "◐", color: "text-blue-500" },
+  "Fix in Progress":  { icon: "◐", color: "text-blue-500" },
+  // Review family
+  "Code Review":      { icon: "◑", color: "text-yellow-500" },
+  "In Review":        { icon: "◑", color: "text-yellow-500" },
+  "Review":           { icon: "◑", color: "text-yellow-500" },
+  "Peer Review":      { icon: "◑", color: "text-yellow-500" },
+  // QA / validation family
+  "QA":               { icon: "◨", color: "text-purple-500" },
+  "Testing":          { icon: "◨", color: "text-purple-500" },
+  "Validation":       { icon: "◨", color: "text-purple-500" },
+  // Staging / deploy family
+  "Staging":          { icon: "◧", color: "text-orange-500" },
+  "Deploying":        { icon: "◧", color: "text-orange-500" },
+  "Monitoring":       { icon: "◓", color: "text-cyan-500" },
+  // Done family
+  "Done":             { icon: "●", color: "text-green-500" },
+  "Deployed":         { icon: "●", color: "text-green-500" },
+  "Closed":           { icon: "●", color: "text-green-500" },
+  // Terminal-negative family
+  "Won't Fix":        { icon: "✕", color: "text-red-500" },
+  "Rejected":         { icon: "✕", color: "text-red-500" },
+  "Cancelled":        { icon: "✕", color: "text-red-500" },
+}
+
+function getStatusDisplay(status: string): { icon: string; color: string; label: string } {
+  const entry = STATUS_DISPLAY[status] ?? { icon: "□", color: "text-muted-foreground" }
+  return { ...entry, label: status.toUpperCase() }
+}
+
+type WorkflowColumn = { key: string; label: string; icon: string; color: string }
 
 const PRIORITY_ICON: Record<string, string> = {
   highest: "⬆⬆",
@@ -62,7 +102,7 @@ const TYPE_ICON: Record<string, { icon: string; color: string }> = {
   subtask: { icon: "◦", color: "text-cyan-600" },
 }
 
-type StatusKey = typeof STATUS_COLUMNS[number]["key"]
+type StatusKey = string
 
 // ── Draggable Issue Card ─────────────────────────────────────────────
 function SortableIssueCard({
@@ -70,12 +110,14 @@ function SortableIssueCard({
   users,
   epics,
   colKey,
+  columns,
   moveIssue,
 }: {
   issue: Issue
   users: User[]
   epics: Epic[]
   colKey: StatusKey
+  columns: WorkflowColumn[]
   moveIssue: (key: string, status: StatusKey) => void
 }) {
   const router = useRouter()
@@ -132,7 +174,7 @@ function SortableIssueCard({
                 <HugeiconsIcon icon={MoreHorizontalIcon} className="size-3.5 text-muted-foreground" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {STATUS_COLUMNS.filter((s) => s.key !== colKey).map((s) => (
+                {columns.filter((s) => s.key !== colKey).map((s) => (
                   <DropdownMenuItem key={s.key} onClick={() => moveIssue(issue.key, s.key)}>
                     <HugeiconsIcon icon={ArrowRight01Icon} className="size-3 mr-1.5" />
                     Move to {s.label}
@@ -221,13 +263,15 @@ function DragOverlayCard({ issue, users }: { issue: Issue; users: User[] }) {
 // ── Droppable Column ─────────────────────────────────────────────────
 function DroppableColumn({
   col,
+  columns,
   issues: colIssues,
   users,
   epics,
   moveIssue,
   isLast,
 }: {
-  col: typeof STATUS_COLUMNS[number]
+  col: WorkflowColumn
+  columns: WorkflowColumn[]
   issues: Issue[]
   users: User[]
   epics: Epic[]
@@ -252,6 +296,7 @@ function DroppableColumn({
                 users={users}
                 epics={epics}
                 colKey={col.key}
+                columns={columns}
                 moveIssue={moveIssue}
               />
             ))}
@@ -381,6 +426,16 @@ export default function BoardPage() {
   )
   const activeIssue = activeId ? issues.find((i) => i.id === activeId) : null
 
+  // Derive board columns from the project's workflow. Fallback to the legacy
+  // 4-state workflow if the project predates custom workflows.
+  const workflow: string[] = (project.workflow && project.workflow.length > 0)
+    ? project.workflow
+    : ["to_do", "in_progress", "in_review", "done"]
+  const columns: WorkflowColumn[] = workflow.map((status) => {
+    const display = getStatusDisplay(status)
+    return { key: status, label: display.label, icon: display.icon, color: display.color }
+  })
+
   return (
     <TooltipProvider>
       <div className="flex flex-col h-full">
@@ -447,17 +502,18 @@ export default function BoardPage() {
           onDragEnd={handleDragEnd}
         >
           <div className="flex flex-1 min-h-0 overflow-x-auto">
-            {STATUS_COLUMNS.map((col, colIdx) => {
+            {columns.map((col, colIdx) => {
               const colIssues = projectIssues.filter((i) => i.status === col.key)
               return (
                 <DroppableColumn
                   key={col.key}
                   col={col}
+                  columns={columns}
                   issues={colIssues}
                   users={users}
                   epics={epics}
                   moveIssue={moveIssue}
-                  isLast={colIdx === STATUS_COLUMNS.length - 1}
+                  isLast={colIdx === columns.length - 1}
                 />
               )
             })}

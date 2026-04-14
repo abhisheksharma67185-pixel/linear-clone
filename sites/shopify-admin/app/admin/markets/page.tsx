@@ -6,6 +6,7 @@ import {
   Text,
   BlockStack,
   InlineStack,
+  InlineGrid,
   Box,
   Badge,
   TextField,
@@ -102,29 +103,27 @@ export default function MarketsPage() {
         ]}
         fullWidth
       >
-        <div style={{ display: "flex", gap: 16 }}>
+        <InlineGrid columns="200px 1fr" gap="400">
           {/* Left sidebar */}
-          <div style={{ width: 200, flexShrink: 0 }}>
-            <Card padding="300">
-              <BlockStack gap="200">
-                <InlineStack gap="200" blockAlign="center">
-                  <Icon source={GlobeIcon} tone="base" />
-                  <Text as="span" variant="bodyMd" fontWeight="semibold">
-                    Store default
-                  </Text>
-                </InlineStack>
-                <InlineStack gap="200" blockAlign="center">
-                  <Icon source={PlusIcon} tone="base" />
-                  <Text as="span" variant="bodyMd">
-                    Regions
-                  </Text>
-                </InlineStack>
-              </BlockStack>
-            </Card>
-          </div>
+          <Card padding="300">
+            <BlockStack gap="200">
+              <InlineStack gap="200" blockAlign="center">
+                <Icon source={GlobeIcon} tone="base" />
+                <Text as="span" variant="bodyMd" fontWeight="semibold">
+                  Store default
+                </Text>
+              </InlineStack>
+              <InlineStack gap="200" blockAlign="center">
+                <Icon source={PlusIcon} tone="base" />
+                <Text as="span" variant="bodyMd">
+                  Regions
+                </Text>
+              </InlineStack>
+            </BlockStack>
+          </Card>
 
           {/* Right content */}
-          <div style={{ flexGrow: 1, minWidth: 0 }}>
+          <BlockStack gap="0">
             <Card padding="0">
               <Box padding="300">
                 <TextField
@@ -146,28 +145,20 @@ export default function MarketsPage() {
                 borderBlockEndWidth="025"
                 borderColor="border"
               >
-                <div style={{ display: "flex" }}>
-                  <div style={{ flex: 2 }}>
-                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                      Market
-                    </Text>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                      Status
-                    </Text>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                      Includes
-                    </Text>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                      Customizations
-                    </Text>
-                  </div>
-                </div>
+                <InlineGrid columns="2fr 1fr 1fr 1fr" gap="200">
+                  <Text as="span" variant="bodySm" fontWeight="semibold">
+                    Market
+                  </Text>
+                  <Text as="span" variant="bodySm" fontWeight="semibold">
+                    Status
+                  </Text>
+                  <Text as="span" variant="bodySm" fontWeight="semibold">
+                    Includes
+                  </Text>
+                  <Text as="span" variant="bodySm" fontWeight="semibold">
+                    Customizations
+                  </Text>
+                </InlineGrid>
               </Box>
 
               {/* Market rows */}
@@ -182,25 +173,21 @@ export default function MarketsPage() {
                     borderBlockEndWidth="025"
                     borderColor="border"
                   >
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <div style={{ flex: 2 }}>
-                        <InlineStack gap="200" blockAlign="center">
-                          <Icon source={GlobeIcon} tone="base" />
-                          <Text as="span" variant="bodyMd">
-                            {market.name}
-                          </Text>
-                        </InlineStack>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <Badge tone="success">{market.status}</Badge>
-                      </div>
-                      <div style={{ flex: 1 }}>
+                    <InlineGrid columns="2fr 1fr 1fr 1fr" gap="200" alignItems="center">
+                      <InlineStack gap="200" blockAlign="center">
+                        <Icon source={GlobeIcon} tone="base" />
                         <Text as="span" variant="bodyMd">
-                          {market.includes}
+                          {market.name}
                         </Text>
-                      </div>
-                      <div style={{ flex: 1 }} />
-                    </div>
+                      </InlineStack>
+                      <InlineStack>
+                        <Badge tone="success">{market.status}</Badge>
+                      </InlineStack>
+                      <Text as="span" variant="bodyMd">
+                        {market.includes}
+                      </Text>
+                      <Box />
+                    </InlineGrid>
                   </Box>
                 ))}
 
@@ -237,8 +224,8 @@ export default function MarketsPage() {
                 </Text>
               </BlockStack>
             </Box>
-          </div>
-        </div>
+          </BlockStack>
+        </InlineGrid>
       </Page>
 
       <Modal

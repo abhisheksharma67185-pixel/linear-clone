@@ -1,6 +1,6 @@
 "use client";
 
-import { Page, Card, Text, BlockStack, InlineStack, Box, TextField, Icon } from "@shopify/polaris";
+import { Page, Card, Text, BlockStack, InlineStack, InlineGrid, Box, TextField, Icon } from "@shopify/polaris";
 import { SearchIcon } from "@shopify/polaris-icons";
 import { useState } from "react";
 
@@ -143,76 +143,74 @@ export default function LiveViewPage() {
 
   return (
     <Page title="Live View" subtitle="Just now" fullWidth>
-      <div style={{ display: "flex", gap: 16 }}>
+      <InlineGrid columns="420px 1fr" gap="400">
         {/* Left column */}
-        <div style={{ width: 420, flexShrink: 0 }}>
-          <BlockStack gap="400">
-            {/* Top 2x2 stat grid */}
-            <Card padding="0">
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-                <LiveStatCard title="Visitors right now" value="7" />
-                <LiveStatCard title="Total sales" value="$2,418" showBar />
-                <Box borderBlockStartWidth="025" borderColor="border">
-                  <LiveStatCard title="Sessions" value="234" showBar />
-                </Box>
-                <Box borderBlockStartWidth="025" borderColor="border">
-                  <LiveStatCard title="Orders" value="9" showBar />
-                </Box>
-              </div>
-            </Card>
-
-            {/* Customer behavior */}
-            <Card padding="0">
-              <Box padding="400" paddingBlockEnd="200">
-                <Text as="h3" variant="headingSm">
-                  Customer behavior
-                </Text>
+        <BlockStack gap="400">
+          {/* Top 2x2 stat grid */}
+          <Card padding="0">
+            <InlineGrid columns={2}>
+              <LiveStatCard title="Visitors right now" value="7" />
+              <LiveStatCard title="Total sales" value="$2,418" showBar />
+              <Box borderBlockStartWidth="025" borderColor="border">
+                <LiveStatCard title="Sessions" value="234" showBar />
               </Box>
-              <div style={{ display: "flex" }}>
-                <Box padding="400" borderInlineEndWidth="025" borderColor="border" minWidth="33%">
-                  <BlockStack gap="100">
-                    <Text as="span" variant="bodySm" tone="subdued">
-                      Active carts
-                    </Text>
-                    <Text as="span" variant="headingMd">
-                      3
-                    </Text>
-                  </BlockStack>
-                </Box>
-                <Box padding="400" borderInlineEndWidth="025" borderColor="border" minWidth="33%">
-                  <BlockStack gap="100">
-                    <Text as="span" variant="bodySm" tone="subdued">
-                      Checking out
-                    </Text>
-                    <Text as="span" variant="headingMd">
-                      1
-                    </Text>
-                  </BlockStack>
-                </Box>
-                <Box padding="400" minWidth="33%">
-                  <BlockStack gap="100">
-                    <Text as="span" variant="bodySm" tone="subdued">
-                      Purchased
-                    </Text>
-                    <Text as="span" variant="headingMd">
-                      9
-                    </Text>
-                  </BlockStack>
-                </Box>
-              </div>
-            </Card>
+              <Box borderBlockStartWidth="025" borderColor="border">
+                <LiveStatCard title="Orders" value="9" showBar />
+              </Box>
+            </InlineGrid>
+          </Card>
 
-            <LocationCard title="Sessions by location" locations={topLocations} />
-            <CustomerBreakdownCard />
-            <TopProductsCard />
-          </BlockStack>
-        </div>
+          {/* Customer behavior */}
+          <Card padding="0">
+            <Box padding="400" paddingBlockEnd="200">
+              <Text as="h3" variant="headingSm">
+                Customer behavior
+              </Text>
+            </Box>
+            <InlineGrid columns={3}>
+              <Box padding="400" borderInlineEndWidth="025" borderColor="border">
+                <BlockStack gap="100">
+                  <Text as="span" variant="bodySm" tone="subdued">
+                    Active carts
+                  </Text>
+                  <Text as="span" variant="headingMd">
+                    3
+                  </Text>
+                </BlockStack>
+              </Box>
+              <Box padding="400" borderInlineEndWidth="025" borderColor="border">
+                <BlockStack gap="100">
+                  <Text as="span" variant="bodySm" tone="subdued">
+                    Checking out
+                  </Text>
+                  <Text as="span" variant="headingMd">
+                    1
+                  </Text>
+                </BlockStack>
+              </Box>
+              <Box padding="400">
+                <BlockStack gap="100">
+                  <Text as="span" variant="bodySm" tone="subdued">
+                    Purchased
+                  </Text>
+                  <Text as="span" variant="headingMd">
+                    9
+                  </Text>
+                </BlockStack>
+              </Box>
+            </InlineGrid>
+          </Card>
+
+          <LocationCard title="Sessions by location" locations={topLocations} />
+          <CustomerBreakdownCard />
+          <TopProductsCard />
+        </BlockStack>
 
         {/* Right column */}
-        <div style={{ flexGrow: 1, minWidth: 0 }}>
+        <BlockStack gap="0">
           <Box padding="300" paddingBlockEnd="0">
             <InlineStack align="end">
-              <div style={{ width: 200 }}>
+              <Box maxWidth="200px">
                 <TextField
                   label="Search location"
                   labelHidden
@@ -222,7 +220,7 @@ export default function LiveViewPage() {
                   prefix={<Icon source={SearchIcon} />}
                   autoComplete="off"
                 />
-              </div>
+              </Box>
             </InlineStack>
           </Box>
           <Box background="bg-surface-secondary" borderRadius="300" minHeight="600px" padding="800">
@@ -255,8 +253,8 @@ export default function LiveViewPage() {
               </InlineStack>
             </InlineStack>
           </Box>
-        </div>
-      </div>
+        </BlockStack>
+      </InlineGrid>
     </Page>
   );
 }
