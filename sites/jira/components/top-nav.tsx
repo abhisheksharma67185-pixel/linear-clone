@@ -935,17 +935,155 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
     }
   }
 
+  // Dropdown menu state
+  const [menuOpen, setMenuOpen] = useState(false)
+  // Goal/Project/Team creation states
+  const [goalOpen, setGoalOpen] = useState(false)
+  const [goalName, setGoalName] = useState("")
+  const [projectOpen, setProjectOpen] = useState(false)
+  const [projectName, setProjectName] = useState("")
+  const [projectKey, setProjectKey] = useState("")
+  const [teamOpen, setTeamOpen] = useState(false)
+  const [teamName, setTeamName] = useState("")
+
+  const handleCreateGoal = async () => {
+    if (!goalName.trim()) return
+    await fetch("/api/data/goals", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: goalName.trim(), owner: "usr-1" }) }).catch(() => null)
+    setGoalOpen(false); setGoalName("")
+    router.push("/goals")
+  }
+
+  const handleCreateProject = async () => {
+    if (!projectName.trim()) return
+    const key = projectKey.trim() || projectName.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 4) || "PROJ"
+    await fetch("/api/data/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: projectName.trim(), key, type: "scrum" }) }).catch(() => null)
+    setProjectOpen(false); setProjectName(""); setProjectKey("")
+    router.push("/projects")
+  }
+
+  const handleCreateTeam = () => {
+    setTeamOpen(false); setTeamName("")
+    router.push("/teams")
+  }
+
   return (
     <>
-      <Button
-        size="sm"
-        className={`gap-1.5 border-0 ${isBlue ? "bg-white/20 text-white hover:bg-white/30" : "bg-blue-600 text-white hover:bg-blue-700"}`}
-        onClick={() => setOpen(true)}
-      >
-        <HugeiconsIcon icon={Add01Icon} className="size-4" />
-        Create
-      </Button>
+      {/* Create button with dropdown */}
+      <div className="relative">
+        <Button
+          size="sm"
+          className={`gap-1.5 border-0 ${isBlue ? "bg-white/20 text-white hover:bg-white/30" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          <HugeiconsIcon icon={Add01Icon} className="size-4" />
+          Create
+        </Button>
+        {menuOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+            <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-lg border bg-popover shadow-lg py-1">
+              <button onClick={() => { setMenuOpen(false); setGoalOpen(true); setGoalName("") }} className="flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
+                <svg className="size-5 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg>
+                Goal
+              </button>
+              <button onClick={() => { setMenuOpen(false); setOpen(true) }} className="flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
+                <svg className="size-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><path d="M9 14l2 2 4-4" /></svg>
+                Work item
+              </button>
+              <button onClick={() => { setMenuOpen(false); setProjectOpen(true); setProjectName(""); setProjectKey("") }} className="flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
+                <svg className="size-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                Project
+              </button>
+              <button onClick={() => { setMenuOpen(false); setTeamOpen(true); setTeamName("") }} className="flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
+                <svg className="size-5 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                Team
+              </button>
+            </div>
+          </>
+        )}
+      </div>
 
+      {/* Goal creation dialog */}
+      {goalOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh]" onClick={() => setGoalOpen(false)}>
+          <div className="fixed inset-0 bg-black/50" />
+          <div className="relative z-10 w-full max-w-[420px] rounded-lg border bg-popover shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2 px-6 pt-5 pb-2">
+              <svg className="size-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg>
+              <span className="text-lg font-semibold">Create goal</span>
+            </div>
+            <div className="px-6 py-4 space-y-3">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Name <span className="text-red-500">*</span></label>
+                <input value={goalName} onChange={(e) => setGoalName(e.target.value)} autoFocus placeholder="e.g. Increase revenue by 20%"
+                  onKeyDown={(e) => { if (e.key === "Enter") handleCreateGoal(); if (e.key === "Escape") setGoalOpen(false) }}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-6 py-4 border-t">
+              <Button variant="outline" size="sm" onClick={() => setGoalOpen(false)}>Cancel</Button>
+              <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700" disabled={!goalName.trim()} onClick={handleCreateGoal}>Create</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Project creation dialog */}
+      {projectOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh]" onClick={() => setProjectOpen(false)}>
+          <div className="fixed inset-0 bg-black/50" />
+          <div className="relative z-10 w-full max-w-[420px] rounded-lg border bg-popover shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2 px-6 pt-5 pb-2">
+              <svg className="size-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+              <span className="text-lg font-semibold">Create project</span>
+            </div>
+            <div className="px-6 py-4 space-y-3">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Name <span className="text-red-500">*</span></label>
+                <input value={projectName} onChange={(e) => { setProjectName(e.target.value); setProjectKey(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 4)) }} autoFocus placeholder="e.g. Marketing"
+                  onKeyDown={(e) => { if (e.key === "Enter") handleCreateProject(); if (e.key === "Escape") setProjectOpen(false) }}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Key</label>
+                <input value={projectKey} onChange={(e) => setProjectKey(e.target.value.toUpperCase())} placeholder="e.g. MARK"
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm font-mono outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-6 py-4 border-t">
+              <Button variant="outline" size="sm" onClick={() => setProjectOpen(false)}>Cancel</Button>
+              <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700" disabled={!projectName.trim()} onClick={handleCreateProject}>Create</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Team creation dialog */}
+      {teamOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh]" onClick={() => setTeamOpen(false)}>
+          <div className="fixed inset-0 bg-black/50" />
+          <div className="relative z-10 w-full max-w-[420px] rounded-lg border bg-popover shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2 px-6 pt-5 pb-2">
+              <svg className="size-5 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+              <span className="text-lg font-semibold">Create team</span>
+            </div>
+            <div className="px-6 py-4 space-y-3">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Team name <span className="text-red-500">*</span></label>
+                <input value={teamName} onChange={(e) => setTeamName(e.target.value)} autoFocus placeholder="e.g. Engineering"
+                  onKeyDown={(e) => { if (e.key === "Enter") handleCreateTeam(); if (e.key === "Escape") setTeamOpen(false) }}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-6 py-4 border-t">
+              <Button variant="outline" size="sm" onClick={() => setTeamOpen(false)}>Cancel</Button>
+              <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700" disabled={!teamName.trim()} onClick={handleCreateTeam}>Create</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Work item (issue) creation dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
