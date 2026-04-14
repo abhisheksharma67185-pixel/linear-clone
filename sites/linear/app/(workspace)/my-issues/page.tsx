@@ -2,217 +2,225 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import type { Issue, Member, Project, Team } from "@/app/lib/mock-data"
-import { statusStyle, priorityStyle, projectStatusStyle } from "@/lib/status-styles"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import type { Issue, Member } from "@/app/lib/mock-data"
+import { statusStyle, priorityStyle } from "@/lib/status-styles"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  FilterIcon,
+  PanelRightIcon,
+  BarChartIcon,
+} from "@hugeicons/core-free-icons"
+import { CreateIssueDialog } from "@/components/create-issue-dialog"
+import { ViewOptionsPopover } from "@/components/view-options-popover"
+
+const CURRENT_USER = "usr-1"
 
 export default function MyIssuesPage() {
   const [issues, setIssues] = useState<Issue[]>([])
   const [members, setMembers] = useState<Member[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
-  const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
+  const [createOpen, setCreateOpen] = useState(false)
 
   useEffect(() => {
     Promise.all([
       fetch("/api/data/issues").then((r) => r.json()),
       fetch("/api/data/members").then((r) => r.json()),
-      fetch("/api/data/projects").then((r) => r.json()),
-      fetch("/api/data/teams").then((r) => r.json()),
-    ]).then(([i, m, p, t]) => {
+    ]).then(([i, m]) => {
       setIssues(i)
       setMembers(m)
-      setProjects(p)
-      setTeams(t)
       setLoading(false)
     })
   }, [])
 
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-6 p-6">
-        <div>
-          <Skeleton className="h-7 w-32" />
-          <Skeleton className="mt-2 h-4 w-56" />
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 rounded-lg" />
-          ))}
-        </div>
-        <Skeleton className="h-48 rounded-lg" />
-      </div>
-    )
-  }
-
-  const myIssues = issues.filter((i) => i.assigneeId === "usr-1")
-  const myActiveIssues = myIssues.filter((i) => i.status !== "done" && i.status !== "cancelled")
-  const assignedCount = myIssues.filter((i) => i.status !== "done").length
-  const inProgressCount = myIssues.filter((i) => i.status === "in_progress").length
-  const doneCount = myIssues.filter((i) => i.status === "done").length
-  const totalCount = myIssues.length
+  const assigned = issues.filter(
+    (i) => i.assigneeId === CURRENT_USER && i.status !== "done" && i.status !== "cancelled",
+  )
+  const created = issues.filter((i) => i.creatorId === CURRENT_USER)
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">My Issues</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Your assigned issues and recent projects.
-        </p>
-      </div>
-
-      {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Assigned to Me
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{assignedCount}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              In Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{inProgressCount}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Done
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{doneCount}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Issues
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{totalCount}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Active issues table */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Active Issues</h2>
-        {myActiveIssues.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No active issues assigned to you.</p>
-        ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">Identifier</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead className="w-[100px]">Priority</TableHead>
-                  <TableHead className="w-[110px]">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {myActiveIssues.map((issue) => (
-                  <TableRow key={issue.id}>
-                    <TableCell>
-                      <Link
-                        href={`/issues/${issue.identifier}`}
-                        className="font-mono text-xs text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        {issue.identifier}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-medium">{issue.title}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className={`text-[10px] ${priorityStyle[issue.priority]}`}
-                      >
-                        {issue.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className={`text-[10px] ${statusStyle[issue.status]}`}
-                      >
-                        {issue.status.replace("_", " ")}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+    <>
+      <div className="flex h-full min-h-0 flex-col">
+        <header className="flex items-center justify-between px-6 py-3">
+          <h1 className="text-sm font-medium">My issues</h1>
+          <div className="flex items-center gap-0.5 text-muted-foreground">
+            <Button variant="ghost" size="icon" className="size-7">
+              <HugeiconsIcon icon={FilterIcon} className="size-4" />
+            </Button>
+            <ViewOptionsPopover />
+            <Button variant="ghost" size="icon" className="size-7">
+              <HugeiconsIcon icon={BarChartIcon} className="size-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="size-7">
+              <HugeiconsIcon icon={PanelRightIcon} className="size-4" />
+            </Button>
           </div>
-        )}
+        </header>
+
+        <Tabs defaultValue="assigned" className="flex min-h-0 flex-1 flex-col gap-0">
+          <div className="px-4">
+            <TabsList className="h-10 gap-1 bg-transparent p-0">
+              <TabPill value="assigned">Assigned</TabPill>
+              <TabPill value="created">Created</TabPill>
+              <TabPill value="subscribed">Subscribed</TabPill>
+              <TabPill value="activity">Activity</TabPill>
+            </TabsList>
+          </div>
+
+          <TabsContent value="assigned" className="m-0 flex-1 overflow-auto">
+            {loading ? (
+              <LoadingRows />
+            ) : assigned.length === 0 ? (
+              <EmptyState
+                label="No issues assigned to you"
+                onCreate={() => setCreateOpen(true)}
+              />
+            ) : (
+              <IssueList issues={assigned} members={members} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="created" className="m-0 flex-1 overflow-auto">
+            {loading ? (
+              <LoadingRows />
+            ) : created.length === 0 ? (
+              <EmptyState
+                label="You haven't created any issues"
+                onCreate={() => setCreateOpen(true)}
+              />
+            ) : (
+              <IssueList issues={created} members={members} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="subscribed" className="m-0 flex-1 overflow-auto">
+            <EmptyState
+              label="You're not subscribed to any issues"
+              onCreate={() => setCreateOpen(true)}
+            />
+          </TabsContent>
+
+          <TabsContent value="activity" className="m-0 flex-1 overflow-auto">
+            <EmptyState label="No recent activity" onCreate={() => setCreateOpen(true)} />
+          </TabsContent>
+        </Tabs>
       </div>
 
-      {/* Recent projects */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Recent Projects</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => {
-            const lead = members.find((m) => m.id === project.leadId)
-            const team = teams.find((t) => t.id === project.teamId)
-            return (
-              <Link
-                key={project.id}
-                href={`/projects/${team ? team.key : ""}/board`}
-              >
-                <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-base font-medium">
-                        {project.name}
-                      </CardTitle>
-                      <Badge
-                        variant="secondary"
-                        className={`text-[10px] ${projectStatusStyle[project.status]}`}
-                      >
-                        {project.status.replace("_", " ")}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {project.description}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      {team && <span>{team.name}</span>}
-                      {lead && (
-                        <>
-                          <span className="text-border">|</span>
-                          <span>Lead: {lead.name}</span>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
+      <CreateIssueDialog open={createOpen} onOpenChange={setCreateOpen} />
+    </>
+  )
+}
+
+function TabPill({ value, children }: { value: string; children: React.ReactNode }) {
+  return (
+    <TabsTrigger
+      value={value}
+      className="rounded-full border-0 bg-transparent px-3 py-1 text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-accent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+    >
+      {children}
+    </TabsTrigger>
+  )
+}
+
+function LoadingRows() {
+  return (
+    <div className="flex flex-col gap-2 p-6">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Skeleton key={i} className="h-9 rounded-md" />
+      ))}
     </div>
+  )
+}
+
+function EmptyState({ label, onCreate }: { label: string; onCreate: () => void }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-5 py-24">
+      <EmptyIllustration />
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <Button
+        onClick={onCreate}
+        className="h-8 rounded-full bg-violet-600 px-4 text-xs font-medium text-white hover:bg-violet-700"
+      >
+        Create new issue
+      </Button>
+    </div>
+  )
+}
+
+function EmptyIllustration() {
+  return (
+    <svg
+      viewBox="0 0 160 120"
+      className="h-24 w-32 text-muted-foreground"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <g opacity="0.35">
+        <ellipse cx="80" cy="38" rx="22" ry="6" />
+        <path d="M52 34 Q40 38 40 46" />
+        <path d="M108 34 Q120 38 120 46" />
+      </g>
+      <g opacity="0.9">
+        <ellipse cx="80" cy="60" rx="22" ry="6" />
+        <path d="M52 56 Q36 60 36 70" />
+        <path d="M108 56 Q124 60 124 70" />
+        <path d="M30 58 Q16 62 16 74" opacity="0.5" />
+        <path d="M130 58 Q144 62 144 74" opacity="0.5" />
+      </g>
+      <g opacity="0.5">
+        <path d="M58 82 Q80 92 102 82" />
+        <path d="M48 86 Q80 100 112 86" opacity="0.5" />
+      </g>
+    </svg>
+  )
+}
+
+function IssueList({ issues, members }: { issues: Issue[]; members: Member[] }) {
+  return (
+    <ul className="divide-y">
+      {issues.map((issue) => {
+        const assignee = members.find((m) => m.id === issue.assigneeId)
+        return (
+          <li key={issue.id}>
+            <Link
+              href={`/issues/${issue.identifier}`}
+              className="flex items-center gap-3 px-6 py-2.5 transition-colors hover:bg-accent/50"
+            >
+              <Badge
+                variant="secondary"
+                className={`min-w-14 justify-center text-[10px] ${priorityStyle[issue.priority]}`}
+              >
+                {issue.priority}
+              </Badge>
+              <span className="w-16 font-mono text-xs text-muted-foreground">
+                {issue.identifier}
+              </span>
+              <span className="flex-1 truncate text-sm">{issue.title}</span>
+              <Badge
+                variant="secondary"
+                className={`text-[10px] ${statusStyle[issue.status]}`}
+              >
+                {issue.status.replace("_", " ")}
+              </Badge>
+              {assignee && (
+                <Avatar className="size-6">
+                  <AvatarImage src={assignee.avatar} alt={assignee.name} />
+                  <AvatarFallback className="text-[10px]">
+                    {assignee.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+            </Link>
+          </li>
+        )
+      })}
+    </ul>
   )
 }
