@@ -520,7 +520,15 @@ export function createGoal(fields: {
   return { success: true, data: deepClone(goal) };
 }
 
-export function updateGoal(id: string, fields: Partial<Omit<Goal, "id" | "createdAt">>): Result<Goal> {
+export function updateGoal(id: string, fields: {
+  name?: string;
+  status?: Goal["status"];
+  progress?: number;
+  targetDate?: string;
+  owner?: string;
+  team?: string;
+  following?: boolean;
+}): Result<Goal> {
   const goal = _goals.find((g) => g.id === id);
   if (!goal) return { success: false, error: "Goal not found" };
   if (fields.name !== undefined) goal.name = fields.name;
