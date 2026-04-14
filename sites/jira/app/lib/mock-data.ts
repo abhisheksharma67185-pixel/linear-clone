@@ -167,6 +167,19 @@ export interface Dashboard {
   gadgets: string[];
 }
 
+export interface Goal {
+  [key: string]: unknown;
+  id: string;
+  name: string;
+  status: "ON TRACK" | "AT RISK" | "OFF TRACK" | "PENDING" | "DONE" | "PAUSED" | "CANCELLED";
+  progress: number;
+  targetDate: string;
+  owner: string;
+  team: string;
+  following: boolean;
+  createdAt: string;
+}
+
 export interface IssueHistoryEntry {
   [key: string]: unknown;
   id: string;

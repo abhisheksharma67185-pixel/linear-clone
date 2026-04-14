@@ -16,6 +16,7 @@ import {
   type Board,
   type SavedFilter,
   type Plan,
+  type Goal,
   type Comment,
   type IssueHistoryEntry,
 } from "./mock-data";
@@ -89,6 +90,17 @@ let _issues: Issue[] = deepClone(initialIssues);
 let _boards: Board[] = deepClone(initialBoards);
 let _filters: SavedFilter[] = deepClone(initialFilters);
 let _plans: Plan[] = [];
+let _goals: Goal[] = [
+  { id: "goal-1", name: "Increase platform uptime to 99.9%", status: "ON TRACK", progress: 72, targetDate: "Jun 2026", owner: "usr-1", team: "Engineering", following: true, createdAt: "2026-01-15T09:00:00.000Z" },
+  { id: "goal-2", name: "Reduce customer churn by 15%", status: "AT RISK", progress: 38, targetDate: "Sep 2026", owner: "usr-2", team: "Product", following: true, createdAt: "2026-01-20T09:00:00.000Z" },
+  { id: "goal-3", name: "Launch mobile app v2.0", status: "ON TRACK", progress: 55, targetDate: "Jul 2026", owner: "usr-3", team: "Engineering", following: false, createdAt: "2026-02-01T09:00:00.000Z" },
+  { id: "goal-4", name: "Migrate infrastructure to Kubernetes", status: "PENDING", progress: 10, targetDate: "Dec 2026", owner: "usr-4", team: "Infrastructure", following: false, createdAt: "2026-02-10T09:00:00.000Z" },
+  { id: "goal-5", name: "Achieve SOC 2 Type II compliance", status: "AT RISK", progress: 45, targetDate: "Aug 2026", owner: "usr-1", team: "Security", following: true, createdAt: "2026-02-15T09:00:00.000Z" },
+  { id: "goal-6", name: "Grow monthly active users to 50K", status: "OFF TRACK", progress: 22, targetDate: "Oct 2026", owner: "usr-2", team: "Marketing", following: false, createdAt: "2026-03-01T09:00:00.000Z" },
+  { id: "goal-7", name: "Reduce average API response time below 200ms", status: "DONE", progress: 100, targetDate: "Apr 2026", owner: "usr-3", team: "Engineering", following: true, createdAt: "2026-01-10T09:00:00.000Z" },
+  { id: "goal-8", name: "Ship redesigned onboarding flow", status: "ON TRACK", progress: 68, targetDate: "May 2026", owner: "usr-4", team: "Design", following: true, createdAt: "2026-02-20T09:00:00.000Z" },
+];
+let _nextGoalId = 9;
 let _comments: Comment[] = deepClone(initialComments);
 let _history: IssueHistoryEntry[] = deepClone(initialHistory);
 let _nextHistoryId = 9;
@@ -472,6 +484,53 @@ export function moveIssueToSprint(issueId: string, sprintId: string | null): Res
   issue.sprintId = sprintId;
   issue.updatedAt = now();
   return { success: true, data: deepClone(issue) };
+}
+
+// ---------------------------------------------------------------------------
+// Goals
+// ---------------------------------------------------------------------------
+
+export function getGoals(): Goal[] {
+  return deepClone(_goals);
+}
+
+export function createGoal(fields: {
+  name?: string;
+  status?: Goal["status"];
+  progress?: number;
+  targetDate?: string;
+  owner?: string;
+  team?: string;
+}): Result<Goal> {
+  if (!fields.name || String(fields.name).trim() === "") {
+    return { success: false, error: "Name is required" };
+  }
+  const goal: Goal = {
+    id: `goal-${_nextGoalId++}`,
+    name: String(fields.name).trim(),
+    status: fields.status ?? "PENDING",
+    progress: fields.progress ?? 0,
+    targetDate: fields.targetDate ?? "",
+    owner: fields.owner ?? "usr-1",
+    team: fields.team ?? "Engineering",
+    following: true,
+    createdAt: now(),
+  };
+  _goals.push(goal);
+  return { success: true, data: deepClone(goal) };
+}
+
+export function updateGoal(id: string, fields: Partial<Omit<Goal, "id" | "createdAt">>): Result<Goal> {
+  const goal = _goals.find((g) => g.id === id);
+  if (!goal) return { success: false, error: "Goal not found" };
+  if (fields.name !== undefined) goal.name = fields.name;
+  if (fields.status !== undefined) goal.status = fields.status;
+  if (fields.progress !== undefined) goal.progress = fields.progress;
+  if (fields.targetDate !== undefined) goal.targetDate = fields.targetDate;
+  if (fields.owner !== undefined) goal.owner = fields.owner;
+  if (fields.team !== undefined) goal.team = fields.team;
+  if (fields.following !== undefined) goal.following = fields.following;
+  return { success: true, data: deepClone(goal) };
 }
 
 // ---------------------------------------------------------------------------
