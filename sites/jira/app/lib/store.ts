@@ -102,10 +102,10 @@ let _goals: Goal[] = [
   { id: "goal-7", name: "Reduce average API response time below 200ms", status: "DONE", progress: 100, targetDate: "Apr 2026", owner: "usr-3", team: "Engineering", following: true, createdAt: "2026-01-10T09:00:00.000Z" },
   { id: "goal-8", name: "Ship redesigned onboarding flow", status: "ON TRACK", progress: 68, targetDate: "May 2026", owner: "usr-4", team: "Design", following: true, createdAt: "2026-02-20T09:00:00.000Z" },
 ];
-let _nextGoalId = 9;
+let _nextGoalId = deriveNextId(_goals, "goal", 9);
 let _comments: Comment[] = deepClone(initialComments);
 let _history: IssueHistoryEntry[] = deepClone(initialHistory);
-let _nextHistoryId = 9;
+let _nextHistoryId = deriveNextId(_history, "hist", 9);
 
 // Derive next-available issue id and per-project-key counters from existing
 // data, so newly created issues never collide with seeded ones. The legacy
@@ -136,6 +136,23 @@ function deriveIssueCounters(issues: Issue[]): {
   return { nextId: maxIdNum + 1, perProjectKey };
 }
 
+// Derive the next available numeric id for a `prefix-N` id scheme (proj-1,
+// sprint-3, team-12, etc.) from existing items. Falls back to `floor` when
+// the existing data has no matching ids — preserves the original hard-coded
+// counters as a lower bound for episode/test tooling that may rely on them.
+function deriveNextId(items: { id: string }[], prefix: string, floor: number): number {
+  let max = 0;
+  const re = new RegExp(`^${prefix}-(\\d+)$`);
+  for (const item of items) {
+    const m = re.exec(item.id);
+    if (m) {
+      const n = parseInt(m[1], 10);
+      if (n > max) max = n;
+    }
+  }
+  return Math.max(max + 1, floor);
+}
+
 // Auto-increment counters per project key
 const _initialIssueCounters = deriveIssueCounters(_issues);
 let _nextIssueCounters: Record<string, number> = {
@@ -144,14 +161,14 @@ let _nextIssueCounters: Record<string, number> = {
   ..._initialIssueCounters.perProjectKey,
 };
 let _nextIssueId = _initialIssueCounters.nextId;
-let _nextProjectId = 9;
-let _nextSprintId = 4;
-let _nextEpicId = 4;
-let _nextFilterId = 4;
-let _nextPlanId = 1;
-let _nextCommentId = 8;
+let _nextProjectId = deriveNextId(_projects, "proj", 9);
+let _nextSprintId = deriveNextId(_sprints, "sprint", 4);
+let _nextEpicId = deriveNextId(_epics, "epic", 4);
+let _nextFilterId = deriveNextId(_filters, "filter", 4);
+let _nextPlanId = deriveNextId(_plans, "plan", 1);
+let _nextCommentId = deriveNextId(_comments, "cmt", 8);
 let _teams: Team[] = deepClone(initialTeams);
-let _nextTeamId = 4;
+let _nextTeamId = deriveNextId(_teams, "team", 4);
 
 // ---------------------------------------------------------------------------
 // Issues
@@ -378,6 +395,7 @@ export function createProject(fields: {
     return { success: false, error: `Project key already exists: ${fields.key}` };
   }
 
+  while (_projects.some((p) => p.id === `proj-${_nextProjectId}`)) _nextProjectId++;
   const project: Project = {
     id: `proj-${_nextProjectId++}`,
     key: fields.key.trim().toUpperCase(),
@@ -454,6 +472,7 @@ export function createSprint(fields: {
   const project = _projects.find((p) => p.id === projectId);
   if (!project) return { success: false, error: `Project not found: ${projectId}` };
 
+  while (_sprints.some((s) => s.id === `sprint-${_nextSprintId}`)) _nextSprintId++;
   const sprint: Sprint = {
     id: `sprint-${_nextSprintId++}`,
     name: fields.name.trim(),
@@ -558,6 +577,7 @@ export function createGoal(fields: {
   if (!fields.name || String(fields.name).trim() === "") {
     return { success: false, error: "Name is required" };
   }
+  while (_goals.some((g) => g.id === `goal-${_nextGoalId}`)) _nextGoalId++;
   const goal: Goal = {
     id: `goal-${_nextGoalId++}`,
     name: String(fields.name).trim(),
@@ -628,6 +648,7 @@ export function createEpic(fields: {
     };
   }
 
+  while (_epics.some((e) => e.id === `epic-${_nextEpicId}`)) _nextEpicId++;
   const epicId = _nextEpicId++;
   const epic: Epic = {
     id: `epic-${epicId}`,
@@ -726,6 +747,7 @@ export function createFilter(fields: {
     return { success: false, error: "JQL is required" };
   }
 
+  while (_filters.some((f) => f.id === `filter-${_nextFilterId}`)) _nextFilterId++;
   const filter: SavedFilter = {
     id: `filter-${_nextFilterId++}`,
     name: fields.name.trim(),
@@ -762,6 +784,7 @@ export function createPlan(fields: {
     return { success: false, error: "Name is required" };
   }
 
+  while (_plans.some((p) => p.id === `plan-${_nextPlanId}`)) _nextPlanId++;
   const plan: Plan = {
     id: `plan-${_nextPlanId++}`,
     name: fields.name.trim(),
@@ -793,6 +816,7 @@ export function getCommentsByIssue(issueId: string): Comment[] {
 export function createComment(fields: { issueId: string; authorId: string; body: string }): Result<Comment> {
   if (!fields.body?.trim()) return { success: false, error: "Comment body is required" };
   if (!fields.issueId) return { success: false, error: "issueId is required" };
+  while (_comments.some((c) => c.id === `cmt-${_nextCommentId}`)) _nextCommentId++;
   const comment: Comment = {
     id: `cmt-${_nextCommentId++}`,
     issueId: fields.issueId,
@@ -834,6 +858,7 @@ export function getHistoryByIssue(issueId: string): IssueHistoryEntry[] {
 export function addHistoryEntry(fields: {
   issueId: string; authorId: string; field: string; oldValue: string | null; newValue: string | null;
 }): IssueHistoryEntry {
+  while (_history.some((h) => h.id === `hist-${_nextHistoryId}`)) _nextHistoryId++;
   const entry: IssueHistoryEntry = {
     id: `hist-${_nextHistoryId++}`,
     issueId: fields.issueId,
@@ -860,6 +885,7 @@ export function getTeams(): Team[] { return deepClone(_teams); }
 export function createTeam(fields: { name: string; description?: string }): Result<Team> {
   if (!fields.name?.trim()) return { success: false, error: "Team name is required." };
   const colors = ["bg-blue-500", "bg-purple-500", "bg-pink-500", "bg-green-500", "bg-orange-500", "bg-teal-500", "bg-red-500", "bg-indigo-500"];
+  while (_teams.some((t) => t.id === `team-${_nextTeamId}`)) _nextTeamId++;
   const team: Team = {
     id: `team-${_nextTeamId++}`,
     name: fields.name.trim(),
@@ -882,20 +908,22 @@ export function reset(seed?: number): void {
   _filters = deepClone(initialFilters);
   _plans = [];
   _teams = deepClone(initialTeams);
-  _nextTeamId = 4;
+  _nextTeamId = deriveNextId(_teams, "team", 4);
   _comments = deepClone(initialComments);
   _history = deepClone(initialHistory);
 
   const derived = deriveIssueCounters(_issues);
   _nextIssueCounters = { SCRUM: 19, KANB: 9, ...derived.perProjectKey };
   _nextIssueId = derived.nextId;
-  _nextProjectId = 9;
-  _nextSprintId = 4;
-  _nextEpicId = 4;
-  _nextFilterId = 4;
-  _nextPlanId = 1;
-  _nextCommentId = 8;
-  _nextHistoryId = 9;
+  _nextProjectId = deriveNextId(_projects, "proj", 9);
+  _nextSprintId = deriveNextId(_sprints, "sprint", 4);
+  _nextEpicId = deriveNextId(_epics, "epic", 4);
+  _nextFilterId = deriveNextId(_filters, "filter", 4);
+  _nextPlanId = deriveNextId(_plans, "plan", 1);
+  _nextCommentId = deriveNextId(_comments, "cmt", 8);
+  _nextHistoryId = deriveNextId(_history, "hist", 9);
+  // _goals is not reset by design (in-memory only, no seed file), so the
+  // counter doesn't need to be reset either — leave _nextGoalId as-is.
 
   // Deterministic timestamps when seed is provided
   if (seed !== undefined) {
