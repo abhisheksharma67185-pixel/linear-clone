@@ -110,8 +110,7 @@ const filterConfig = [
   },
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function InlineFilterDropdown({ filter, onClose }: { filter: typeof filterConfig[0]; onClose: () => void }) {
+function InlineFilterDropdown({ filter, onClose, onSelect }: { filter: typeof filterConfig[0]; onClose: () => void; onSelect: (label: string) => void }) {
   const [search, setSearch] = useState("")
 
   if (filter.id === "reporting") {
@@ -162,7 +161,11 @@ function InlineFilterDropdown({ filter, onClose }: { filter: typeof filterConfig
             {goalStatuses
               .filter((s) => !search || s.value.toLowerCase().includes(search.toLowerCase()))
               .map((status) => (
-                <button key={status.value} className="flex w-full items-center rounded-md px-2 py-1.5 text-left hover:bg-accent transition-colors">
+                <button
+                  key={status.value}
+                  onClick={() => { onSelect(status.value); onClose() }}
+                  className="flex w-full items-center rounded-md px-2 py-1.5 text-left hover:bg-accent transition-colors"
+                >
                   <span className={`rounded px-2 py-0.5 text-[11px] font-bold uppercase ${status.color}`}>{status.value}</span>
                 </button>
               ))}
@@ -172,7 +175,11 @@ function InlineFilterDropdown({ filter, onClose }: { filter: typeof filterConfig
             {owners
               .filter((o) => !search || o.name.toLowerCase().includes(search.toLowerCase()))
               .map((owner) => (
-                <button key={owner.id} className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-accent transition-colors">
+                <button
+                  key={owner.id}
+                  onClick={() => { onSelect(owner.name); onClose() }}
+                  className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-accent transition-colors"
+                >
                   <Avatar className="size-6">
                     <AvatarFallback className="bg-blue-600 text-[9px] font-semibold text-white">{owner.initials}</AvatarFallback>
                   </Avatar>
@@ -307,18 +314,45 @@ export default function GoalsPage() {
 
   const resetFilters = () => {
     setActiveFilters([])
+    setOpenFilter(null)
+    setSearch("")
+    setActiveTab("all")
+  }
+
+  const addActiveFilter = (type: string, label: string) => {
+    setActiveFilters((prev) => [...prev.filter((f) => f.type !== type), { type, label }])
   }
 
   const [moreViewsOpen, setMoreViewsOpen] = useState(false)
 
   const filteredGoals = goals.filter((g) => {
     if (search && !g.name.toLowerCase().includes(search.toLowerCase())) return false
-    if (activeTab === "my") return g.owner.name === "Abhishek Sharma"
-    if (activeTab === "archived") return g.status === "DONE"
-    if (activeTab === "following") return g.following
-    if (activeTab === "off-track") return g.status === "OFF TRACK"
-    if (activeTab === "at-risk") return g.status === "AT RISK"
+    if (activeTab === "my" && g.owner.name !== "Abhishek Sharma") return false
+    if (activeTab === "archived" && g.status !== "DONE") return false
+    if (activeTab === "following" && !g.following) return false
+    if (activeTab === "off-track" && g.status !== "OFF TRACK") return false
+    if (activeTab === "at-risk" && g.status !== "AT RISK") return false
+
+    // Apply explicit filter chips from the filter bar
+    for (const f of activeFilters) {
+      if (f.type === "status" && g.status !== f.label) return false
+      if (f.type === "owner" && g.owner.name !== f.label) return false
+      if (f.type === "team" && g.team !== f.label) return false
+      if (f.type === "following") {
+        if (f.label === "Following" && !g.following) return false
+        if (f.label === "Not following" && g.following) return false
+      }
+    }
     return true
+  }).slice().sort((a, b) => {
+    const direction = sortAsc ? 1 : -1
+    const cmpString = (x: string, y: string) => x.localeCompare(y) * direction
+    if (sortBy === "name") return cmpString(a.name, b.name)
+    if (sortBy === "status") return cmpString(a.status, b.status)
+    if (sortBy === "target date") return cmpString(a.targetDate, b.targetDate)
+    if (sortBy === "following") return ((a.following === b.following) ? 0 : (a.following ? -1 : 1)) * direction
+    if (sortBy === "last updated" || sortBy === "follower count") return 0 // mock has no data for these
+    return 0
   })
 
   if (loading) {
@@ -667,6 +701,7 @@ export default function GoalsPage() {
           <InlineFilterDropdown
             filter={filterConfig.find((f) => f.id === openFilter)!}
             onClose={() => setOpenFilter(null)}
+            onSelect={(label) => addActiveFilter(openFilter as string, label)}
           />
         )}
       </div>
@@ -676,7 +711,10 @@ export default function GoalsPage() {
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium">{filteredGoals.length} goal{filteredGoals.length !== 1 ? "s" : ""}</p>
           {activeTab !== "all" && (
-            <button className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+            <button
+              onClick={() => router.push("/goals/status-updates")}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            >
               Read updates
               <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
             </button>
@@ -860,15 +898,18 @@ export default function GoalsPage() {
 
       {/* Goals table or empty state */}
       {filteredGoals.length > 0 ? (
+        (() => {
+          const isEnabled = (id: string) => columns.find(c => c.id === id)?.enabled ?? false
+          return (
         <div className="rounded-lg border">
           {/* Header */}
           <div className="grid grid-cols-[1fr_90px_120px_110px_70px_80px] gap-4 border-b px-4 py-2.5 text-xs font-medium text-muted-foreground">
             <span>Name</span>
-            <span>Status</span>
-            <span>Progress</span>
-            <span>Target date</span>
-            <span>Owner</span>
-            <span>Following</span>
+            {isEnabled("status") && <span>Status</span>}
+            {isEnabled("progress") && <span>Progress</span>}
+            {isEnabled("target_date") && <span>Target date</span>}
+            {isEnabled("owner") && <span>Owner</span>}
+            {isEnabled("following") && <span>Following</span>}
           </div>
 
           {/* Rows */}
@@ -876,7 +917,7 @@ export default function GoalsPage() {
             <div
               key={goal.id}
               onClick={() => router.push(`/goals/${goal.id}`)}
-              className="grid grid-cols-[1fr_90px_120px_110px_70px_80px] gap-4 border-b last:border-b-0 px-4 py-3 items-center hover:bg-accent/50 transition-colors cursor-pointer"
+              className="group/row relative grid grid-cols-[1fr_90px_120px_110px_70px_80px] gap-4 border-b last:border-b-0 px-4 py-3 items-center hover:bg-accent/50 transition-colors cursor-pointer"
             >
               {/* Name */}
               <Link href={`/goals/${goal.id}`} className="flex items-center gap-2 hover:text-blue-600 transition-colors" onClick={(e) => e.stopPropagation()}>
@@ -886,57 +927,104 @@ export default function GoalsPage() {
                 <span className="text-sm truncate">{goal.name}</span>
               </Link>
               {/* Status badge */}
-              <div>
-                <span className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
-                  goal.status === "ON TRACK" ? "bg-green-400 text-white" :
-                  goal.status === "AT RISK" ? "bg-yellow-300 text-yellow-900" :
-                  goal.status === "OFF TRACK" ? "bg-red-400 text-white" :
-                  goal.status === "DONE" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                  "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                }`}>
-                  {goal.status}
-                </span>
-              </div>
-              {/* Progress */}
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 w-16 rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-blue-500" style={{ width: `${goal.progress}%` }} />
+              {isEnabled("status") && (
+                <div>
+                  <span className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
+                    goal.status === "ON TRACK" ? "bg-green-400 text-white" :
+                    goal.status === "AT RISK" ? "bg-yellow-300 text-yellow-900" :
+                    goal.status === "OFF TRACK" ? "bg-red-400 text-white" :
+                    goal.status === "DONE" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                    "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                  }`}>
+                    {goal.status}
+                  </span>
                 </div>
-                <span className="text-xs text-muted-foreground">{goal.progress}%</span>
-              </div>
-              {/* Target date */}
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                {goal.targetDate}
-              </div>
-              {/* Owner */}
-              <div onClick={(e) => e.stopPropagation()}>
-                <UserProfileCard
-                  name={goal.owner.name}
-                  email={goal.owner.email}
-                  initials={goal.owner.initials}
-                />
-              </div>
-              {/* Following — Unfollow button stops propagation */}
-              <div onClick={(e) => e.stopPropagation()}>
-                {goal.following ? (
-                  <div className="group/follow relative">
-                    <span className="text-xs text-muted-foreground group-hover/follow:hidden">Following</span>
-                    <button
-                      onClick={(e) => { e.stopPropagation() }}
-                      className="hidden rounded-md bg-red-500 px-3 py-1 text-[11px] font-medium text-white hover:bg-red-600 group-hover/follow:inline-flex"
-                      title="Unfollow to stop receiving notifications"
-                    >
-                      Unfollow
-                    </button>
+              )}
+              {/* Progress */}
+              {isEnabled("progress") && (
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-16 rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-blue-500" style={{ width: `${goal.progress}%` }} />
                   </div>
-                ) : (
-                  <span className="text-xs text-muted-foreground">—</span>
-                )}
+                  <span className="text-xs text-muted-foreground">{goal.progress}%</span>
+                </div>
+              )}
+              {/* Target date */}
+              {isEnabled("target_date") && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                  {goal.targetDate}
+                </div>
+              )}
+              {/* Owner */}
+              {isEnabled("owner") && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <UserProfileCard
+                    name={goal.owner.name}
+                    email={goal.owner.email}
+                    initials={goal.owner.initials}
+                  />
+                </div>
+              )}
+              {/* Following — Unfollow button toggles local following state */}
+              {isEnabled("following") && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  {goal.following ? (
+                    <div className="group/follow relative">
+                      <span className="text-xs text-muted-foreground group-hover/follow:hidden">Following</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setGoals((prev) => prev.map((g) => g.id === goal.id ? { ...g, following: false } : g))
+                        }}
+                        className="hidden rounded-md bg-red-500 px-3 py-1 text-[11px] font-medium text-white hover:bg-red-600 group-hover/follow:inline-flex"
+                        title="Unfollow to stop receiving notifications"
+                      >
+                        Unfollow
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setGoals((prev) => prev.map((g) => g.id === goal.id ? { ...g, following: true } : g))
+                      }}
+                      className="text-xs text-muted-foreground hover:text-blue-600 transition-colors"
+                      title="Follow to get updates"
+                    >
+                      Follow
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Row actions: hover-revealed ... menu */}
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/row:opacity-100 transition-opacity"
+              >
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={
+                    <button
+                      title="More actions"
+                      aria-label="More actions"
+                      className="rounded-md border bg-background p-1 text-muted-foreground hover:bg-accent transition-colors"
+                    >
+                      <svg className="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
+                    </button>
+                  } />
+                  <DropdownMenuContent align="end" className="w-32">
+                    <DropdownMenuItem onClick={() => router.push(`/goals/${goal.id}`)}>Edit</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setToast(`Archived ${goal.name}`); setTimeout(() => setToast(null), 2500) }}>Archive</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setToast(`Deleted ${goal.name}`); setTimeout(() => setToast(null), 2500) }}>Delete</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           ))}
         </div>
+        )
+        })()
       ) : (
         /* Empty state */
         <div className="flex flex-col items-center justify-center py-16 text-center">

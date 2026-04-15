@@ -1,9 +1,28 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+
+const LS_KEY = "pd_followed_keys"
+const defaultFollowedKeys = ["SCRUM", "MOB", "PLAT"]
+
+function readFollowedKeys(): string[] {
+  if (typeof window === "undefined") return defaultFollowedKeys
+  try {
+    const raw = window.localStorage.getItem(LS_KEY)
+    if (raw === null) return defaultFollowedKeys
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : defaultFollowedKeys
+  } catch { return defaultFollowedKeys }
+}
+
+function writeFollowedKeys(keys: string[]) {
+  if (typeof window === "undefined") return
+  try { window.localStorage.setItem(LS_KEY, JSON.stringify(keys)) } catch {}
+}
 
 interface FollowedProject {
   id: number
@@ -15,11 +34,18 @@ interface FollowedProject {
   icon: string
 }
 
-const initialProjects: FollowedProject[] = [
-  { id: 1, name: "SCRUM Project", key: "SCRUM", type: "scrum", lead: "Abhishek Sharma", href: "/projects/SCRUM/board", icon: "S" },
-  { id: 2, name: "Mobile App", key: "MOB", type: "kanban", lead: "Priya Patel", href: "/projects/MOB/board", icon: "M" },
-  { id: 3, name: "Platform Core", key: "PLAT", type: "scrum", lead: "James Chen", href: "/projects/PLAT/board", icon: "P" },
-]
+const projectCatalog: Record<string, FollowedProject> = {
+  SCRUM: { id: 1, name: "SCRUM Project", key: "SCRUM", type: "scrum", lead: "Abhishek Sharma", href: "/projects/SCRUM/board", icon: "S" },
+  MOB: { id: 2, name: "Mobile App", key: "MOB", type: "kanban", lead: "Priya Patel", href: "/projects/MOB/board", icon: "M" },
+  PLAT: { id: 3, name: "Platform Core", key: "PLAT", type: "scrum", lead: "James Chen", href: "/projects/PLAT/board", icon: "P" },
+  KANB: { id: 4, name: "Cloud migration phase 2", key: "KANB", type: "kanban", lead: "Sam Williams", href: "/projects/KANB/board", icon: "C" },
+  FAPP: { id: 5, name: "Frontend App", key: "FAPP", type: "scrum", lead: "Abhishek Sharma", href: "/projects/FAPP/board", icon: "F" },
+  SUS: { id: 6, name: "Support US", key: "SUS", type: "kanban", lead: "Abhishek Sharma", href: "/projects/SUS/board", icon: "S" },
+  SEU: { id: 7, name: "Support EU", key: "SEU", type: "kanban", lead: "Abhishek Sharma", href: "/projects/SEU/board", icon: "S" },
+  SAP: { id: 8, name: "Support APAC", key: "SAP", type: "kanban", lead: "Abhishek Sharma", href: "/projects/SAP/board", icon: "S" },
+  DEVOPS: { id: 9, name: "DevOps", key: "DEVOPS", type: "kanban", lead: "Abhishek Sharma", href: "/projects/DEVOPS/board", icon: "D" },
+  LCRM: { id: 10, name: "Legacy CRM", key: "LCRM", type: "scrum", lead: "Abhishek Sharma", href: "/projects/LCRM/board", icon: "L" },
+}
 
 const typeStyle: Record<string, string> = {
   kanban: "border-purple-300 text-purple-700 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400",
@@ -27,8 +53,43 @@ const typeStyle: Record<string, string> = {
 }
 
 export default function ProjectFollowingPage() {
-  const [projects, setProjects] = useState<FollowedProject[]>(initialProjects)
+  const router = useRouter()
+  const [followedKeys, setFollowedKeys] = useState<string[]>(defaultFollowedKeys)
   const [search, setSearch] = useState("")
+  const [createOpen, setCreateOpen] = useState(false)
+  const [newProjectName, setNewProjectName] = useState("")
+  const [toast, setToast] = useState<string | null>(null)
+
+  // Hydrate from localStorage on mount
+  useEffect(() => { setFollowedKeys(readFollowedKeys()) }, [])
+
+  const projects: FollowedProject[] = followedKeys
+    .map((k) => projectCatalog[k])
+    .filter((p): p is FollowedProject => Boolean(p))
+
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
+
+  const handleCreateProject = () => {
+    const name = newProjectName.trim()
+    if (!name) return
+    const key = name.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "") || "NEW"
+    // Add to catalog for this session + add to followed keys so it appears in the list
+    projectCatalog[key] = {
+      id: Date.now(),
+      name,
+      key,
+      type: "scrum",
+      lead: "Abhishek Sharma",
+      href: `/projects/${key}/board`,
+      icon: name.charAt(0).toUpperCase(),
+    }
+    const next = [...followedKeys, key]
+    setFollowedKeys(next)
+    writeFollowedKeys(next)
+    setCreateOpen(false)
+    setNewProjectName("")
+    showToast("Project created")
+  }
 
   const filteredProjects = projects.filter(
     (p) =>
@@ -38,7 +99,11 @@ export default function ProjectFollowingPage() {
   )
 
   function handleUnfollow(id: number) {
-    setProjects((prev) => prev.filter((p) => p.id !== id))
+    const proj = projects.find((p) => p.id === id)
+    if (!proj) return
+    const next = followedKeys.filter((k) => k !== proj.key)
+    setFollowedKeys(next)
+    writeFollowedKeys(next)
   }
 
   return (
@@ -52,10 +117,41 @@ export default function ProjectFollowingPage() {
           <p className="text-sm">Use projects to keep everyone up to date with weekly status updates on any stream on work.</p>
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-4">
-          <Button className="bg-blue-600 text-white hover:bg-blue-700">Create your first project</Button>
-          <button className="text-sm text-muted-foreground hover:underline">More about projects</button>
+          <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setCreateOpen(true)}>Create your first project</Button>
+          <Link href="/products" className="text-sm text-muted-foreground hover:underline">More about projects</Link>
         </div>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 rounded-lg border bg-background px-4 py-3 shadow-lg text-sm">
+          {toast}
+        </div>
+      )}
+
+      {/* Create Project modal */}
+      {createOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] bg-black/50" onClick={() => setCreateOpen(false)}>
+          <div className="relative w-full max-w-[480px] rounded-lg border bg-popover p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold mb-3">Create project</h2>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Name <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                autoFocus
+                placeholder="e.g. Following Page E2E Project"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button onClick={() => setCreateOpen(false)} className="rounded-md border px-4 py-2 text-sm hover:bg-accent">Cancel</button>
+              <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50">Create</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Title + tabs */}
       <div className="mb-4 flex items-center gap-4">

@@ -1,10 +1,10 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { UserProfileCard } from "@/components/user-profile-card"
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -73,11 +78,42 @@ export default function ArchivedGoalsPage() {
   const [toast, setToast] = useState<string | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState("following")
-  const [activeFilter, setActiveFilter] = useState<string | null>(null)
+  const [sortAsc, setSortAsc] = useState(true)
+  const [viewMode, setViewMode] = useState<"list" | "group">("list")
+  const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const [ownerFilter, setOwnerFilter] = useState<string | null>(null)
+  const [teamFilter, setTeamFilter] = useState<string | null>(null)
+  const [followingFilter, setFollowingFilter] = useState<boolean>(false)
+  const [starredFilter, setStarredFilter] = useState<boolean>(false)
+  const [reportingFilter, setReportingFilter] = useState<boolean>(true) // screenshot says "currently active"
+  const [columns, setColumns] = useState([
+    { id: "name", label: "Name", enabled: true, locked: true },
+    { id: "status", label: "Status", enabled: true, locked: false },
+    { id: "progress", label: "Progress", enabled: true, locked: false },
+    { id: "target_date", label: "Target date", enabled: true, locked: false },
+    { id: "owner", label: "Owner", enabled: true, locked: false },
+    { id: "following", label: "Following", enabled: true, locked: false },
+  ])
+  const isColEnabled = (id: string) => columns.find(c => c.id === id)?.enabled ?? false
 
-  const filteredGoals = goals.filter((g) =>
-    !search || g.name.toLowerCase().includes(search.toLowerCase()) || g.owner.name.toLowerCase().includes(search.toLowerCase())
-  )
+  const filteredGoals = goals
+    .filter((g) => !search || g.name.toLowerCase().includes(search.toLowerCase()) || g.owner.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((g) => !statusFilter || g.status === statusFilter)
+    .filter((g) => !ownerFilter || g.owner.name === ownerFilter)
+    .filter((g) => !followingFilter || g.following)
+    .slice()
+    .sort((a, b) => {
+      const dir = sortAsc ? 1 : -1
+      if (sortBy === "name") return a.name.localeCompare(b.name) * dir
+      if (sortBy === "status") return a.status.localeCompare(b.status) * dir
+      if (sortBy === "progress") return (a.progress - b.progress) * dir
+      if (sortBy === "target date") return a.targetDate.localeCompare(b.targetDate) * dir
+      if (sortBy === "following") return ((a.following === b.following) ? 0 : (a.following ? -1 : 1)) * dir
+      return 0
+    })
+
+  const uniqueStatuses = [...new Set(goals.map(g => g.status))]
+  const uniqueOwners = [...new Set(goals.map(g => g.owner.name))]
 
   const handleRestore = (id: string) => {
     const goal = goals.find((g) => g.id === id)
@@ -98,7 +134,18 @@ export default function ArchivedGoalsPage() {
     }
   }
 
-  const clearFilters = () => setActiveFilter(null)
+  const clearFilters = () => {
+    setStatusFilter(null)
+    setOwnerFilter(null)
+    setTeamFilter(null)
+    setFollowingFilter(false)
+    setStarredFilter(false)
+    setSearch("")
+  }
+
+  const toggleFollow = (id: string) => {
+    setGoals((prev) => prev.map((g) => g.id === id ? { ...g, following: !g.following } : g))
+  }
 
   return (
     <div className="p-6">
@@ -128,55 +175,169 @@ export default function ArchivedGoalsPage() {
 
       {/* Filters row */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        {filterDefs.map((f) => (
-          <button
-            key={f.id}
-            onClick={() => setActiveFilter(activeFilter === f.id ? null : f.id)}
-            className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors ${
-              activeFilter === f.id ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "text-muted-foreground hover:bg-accent"
-            }`}
-          >
-            <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{f.icon}</svg>
-            {f.label}
-          </button>
-        ))}
+        {filterDefs.map((f) => {
+          const icon = <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{f.icon}</svg>
+          const baseClass = "flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors"
+          const activeClass = "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+          const inactiveClass = "text-muted-foreground hover:bg-accent"
+
+          if (f.id === "status") {
+            return (
+              <DropdownMenu key={f.id}>
+                <DropdownMenuTrigger render={
+                  <button className={`${baseClass} ${statusFilter ? activeClass : inactiveClass}`}>
+                    {icon}{statusFilter ? `Status: ${statusFilter}` : "Status"}
+                  </button>
+                } />
+                <DropdownMenuContent align="start" className="w-44">
+                  {uniqueStatuses.map((s) => (
+                    <DropdownMenuItem key={s} onClick={() => setStatusFilter(statusFilter === s ? null : s)} className={statusFilter === s ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20" : ""}>
+                      {s}
+                    </DropdownMenuItem>
+                  ))}
+                  {statusFilter && <DropdownMenuItem onClick={() => setStatusFilter(null)}>Clear</DropdownMenuItem>}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )
+          }
+          if (f.id === "owner") {
+            return (
+              <DropdownMenu key={f.id}>
+                <DropdownMenuTrigger render={
+                  <button className={`${baseClass} ${ownerFilter ? activeClass : inactiveClass}`}>
+                    {icon}{ownerFilter ? `Owner: ${ownerFilter}` : "Owner"}
+                  </button>
+                } />
+                <DropdownMenuContent align="start" className="w-48">
+                  {uniqueOwners.map((o) => (
+                    <DropdownMenuItem key={o} onClick={() => setOwnerFilter(ownerFilter === o ? null : o)} className={ownerFilter === o ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20" : ""}>
+                      {o}
+                    </DropdownMenuItem>
+                  ))}
+                  {ownerFilter && <DropdownMenuItem onClick={() => setOwnerFilter(null)}>Clear</DropdownMenuItem>}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )
+          }
+          if (f.id === "team") {
+            return (
+              <button key={f.id} onClick={() => setTeamFilter(teamFilter ? null : "engineering")} className={`${baseClass} ${teamFilter ? activeClass : inactiveClass}`}>
+                {icon}{f.label}
+              </button>
+            )
+          }
+          if (f.id === "following") {
+            return (
+              <button key={f.id} onClick={() => setFollowingFilter((v) => !v)} className={`${baseClass} ${followingFilter ? activeClass : inactiveClass}`}>
+                {icon}{f.label}
+              </button>
+            )
+          }
+          if (f.id === "starred") {
+            return (
+              <button key={f.id} onClick={() => setStarredFilter((v) => !v)} className={`${baseClass} ${starredFilter ? activeClass : inactiveClass}`}>
+                {icon}{f.label}
+              </button>
+            )
+          }
+          if (f.id === "reporting") {
+            return (
+              <button key={f.id} onClick={() => setReportingFilter((v) => !v)} className={`${baseClass} ${reportingFilter ? activeClass : inactiveClass}`}>
+                {icon}{f.label}
+              </button>
+            )
+          }
+          // Fallback for tag/metric: act as DropdownMenu with "No options"
+          return (
+            <DropdownMenu key={f.id}>
+              <DropdownMenuTrigger render={
+                <button className={`${baseClass} ${inactiveClass}`}>
+                  {icon}{f.label}
+                </button>
+              } />
+              <DropdownMenuContent align="start" className="w-36">
+                <DropdownMenuItem disabled>No options</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
+        })}
       </div>
 
       {/* Count + controls */}
       <div className="mb-3 flex items-center justify-between">
         <p className="text-sm font-medium">{filteredGoals.length} goal{filteredGoals.length !== 1 ? "s" : ""}</p>
         <div className="flex items-center gap-2">
-          {/* List toggle */}
+          {/* List / Group view toggle */}
           <div className="flex rounded-md border">
-            <button className="bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-l-md border-r">
-              <svg className="size-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="9" y1="6" x2="21" y2="6" /><line x1="9" y1="12" x2="21" y2="12" /><line x1="9" y1="18" x2="21" y2="18" /><circle cx="5" cy="6" r="1" fill="currentColor" /><circle cx="5" cy="12" r="1" fill="currentColor" /><circle cx="5" cy="18" r="1" fill="currentColor" /></svg>
+            <button
+              onClick={() => setViewMode("list")}
+              title="Display as list"
+              className={`px-2 py-1 rounded-l-md border-r ${viewMode === "list" ? "bg-blue-50 dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent"}`}
+            >
+              <svg className={`size-4 ${viewMode === "list" ? "text-blue-600" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="9" y1="6" x2="21" y2="6" /><line x1="9" y1="12" x2="21" y2="12" /><line x1="9" y1="18" x2="21" y2="18" /><circle cx="5" cy="6" r="1" fill="currentColor" /><circle cx="5" cy="12" r="1" fill="currentColor" /><circle cx="5" cy="18" r="1" fill="currentColor" /></svg>
             </button>
-            <button className="px-2 py-1 text-muted-foreground hover:bg-accent rounded-r-md">
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6" /><line x1="7" y1="12" x2="21" y2="12" /><line x1="11" y1="18" x2="21" y2="18" /></svg>
+            <button
+              onClick={() => setViewMode("group")}
+              title="Display as group"
+              className={`px-2 py-1 rounded-r-md ${viewMode === "group" ? "bg-blue-50 dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent"}`}
+            >
+              <svg className={`size-4 ${viewMode === "group" ? "text-blue-600" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6" /><line x1="7" y1="12" x2="21" y2="12" /><line x1="11" y1="18" x2="21" y2="18" /></svg>
             </button>
           </div>
 
           {/* Sort by */}
           <DropdownMenu>
             <DropdownMenuTrigger render={
-              <button className="flex items-center gap-1.5 rounded-md border px-3 py-1 text-sm text-muted-foreground hover:bg-accent">
+              <button
+                onClick={() => { /* handled by DropdownMenu; also toggle asc/desc on double-open */ }}
+                className="flex items-center gap-1.5 rounded-md border px-3 py-1 text-sm text-muted-foreground hover:bg-accent"
+                title="Change list sorting"
+              >
                 Sort by {sortBy} <svg className="size-3.5 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
               </button>
             } />
             <DropdownMenuContent align="end" className="w-44">
-              {["following", "name", "status", "target date"].map((s) => (
-                <DropdownMenuItem key={s} onClick={() => setSortBy(s)} className={sortBy === s ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20" : ""}>
+              {["following", "name", "status", "progress", "target date"].map((s) => (
+                <DropdownMenuItem
+                  key={s}
+                  onClick={() => { if (sortBy === s) setSortAsc((v) => !v); else { setSortBy(s); setSortAsc(true) } }}
+                  className={sortBy === s ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20" : ""}
+                >
                   {s.charAt(0).toUpperCase() + s.slice(1)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Columns */}
-          <button className="flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm text-muted-foreground hover:bg-accent">
-            <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="1" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /></svg>
-            Columns
-          </button>
+          {/* Columns popover */}
+          <Popover>
+            <PopoverTrigger render={
+              <button className="flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-sm text-muted-foreground hover:bg-accent">
+                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="1" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /></svg>
+                Columns
+              </button>
+            } />
+            <PopoverContent align="end" className="w-56 p-2">
+              <div className="text-xs font-medium text-muted-foreground px-2 py-1">Columns</div>
+              <div className="max-h-80 overflow-y-auto">
+                {columns.map((col) => (
+                  <div key={col.id} className="flex items-center justify-between px-2 py-1.5 text-sm">
+                    <span>{col.label}</span>
+                    {col.locked ? (
+                      <svg className="size-4 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                    ) : (
+                      <button
+                        onClick={() => setColumns((prev) => prev.map((c) => c.id === col.id ? { ...c, enabled: !c.enabled } : c))}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full border transition-colors ${col.enabled ? "bg-blue-600" : "bg-muted"}`}
+                      >
+                        <span className={`size-4 rounded-full bg-white shadow-sm transition-transform ${col.enabled ? "translate-x-4" : "translate-x-0.5"}`} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
 
           {/* More menu */}
           <DropdownMenu>
@@ -186,8 +347,9 @@ export default function ArchivedGoalsPage() {
               </button>
             } />
             <DropdownMenuContent align="end" className="w-36">
-              <DropdownMenuItem>Copy link</DropdownMenuItem>
               <DropdownMenuItem>Export CSV</DropdownMenuItem>
+              <DropdownMenuItem>Copy link</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/goals/settings")}>Settings</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -198,38 +360,71 @@ export default function ArchivedGoalsPage() {
         <div className="rounded-lg border">
           {/* Header */}
           <div className="grid grid-cols-[1fr_90px_120px_110px_70px_80px_auto] gap-4 border-b px-4 py-2.5 text-xs font-medium text-muted-foreground">
-            <span>Name</span><span>Status</span><span>Progress</span><span>Target date</span><span>Owner</span><span>Following</span><span />
+            <span>Name</span>
+            {isColEnabled("status") && <span>Status</span>}
+            {isColEnabled("progress") && <span>Progress</span>}
+            {isColEnabled("target_date") && <span>Target date</span>}
+            {isColEnabled("owner") && <span>Owner</span>}
+            {isColEnabled("following") && <span>Following</span>}
+            <span />
           </div>
 
           {/* Rows */}
           {filteredGoals.map((goal) => (
-            <div key={goal.id} className="grid grid-cols-[1fr_90px_120px_110px_70px_80px_auto] gap-4 border-b last:border-b-0 px-4 py-3 items-center hover:bg-accent/50 transition-colors group">
+            <div
+              key={goal.id}
+              onClick={() => router.push(`/goals/${goal.id}`)}
+              className="grid grid-cols-[1fr_90px_120px_110px_70px_80px_auto] gap-4 border-b last:border-b-0 px-4 py-3 items-center hover:bg-accent/50 transition-colors group cursor-pointer"
+            >
               {/* Name */}
               <div className="flex items-center gap-2 min-w-0">
                 <svg className="size-4 text-muted-foreground/50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></svg>
-                <span className="text-sm truncate">{goal.name}</span>
+                <span className="text-sm truncate hover:text-blue-600">{goal.name}</span>
               </div>
               {/* Status */}
-              <div className="flex items-center gap-1">
-                <span className="shrink-0 rounded bg-gray-200 px-1.5 py-0.5 text-[9px] font-bold uppercase text-gray-600 dark:bg-gray-700 dark:text-gray-300">ARCHIVED</span>
-                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${statusColors[goal.status] ?? "bg-gray-200 text-gray-600"}`}>{goal.status}</span>
-              </div>
+              {isColEnabled("status") && (
+                <div className="flex items-center gap-1">
+                  <span className="shrink-0 rounded bg-gray-200 px-1.5 py-0.5 text-[9px] font-bold uppercase text-gray-600 dark:bg-gray-700 dark:text-gray-300">ARCHIVED</span>
+                  <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${statusColors[goal.status] ?? "bg-gray-200 text-gray-600"}`}>{goal.status}</span>
+                </div>
+              )}
               {/* Progress */}
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 w-16 rounded-full bg-muted"><div className="h-full rounded-full bg-blue-500" style={{ width: `${goal.progress}%` }} /></div>
-                <span className="text-xs text-muted-foreground">{goal.progress}%</span>
-              </div>
+              {isColEnabled("progress") && (
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-16 rounded-full bg-muted"><div className="h-full rounded-full bg-blue-500" style={{ width: `${goal.progress}%` }} /></div>
+                  <span className="text-xs text-muted-foreground">{goal.progress}%</span>
+                </div>
+              )}
               {/* Target date */}
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                {goal.targetDate}
-              </div>
+              {isColEnabled("target_date") && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                  {goal.targetDate}
+                </div>
+              )}
               {/* Owner */}
-              <div><Avatar className="size-7"><AvatarFallback className="bg-blue-600 text-[9px] font-semibold text-white">{goal.owner.initials}</AvatarFallback></Avatar></div>
+              {isColEnabled("owner") && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <UserProfileCard name={goal.owner.name} initials={goal.owner.initials} />
+                </div>
+              )}
               {/* Following */}
-              <div><span className="text-xs text-muted-foreground">{goal.following ? "Following" : "—"}</span></div>
+              {isColEnabled("following") && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => toggleFollow(goal.id)}
+                    className="text-xs text-muted-foreground hover:text-blue-600 transition-colors"
+                    title={goal.following ? "Unfollow" : "Follow"}
+                  >
+                    {goal.following ? "Following" : "—"}
+                  </button>
+                </div>
+              )}
               {/* Actions — visible on hover */}
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
                 <button onClick={() => handleRestore(goal.id)} className="rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors" title="Restore goal">
                   Restore
                 </button>

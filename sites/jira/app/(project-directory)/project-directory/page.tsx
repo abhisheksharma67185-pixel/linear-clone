@@ -95,11 +95,12 @@ const filterConfigs: FilterConfig[] = [
   },
 ]
 
-function ProjectRowMenu({ project, onArchive, onDelete, onToast, following, onToggleFollow }: {
+function ProjectRowMenu({ project, onArchive, onDelete, onToast, onEdit, following, onToggleFollow }: {
   project: { id: number; key: string; name: string }
   onArchive: (id: number) => void
   onDelete: (id: number) => void
   onToast: (msg: string) => void
+  onEdit: (id: number) => void
   following: boolean
   onToggleFollow: (id: number) => void
 }) {
@@ -164,7 +165,7 @@ function ProjectRowMenu({ project, onArchive, onDelete, onToast, following, onTo
           </button>
           <button
             type="button"
-            onClick={() => { setOpen(false); onToast("Edit details coming soon") }}
+            onClick={() => { setOpen(false); onEdit(project.id) }}
             className="flex w-full items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent transition-colors text-left"
           >
             <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
@@ -314,11 +315,168 @@ function FilterPopover({ config, selected, onToggle, onClear }: {
   )
 }
 
+function SortByDropdown({ sortBy, sortAsc, onSelect }: { sortBy: string; sortAsc: boolean; onSelect: (s: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [open])
+  const options = ["following", "name", "status", "updated", "target date"]
+  return (
+    <div ref={ref} className="relative">
+      <button onClick={() => setOpen(!open)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        Sort by {sortBy}
+        <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path d={sortAsc ? "M8 4l-4 4h8z" : "M8 12l-4-4h8z"} /></svg>
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 top-full z-50 mt-1 w-44 rounded-lg border bg-popover shadow-lg py-1">
+          {options.map((opt) => (
+            <button
+              key={opt}
+              role="menuitem"
+              onClick={() => { onSelect(opt); setOpen(false) }}
+              className={`flex w-full items-center px-3 py-1.5 text-sm hover:bg-accent transition-colors text-left ${sortBy === opt ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20" : ""}`}
+            >
+              Sort by {opt}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ColumnsPopover({ open, setOpen, visibleColumns, setVisibleColumns }: {
+  open: boolean; setOpen: (v: boolean) => void;
+  visibleColumns: Record<string, boolean>;
+  setVisibleColumns: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [open, setOpen])
+  const cols = [
+    { id: "project", label: "Project", locked: true },
+    { id: "status", label: "Status", locked: false },
+    { id: "target_date", label: "Target date", locked: false },
+    { id: "owner", label: "Owner", locked: false },
+    { id: "team", label: "Team", locked: false },
+    { id: "last_updated", label: "Last updated", locked: false },
+  ]
+  return (
+    <div ref={ref} className="relative">
+      <button onClick={() => setOpen(!open)} className="flex items-center gap-1 rounded border px-2 py-1 text-sm text-muted-foreground hover:bg-accent">
+        <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+        Columns
+      </button>
+      {open && (
+        <div role="dialog" className="absolute right-0 top-full z-50 mt-1 w-52 rounded-lg border bg-popover shadow-lg p-2">
+          <div className="text-xs font-medium text-muted-foreground px-2 py-1">Columns</div>
+          <div className="max-h-64 overflow-y-auto">
+            {cols.map((col) => (
+              <div key={col.id} className="flex items-center justify-between px-2 py-1.5 text-sm">
+                <span>{col.label}</span>
+                {col.locked ? (
+                  <svg className="size-4 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                ) : (
+                  <button
+                    onClick={() => setVisibleColumns((prev) => ({ ...prev, [col.id]: !prev[col.id] }))}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${visibleColumns[col.id] ? "bg-blue-600" : "bg-muted"}`}
+                  >
+                    <span className={`size-4 rounded-full bg-white shadow-sm transition-transform ${visibleColumns[col.id] ? "translate-x-4" : "translate-x-0.5"}`} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MoreMenu({ open, setOpen, onExport, onSettings }: { open: boolean; setOpen: (v: boolean) => void; onExport: () => void; onSettings: () => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [open, setOpen])
+  return (
+    <div ref={ref} className="relative">
+      <button onClick={() => setOpen(!open)} className="text-muted-foreground hover:text-foreground rounded p-1 hover:bg-accent">
+        <svg className="size-5" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 top-full z-50 mt-1 w-40 rounded-lg border bg-popover shadow-lg py-1">
+          <button role="menuitem" onClick={onExport} className="flex w-full items-center px-3 py-1.5 text-sm hover:bg-accent text-left">Export CSV</button>
+          <button role="menuitem" onClick={onSettings} className="flex w-full items-center px-3 py-1.5 text-sm hover:bg-accent text-left">Settings</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ProjectDirectoryPage() {
   const router = useRouter()
   const [search, setSearch] = useState("")
   const [projects, setProjects] = useState<ProjectItem[]>(mockProjects)
   const [toast, setToast] = useState<string | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [newProjectName, setNewProjectName] = useState("")
+  const [newProjectType, setNewProjectType] = useState("scrum")
+  const [editOpen, setEditOpen] = useState(false)
+  const [editProjectId, setEditProjectId] = useState<number | null>(null)
+  const [editProjectName, setEditProjectName] = useState("")
+  const [archiveConfirmId, setArchiveConfirmId] = useState<number | null>(null)
+  const [sortBy, setSortBy] = useState("following")
+  const [sortAsc, setSortAsc] = useState(true)
+  const [columnsOpen, setColumnsOpen] = useState(false)
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
+    project: true, status: true, target_date: true, owner: true, team: true, last_updated: true,
+  })
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+
+  const handleCreateProject = () => {
+    const name = newProjectName.trim()
+    if (!name) return
+    const key = name.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, "") || "NEW"
+    const id = Date.now()
+    setProjects((prev) => [...prev, {
+      id, key, name, status: "PENDING", icon: "📋", lastUpdated: "just now",
+      tag: "", goal: "", team: "", owner: "Abhishek Sharma", projectType: newProjectType,
+    }])
+    setCreateOpen(false)
+    setNewProjectName("")
+    setNewProjectType("scrum")
+    setToast("Project created")
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  const handleEditProject = (id: number) => {
+    const p = projects.find((x) => x.id === id)
+    if (!p) return
+    setEditProjectId(id)
+    setEditProjectName(p.name)
+    setEditOpen(true)
+  }
+  const commitEdit = () => {
+    if (editProjectId === null) return
+    const newName = editProjectName.trim()
+    if (!newName) return
+    setProjects((prev) => prev.map((x) => x.id === editProjectId ? { ...x, name: newName } : x))
+    setEditOpen(false)
+    setEditProjectId(null)
+    setToast("Project updated")
+    setTimeout(() => setToast(null), 3000)
+  }
   const [filters, setFilters] = useState<Record<FilterKey, Set<string>>>({
     status: new Set(),
     goal: new Set(),
@@ -360,7 +518,13 @@ export default function ProjectDirectoryPage() {
   }, [])
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
-  const handleArchive = (id: number) => { setProjects((p) => p.filter((x) => x.id !== id)); showToast("Project archived") }
+  const handleArchive = (id: number) => { setArchiveConfirmId(id) }
+  const confirmArchive = () => {
+    if (archiveConfirmId === null) return
+    setProjects((p) => p.filter((x) => x.id !== archiveConfirmId))
+    setArchiveConfirmId(null)
+    showToast("Project archived")
+  }
   const handleDelete = (id: number) => { setProjects((p) => p.filter((x) => x.id !== id)); showToast("Project deleted") }
   const toggleFollow = (id: number) => {
     setFollowedProjects((prev) => {
@@ -369,6 +533,17 @@ export default function ProjectDirectoryPage() {
       else next.add(id)
       return next
     })
+    // Sync with /project-directory/following page via localStorage (by project key)
+    const proj = projects.find((p) => p.id === id)
+    if (!proj || typeof window === "undefined") return
+    try {
+      const raw = window.localStorage.getItem("pd_followed_keys")
+      const current: string[] = raw === null ? ["SCRUM", "MOB", "PLAT"] : JSON.parse(raw)
+      const idx = current.indexOf(proj.key)
+      if (idx >= 0) current.splice(idx, 1)
+      else current.push(proj.key)
+      window.localStorage.setItem("pd_followed_keys", JSON.stringify(current))
+    } catch {}
   }
 
   const toggleFilter = (key: FilterKey, value: string) => {
@@ -402,6 +577,13 @@ export default function ProjectDirectoryPage() {
     if (filters.owner.size > 0 && !filters.owner.has(p.owner)) return false
     if (filters.projectType.size > 0 && (!p.projectType || ![...filters.projectType].some((t) => t.toLowerCase() === p.projectType!.toLowerCase()))) return false
     return true
+  }).slice().sort((a, b) => {
+    const dir = sortAsc ? 1 : -1
+    if (sortBy === "name") return a.name.localeCompare(b.name) * dir
+    if (sortBy === "status") return a.status.localeCompare(b.status) * dir
+    if (sortBy === "updated") return a.lastUpdated.localeCompare(b.lastUpdated) * dir
+    if (sortBy === "target date") return 0 // mock has no target date values
+    return 0
   })
 
   return (
@@ -424,14 +606,86 @@ export default function ProjectDirectoryPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-4">
-          <Link href="/projects">
-            <Button className="bg-blue-600 text-white hover:bg-blue-700">Create your first project</Button>
-          </Link>
+          <Button onClick={() => setCreateOpen(true)} className="bg-blue-600 text-white hover:bg-blue-700">Create your first project</Button>
           <Link href="/products" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
             More about projects
           </Link>
         </div>
       </div>
+
+      {/* Create Project modal */}
+      {createOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] bg-black/50" onClick={() => setCreateOpen(false)}>
+          <div className="relative w-full max-w-[480px] rounded-lg border bg-popover p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold mb-3">Create project</h2>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Name <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  autoFocus
+                  placeholder="e.g. Banner Test Project"
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Type</label>
+                <select
+                  value={newProjectType}
+                  onChange={(e) => setNewProjectType(e.target.value)}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="scrum">Scrum</option>
+                  <option value="kanban">Kanban</option>
+                </select>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button onClick={() => setCreateOpen(false)} className="rounded-md border px-4 py-2 text-sm hover:bg-accent">Cancel</button>
+              <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50">Create</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project modal */}
+      {editOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] bg-black/50" onClick={() => setEditOpen(false)}>
+          <div className="relative w-full max-w-[480px] rounded-lg border bg-popover p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold mb-3">Edit project</h2>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Name <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                value={editProjectName}
+                onChange={(e) => setEditProjectName(e.target.value)}
+                autoFocus
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button onClick={() => setEditOpen(false)} className="rounded-md border px-4 py-2 text-sm hover:bg-accent">Cancel</button>
+              <button onClick={commitEdit} disabled={!editProjectName.trim()} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50">Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Archive confirmation */}
+      {archiveConfirmId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setArchiveConfirmId(null)}>
+          <div className="w-full max-w-[400px] rounded-lg border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold">Archive project</h3>
+            <p className="mt-2 text-sm text-muted-foreground">Are you sure you want to archive this project? You can restore it later from the Archived view.</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button onClick={() => setArchiveConfirmId(null)} className="rounded-md border px-4 py-2 text-sm hover:bg-accent">Cancel</button>
+              <button onClick={confirmArchive} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">Archive</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Title + tabs */}
       <div className="mb-4 flex items-center gap-4">
@@ -513,24 +767,21 @@ export default function ProjectDirectoryPage() {
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
             </button>
           </div>
-          <Link href="/project-directory" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-            Sort by following
-            <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12l-4-4h8z" /></svg>
-          </Link>
-          <Link href="/project-directory" className="flex items-center gap-1 rounded border px-2 py-1 text-sm text-muted-foreground hover:bg-accent">
-            <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
-            Columns
-          </Link>
-          <Link href="/project-directory" className="text-muted-foreground hover:text-foreground">
-            <svg className="size-5" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
-          </Link>
+          <SortByDropdown sortBy={sortBy} sortAsc={sortAsc} onSelect={(s) => { if (s === sortBy) setSortAsc((v) => !v); else { setSortBy(s); setSortAsc(true) } }} />
+          <ColumnsPopover open={columnsOpen} setOpen={setColumnsOpen} visibleColumns={visibleColumns} setVisibleColumns={setVisibleColumns} />
+          <MoreMenu open={moreMenuOpen} setOpen={setMoreMenuOpen} onExport={() => { showToast("Export started"); setMoreMenuOpen(false) }} onSettings={() => { router.push("/project-directory"); setMoreMenuOpen(false) }} />
         </div>
       </div>
 
       {/* Table */}
       <div className="rounded-lg border">
         <div className="grid grid-cols-[1fr_100px_100px_80px_100px_100px] gap-4 border-b px-4 py-2 text-xs font-medium text-muted-foreground">
-          <span>Project</span><span>Status</span><span>Target date</span><span>Owner</span><span>Team</span><span>Last updated</span>
+          <span>Project</span>
+          {visibleColumns.status && <span>Status</span>}
+          {visibleColumns.target_date && <span>Target date</span>}
+          {visibleColumns.owner && <span>Owner</span>}
+          {visibleColumns.team && <span>Team</span>}
+          {visibleColumns.last_updated && <span>Last updated</span>}
         </div>
         {filteredProjects.map((project) => (
           <div
@@ -542,20 +793,24 @@ export default function ProjectDirectoryPage() {
               <span className="text-base">{project.icon}</span>
               <span className="text-sm truncate">{project.name}</span>
             </Link>
-            <div>
-              <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase ${projectStatusStyle[project.status]}`}>
-                {project.status}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-              <div className="h-2.5 w-12 rounded bg-muted" />
-            </div>
-            <div className="text-xs text-muted-foreground truncate">{project.owner.split(" ")[0]}</div>
-            <div className="text-xs text-muted-foreground truncate">{project.team}</div>
+            {visibleColumns.status && (
+              <div>
+                <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase ${projectStatusStyle[project.status]}`}>
+                  {project.status}
+                </span>
+              </div>
+            )}
+            {visibleColumns.target_date && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                <div className="h-2.5 w-12 rounded bg-muted" />
+              </div>
+            )}
+            {visibleColumns.owner && <div className="text-xs text-muted-foreground truncate">{project.owner.split(" ")[0]}</div>}
+            {visibleColumns.team && <div className="text-xs text-muted-foreground truncate">{project.team}</div>}
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">{project.lastUpdated}</span>
-              <ProjectRowMenu project={project} onArchive={handleArchive} onDelete={handleDelete} onToast={showToast} following={followedProjects.has(project.id)} onToggleFollow={toggleFollow} />
+              {visibleColumns.last_updated && <span className="text-xs text-muted-foreground">{project.lastUpdated}</span>}
+              <ProjectRowMenu project={project} onArchive={handleArchive} onDelete={handleDelete} onToast={showToast} onEdit={handleEditProject} following={followedProjects.has(project.id)} onToggleFollow={toggleFollow} />
             </div>
           </div>
         ))}

@@ -39,17 +39,29 @@ export default function GoalDetailPage() {
   const [comments, setComments] = useState<Array<{ id: string; author: string; body: string; time: string }>>([])
 
   useEffect(() => {
+    // Archived goals are seeded in the archived page's local state and not in the main
+    // goals API. Provide a fallback for arch-* IDs so their detail pages still open.
+    const archivedFallback: Record<string, GoalData> = {
+      "arch-1": { id: "arch-1", name: "Reduce customer churn by 15%", status: "AT RISK", progress: 72, targetDate: "Sep 2026", owner: "usr-1", team: "Engineering", following: true, createdAt: "2025-12-01", ownerUser: { id: "usr-1", name: "Abhishek Sharma", displayName: "Abhishek Sharma", email: "abhishek@example.com" } },
+      "arch-2": { id: "arch-2", name: "Complete infrastructure migration to AWS", status: "COMPLETED", progress: 100, targetDate: "Feb 2026", owner: "usr-pp", team: "Platform", following: true, createdAt: "2025-09-01", ownerUser: { id: "usr-pp", name: "Priya Patel", displayName: "Priya Patel", email: "priya@example.com" } },
+      "arch-3": { id: "arch-3", name: "Launch mobile app v2.0", status: "CANCELLED", progress: 45, targetDate: "Jan 2026", owner: "usr-jc", team: "Mobile", following: false, createdAt: "2025-08-01", ownerUser: { id: "usr-jc", name: "James Chen", displayName: "James Chen", email: "james@example.com" } },
+    }
+
     fetch("/api/data/goals")
       .then((r) => r.json())
       .then((goals: GoalData[]) => {
-        const found = goals.find((g) => g.id === goalId)
+        const found = goals.find((g) => g.id === goalId) ?? archivedFallback[goalId]
         if (found) {
           setGoal(found)
           setFollowing(found.following)
         }
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        const fallback = archivedFallback[goalId]
+        if (fallback) { setGoal(fallback); setFollowing(fallback.following) }
+        setLoading(false)
+      })
   }, [goalId])
 
   const postComment = () => {

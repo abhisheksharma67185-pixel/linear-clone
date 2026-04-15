@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
@@ -25,8 +26,24 @@ const typeStyle: Record<string, string> = {
 }
 
 export default function ProjectArchivedPage() {
+  const router = useRouter()
   const [projects, setProjects] = useState<ArchivedProject[]>(initialProjects)
   const [search, setSearch] = useState("")
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [newProjectName, setNewProjectName] = useState("")
+  const [newProjectType, setNewProjectType] = useState<"scrum" | "kanban">("scrum")
+  const [toast, setToast] = useState<string | null>(null)
+
+  const handleCreateProject = () => {
+    const name = newProjectName.trim()
+    if (!name) return
+    // Note: archived page is for showing archived; new projects don't land here. Just close.
+    setCreateOpen(false)
+    setNewProjectName("")
+    setToast(`Project "${name}" created in All projects`)
+    setTimeout(() => setToast(null), 3000)
+  }
 
   const filteredProjects = projects.filter(
     (p) =>
@@ -38,8 +55,10 @@ export default function ProjectArchivedPage() {
     setProjects((prev) => prev.filter((p) => p.id !== id))
   }
 
-  function handleDelete(id: number) {
-    setProjects((prev) => prev.filter((p) => p.id !== id))
+  function confirmDelete() {
+    if (deleteConfirmId === null) return
+    setProjects((prev) => prev.filter((p) => p.id !== deleteConfirmId))
+    setDeleteConfirmId(null)
   }
 
   return (
@@ -53,10 +72,50 @@ export default function ProjectArchivedPage() {
           <p className="text-sm">Use projects to keep everyone up to date with weekly status updates on any stream on work.</p>
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-4">
-          <Button className="bg-blue-600 text-white hover:bg-blue-700">Create your first project</Button>
-          <button className="text-sm text-muted-foreground hover:underline">More about projects</button>
+          <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setCreateOpen(true)}>Create your first project</Button>
+          <Link href="/products" className="text-sm text-muted-foreground hover:underline">More about projects</Link>
         </div>
       </div>
+
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 rounded-lg border bg-background px-4 py-3 shadow-lg text-sm">{toast}</div>
+      )}
+
+      {createOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] bg-black/50" onClick={() => setCreateOpen(false)}>
+          <div className="relative w-full max-w-[480px] rounded-lg border bg-popover p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold mb-3">Create project</h2>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Name <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  autoFocus
+                  placeholder="e.g. Archived Page E2E Project"
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Type</label>
+                <select
+                  value={newProjectType}
+                  onChange={(e) => setNewProjectType(e.target.value as "scrum" | "kanban")}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="scrum">Scrum</option>
+                  <option value="kanban">Kanban</option>
+                </select>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-2">
+              <button onClick={() => setCreateOpen(false)} className="rounded-md border px-4 py-2 text-sm hover:bg-accent">Cancel</button>
+              <button onClick={handleCreateProject} disabled={!newProjectName.trim()} className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50">Create</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Title + tabs */}
       <div className="mb-4 flex items-center gap-4">
@@ -107,13 +166,16 @@ export default function ProjectArchivedPage() {
               key={project.id}
               className="grid grid-cols-[1fr_80px_90px_120px_180px] gap-4 border-b last:border-b-0 px-4 py-3 items-center hover:bg-accent/50 transition-colors"
             >
-              {/* Project name + icon */}
-              <div className="flex items-center gap-3">
+              {/* Project name + icon — clickable */}
+              <button
+                onClick={() => router.push(`/projects/${project.key}/board`)}
+                className="flex items-center gap-3 text-left hover:text-blue-600 transition-colors"
+              >
                 <div className="flex size-8 items-center justify-center rounded bg-gray-200 text-sm font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                   {project.icon}
                 </div>
                 <span className="text-sm font-medium truncate">{project.name}</span>
-              </div>
+              </button>
 
               {/* Key */}
               <span className="text-xs text-muted-foreground font-mono">{project.key}</span>
@@ -142,7 +204,7 @@ export default function ProjectArchivedPage() {
                   variant="outline"
                   size="sm"
                   className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
-                  onClick={() => handleDelete(project.id)}
+                  onClick={() => setDeleteConfirmId(project.id)}
                 >
                   Delete
                 </Button>
@@ -156,6 +218,20 @@ export default function ProjectArchivedPage() {
             <polyline points="21 8 21 21 3 21 3 8" /><rect x="1" y="3" width="22" height="5" /><line x1="10" y1="12" x2="14" y2="12" />
           </svg>
           <p className="text-sm text-muted-foreground">No archived projects found.</p>
+        </div>
+      )}
+
+      {/* Delete confirmation dialog */}
+      {deleteConfirmId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setDeleteConfirmId(null)}>
+          <div className="w-full max-w-[400px] rounded-lg border bg-background p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold">Delete project permanently?</h3>
+            <p className="mt-2 text-sm text-muted-foreground">This action cannot be undone. The project will be permanently removed.</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
+              <Button className="bg-red-600 text-white hover:bg-red-700" onClick={confirmDelete}>Delete permanently</Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -24,42 +24,43 @@ const BADGES = [
   { key: "star", label: "Star", emoji: "⭐" },
 ]
 
+// "to.kind" is 'team' for team kudos (green left border), 'peer' for peer kudos (yellow left border)
 const initialKudos = [
   {
     id: "k-1",
     from: { name: "Abhishek Sharma", initials: "AS" },
-    to: { name: "Sam Williams", initials: "SW" },
+    to: { name: "Sam Williams", initials: "SW", kind: "peer" as const },
     message: "Amazing work on the sprint board! The drag-and-drop is super smooth now.",
     card: "hammer",
-    createdAt: "2026-05-21T10:00:00.000Z",
-    reactions: [{ emoji: "🎉", count: 3 }, { emoji: "💪", count: 2 }],
+    createdAt: "2026-03-12T10:00:00.000Z",
+    reactions: [{ emoji: "🎉", count: 2 }, { emoji: "👏", count: 1 }],
   },
   {
     id: "k-2",
     from: { name: "Jordan Lee", initials: "JL" },
-    to: { name: "Abhishek Sharma", initials: "AS" },
+    to: { name: "Abhishek Sharma", initials: "AS", kind: "peer" as const },
     message: "Thanks for helping debug the authentication flow — saved us hours!",
     card: "heart",
-    createdAt: "2026-05-20T14:30:00.000Z",
-    reactions: [{ emoji: "❤️", count: 4 }, { emoji: "🙌", count: 1 }],
+    createdAt: "2026-03-14T14:30:00.000Z",
+    reactions: [{ emoji: "❤️", count: 4 }, { emoji: "🙏", count: 1 }],
   },
   {
     id: "k-3",
     from: { name: "Taylor Brown", initials: "TB" },
-    to: { name: "Engineering Team", initials: "ET" },
+    to: { name: "Engineering Team", initials: "ET", kind: "team" as const },
     message: "Great collaboration on the release! Everyone pulled together to ship on time.",
     card: "crayons",
-    createdAt: "2026-05-19T09:00:00.000Z",
-    reactions: [{ emoji: "🏆", count: 5 }, { emoji: "🔥", count: 3 }],
+    createdAt: "2026-03-14T09:00:00.000Z",
+    reactions: [{ emoji: "🚀", count: 5 }, { emoji: "🎉", count: 3 }],
   },
   {
     id: "k-4",
     from: { name: "Sam Williams", initials: "SW" },
-    to: { name: "Jordan Lee", initials: "JL" },
+    to: { name: "Jordan Lee", initials: "JL", kind: "peer" as const },
     message: "Your code review feedback is always thorough and constructive. Really appreciate it!",
     card: "heart",
-    createdAt: "2026-05-18T16:00:00.000Z",
-    reactions: [{ emoji: "👏", count: 2 }],
+    createdAt: "2026-03-10T16:00:00.000Z",
+    reactions: [] as { emoji: string; count: number }[],
   },
 ]
 
@@ -81,11 +82,36 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(days / 7)}w ago`
 }
 
+const EMOJI_PICKER = ["❤️", "🙏", "🎉", "🔥", "👏", "🚀", "💪", "🙌", "⭐", "👍"]
+const CURRENT_USER = "Abhishek Sharma"
+
 export default function KudosPage() {
   const [tab, setTab] = useState<"all" | "received" | "given">("all")
   const [kudos, setKudos] = useState(initialKudos)
   const [modalOpen, setModalOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [emojiPickerForKudo, setEmojiPickerForKudo] = useState<string | null>(null)
+
+  const addReaction = (kudoId: string, emoji: string) => {
+    setKudos((prev) => prev.map((k) => {
+      if (k.id !== kudoId) return k
+      const existing = k.reactions.find((r) => r.emoji === emoji)
+      if (existing) {
+        return { ...k, reactions: k.reactions.map((r) => r.emoji === emoji ? { ...r, count: r.count + 1 } : r) }
+      }
+      return { ...k, reactions: [...k.reactions, { emoji, count: 1 }] }
+    }))
+  }
+  const toggleReaction = (kudoId: string, emoji: string) => {
+    setKudos((prev) => prev.map((k) => {
+      if (k.id !== kudoId) return k
+      const existing = k.reactions.find((r) => r.emoji === emoji)
+      if (!existing) return k
+      // Toggle: if count > 1 decrement; if 1 remove
+      if (existing.count <= 1) return { ...k, reactions: k.reactions.filter((r) => r.emoji !== emoji) }
+      return { ...k, reactions: k.reactions.map((r) => r.emoji === emoji ? { ...r, count: r.count - 1 } : r) }
+    }))
+  }
 
   // Modal form state
   const [recipientSearch, setRecipientSearch] = useState("")
@@ -303,48 +329,86 @@ export default function KudosPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {filtered.map((kudo) => (
-            <div key={kudo.id} className="rounded-xl border overflow-hidden">
-              {/* Card gradient banner */}
-              <div className={`h-2 bg-gradient-to-r ${CARD_COLORS[kudo.card] ?? CARD_COLORS.hammer}`} />
+          {filtered.map((kudo) => {
+            const borderColor = kudo.to.kind === "team" ? "border-l-4 border-l-green-400" : "border-l-4 border-l-yellow-400"
+            const hasReactions = kudo.reactions.length > 0
+            const addBtnClass = hasReactions
+              ? "flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent transition-colors"
+              // When no reactions, only show Add on hover
+              : "flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent transition-colors opacity-0 group-hover/kudo:opacity-100"
+            return (
+              <div key={kudo.id} className={`group/kudo rounded-xl border overflow-hidden ${borderColor} relative`}>
+                {/* Card gradient banner */}
+                <div className={`h-2 bg-gradient-to-r ${CARD_COLORS[kudo.card] ?? CARD_COLORS.hammer}`} />
 
-              <div className="p-4">
-                {/* From → To */}
-                <div className="flex items-center gap-2 mb-3">
-                  <Avatar className="size-7">
-                    <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{kudo.from.initials}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium">{kudo.from.name}</span>
-                  <svg className="size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-                  <Avatar className="size-7">
-                    <AvatarFallback className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">{kudo.to.initials}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium">{kudo.to.name}</span>
-                  <span className="text-xs text-muted-foreground ml-auto">{timeAgo(kudo.createdAt)}</span>
-                </div>
-
-                {/* Message */}
-                <p className="text-sm text-foreground mb-3">{kudo.message}</p>
-
-                {/* Reactions */}
-                <div className="flex items-center gap-2">
-                  {kudo.reactions.map((r) => (
-                    <button
-                      key={r.emoji}
-                      className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs hover:bg-accent transition-colors"
-                    >
-                      <span>{r.emoji}</span>
-                      <span className="text-muted-foreground">{r.count}</span>
+                <div className="p-4">
+                  {/* From → To */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <button onClick={() => showToast(`Viewing ${kudo.from.name}'s profile`)} className="flex items-center gap-2">
+                      <Avatar className="size-7">
+                        <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{kudo.from.initials}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium hover:text-blue-600 hover:underline">{kudo.from.name}</span>
                     </button>
-                  ))}
-                  <button className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent transition-colors">
-                    <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
-                    Add
-                  </button>
+                    <svg className="size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                    <button
+                      onClick={() => {
+                        const msg = kudo.to.kind === "team" ? `Viewing ${kudo.to.name}` : `Viewing ${kudo.to.name}'s profile`
+                        showToast(msg)
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Avatar className="size-7">
+                        <AvatarFallback className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">{kudo.to.initials}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium hover:text-blue-600 hover:underline">{kudo.to.name}</span>
+                    </button>
+                    <span className="text-xs text-muted-foreground ml-auto">{timeAgo(kudo.createdAt)}</span>
+                  </div>
+
+                  {/* Message */}
+                  <p className="text-sm text-foreground mb-3">{kudo.message}</p>
+
+                  {/* Reactions */}
+                  <div className="flex items-center gap-2 relative">
+                    {kudo.reactions.map((r) => (
+                      <button
+                        key={r.emoji}
+                        onClick={() => toggleReaction(kudo.id, r.emoji)}
+                        className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs hover:bg-accent transition-colors"
+                      >
+                        <span>{r.emoji}</span>
+                        <span className="text-muted-foreground">{r.count}</span>
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setEmojiPickerForKudo(emojiPickerForKudo === kudo.id ? null : kudo.id)}
+                      className={addBtnClass}
+                    >
+                      <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
+                      Add
+                    </button>
+                    {emojiPickerForKudo === kudo.id && (
+                      <div className="absolute left-0 top-full z-50 mt-1 flex gap-1 rounded-lg border bg-popover p-2 shadow-lg">
+                        {EMOJI_PICKER.map((e) => (
+                          <button
+                            key={e}
+                            onClick={() => { addReaction(kudo.id, e); setEmojiPickerForKudo(null) }}
+                            className="rounded p-1 text-lg hover:bg-accent"
+                          >
+                            {e}
+                          </button>
+                        ))}
+                        <button onClick={() => setEmojiPickerForKudo(null)} className="rounded p-1 text-muted-foreground hover:bg-accent" title="Close">
+                          <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
