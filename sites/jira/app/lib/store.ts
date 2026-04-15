@@ -107,9 +107,43 @@ let _comments: Comment[] = deepClone(initialComments);
 let _history: IssueHistoryEntry[] = deepClone(initialHistory);
 let _nextHistoryId = 9;
 
+// Derive next-available issue id and per-project-key counters from existing
+// data, so newly created issues never collide with seeded ones. The legacy
+// SCRUM/KANB defaults are preserved for episode tooling that injects issues
+// under those keys without seeding them first.
+function deriveIssueCounters(issues: Issue[]): {
+  nextId: number;
+  perProjectKey: Record<string, number>;
+} {
+  let maxIdNum = 0;
+  const perProjectKey: Record<string, number> = {};
+  for (const issue of issues) {
+    const idMatch = /^iss-(\d+)$/.exec(issue.id);
+    if (idMatch) {
+      const n = parseInt(idMatch[1], 10);
+      if (n > maxIdNum) maxIdNum = n;
+    }
+    const keyMatch = /^([A-Z][A-Z0-9]*)-(\d+)$/.exec(issue.key);
+    if (keyMatch) {
+      const prefix = keyMatch[1];
+      const num = parseInt(keyMatch[2], 10);
+      const next = num + 1;
+      if (!perProjectKey[prefix] || next > perProjectKey[prefix]) {
+        perProjectKey[prefix] = next;
+      }
+    }
+  }
+  return { nextId: maxIdNum + 1, perProjectKey };
+}
+
 // Auto-increment counters per project key
-let _nextIssueCounters: Record<string, number> = { SCRUM: 9, KANB: 9 };
-let _nextIssueId = 27;
+const _initialIssueCounters = deriveIssueCounters(_issues);
+let _nextIssueCounters: Record<string, number> = {
+  SCRUM: 9,
+  KANB: 9,
+  ..._initialIssueCounters.perProjectKey,
+};
+let _nextIssueId = _initialIssueCounters.nextId;
 let _nextProjectId = 9;
 let _nextSprintId = 4;
 let _nextEpicId = 4;
@@ -182,11 +216,21 @@ export function createIssue(fields: {
   if (!_nextIssueCounters[projectKey]) {
     _nextIssueCounters[projectKey] = 1;
   }
+  // Skip any per-project key that's already used (defensive — counter
+  // should already be ahead, but guard against stale state).
+  while (_issues.some((i) => i.key === `${projectKey}-${_nextIssueCounters[projectKey]}`)) {
+    _nextIssueCounters[projectKey]++;
+  }
   const issueKey = `${projectKey}-${_nextIssueCounters[projectKey]++}`;
+  // Same defensive guard for global issue id.
+  while (_issues.some((i) => i.id === `iss-${_nextIssueId}`)) {
+    _nextIssueId++;
+  }
+  const issueId = `iss-${_nextIssueId++}`;
   const timestamp = now();
 
   const issue: Issue = {
-    id: `iss-${_nextIssueId++}`,
+    id: issueId,
     key: issueKey,
     summary: fields.summary.trim(),
     description: fields.description ?? "",
@@ -842,8 +886,9 @@ export function reset(seed?: number): void {
   _comments = deepClone(initialComments);
   _history = deepClone(initialHistory);
 
-  _nextIssueCounters = { SCRUM: 19, KANB: 9 };
-  _nextIssueId = 27;
+  const derived = deriveIssueCounters(_issues);
+  _nextIssueCounters = { SCRUM: 19, KANB: 9, ...derived.perProjectKey };
+  _nextIssueId = derived.nextId;
   _nextProjectId = 9;
   _nextSprintId = 4;
   _nextEpicId = 4;
