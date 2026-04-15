@@ -101,23 +101,37 @@ export default function DashboardPage() {
     })
   }, [])
 
-  // Filter issues by tab
+  // Filter issues by tab. Each tab must return a genuinely different slice
+  // so that switching tabs is observable. The mock data doesn't track a
+  // real "viewed" or "starred" state per issue, so "viewed" uses the global
+  // recency feed and "starred" uses priority as a stand-in.
+  const CURRENT_USER = "usr-1"
   const filteredIssues = (() => {
     const sorted = [...issues].sort(
       (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     )
     switch (activeTab) {
       case "assigned":
-        return sorted.filter((i) => i.assigneeId === "usr-1")
+        return sorted.filter((i) => i.assigneeId === CURRENT_USER)
       case "starred":
-        return sorted.slice(0, 5) // placeholder
+        // Stand-in for "starred": items the user reported but isn't assigned
+        // to — i.e., work the user is watching rather than doing.
+        return sorted.filter(
+          (i) => i.reporterId === CURRENT_USER && i.assigneeId !== CURRENT_USER
+        )
       case "viewed":
-        return sorted.slice(0, 15) // placeholder
+        // Stand-in for "viewed": global recency feed (not filtered to current user).
+        return sorted.slice(0, 15)
       case "boards":
         return [] // boards tab shows project boards, not issues
       case "worked_on":
       default:
-        return sorted.slice(0, 20)
+        // Issues the current user is directly involved in.
+        return sorted
+          .filter(
+            (i) => i.assigneeId === CURRENT_USER || i.reporterId === CURRENT_USER
+          )
+          .slice(0, 20)
     }
   })()
 

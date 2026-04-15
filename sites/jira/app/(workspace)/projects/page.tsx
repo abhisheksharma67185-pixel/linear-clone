@@ -19,6 +19,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ArrowDown01Icon,
+  ArrowUp01Icon,
   Layers01Icon,
 } from "@hugeicons/core-free-icons"
 
@@ -209,6 +210,7 @@ export default function SpacesPage() {
   const [search, setSearch] = useState("")
   const [showTemplates, setShowTemplates] = useState(false)
   const [activeFilters, setActiveFilters] = useState<string[]>([...filterChips])
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [starredProjects, setStarredProjects] = useState<Set<string>>(new Set())
   const [createOpen, setCreateOpen] = useState(false)
   const [newSpaceName, setNewSpaceName] = useState("")
@@ -267,10 +269,24 @@ export default function SpacesPage() {
     setActiveFilters([])
   }
 
-  const filteredProjects = projects.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.key.toLowerCase().includes(search.toLowerCase())
-  )
+  const softwareActive = activeFilters.includes("Jira - software spaces")
+  const businessActive = activeFilters.includes("Jira - business spaces")
+
+  const filteredProjects = projects
+    .filter((p) =>
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.key.toLowerCase().includes(search.toLowerCase())
+    )
+    // Chip semantics: scrum == software, anything else (kanban) == business.
+    // If neither chip is active, show no projects. If both active, show all.
+    .filter((p) => {
+      const isSoftware = p.type === "scrum"
+      return (isSoftware && softwareActive) || (!isSoftware && businessActive)
+    })
+    .sort((a, b) => {
+      const cmp = a.name.localeCompare(b.name)
+      return sortDir === "asc" ? cmp : -cmp
+    })
 
   if (loading) {
     return (
@@ -447,9 +463,15 @@ export default function SpacesPage() {
                   </svg>
                 </TableHead>
                 <TableHead>
-                  <button className="flex items-center gap-1 text-xs font-medium">
+                  <button
+                    className="flex items-center gap-1 text-xs font-medium hover:text-foreground transition-colors"
+                    onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+                  >
                     Name
-                    <HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />
+                    <HugeiconsIcon
+                      icon={sortDir === "asc" ? ArrowDown01Icon : ArrowUp01Icon}
+                      className="size-3"
+                    />
                   </button>
                 </TableHead>
                 <TableHead className="text-xs font-medium">Key</TableHead>
