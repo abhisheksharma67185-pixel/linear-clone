@@ -180,6 +180,16 @@ export interface Goal {
   createdAt: string;
 }
 
+export interface Team {
+  [key: string]: unknown;
+  id: string;
+  name: string;
+  description: string;
+  members: number;
+  color: string;
+  createdAt: string;
+}
+
 export interface IssueHistoryEntry {
   [key: string]: unknown;
   id: string;
@@ -269,6 +279,7 @@ export const projects: Project[] = [
   { id: "proj-6", key: "MOB",    name: "Mobile App",          lead: "usr-17", type: "scrum",  description: "iOS and Android apps",        createdAt: "2025-10-01T09:00:00.000Z", workflow: ["Backlog", "In Progress", "In Review", "Testing", "Done", "Won't Fix"], teamManaged: false },
   { id: "proj-7", key: "DEVOPS", name: "DevOps",              lead: "usr-7",  type: "kanban", description: "Infrastructure and tooling",  createdAt: "2025-06-01T09:00:00.000Z", workflow: ["Backlog", "In Progress", "Deploying", "Monitoring", "Done"], teamManaged: false },
   { id: "proj-8", key: "LCRM",   name: "Legacy CRM",          lead: "usr-12", type: "scrum",  description: "Legacy CRM to be migrated — non-standard workflow", createdAt: "2024-06-01T09:00:00.000Z", workflow: ["To Do", "Doing", "Review", "Testing", "Done", "Rejected"], teamManaged: true },
+  { id: "proj-9", key: "SCRUM",  name: "My Scrum Project",    lead: "usr-1",  type: "scrum",  description: "Team scrum project",          createdAt: "2026-03-01T09:00:00.000Z", workflow: ["To Do", "In Progress", "Done"], teamManaged: true },
 ];
 
 // ---------------------------------------------------------------------------
@@ -319,6 +330,8 @@ export const sprints: Sprint[] = [
   { id: "sprint-3", name: "PLAT Sprint 12", projectId: "proj-4", startDate: "2026-03-17", endDate: "2026-03-30", goal: "Payment + Auth integration",  state: "closed" },
   { id: "sprint-4", name: "PLAT Sprint 13", projectId: "proj-4", startDate: "2026-03-31", endDate: "2026-04-13", goal: "Pre-release hardening",       state: "active" },
   { id: "sprint-5", name: "PLAT Sprint 14", projectId: "proj-4", startDate: "2026-04-14", endDate: "2026-04-28", goal: "",                             state: "future" },
+  { id: "sprint-6", name: "SCRUM Sprint 0", projectId: "proj-9", startDate: "2026-04-10", endDate: "2026-04-24", goal: "Initial setup",              state: "active" },
+  { id: "sprint-7", name: "SCRUM Sprint 1", projectId: "proj-9", startDate: "2026-04-25", endDate: "2026-05-08", goal: "",                             state: "future" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -639,6 +652,17 @@ const susIssues = makeSupportIssues("SUS", "proj-1", 290, "usr-19");
 const seuIssues = makeSupportIssues("SEU", "proj-2", 320, "usr-19");
 const sapIssues = makeSupportIssues("SAP", "proj-3", 350, "usr-19");
 
+// --- SCRUM project issues ---
+const scrumIssues: Issue[] = [
+  { id: "iss-scrum-1", key: "SCRUM-1", summary: "Task 1",       description: "First task in scrum project",  type: "task",    status: "To Do",       priority: "medium", assigneeId: "usr-1", reporterId: "usr-1", sprintId: "sprint-6", epicId: null, projectId: "proj-9", storyPoints: 3,    labels: [], componentIds: [], fixVersionIds: [], createdAt: "2026-04-15T09:00:00.000Z", updatedAt: "2026-04-15T09:00:00.000Z" },
+  { id: "iss-scrum-2", key: "SCRUM-2", summary: "Task 2",       description: "Second task in scrum project", type: "task",    status: "In Progress", priority: "high",   assigneeId: "usr-1", reporterId: "usr-1", sprintId: "sprint-6", epicId: null, projectId: "proj-9", storyPoints: 5,    labels: [], componentIds: [], fixVersionIds: [], createdAt: "2026-04-14T09:00:00.000Z", updatedAt: "2026-04-20T09:00:00.000Z" },
+  { id: "iss-scrum-3", key: "SCRUM-3", summary: "Task 3",       description: "Third task",                   type: "task",    status: "In Progress", priority: "medium", assigneeId: "usr-1", reporterId: "usr-1", sprintId: null,       epicId: null, projectId: "proj-9", storyPoints: 3,    labels: [], componentIds: [], fixVersionIds: [], createdAt: "2026-04-13T09:00:00.000Z", updatedAt: "2026-04-13T09:00:00.000Z" },
+  { id: "iss-scrum-5", key: "SCRUM-5", summary: "vijay",        description: "",                              type: "task",    status: "To Do",       priority: "medium", assigneeId: null,    reporterId: "usr-1", sprintId: null,       epicId: null, projectId: "proj-9", storyPoints: null,  labels: [], componentIds: [], fixVersionIds: [], createdAt: "2026-04-12T09:00:00.000Z", updatedAt: "2026-04-12T09:00:00.000Z" },
+  { id: "iss-scrum-6", key: "SCRUM-6", summary: "wsdsadaas",    description: "",                              type: "task",    status: "To Do",       priority: "medium", assigneeId: null,    reporterId: "usr-1", sprintId: null,       epicId: null, projectId: "proj-9", storyPoints: null,  labels: [], componentIds: [], fixVersionIds: [], createdAt: "2026-04-11T09:00:00.000Z", updatedAt: "2026-04-11T09:00:00.000Z" },
+  { id: "iss-scrum-7", key: "SCRUM-7", summary: "geeta",        description: "",                              type: "task",    status: "To Do",       priority: "medium", assigneeId: null,    reporterId: "usr-1", sprintId: null,       epicId: null, projectId: "proj-9", storyPoints: null,  labels: [], componentIds: [], fixVersionIds: [], createdAt: "2026-04-10T09:00:00.000Z", updatedAt: "2026-04-10T09:00:00.000Z" },
+  { id: "iss-scrum-8", key: "SCRUM-8", summary: "geeta",        description: "",                              type: "task",    status: "To Do",       priority: "medium", assigneeId: null,    reporterId: "usr-1", sprintId: null,       epicId: null, projectId: "proj-9", storyPoints: null,  labels: [], componentIds: [], fixVersionIds: [], createdAt: "2026-04-09T09:00:00.000Z", updatedAt: "2026-04-09T09:00:00.000Z" },
+];
+
 // --- Combined issues export ---
 
 export const issues: Issue[] = [
@@ -650,6 +674,7 @@ export const issues: Issue[] = [
   ...susIssues,
   ...seuIssues,
   ...sapIssues,
+  ...scrumIssues,
 ];
 
 // ---------------------------------------------------------------------------
@@ -780,6 +805,12 @@ export interface Plan {
 }
 
 export const plans: Plan[] = [];
+
+export const teams: Team[] = [
+  { id: "team-1", name: "Engineering", description: "Build and maintain the core product, APIs, and infrastructure.", members: 12, color: "bg-blue-500", createdAt: "2025-06-01T09:00:00.000Z" },
+  { id: "team-2", name: "Product", description: "Define product strategy, roadmap, and feature prioritization.", members: 6, color: "bg-purple-500", createdAt: "2025-06-01T09:00:00.000Z" },
+  { id: "team-3", name: "Design", description: "Craft user experiences, visual design, and design systems.", members: 5, color: "bg-pink-500", createdAt: "2025-06-01T09:00:00.000Z" },
+];
 
 // ---------------------------------------------------------------------------
 // Dashboard stats

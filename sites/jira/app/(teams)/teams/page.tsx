@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -12,51 +13,58 @@ const people = [
   { name: "Vikram Singh", initials: "VS", color: "bg-orange-600", role: "QA Engineer" },
 ]
 
-const teams = [
-  {
-    name: "Engineering",
-    slug: "engineering",
-    description: "Build and maintain the core product, APIs, and infrastructure.",
-    members: 12,
-    color: "bg-blue-500",
-    icon: (
-      <svg className="size-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polyline points="16 18 22 12 16 6" />
-        <polyline points="8 6 2 12 8 18" />
-      </svg>
-    ),
-  },
-  {
-    name: "Product",
-    slug: "product",
-    description: "Define product strategy, roadmap, and feature prioritization.",
-    members: 6,
-    color: "bg-purple-500",
-    icon: (
-      <svg className="size-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="3" width="7" height="7" />
-        <rect x="14" y="3" width="7" height="7" />
-        <rect x="3" y="14" width="7" height="7" />
-        <rect x="14" y="14" width="7" height="7" />
-      </svg>
-    ),
-  },
-  {
-    name: "Design",
-    slug: "design",
-    description: "Craft user experiences, visual design, and design systems.",
-    members: 5,
-    color: "bg-pink-500",
-    icon: (
-      <svg className="size-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="10" />
-        <circle cx="12" cy="12" r="3" />
-      </svg>
-    ),
-  },
-]
+interface TeamData {
+  id: string
+  name: string
+  description: string
+  members: number
+  color: string
+  createdAt: string
+}
 
 export default function TeamsForYouPage() {
+  const [teams, setTeams] = useState<TeamData[]>([])
+  const [addPeopleOpen, setAddPeopleOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState("")
+  const [toast, setToast] = useState<string | null>(null)
+  const [createTeamOpen, setCreateTeamOpen] = useState(false)
+  const [newTeamName, setNewTeamName] = useState("")
+  const [newTeamDesc, setNewTeamDesc] = useState("")
+
+  const fetchTeams = () => {
+    fetch("/api/data/teams").then((r) => r.json()).then(setTeams).catch(() => {})
+  }
+
+  useEffect(() => {
+    fetchTeams()
+    // Re-fetch when page becomes visible (e.g. after creating team from nav dropdown)
+    const onFocus = () => fetchTeams()
+    window.addEventListener("focus", onFocus)
+    // Listen for custom event from Create Team dialogs
+    const onTeamCreated = () => fetchTeams()
+    window.addEventListener("team-created", onTeamCreated)
+    return () => { window.removeEventListener("focus", onFocus); window.removeEventListener("team-created", onTeamCreated) }
+  }, [])
+
+  const handleCreateTeam = async () => {
+    if (!newTeamName.trim()) return
+    const res = await fetch("/api/data/teams", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newTeamName.trim(), description: newTeamDesc.trim() }),
+    })
+    if (res.ok) {
+      const newTeam = await res.json()
+      setTeams((prev) => [...prev, newTeam])
+      setCreateTeamOpen(false)
+      setNewTeamName("")
+      setNewTeamDesc("")
+      setToast(`Team "${newTeam.name}" created`)
+      setTimeout(() => setToast(null), 3000)
+      window.dispatchEvent(new CustomEvent("team-created"))
+    }
+  }
+
   return (
     <div className="p-8 max-w-5xl">
       {/* People you work with */}
@@ -64,7 +72,7 @@ export default function TeamsForYouPage() {
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-semibold">People you work with</h2>
-            <Button variant="outline" size="sm">Add people</Button>
+            <Button variant="outline" size="sm" onClick={() => setAddPeopleOpen(true)}>Add people</Button>
           </div>
           <Link href="/teams/people" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             Browse everyone
@@ -104,33 +112,33 @@ export default function TeamsForYouPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {teams.map((team) => (
             <Link
-              key={team.slug}
-              href={`/teams/${team.slug}`}
-              className="group flex flex-col rounded-lg border p-5 hover:bg-accent/50 transition-colors"
+              key={team.id}
+              href={`/teams/${team.id}`}
+              className="group flex flex-col rounded-lg border p-5 hover:shadow-md transition-all"
             >
-              <div className="flex items-center gap-3 mb-3">
+              {/* Top row: team icon + user avatar */}
+              <div className="flex items-start justify-between mb-4">
                 <div className={`flex size-10 items-center justify-center rounded-lg ${team.color}`}>
-                  {team.icon}
+                  <svg className="size-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold group-hover:text-blue-600 transition-colors">{team.name}</h3>
-                  <span className="text-xs text-muted-foreground">{team.members} members</span>
-                </div>
+                <Avatar className="size-7">
+                  <AvatarFallback className="text-[10px] bg-teal-500 text-white font-bold">AS</AvatarFallback>
+                </Avatar>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">{team.description}</p>
-              <div className="mt-3 flex -space-x-2">
-                {Array.from({ length: Math.min(team.members, 4) }).map((_, i) => (
-                  <Avatar key={i} className="size-7 border-2 border-background">
-                    <AvatarFallback className="text-[10px] bg-gray-200 dark:bg-gray-700">
-                      {String.fromCharCode(65 + i)}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
-                {team.members > 4 && (
-                  <div className="flex size-7 items-center justify-center rounded-full border-2 border-background bg-gray-100 dark:bg-gray-800 text-[10px] text-muted-foreground font-medium">
-                    +{team.members - 4}
-                  </div>
-                )}
+
+              {/* Team name */}
+              <h3 className="text-sm font-semibold group-hover:text-blue-600 transition-colors">{team.name}</h3>
+
+              {/* Official team badge + member count */}
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="text-xs text-muted-foreground">Official team</span>
+                <svg className="size-3.5 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
+                <span className="text-xs text-muted-foreground">· {team.members} member{team.members !== 1 ? "s" : ""}</span>
               </div>
             </Link>
           ))}
@@ -156,12 +164,127 @@ export default function TeamsForYouPage() {
           </p>
           <Button
             className="bg-blue-600 text-white hover:bg-blue-700"
-            onClick={() => window.dispatchEvent(new CustomEvent("open-create-team"))}
+            onClick={() => setCreateTeamOpen(true)}
           >
             Create a team
           </Button>
         </div>
       </div>
+
+      {/* Create team modal */}
+      {createTeamOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setCreateTeamOpen(false)}>
+          <div className="fixed inset-0 bg-black/50" />
+          <div className="relative z-10 w-full max-w-[440px] rounded-lg border bg-popover shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <h3 className="text-base font-semibold">Create a team</h3>
+              <button onClick={() => setCreateTeamOpen(false)} className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors">
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              <div>
+                <label className="text-xs font-medium mb-1.5 block">Team name <span className="text-red-500">*</span></label>
+                <input
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                  placeholder="e.g. Marketing"
+                  autoFocus
+                  onKeyDown={(e) => { if (e.key === "Enter" && newTeamName.trim()) handleCreateTeam() }}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1.5 block">Description</label>
+                <textarea
+                  value={newTeamDesc}
+                  onChange={(e) => setNewTeamDesc(e.target.value)}
+                  placeholder="What does this team work on?"
+                  rows={3}
+                  className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-3 border-t">
+              <Button variant="ghost" size="sm" onClick={() => setCreateTeamOpen(false)}>Cancel</Button>
+              <Button
+                size="sm"
+                className="bg-blue-600 text-white hover:bg-blue-700"
+                disabled={!newTeamName.trim()}
+                onClick={handleCreateTeam}
+              >
+                Create
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add people modal */}
+      {addPeopleOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setAddPeopleOpen(false)}>
+          <div className="fixed inset-0 bg-black/50" />
+          <div className="relative z-10 w-full max-w-[480px] rounded-lg border bg-popover shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <h3 className="text-base font-semibold">Add people</h3>
+              <button onClick={() => setAddPeopleOpen(false)} className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors">
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              <p className="text-sm text-muted-foreground">Invite people to collaborate with your team by entering their email addresses.</p>
+              <div>
+                <label className="text-xs font-medium mb-1.5 block">Email addresses</label>
+                <input
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="e.g. name@company.com"
+                  autoFocus
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30"
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">Separate multiple emails with commas.</p>
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1.5 block">Role</label>
+                <select className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/30">
+                  <option>Member</option>
+                  <option>Admin</option>
+                  <option>Viewer</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-3 border-t">
+              <Button variant="ghost" size="sm" onClick={() => setAddPeopleOpen(false)}>Cancel</Button>
+              <Button
+                size="sm"
+                className="bg-blue-600 text-white hover:bg-blue-700"
+                disabled={!inviteEmail.trim()}
+                onClick={() => {
+                  setAddPeopleOpen(false)
+                  setInviteEmail("")
+                  setToast("Invitations sent successfully")
+                  setTimeout(() => setToast(null), 3000)
+                }}
+              >
+                Add
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="flex items-center gap-2 rounded-lg border bg-popover px-4 py-2.5 shadow-lg">
+            <svg className="size-4 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5" /></svg>
+            <span className="text-sm">{toast}</span>
+            <button onClick={() => setToast(null)} className="ml-2 text-muted-foreground hover:text-foreground">
+              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

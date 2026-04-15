@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import type { Issue, Project, User, Sprint, Epic } from "@/app/lib/mock-data"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { UserProfileCard } from "@/components/user-profile-card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
@@ -47,6 +48,71 @@ const TYPE_ICON: Record<string, { color: string; label: string }> = {
   subtask: { color: "bg-cyan-500", label: "Sub-task" },
 }
 
+function SaveFilterDialog({ query, onClose }: { query: string; onClose: () => void }) {
+  const [name, setName] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  const handleSave = async () => {
+    if (!name.trim()) return
+    setSaving(true)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000)
+    try {
+      const res = await fetch("/api/data/filters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), jql: query }),
+        signal: controller.signal,
+      })
+      clearTimeout(timeout)
+      if (res.ok) {
+        setSaving(false)
+        setSaved(true)
+        setTimeout(onClose, 1500)
+        return
+      }
+    } catch {
+      clearTimeout(timeout)
+    }
+    setSaving(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+      <div className="fixed inset-0 bg-black/50" />
+      <div className="relative z-10 w-full max-w-[400px] rounded-lg border bg-popover shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b">
+          <h3 className="text-base font-semibold">Save filter</h3>
+          <button onClick={onClose} className="rounded p-1 text-muted-foreground hover:bg-accent">
+            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div className="px-5 py-4 space-y-3">
+          <div>
+            <label className="text-sm font-medium text-foreground block mb-1">Filter name</label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. My Open Bugs" autoFocus />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground block mb-1">Query</label>
+            <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground font-mono">{query}</div>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 px-5 py-3 border-t">
+          <button onClick={onClose} className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent">Cancel</button>
+          <button
+            onClick={handleSave}
+            disabled={!name.trim() || saving || saved}
+            className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {saved ? "Saved!" : saving ? "Saving..." : "Save filter"}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function SearchPageInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -55,6 +121,7 @@ function SearchPageInner() {
   const [query, setQuery] = useState(initialQuery)
   const [results, setResults] = useState<SearchResults | null>(null)
   const [loading, setLoading] = useState(false)
+  const [saveFilterOpen, setSaveFilterOpen] = useState(false)
 
   useEffect(() => {
     const q = searchParams.get("q") ?? ""
@@ -116,9 +183,18 @@ function SearchPageInner() {
       {/* Results */}
       {!loading && results && total > 0 && (
         <div>
-          <p className="text-sm text-muted-foreground mb-6">
-            {total} result{total !== 1 ? "s" : ""} for &ldquo;{searchParams.get("q")}&rdquo;
-          </p>
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-sm text-muted-foreground">
+              {total} result{total !== 1 ? "s" : ""} for &ldquo;{searchParams.get("q")}&rdquo;
+            </p>
+            <button
+              onClick={() => setSaveFilterOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            >
+              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+              Save filter
+            </button>
+          </div>
 
           {/* ── Issues table ── */}
           {results.issues.length > 0 && (
@@ -186,11 +262,11 @@ function SearchPageInner() {
                           <TableCell>
                             {issue.assignee ? (
                               <div className="flex items-center gap-1.5">
-                                <Avatar className="size-5">
-                                  <AvatarFallback className="text-[8px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                                    {(issue.assignee.displayName ?? issue.assignee.name).charAt(0)}
-                                  </AvatarFallback>
-                                </Avatar>
+                                <UserProfileCard
+                                  name={issue.assignee.displayName ?? issue.assignee.name}
+                                  email={issue.assignee.email}
+                                  size="sm"
+                                />
                                 <span className="text-xs truncate">{issue.assignee.displayName ?? issue.assignee.name}</span>
                               </div>
                             ) : (
@@ -272,6 +348,10 @@ function SearchPageInner() {
             </div>
           )}
         </div>
+      )}
+
+      {saveFilterOpen && (
+        <SaveFilterDialog query={searchParams.get("q") ?? query} onClose={() => setSaveFilterOpen(false)} />
       )}
     </div>
   )
