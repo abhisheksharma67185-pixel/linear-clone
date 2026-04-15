@@ -1,0 +1,366 @@
+{
+  "meta": {
+    "name": "Goals E2E Test Plan",
+    "description": "49 tests covering the Goals feature across /goals, /goals/following, /goals/archived, /goals/status-updates, plus the /goals/[id] detail view reached from /goals.",
+    "totalTests": 49,
+    "routes": ["/goals", "/goals/following", "/goals/archived", "/goals/status-updates", "/goals/[id]"],
+    "appConventions": {
+      "login": "email-only, no password field",
+      "testUser": "example@gmail.com",
+      "baseUrl": "http://localhost:3000",
+      "loginRoute": "/login"
+    },
+    "distribution": {
+      "/goals (list + filters + sort + columns + view modes)": 14,
+      "/goals (create flow + [id] detail)": 8,
+      "/goals/following": 10,
+      "/goals/archived": 8,
+      "/goals/status-updates": 9
+    }
+  },
+  "tests": [
+    {
+      "id": "GC01",
+      "route": "/goals",
+      "title": "Load the goals directory and display the goal count",
+      "steps": ["Login", "Navigate to /goals", "Wait for list render"],
+      "assertion": "A 'N goal(s)' count label is visible and N > 0"
+    },
+    {
+      "id": "GC02",
+      "route": "/goals",
+      "title": "All goals tab is active by default",
+      "steps": ["Login", "Navigate to /goals"],
+      "assertion": "The 'All goals' tab has an active/selected style (aria-selected=true or active class)"
+    },
+    {
+      "id": "GC03",
+      "route": "/goals",
+      "title": "Switch to 'My goals' tab filters the list",
+      "steps": ["Login", "Navigate to /goals", "Click 'My goals' tab"],
+      "assertion": "Active tab is 'My goals' and list count updates (<= original count)"
+    },
+    {
+      "id": "GC04",
+      "route": "/goals",
+      "title": "'More views' dropdown shows Following / Off track / At risk",
+      "steps": ["Login", "Navigate to /goals", "Open 'More views' dropdown"],
+      "assertion": "Menu shows options 'Following', 'Off track', 'At risk'"
+    },
+    {
+      "id": "GC05",
+      "route": "/goals",
+      "title": "Search goals by name substring",
+      "steps": ["Login", "Navigate to /goals", "Type a known substring (e.g., 'goal') into search input"],
+      "assertion": "Every visible row name contains the substring (case-insensitive) and count reflects fewer rows"
+    },
+    {
+      "id": "GC06",
+      "route": "/goals",
+      "title": "Clearing search restores full list",
+      "steps": ["Login", "Navigate to /goals", "Type search term", "Clear search input"],
+      "assertion": "List count returns to original baseline"
+    },
+    {
+      "id": "GC07",
+      "route": "/goals",
+      "title": "Add Status filter narrows the list",
+      "steps": ["Login", "Navigate to /goals", "Open 'Add filters' dropdown", "Choose 'Status'", "Pick a value"],
+      "assertion": "A Status filter chip is visible and list count decreases or unchanged (never increases)"
+    },
+    {
+      "id": "GC08",
+      "route": "/goals",
+      "title": "Add Owner filter narrows the list",
+      "steps": ["Login", "Navigate to /goals", "Open 'Add filters'", "Choose 'Owner'", "Pick an owner"],
+      "assertion": "An Owner filter chip is visible and the visible rows' owner cell matches the chip"
+    },
+    {
+      "id": "GC09",
+      "route": "/goals",
+      "title": "Reset clears all active filter chips",
+      "steps": ["Login", "Navigate to /goals", "Add Status and Owner filters", "Click Reset"],
+      "assertion": "No filter chips remain and list count returns to baseline"
+    },
+    {
+      "id": "GC10",
+      "route": "/goals",
+      "title": "Sort dropdown exposes the documented options",
+      "steps": ["Login", "Navigate to /goals", "Open 'Sort by' dropdown"],
+      "assertion": "Menu shows Name, Status, Target date, Following, Last updated, Follower count"
+    },
+    {
+      "id": "GC11",
+      "route": "/goals",
+      "title": "Toggling sort direction reverses visible order",
+      "steps": ["Login", "Navigate to /goals", "Note first row name", "Click sort direction toggle"],
+      "assertion": "First row name differs from the original first row name"
+    },
+    {
+      "id": "GC12",
+      "route": "/goals",
+      "title": "Columns popover can toggle a column off and on",
+      "steps": ["Login", "Navigate to /goals", "Open Columns popover", "Uncheck 'Tags'", "Close popover", "Reopen", "Re-check 'Tags'"],
+      "assertion": "The Tags column header disappears, then reappears"
+    },
+    {
+      "id": "GC13",
+      "route": "/goals",
+      "title": "Name column is locked in Columns popover",
+      "steps": ["Login", "Navigate to /goals", "Open Columns popover"],
+      "assertion": "The 'Name' entry has a lock indicator or is disabled (cannot be toggled off)"
+    },
+    {
+      "id": "GC14",
+      "route": "/goals",
+      "title": "View mode toggle switches from List to Timeline",
+      "steps": ["Login", "Navigate to /goals", "Click Timeline view button"],
+      "assertion": "Timeline-only controls appear (date-range picker and/or 'View by' dropdown)"
+    },
+    {
+      "id": "GC15",
+      "route": "/goals",
+      "title": "'Create goal' button opens the creation dialog",
+      "steps": ["Login", "Navigate to /goals", "Click 'Create goal'"],
+      "assertion": "A dialog with a Name input and a Create submit button is visible"
+    },
+    {
+      "id": "GC16",
+      "route": "/goals",
+      "title": "Create a new goal with a unique name and see it in the list",
+      "steps": ["Login", "Navigate to /goals", "Open Create goal dialog", "Fill Name = 'E2E-Goal-' + timestamp", "Submit"],
+      "assertion": "Dialog closes; new goal name is visible in the list after refresh/re-render"
+    },
+    {
+      "id": "GC17",
+      "route": "/goals",
+      "title": "Create goal with empty name blocks submission",
+      "steps": ["Login", "Navigate to /goals", "Open Create goal dialog", "Leave Name blank", "Attempt submit"],
+      "assertion": "Submit button is disabled OR a validation error is visible; dialog remains open"
+    },
+    {
+      "id": "GC18",
+      "route": "/goals",
+      "title": "Create view dialog disables Create with empty name",
+      "steps": ["Login", "Navigate to /goals", "Click 'Create view'"],
+      "assertion": "Dialog opens and the 'Create' button is disabled while name is empty"
+    },
+    {
+      "id": "GC19",
+      "route": "/goals/[id]",
+      "title": "Clicking a goal row navigates to /goals/[id]",
+      "steps": ["Login", "Navigate to /goals", "Click first goal row"],
+      "assertion": "URL matches /goals/<non-empty-id>"
+    },
+    {
+      "id": "GC20",
+      "route": "/goals/[id]",
+      "title": "Detail view header shows goal name + status badge",
+      "steps": ["Login", "Navigate to /goals", "Open first goal detail"],
+      "assertion": "Heading text is non-empty and a status badge is visible in the header"
+    },
+    {
+      "id": "GC21",
+      "route": "/goals/[id]",
+      "title": "Detail sidebar shows Owner, Team, Target date, Progress",
+      "steps": ["Login", "Open any /goals/[id]"],
+      "assertion": "Labels 'Status', 'Progress', 'Owner', 'Team', 'Target date' are all visible in the sidebar"
+    },
+    {
+      "id": "GC22",
+      "route": "/goals/[id]",
+      "title": "Follow button toggles to Following on first click",
+      "steps": ["Login", "Open any /goals/[id]", "Click Follow button"],
+      "assertion": "Button label changes to 'Following' (or its aria-pressed becomes true)"
+    },
+    {
+      "id": "GC23",
+      "route": "/goals/following",
+      "title": "Following page loads with the correct title",
+      "steps": ["Login", "Navigate to /goals/following"],
+      "assertion": "Page heading reads 'Following'"
+    },
+    {
+      "id": "GC24",
+      "route": "/goals/following",
+      "title": "All visible rows represent followed goals",
+      "steps": ["Login", "Navigate to /goals/following"],
+      "assertion": "List count > 0 AND every row's 'Following' indicator shows followed state (not '—')"
+    },
+    {
+      "id": "GC25",
+      "route": "/goals/following",
+      "title": "Search filters the following list",
+      "steps": ["Login", "Navigate to /goals/following", "Type in search input"],
+      "assertion": "Count label shrinks to a number consistent with matching rows"
+    },
+    {
+      "id": "GC26",
+      "route": "/goals/following",
+      "title": "Switching 'Following' filter to 'Not following' flips the list",
+      "steps": ["Login", "Navigate to /goals/following", "Open Following filter dropdown", "Choose 'Not following'"],
+      "assertion": "Visible rows no longer match the original following set (or count changes)"
+    },
+    {
+      "id": "GC27",
+      "route": "/goals/following",
+      "title": "Clearing the Following filter restores default view",
+      "steps": ["Login", "Navigate to /goals/following", "Switch to 'Not following'", "Click filter clear (×)"],
+      "assertion": "List returns to the default following set"
+    },
+    {
+      "id": "GC28",
+      "route": "/goals/following",
+      "title": "Add filter menu exposes all filter types",
+      "steps": ["Login", "Navigate to /goals/following", "Open 'Add filter'"],
+      "assertion": "Menu lists Tag, Status, Owner, Team, Starred, Metric, Reporting line"
+    },
+    {
+      "id": "GC29",
+      "route": "/goals/following",
+      "title": "Columns popover toggles a column on /goals/following",
+      "steps": ["Login", "Navigate to /goals/following", "Open Columns popover", "Uncheck 'Last updated'"],
+      "assertion": "'Last updated' column header is no longer rendered"
+    },
+    {
+      "id": "GC30",
+      "route": "/goals/following",
+      "title": "Sort by following dropdown changes sort label",
+      "steps": ["Login", "Navigate to /goals/following", "Open 'Sort by following' dropdown", "Pick a different option"],
+      "assertion": "Sort label updates to the newly selected option"
+    },
+    {
+      "id": "GC31",
+      "route": "/goals/following",
+      "title": "View mode toggle offers List and Card",
+      "steps": ["Login", "Navigate to /goals/following"],
+      "assertion": "Two view-mode buttons are visible; one corresponds to list, one to card layout"
+    },
+    {
+      "id": "GC32",
+      "route": "/goals/following",
+      "title": "'Create goal' action opens the create modal",
+      "steps": ["Login", "Navigate to /goals/following", "Click 'Create goal'"],
+      "assertion": "Create goal dialog becomes visible with a Name input"
+    },
+    {
+      "id": "GC33",
+      "route": "/goals/archived",
+      "title": "Archived page loads with title 'Archived'",
+      "steps": ["Login", "Navigate to /goals/archived"],
+      "assertion": "Page heading reads 'Archived'"
+    },
+    {
+      "id": "GC34",
+      "route": "/goals/archived",
+      "title": "Rows show an ARCHIVED badge alongside a status badge",
+      "steps": ["Login", "Navigate to /goals/archived"],
+      "assertion": "At least one row renders an 'ARCHIVED' label/badge and a status label"
+    },
+    {
+      "id": "GC35",
+      "route": "/goals/archived",
+      "title": "Search narrows the archived list",
+      "steps": ["Login", "Navigate to /goals/archived", "Type part of a goal name"],
+      "assertion": "All visible rows contain the search substring (case-insensitive)"
+    },
+    {
+      "id": "GC36",
+      "route": "/goals/archived",
+      "title": "Row hover reveals Restore and Delete actions",
+      "steps": ["Login", "Navigate to /goals/archived", "Hover first row"],
+      "assertion": "'Restore' and 'Delete' buttons become visible"
+    },
+    {
+      "id": "GC37",
+      "route": "/goals/archived",
+      "title": "Delete opens a confirmation dialog with the correct title",
+      "steps": ["Login", "Navigate to /goals/archived", "Hover first row", "Click Delete"],
+      "assertion": "Dialog title reads 'Delete goal permanently?' and a 'Delete permanently' button is visible"
+    },
+    {
+      "id": "GC38",
+      "route": "/goals/archived",
+      "title": "Cancel closes the delete dialog without removing the row",
+      "steps": ["Login", "Navigate to /goals/archived", "Open Delete dialog", "Click Cancel"],
+      "assertion": "Dialog closes and the row is still present in the list"
+    },
+    {
+      "id": "GC39",
+      "route": "/goals/archived",
+      "title": "Confirming delete removes the row and shows a toast",
+      "steps": ["Login", "Navigate to /goals/archived", "Open Delete dialog on a specific row", "Click 'Delete permanently'"],
+      "assertion": "Row is removed from list and a toast message is visible"
+    },
+    {
+      "id": "GC40",
+      "route": "/goals/archived",
+      "title": "Empty state shows when search matches nothing",
+      "steps": ["Login", "Navigate to /goals/archived", "Type a garbage string like 'zzz-no-match-zzz'"],
+      "assertion": "Empty-state copy 'We couldn't find any goals matching your search.' is visible"
+    },
+    {
+      "id": "GC41",
+      "route": "/goals/status-updates",
+      "title": "Status updates page loads with title",
+      "steps": ["Login", "Navigate to /goals/status-updates"],
+      "assertion": "Heading reads 'Status updates'"
+    },
+    {
+      "id": "GC42",
+      "route": "/goals/status-updates",
+      "title": "Month navigation prev/next updates the displayed month",
+      "steps": ["Login", "Navigate to /goals/status-updates", "Note current month label", "Click next-month arrow"],
+      "assertion": "Month label changes to a different month"
+    },
+    {
+      "id": "GC43",
+      "route": "/goals/status-updates",
+      "title": "'Catch up' button opens the celebratory overlay",
+      "steps": ["Login", "Navigate to /goals/status-updates", "Click 'Catch up'"],
+      "assertion": "Catch-up overlay becomes visible (full-screen modal / checkmark animation)"
+    },
+    {
+      "id": "GC44",
+      "route": "/goals/status-updates",
+      "title": "'Write updates' button opens the compose overlay",
+      "steps": ["Login", "Navigate to /goals/status-updates", "Click 'Write updates'"],
+      "assertion": "Compose overlay appears with a textarea for update body"
+    },
+    {
+      "id": "GC45",
+      "route": "/goals/status-updates",
+      "title": "Cancel on compose overlay closes it without posting",
+      "steps": ["Login", "Navigate to /goals/status-updates", "Open 'Write updates'", "Click Cancel"],
+      "assertion": "Overlay closes; updates feed unchanged in length"
+    },
+    {
+      "id": "GC46",
+      "route": "/goals/status-updates",
+      "title": "Publishing an update appends to the feed and shows a toast",
+      "steps": ["Login", "Navigate to /goals/status-updates", "Open 'Write updates'", "Select goal + status", "Fill body 'E2E test update ' + timestamp", "Click Publish"],
+      "assertion": "A toast 'Update published' appears and the new body text is visible in the feed"
+    },
+    {
+      "id": "GC47",
+      "route": "/goals/status-updates",
+      "title": "Status summary grid shows all six categories",
+      "steps": ["Login", "Navigate to /goals/status-updates"],
+      "assertion": "Six labels visible: 'On track', 'At risk', 'Off track', 'No update', 'Cancelled', 'Completed'"
+    },
+    {
+      "id": "GC48",
+      "route": "/goals/status-updates",
+      "title": "Right sidebar shows Your goals / New goals / Completed goals sections",
+      "steps": ["Login", "Set viewport >= 1280px", "Navigate to /goals/status-updates"],
+      "assertion": "Section headings 'Your goals', 'New goals', 'Completed goals' are all visible"
+    },
+    {
+      "id": "GC49",
+      "route": "/goals/status-updates",
+      "title": "Empty state appears for a month with no updates",
+      "steps": ["Login", "Navigate to /goals/status-updates", "Click prev-month until a month with no updates is reached (cap at 12 attempts)"],
+      "assertion": "'No updates for <MONTH>' empty-state is visible"
+    }
+  ]
+}

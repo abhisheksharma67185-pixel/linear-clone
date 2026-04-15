@@ -1,0 +1,55 @@
+Goals E2E run — Thu Apr 16 00:55:43 IST 2026
+===============================================
+[3s] GC01 PASS
+[2s] GC02 PASS
+[2s] GC03 PASS
+[2s] GC04 PASS
+[4s] GC05 PASS
+[4s] GC06 PASS
+[2s] GC07 PASS
+[12s] GC08 PASS
+[3s] GC09 PASS
+[2s] GC10 PASS
+[3s] GC11 PASS
+[2s] GC12 PASS
+[2s] GC13 PASS
+[4s] GC14 PASS
+[3s] GC15 PASS
+[7s] GC16 PASS
+[5s] GC17 PASS
+[3s] GC18 PASS
+[4s] GC19 PASS
+[5s] GC20 PASS
+[4s] GC21 PASS
+[6s] GC22 PASS
+[2s] GC23 PASS
+[3s] GC24 PASS
+[3s] GC25 PASS
+[5s] GC26 PASS
+[5s] GC27 PASS
+[3s] GC28 PASS
+[2s] GC29 PASS
+[4s] GC30 PASS
+[3s] GC31 PASS
+[4s] GC32 PASS
+[2s] GC33 PASS
+[2s] GC34 PASS
+[3s] GC35 PASS
+[2s] GC36 PASS
+[3s] GC37 PASS
+[3s] GC38 PASS
+[5s] GC39 PASS
+[3s] GC40 PASS
+[2s] GC41 PASS
+[3s] GC42 PASS
+[3s] GC43 PASS
+[2s] GC44 PASS
+[4s] GC45 PASS
+[5s] GC46 PASS
+[3s] GC47 PASS
+[2s] GC48 PASS
+[4s] GC49 PASS
+
+===============================================
+Summary: 49 pass, 0 fail (of 49)
+
