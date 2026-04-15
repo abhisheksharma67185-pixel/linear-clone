@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { statusDisplayLabel } from "@/lib/badge-styles"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { UserProfileCard } from "@/components/user-profile-card"
 import type { Comment, IssueHistoryEntry, User as UserType } from "@/app/lib/mock-data"
 
 const statusOptions = [
@@ -103,7 +104,7 @@ export default function IssueDetailPage() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
 
   // Comment state — inline (not a separate component) for reliability
-  const [comments, setComments] = useState<Array<{ id: string; body: string; authorId: string; createdAt: string; updatedAt: string; author: { name: string; displayName?: string } | null }>>([])
+  const [comments, setComments] = useState<Array<{ id: string; body: string; authorId: string; createdAt: string; updatedAt: string; author: { name: string; displayName?: string; email?: string } | null }>>([])
   const [commentBody, setCommentBody] = useState("")
   const [commentPosting, setCommentPosting] = useState(false)
   const [history, setHistory] = useState<PopulatedHistory[]>([])
@@ -112,9 +113,9 @@ export default function IssueDetailPage() {
   // Editable fields
   const [summary, setSummary] = useState("")
   const [description, setDescription] = useState("")
-  const [status, setStatus] = useState("")
-  const [priority, setPriority] = useState("")
-  const [type, setType] = useState("")
+  const [status, setStatus] = useState("to_do")
+  const [priority, setPriority] = useState("medium")
+  const [type, setType] = useState("task")
   const [assigneeId, setAssigneeId] = useState("__none__")
   const [reporterId, setReporterId] = useState("__none__")
   const [sprintId, setSprintId] = useState("__none__")
@@ -330,9 +331,12 @@ export default function IssueDetailPage() {
                       const authorName = c.author?.displayName ?? c.author?.name ?? "Unknown"
                       return (
                         <div key={`c-${c.id}`} className="flex gap-3">
-                          <Avatar className="size-7 shrink-0 mt-0.5">
-                            <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{authorName.charAt(0)}</AvatarFallback>
-                          </Avatar>
+                          <div className="shrink-0 mt-0.5">
+                            <UserProfileCard
+                              name={authorName}
+                              email={c.author?.email}
+                            />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-sm font-medium">{authorName}</span>
@@ -350,9 +354,12 @@ export default function IssueDetailPage() {
                     const fieldLabel = FIELD_LABELS[h.field] ?? h.field
                     return (
                       <div key={`h-${h.id}`} className="flex gap-3">
-                        <Avatar className="size-7 shrink-0 mt-0.5">
-                          <AvatarFallback className="text-[10px] bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300">{authorName.charAt(0)}</AvatarFallback>
-                        </Avatar>
+                        <div className="shrink-0 mt-0.5">
+                          <UserProfileCard
+                            name={authorName}
+                            email={h.author?.email}
+                          />
+                        </div>
                         <div className="flex-1 min-w-0 py-0.5">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{authorName}</span>
@@ -420,11 +427,18 @@ export default function IssueDetailPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {statusOptions.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
+                    {(() => {
+                      const proj = projects.find((p) => p.id === issue.projectId)
+                      const workflow = proj?.workflow ?? []
+                      if (workflow.length > 0) {
+                        return workflow.map((w) => (
+                          <SelectItem key={w} value={w}>{w}</SelectItem>
+                        ))
+                      }
+                      return statusOptions.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))
+                    })()}
                   </SelectContent>
                 </Select>
               </div>

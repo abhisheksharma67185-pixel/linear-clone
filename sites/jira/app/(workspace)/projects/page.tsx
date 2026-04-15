@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import type { Project, User } from "@/app/lib/mock-data"
 import { resolveUser } from "@/lib/resolve-user"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { UserProfileCard } from "@/components/user-profile-card"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -505,14 +506,11 @@ export default function SpacesPage() {
                     <TableCell>
                       {lead && (
                         <div className="flex items-center gap-2">
-                          <Avatar className="size-6">
-                            <AvatarFallback className="bg-blue-100 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                              {(lead.displayName ?? lead.name)
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
+                          <UserProfileCard
+                            name={lead.displayName ?? lead.name}
+                            email={lead.email}
+                            size="sm"
+                          />
                           <span className="text-sm">{(lead.displayName ?? lead.name)}</span>
                         </div>
                       )}

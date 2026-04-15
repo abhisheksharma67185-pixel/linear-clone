@@ -19,6 +19,8 @@ import {
   type Goal,
   type Comment,
   type IssueHistoryEntry,
+  type Team,
+  teams as initialTeams,
 } from "./mock-data";
 
 // ---------------------------------------------------------------------------
@@ -106,14 +108,16 @@ let _history: IssueHistoryEntry[] = deepClone(initialHistory);
 let _nextHistoryId = 9;
 
 // Auto-increment counters per project key
-let _nextIssueCounters: Record<string, number> = { SCRUM: 19, KANB: 9 };
+let _nextIssueCounters: Record<string, number> = { SCRUM: 9, KANB: 9 };
 let _nextIssueId = 27;
-let _nextProjectId = 3;
+let _nextProjectId = 9;
 let _nextSprintId = 4;
 let _nextEpicId = 4;
 let _nextFilterId = 4;
 let _nextPlanId = 1;
 let _nextCommentId = 8;
+let _teams: Team[] = deepClone(initialTeams);
+let _nextTeamId = 4;
 
 // ---------------------------------------------------------------------------
 // Issues
@@ -803,6 +807,27 @@ export function addHistoryEntry(fields: {
 // Reset — restores everything to initial state
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Teams CRUD
+// ---------------------------------------------------------------------------
+
+export function getTeams(): Team[] { return deepClone(_teams); }
+
+export function createTeam(fields: { name: string; description?: string }): Result<Team> {
+  if (!fields.name?.trim()) return { success: false, error: "Team name is required." };
+  const colors = ["bg-blue-500", "bg-purple-500", "bg-pink-500", "bg-green-500", "bg-orange-500", "bg-teal-500", "bg-red-500", "bg-indigo-500"];
+  const team: Team = {
+    id: `team-${_nextTeamId++}`,
+    name: fields.name.trim(),
+    description: fields.description?.trim() ?? "",
+    members: 1,
+    color: colors[(_nextTeamId - 1) % colors.length],
+    createdAt: now(),
+  };
+  _teams.push(team);
+  return { success: true, data: deepClone(team) };
+}
+
 export function reset(seed?: number): void {
   _users = deepClone(initialUsers);
   _projects = deepClone(initialProjects);
@@ -812,12 +837,14 @@ export function reset(seed?: number): void {
   _boards = deepClone(initialBoards);
   _filters = deepClone(initialFilters);
   _plans = [];
+  _teams = deepClone(initialTeams);
+  _nextTeamId = 4;
   _comments = deepClone(initialComments);
   _history = deepClone(initialHistory);
 
   _nextIssueCounters = { SCRUM: 19, KANB: 9 };
   _nextIssueId = 27;
-  _nextProjectId = 3;
+  _nextProjectId = 9;
   _nextSprintId = 4;
   _nextEpicId = 4;
   _nextFilterId = 4;

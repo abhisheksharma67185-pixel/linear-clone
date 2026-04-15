@@ -9,14 +9,45 @@ const projectStatusStyle: Record<string, string> = {
   "ON TRACK": "border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
   "AT RISK": "border-yellow-300 text-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400",
   "OFF TRACK": "border-red-300 text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400",
+  "PENDING": "border-gray-300 text-gray-600 bg-gray-50 dark:bg-gray-800/30 dark:text-gray-400",
 }
 
+function formatRelativeDate(dateStr: string): string {
+  if (!dateStr) return "just now"
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 1) return "just now"
+  if (minutes < 60) return `${minutes} min ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`
+  const weeks = Math.floor(days / 7)
+  return `${weeks} week${weeks > 1 ? "s" : ""} ago`
+}
+
+const defaultEmojis = ["📋", "🚀", "💻", "🎯", "📊", "🔧", "📦", "🌟", "🎨", "☁️", "🤝", "🌱"]
+
 const mockProjects = [
-  { id: 1, key: "SCRUM", name: "New employee onboarding update", status: "ON TRACK", icon: "🎨", lastUpdated: "1 day ago", tag: "onboarding", goal: "Employee experience", team: "HR", owner: "Abhishek Sharma" },
-  { id: 2, key: "KANB", name: "Cloud migration phase 2", status: "AT RISK", icon: "☁️", lastUpdated: "3 days ago", tag: "infrastructure", goal: "Platform reliability", team: "Engineering", owner: "Sam Williams" },
-  { id: 3, key: "SCRUM", name: "Customer portal redesign", status: "AT RISK", icon: "🤝", lastUpdated: "5 days ago", tag: "design", goal: "Customer experience", team: "Design", owner: "Jordan Lee" },
-  { id: 4, key: "SCRUM", name: "Mobile app performance optimization", status: "ON TRACK", icon: "🌱", lastUpdated: "1 week ago", tag: "performance", goal: "Platform reliability", team: "Engineering", owner: "Taylor Brown" },
+  { id: 1, key: "SCRUM", name: "New employee onboarding update", status: "ON TRACK", icon: "🎨", lastUpdated: "1 day ago", tag: "onboarding", goal: "Employee experience", team: "HR", owner: "Abhishek Sharma", projectType: "scrum" },
+  { id: 2, key: "KANB", name: "Cloud migration phase 2", status: "AT RISK", icon: "☁️", lastUpdated: "3 days ago", tag: "infrastructure", goal: "Platform reliability", team: "Engineering", owner: "Sam Williams", projectType: "kanban" },
+  { id: 3, key: "SCRUM", name: "Customer portal redesign", status: "AT RISK", icon: "🤝", lastUpdated: "5 days ago", tag: "design", goal: "Customer experience", team: "Design", owner: "Jordan Lee", projectType: "scrum" },
+  { id: 4, key: "SCRUM", name: "Mobile app performance optimization", status: "ON TRACK", icon: "🌱", lastUpdated: "1 week ago", tag: "performance", goal: "Platform reliability", team: "Engineering", owner: "Taylor Brown", projectType: "scrum" },
 ]
+
+interface ProjectItem {
+  id: number
+  key: string
+  name: string
+  status: string
+  icon: string
+  lastUpdated: string
+  tag: string
+  goal: string
+  team: string
+  owner: string
+  projectType?: string
+}
 
 const allStatuses = ["ON TRACK", "AT RISK", "OFF TRACK"]
 const allGoals = ["Employee experience", "Platform reliability", "Customer experience"]
@@ -26,7 +57,7 @@ const allOwners = ["Abhishek Sharma", "Sam Williams", "Jordan Lee", "Taylor Brow
 
 const tabs = ["All projects", "My projects", "Archived"]
 
-type FilterKey = "status" | "goal" | "tag" | "team" | "owner"
+type FilterKey = "status" | "goal" | "tag" | "team" | "owner" | "projectType"
 
 interface FilterConfig {
   key: FilterKey
@@ -34,6 +65,8 @@ interface FilterConfig {
   options: string[]
   icon: React.ReactNode
 }
+
+const allProjectTypes = ["Scrum", "Kanban"]
 
 const filterConfigs: FilterConfig[] = [
   {
@@ -55,6 +88,10 @@ const filterConfigs: FilterConfig[] = [
   {
     key: "owner", label: "Owner", options: allOwners,
     icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>,
+  },
+  {
+    key: "projectType", label: "Project type", options: allProjectTypes,
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>,
   },
 ]
 
@@ -280,7 +317,7 @@ function FilterPopover({ config, selected, onToggle, onClear }: {
 export default function ProjectDirectoryPage() {
   const router = useRouter()
   const [search, setSearch] = useState("")
-  const [projects, setProjects] = useState(mockProjects)
+  const [projects, setProjects] = useState<ProjectItem[]>(mockProjects)
   const [toast, setToast] = useState<string | null>(null)
   const [filters, setFilters] = useState<Record<FilterKey, Set<string>>>({
     status: new Set(),
@@ -288,10 +325,39 @@ export default function ProjectDirectoryPage() {
     tag: new Set(),
     team: new Set(),
     owner: new Set(),
+    projectType: new Set(),
   })
   const [viewMode, setViewMode] = useState<"list" | "board">("list")
   const [activeTab, setActiveTab] = useState<"all" | "my" | "archived">("all")
   const [followedProjects, setFollowedProjects] = useState<Set<number>>(new Set())
+
+  // Fetch projects from API and merge with mock data
+  useEffect(() => {
+    fetch("/api/data/projects")
+      .then((r) => r.json())
+      .then((apiProjects: { id: string; key: string; name: string; type: string; lead: string; createdAt: string }[]) => {
+        const existingKeys = new Set(mockProjects.map((p) => p.key))
+        const newProjects: ProjectItem[] = apiProjects
+          .filter((p) => !existingKeys.has(p.key))
+          .map((p, i) => ({
+            id: 1000 + i,
+            key: p.key,
+            name: p.name,
+            status: "PENDING",
+            icon: defaultEmojis[Math.floor(Math.random() * defaultEmojis.length)],
+            lastUpdated: formatRelativeDate(p.createdAt),
+            tag: "",
+            goal: "",
+            team: "",
+            owner: "Abhishek Sharma",
+            projectType: p.type,
+          }))
+        if (newProjects.length > 0) {
+          setProjects([...mockProjects, ...newProjects])
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
   const handleArchive = (id: number) => { setProjects((p) => p.filter((x) => x.id !== id)); showToast("Project archived") }
@@ -319,7 +385,7 @@ export default function ProjectDirectoryPage() {
   }
 
   const clearAllFilters = () => {
-    setFilters({ status: new Set(), goal: new Set(), tag: new Set(), team: new Set(), owner: new Set() })
+    setFilters({ status: new Set(), goal: new Set(), tag: new Set(), team: new Set(), owner: new Set(), projectType: new Set() })
   }
 
   const hasAnyFilter = Object.values(filters).some((s) => s.size > 0)
@@ -334,6 +400,7 @@ export default function ProjectDirectoryPage() {
     if (filters.tag.size > 0 && !filters.tag.has(p.tag)) return false
     if (filters.team.size > 0 && !filters.team.has(p.team)) return false
     if (filters.owner.size > 0 && !filters.owner.has(p.owner)) return false
+    if (filters.projectType.size > 0 && (!p.projectType || ![...filters.projectType].some((t) => t.toLowerCase() === p.projectType!.toLowerCase()))) return false
     return true
   })
 

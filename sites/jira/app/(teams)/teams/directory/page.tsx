@@ -1,65 +1,53 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 
-const allTeams = [
-  {
-    name: "Engineering",
-    members: 12,
-    description: "Build and maintain the core product, APIs, and infrastructure.",
-    color: "bg-blue-500",
-    avatarColors: ["bg-blue-600", "bg-indigo-600", "bg-cyan-600", "bg-teal-600"],
-    initials: ["AS", "RG", "NK", "DM"],
-  },
-  {
-    name: "Product",
-    members: 6,
-    description: "Define product strategy, roadmap, and feature prioritization.",
-    color: "bg-purple-500",
-    avatarColors: ["bg-purple-600", "bg-violet-600", "bg-fuchsia-600"],
-    initials: ["PP", "SK", "MR"],
-  },
-  {
-    name: "Design",
-    members: 5,
-    description: "Craft user experiences, visual design, and maintain the design system.",
-    color: "bg-pink-500",
-    avatarColors: ["bg-pink-600", "bg-rose-600", "bg-red-500"],
-    initials: ["AD", "JL", "KT"],
-  },
-  {
-    name: "QA",
-    members: 4,
-    description: "Ensure product quality through automated and manual testing.",
-    color: "bg-green-500",
-    avatarColors: ["bg-green-600", "bg-emerald-600", "bg-lime-600", "bg-green-700"],
-    initials: ["VS", "RT", "AM", "PK"],
-  },
-  {
-    name: "DevOps",
-    members: 3,
-    description: "Manage CI/CD pipelines, cloud infrastructure, and deployment workflows.",
-    color: "bg-orange-500",
-    avatarColors: ["bg-orange-600", "bg-amber-600", "bg-yellow-600"],
-    initials: ["SB", "KR", "NV"],
-  },
-  {
-    name: "Marketing",
-    members: 8,
-    description: "Drive product awareness, growth initiatives, and brand strategy.",
-    color: "bg-red-500",
-    avatarColors: ["bg-red-600", "bg-rose-500", "bg-pink-500", "bg-red-700"],
-    initials: ["LM", "TS", "RJ", "AK"],
-  },
-]
+interface TeamData {
+  id: string
+  name: string
+  description: string
+  members: number
+  color: string
+}
 
 export default function TeamsDirectoryPage() {
+  const [teams, setTeams] = useState<TeamData[]>([])
   const [search, setSearch] = useState("")
+  const [createOpen, setCreateOpen] = useState(false)
+  const [newName, setNewName] = useState("")
+  const [newDesc, setNewDesc] = useState("")
 
-  const filteredTeams = allTeams.filter((team) =>
+  const fetchTeams = () => {
+    fetch("/api/data/teams").then((r) => r.json()).then(setTeams).catch(() => {})
+  }
+
+  useEffect(() => {
+    fetchTeams()
+    const onCreated = () => fetchTeams()
+    window.addEventListener("team-created", onCreated)
+    return () => window.removeEventListener("team-created", onCreated)
+  }, [])
+
+  const handleCreate = async () => {
+    if (!newName.trim()) return
+    const res = await fetch("/api/data/teams", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName.trim(), description: newDesc.trim() }),
+    })
+    if (res.ok) {
+      const t = await res.json()
+      setTeams((prev) => [...prev, t])
+      setCreateOpen(false)
+      setNewName("")
+      setNewDesc("")
+    }
+  }
+
+  const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(search.toLowerCase()) ||
     team.description.toLowerCase().includes(search.toLowerCase())
   )
@@ -68,26 +56,14 @@ export default function TeamsDirectoryPage() {
     <div className="p-8 max-w-5xl">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Team directory</h1>
-        <Button
-          className="bg-blue-600 text-white hover:bg-blue-700"
-          onClick={() => window.dispatchEvent(new CustomEvent("open-create-team"))}
-        >
+        <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setCreateOpen(true)}>
           Create team
         </Button>
       </div>
 
-      {/* Search bar */}
+      {/* Search */}
       <div className="relative mb-6">
-        <svg
-          className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
+        <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
         <input
           type="text"
           placeholder="Search teams..."
@@ -97,90 +73,66 @@ export default function TeamsDirectoryPage() {
         />
       </div>
 
-      {/* Results count */}
-      <p className="mb-4 text-sm text-muted-foreground">
-        {filteredTeams.length} {filteredTeams.length === 1 ? "team" : "teams"} found
-      </p>
+      <p className="mb-4 text-sm text-muted-foreground">{filteredTeams.length} {filteredTeams.length === 1 ? "team" : "teams"} found</p>
 
-      {/* Teams grid */}
       {filteredTeams.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredTeams.map((team) => (
-            <Link
-              key={team.name}
-              href={`/teams/${team.name.toLowerCase()}`}
-              className="group flex flex-col rounded-lg border p-5 hover:bg-accent/50 transition-colors"
-            >
-              <div className="flex items-center gap-3 mb-3">
+            <Link key={team.id} href={`/teams/${team.id}`} className="group flex flex-col rounded-lg border p-5 hover:shadow-md transition-all">
+              <div className="flex items-start justify-between mb-4">
                 <div className={`flex size-10 items-center justify-center rounded-lg ${team.color}`}>
-                  <span className="text-sm font-bold text-white">
-                    {team.name.charAt(0)}
-                  </span>
+                  <svg className="size-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold group-hover:text-blue-600 transition-colors">
-                    {team.name}
-                  </h3>
-                  <span className="text-xs text-muted-foreground">
-                    {team.members} {team.members === 1 ? "member" : "members"}
-                  </span>
-                </div>
+                <Avatar className="size-7">
+                  <AvatarFallback className="text-[10px] bg-teal-500 text-white font-bold">AS</AvatarFallback>
+                </Avatar>
               </div>
-
-              <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">
-                {team.description}
-              </p>
-
-              <div className="flex items-center justify-between">
-                <div className="flex -space-x-2">
-                  {team.initials.map((initial, i) => (
-                    <Avatar key={i} className="size-7 border-2 border-background">
-                      <AvatarFallback className={`text-[10px] font-medium text-white ${team.avatarColors[i]}`}>
-                        {initial}
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
-                  {team.members > team.initials.length && (
-                    <div className="flex size-7 items-center justify-center rounded-full border-2 border-background bg-gray-100 dark:bg-gray-800 text-[10px] text-muted-foreground font-medium">
-                      +{team.members - team.initials.length}
-                    </div>
-                  )}
-                </div>
-                <svg
-                  className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
+              <h3 className="text-sm font-semibold group-hover:text-blue-600 transition-colors">{team.name}</h3>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="text-xs text-muted-foreground">Official team</span>
+                <svg className="size-3.5 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
+                <span className="text-xs text-muted-foreground">· {team.members} member{team.members !== 1 ? "s" : ""}</span>
               </div>
             </Link>
           ))}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <svg
-            className="mb-4 size-12 text-muted-foreground/50"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+          <svg className="mb-4 size-12 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
           <h3 className="mb-1 text-sm font-medium">No teams found</h3>
           <p className="text-sm text-muted-foreground">
             Try a different search term or{" "}
-            <button
-              className="text-blue-600 hover:underline"
-              onClick={() => window.dispatchEvent(new CustomEvent("open-create-team"))}
-            >
-              create a new team
-            </button>
+            <button className="text-blue-600 hover:underline" onClick={() => setCreateOpen(true)}>create a new team</button>
           </p>
+        </div>
+      )}
+
+      {/* Create team modal */}
+      {createOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setCreateOpen(false)}>
+          <div className="fixed inset-0 bg-black/50" />
+          <div className="relative z-10 w-full max-w-[440px] rounded-lg border bg-popover shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <h3 className="text-base font-semibold">Create a team</h3>
+              <button onClick={() => setCreateOpen(false)} className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors">
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              <div>
+                <label className="text-xs font-medium mb-1.5 block">Team name <span className="text-red-500">*</span></label>
+                <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Marketing" autoFocus onKeyDown={(e) => { if (e.key === "Enter" && newName.trim()) handleCreate() }} className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30" />
+              </div>
+              <div>
+                <label className="text-xs font-medium mb-1.5 block">Description</label>
+                <textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="What does this team work on?" rows={3} className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-3 border-t">
+              <Button variant="ghost" size="sm" onClick={() => setCreateOpen(false)}>Cancel</Button>
+              <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700" disabled={!newName.trim()} onClick={handleCreate}>Create</Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

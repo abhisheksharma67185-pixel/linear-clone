@@ -7,6 +7,7 @@ import type { Issue, User, Project, Sprint, Epic } from "@/app/lib/mock-data"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserProfileCard } from "@/components/user-profile-card"
 import {
   Collapsible,
   CollapsibleContent,
@@ -41,9 +42,12 @@ function IssueRow({
   const epic = resolveEpic(issue.epicId, epics)
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className="flex items-center gap-3 px-3 py-2 hover:bg-accent/50 transition-colors border-b last:border-b-0 text-sm w-full text-left"
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onClick?.() }}
+      className="flex items-center gap-3 px-3 py-2 hover:bg-accent/50 transition-colors border-b last:border-b-0 text-sm w-full text-left cursor-pointer"
     >
       <span className="font-mono text-xs text-blue-600 dark:text-blue-400 w-[80px] shrink-0">
         {issue.key}
@@ -68,17 +72,16 @@ function IssueRow({
           {issue.storyPoints}
         </span>
       )}
-      <div className="w-6 shrink-0">
+      <div className="w-6 shrink-0" onClick={(e) => e.stopPropagation()}>
         {assignee && (
-          <Avatar className="size-5">
-            <AvatarImage src={assignee.avatar} />
-            <AvatarFallback className="text-[8px]">
-              {(assignee.displayName ?? assignee.name).charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+          <UserProfileCard
+            name={assignee.displayName ?? assignee.name}
+            email={assignee.email}
+            size="sm"
+          />
         )}
       </div>
-    </button>
+    </div>
   )
 }
 
@@ -188,6 +191,7 @@ export default function BacklogPage() {
 
   const activeSprints = projectSprints.filter((s) => s.state === "active")
   const futureSprints = projectSprints.filter((s) => s.state === "future")
+  const hasActiveSprint = activeSprints.length > 0
   const backlogIssues = projectIssues.filter((i) => i.sprintId === null)
 
   const sprintIssues = (sprintId: string) =>
@@ -197,20 +201,55 @@ export default function BacklogPage() {
     issueList.reduce((sum, i) => sum + (i.storyPoints ?? 0), 0)
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-xl font-semibold">
-          Backlog - {project.name}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage sprints and backlog items.
+    <div className="flex flex-col h-full">
+      {/* Project header */}
+      <div className="px-6 pt-4 pb-1">
+        <p className="text-xs text-muted-foreground mb-1">
+          <Link href="/projects" className="hover:underline">Spaces</Link>
         </p>
+        <div className="flex items-center gap-2.5">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 text-white shrink-0">
+            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78m0 0L12 8l7-7" /></svg>
+          </div>
+          <h1 className="text-xl font-semibold">{project.name}</h1>
+        </div>
       </div>
+
+      {/* Navigation tabs */}
+      <div className="px-6 border-b">
+        <div className="flex items-center gap-0">
+          {[
+            { label: "Summary", href: `/projects/${project.key}/summary`, icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg> },
+            { label: "Backlog", href: `/projects/${project.key}/backlog`, active: true, icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M7 7h10M7 12h10M7 17h6" /></svg> },
+            { label: "Board", href: `/projects/${project.key}/board`, icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="5" height="18" rx="1" /><rect x="10" y="3" width="5" height="18" rx="1" /><rect x="17" y="3" width="5" height="18" rx="1" /></svg> },
+            { label: "Code", href: `/projects/${project.key}/code`, icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg> },
+          ].map((tab) => (
+            <Link
+              key={tab.label}
+              href={tab.href}
+              className={`flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                tab.active
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-gray-300"
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </Link>
+          ))}
+          <button className="flex items-center justify-center size-8 ml-1 rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Backlog content */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
       {/* Active sprints */}
       {activeSprints.map((sprint) => {
         const sIssues = sprintIssues(sprint.id)
-        const doneCount = sIssues.filter((i) => i.status === "done").length
+        const doneCount = sIssues.filter((i) => i.status.toLowerCase() === "done" || i.status.toLowerCase() === "closed" || i.status.toLowerCase() === "deployed").length
         return (
           <Collapsible key={sprint.id} defaultOpen>
             <div className="border rounded-lg">
@@ -269,7 +308,6 @@ export default function BacklogPage() {
       {/* Future sprints */}
       {futureSprints.map((sprint) => {
         const sIssues = sprintIssues(sprint.id)
-        const hasActiveSprint = activeSprints.length > 0
         return (
           <Collapsible key={sprint.id} defaultOpen>
             <div className="border rounded-lg">
@@ -286,16 +324,14 @@ export default function BacklogPage() {
                     {sIssues.length} issues - {totalPoints(sIssues)} pts
                   </span>
                 </CollapsibleTrigger>
-                <Button
+                <button
                   type="button"
-                  size="sm"
-                  className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white"
-                  disabled={hasActiveSprint}
-                  title={hasActiveSprint ? "Complete the active sprint first" : undefined}
+                  className="shrink-0 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+                  onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); openStartDialog(sprint) }}
                 >
                   Start sprint
-                </Button>
+                </button>
               </div>
               <CollapsibleContent>
                 {sprint.goal && (
@@ -360,6 +396,8 @@ export default function BacklogPage() {
         </div>
       </Collapsible>
 
+      </div>{/* end scrollable content */}
+
       {/* ── Start Sprint Dialog ── */}
       <Dialog open={startDialogSprint !== null} onOpenChange={(o) => { if (!o) setStartDialogSprint(null) }}>
         <DialogContent className="sm:max-w-[480px]">
@@ -374,6 +412,14 @@ export default function BacklogPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            {hasActiveSprint && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20 p-3">
+                <p className="text-xs text-amber-800 dark:text-amber-200">
+                  Another sprint is currently active. Complete it first before starting a new one.
+                </p>
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Sprint name</Label>
               <Input value={startName} onChange={(e) => setStartName(e.target.value)} />
@@ -396,8 +442,22 @@ export default function BacklogPage() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">Start date</Label>
-                <Input type="date" defaultValue={new Date().toISOString().slice(0, 10)} disabled className="text-sm" />
+                <Input type="date" defaultValue={new Date().toISOString().slice(0, 10)} className="text-sm" />
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">End date</Label>
+              <Input
+                type="date"
+                defaultValue={(() => {
+                  const weeks = startDuration === "custom" ? 2 : Number(startDuration)
+                  const end = new Date()
+                  end.setDate(end.getDate() + weeks * 7)
+                  return end.toISOString().slice(0, 10)
+                })()}
+                className="text-sm"
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -411,7 +471,7 @@ export default function BacklogPage() {
             <Button
               type="button"
               className="bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={!startName.trim() || sprintAction !== null}
+              disabled={!startName.trim() || sprintAction !== null || hasActiveSprint}
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); confirmStartSprint() }}
             >
               {sprintAction ? "Starting..." : "Start"}
@@ -430,7 +490,7 @@ export default function BacklogPage() {
 
           {completeDialogSprint && (() => {
             const si = sprintIssues(completeDialogSprint.id)
-            const done = si.filter((i) => i.status === "done").length
+            const done = si.filter((i) => i.status.toLowerCase() === "done" || i.status.toLowerCase() === "closed" || i.status.toLowerCase() === "deployed").length
             const incomplete = si.length - done
             return (
               <div className="space-y-4 py-2">

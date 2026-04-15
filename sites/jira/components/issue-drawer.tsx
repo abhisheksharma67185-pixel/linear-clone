@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback, useRef } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import type { Issue, User, Project, Sprint, Epic } from "@/app/lib/mock-data"
 import { Input } from "@/components/ui/input"
@@ -55,6 +56,7 @@ interface IssueDrawerProps {
 }
 
 export function IssueDrawer({ issueKey, open, onClose, onUpdate }: IssueDrawerProps) {
+  const router = useRouter()
   const [issue, setIssue] = useState<Issue | null>(null)
   const [users, setUsers] = useState<User[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -202,13 +204,13 @@ export function IssueDrawer({ issueKey, open, onClose, onUpdate }: IssueDrawerPr
                 {project && <span className="text-xs text-muted-foreground">in {project.name}</span>}
               </div>
               <SheetDescription className="sr-only">Issue detail panel</SheetDescription>
-              <Link
-                href={`/issue/${issueKey}`}
+              <button
                 className="text-xs text-blue-600 hover:underline mt-1 inline-flex items-center gap-1"
+                onClick={() => { onClose(); router.push(`/issue/${issueKey}`) }}
               >
                 Open full page
                 <svg className="size-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12L12 4M12 4H6M12 4v6" /></svg>
-              </Link>
+              </button>
             </SheetHeader>
 
             {/* Body */}

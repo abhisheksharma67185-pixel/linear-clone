@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { UserProfileCard } from "@/components/user-profile-card"
 import {
   Popover,
   PopoverContent,
@@ -50,7 +51,7 @@ interface GoalRow {
   status: string
   progress: number
   targetDate: string
-  owner: { name: string; initials: string }
+  owner: { name: string; initials: string; email?: string }
   team: string
   following: boolean
 }
@@ -206,7 +207,7 @@ export default function GoalsPage() {
       .then((r) => r.json())
       .then((data) => {
         const rows: GoalRow[] = data.map((g: Record<string, unknown>) => {
-          const ou = g.ownerUser as { displayName?: string; name?: string } | null
+          const ou = g.ownerUser as { displayName?: string; name?: string; email?: string } | null
           const ownerName = ou?.displayName ?? ou?.name ?? "Unknown"
           return {
             id: g.id as string,
@@ -217,6 +218,7 @@ export default function GoalsPage() {
             owner: {
               name: ownerName,
               initials: ownerName.split(" ").map((n: string) => n[0]).join("").slice(0, 2),
+              email: ou?.email,
             },
             team: (g.team as string) || "",
             following: g.following as boolean,
@@ -908,10 +910,12 @@ export default function GoalsPage() {
                 {goal.targetDate}
               </div>
               {/* Owner */}
-              <div>
-                <Avatar className="size-7">
-                  <AvatarFallback className="bg-blue-600 text-[9px] font-semibold text-white">{goal.owner.initials}</AvatarFallback>
-                </Avatar>
+              <div onClick={(e) => e.stopPropagation()}>
+                <UserProfileCard
+                  name={goal.owner.name}
+                  email={goal.owner.email}
+                  initials={goal.owner.initials}
+                />
               </div>
               {/* Following — Unfollow button stops propagation */}
               <div onClick={(e) => e.stopPropagation()}>

@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import Link from "next/link"
 import type { Issue, User, Project, Epic } from "@/app/lib/mock-data"
+import { useIssueDrawer } from "@/components/issue-drawer-provider"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -120,7 +121,7 @@ function SortableIssueCard({
   columns: WorkflowColumn[]
   moveIssue: (key: string, status: StatusKey) => void
 }) {
-  const router = useRouter()
+  const { openIssue } = useIssueDrawer()
   const {
     attributes,
     listeners,
@@ -140,9 +141,13 @@ function SortableIssueCard({
   const epic = epics.find((e) => e.id === issue.epicId)
   const typeInfo = TYPE_ICON[issue.type]
 
+  const handleCardClick = () => {
+    if (!isDragging) openIssue(issue.key)
+  }
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <Card className="group hover:border-primary/30 transition-colors shadow-none cursor-grab active:cursor-grabbing" {...listeners} onClick={() => { if (!isDragging) router.push(`/issue/${issue.key}`) }}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <Card className="group hover:border-primary/30 transition-colors shadow-none cursor-pointer" onClick={handleCardClick}>
         <CardContent className="p-2.5">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-1.5">
@@ -269,6 +274,7 @@ function DroppableColumn({
   epics,
   moveIssue,
   isLast,
+  onCreateInColumn,
 }: {
   col: WorkflowColumn
   columns: WorkflowColumn[]
@@ -277,13 +283,24 @@ function DroppableColumn({
   epics: Epic[]
   moveIssue: (key: string, status: StatusKey) => void
   isLast: boolean
+  onCreateInColumn: (status: string) => void
 }) {
   return (
-    <div className={`flex flex-col min-w-[280px] flex-1 ${!isLast ? "border-r" : ""}`}>
+    <div className={`flex flex-col min-w-[280px] flex-1 group/col ${!isLast ? "border-r" : ""}`}>
       <div className="flex items-center gap-2 px-3 py-2.5 border-b bg-muted/30">
         <span className={`text-sm ${col.color}`}>{col.icon}</span>
         <span className="text-[11px] font-semibold text-muted-foreground tracking-wider">{col.label}</span>
         <span className="text-[10px] text-muted-foreground/60 tabular-nums ml-auto font-mono">{colIssues.length}</span>
+        <button
+          aria-label={`Create issue in ${col.label}`}
+          title={`Create issue in ${col.label}`}
+          className="flex size-6 items-center justify-center rounded hover:bg-accent text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+          onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onCreateInColumn(col.key) }}
+        >
+          <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
       </div>
 
       <ScrollArea className="flex-1">
@@ -309,6 +326,17 @@ function DroppableColumn({
           </div>
         </SortableContext>
       </ScrollArea>
+
+      {/* + Create button at bottom of column */}
+      <button
+        onPointerDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); onCreateInColumn(col.key) }}
+        className="flex items-center gap-1.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors border-t"
+      >
+        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+        Create
+      </button>
     </div>
   )
 }
@@ -326,6 +354,16 @@ export default function BoardPage() {
   const [filterType, setFilterType] = useState<string | null>(null)
   const [filterAssignee, setFilterAssignee] = useState<string | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [inlineCreateStatus, setInlineCreateStatus] = useState<string | null>(null)
+  const [inlineCreateText, setInlineCreateText] = useState("")
+  const [searchBoard, setSearchBoard] = useState("")
+  const [groupBy, setGroupBy] = useState<string>("none")
+  const [sprintCompleteOpen, setSprintCompleteOpen] = useState(false)
+  const [starred, setStarred] = useState(false)
+  const [addPeopleOpen, setAddPeopleOpen] = useState(false)
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -345,6 +383,13 @@ export default function BoardPage() {
       setLoading(false)
     })
   }, [projectKey])
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 3000)
+    return () => clearTimeout(t)
+  }, [toast])
 
   const moveIssue = useCallback(
     (issueKey: string, newStatus: StatusKey) => {
@@ -399,6 +444,30 @@ export default function BoardPage() {
     [issues]
   )
 
+  const handleInlineCreate = useCallback(async (status: string, summary: string) => {
+    if (!summary.trim() || !project) return
+    try {
+      const res = await fetch("/api/data/issues", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          summary: summary.trim(),
+          type: "task",
+          status,
+          priority: "medium",
+          projectId: project.id,
+          reporterId: "usr-1",
+        }),
+      })
+      if (res.ok) {
+        const issue = await res.json()
+        setIssues((prev) => [...prev, issue])
+      }
+    } catch { /* ignore */ }
+    setInlineCreateStatus(null)
+    setInlineCreateText("")
+  }, [project])
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
@@ -436,62 +505,293 @@ export default function BoardPage() {
     return { key: status, label: display.label, icon: display.icon, color: display.color }
   })
 
+  // Filter by search
+  const searchFiltered = searchBoard.trim()
+    ? projectIssues.filter((i) => i.summary.toLowerCase().includes(searchBoard.toLowerCase()) || i.key.toLowerCase().includes(searchBoard.toLowerCase()))
+    : projectIssues
+
   return (
     <TooltipProvider>
       <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b">
-          <div className="flex items-center gap-3">
-            <h1 className="text-base font-semibold">{project.name}</h1>
-            <Badge variant="outline" className={`text-[10px] ${projectTypeVariant[project.type]}`}>
-              {project.type} board
-            </Badge>
-            <Separator orientation="vertical" className="h-4" />
-            <span className="text-xs text-muted-foreground">{projectIssues.length} issues</span>
+        {/* Breadcrumb + Project name + action icons */}
+        <div className="px-6 pt-4 pb-1">
+          <p className="text-xs text-muted-foreground mb-1">
+            <Link href="/projects" className="hover:underline">Spaces</Link>
+          </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 text-white shrink-0">
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78m0 0L12 8l7-7" /></svg>
+              </div>
+              <h1 className="text-xl font-semibold">{project.name}</h1>
+              {/* Team members button */}
+              <Tooltip>
+                <TooltipTrigger render={<button aria-label="Team members" className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors" />}>
+                    <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                </TooltipTrigger>
+                <TooltipContent>Team members</TooltipContent>
+              </Tooltip>
+              {/* Three dot menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<button aria-label="More actions" className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors" />}>
+                  <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4 text-muted-foreground" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-64 py-2">
+                  <DropdownMenuItem onClick={() => { setStarred(!starred); setToast(starred ? "Removed from starred" : "Project starred") }} className="gap-3 px-4 py-2.5">
+                    <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill={starred ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                    <span className="text-sm">{starred ? "Remove from starred" : "Add to starred"}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setAddPeopleOpen(true)} className="gap-3 px-4 py-2.5">
+                    <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="8.5" cy="7" r="4" /><path d="M20 8v6M23 11h-6" /></svg>
+                    <span className="text-sm">Add people</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setToast("Available on Enterprise plan")} className="gap-3 px-4 py-2.5">
+                    <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+                    <span className="text-sm">Save as template</span>
+                    <span className="ml-auto text-[10px] border border-purple-300 text-purple-600 dark:border-purple-700 dark:text-purple-400 px-1.5 py-0.5 rounded font-semibold tracking-wide">ENTERPRISE</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setToast("Background picker coming soon")} className="gap-3 px-4 py-2.5">
+                    <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z" /></svg>
+                    <span className="text-sm flex-1">Set space background</span>
+                    <svg className="size-4 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = `/projects/${project.key}/settings`} className="gap-3 px-4 py-2.5">
+                    <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+                    <span className="text-sm">Space settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setArchiveConfirmOpen(true)} className="gap-3 px-4 py-2.5">
+                    <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="20" height="5" rx="1" /><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /><path d="M10 12h4" /></svg>
+                    <span className="text-sm">Archive space</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setDeleteConfirmOpen(true)} className="gap-3 px-4 py-2.5 text-red-500 focus:text-red-500">
+                    <svg className="size-5 shrink-0 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                    <span className="text-sm">Delete space</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {/* Footer: project type badge */}
+                  <div className="flex items-center gap-3 px-4 py-2.5">
+                    <svg className="size-5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 2L13.8 22l-2.6-8.2L3 11.2 22 2z" /></svg>
+                    <div>
+                      <p className="text-sm font-medium">Software space</p>
+                      <p className="text-xs text-muted-foreground">{project.teamManaged ? "Team-managed" : "Company-managed"}</p>
+                    </div>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Right action icons */}
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger render={<button aria-label="Share" className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors" />}>
+                    <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" /></svg>
+                </TooltipTrigger>
+                <TooltipContent>Share</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger render={<button aria-label="Automation" className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors" />}>
+                    <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                </TooltipTrigger>
+                <TooltipContent>Automation</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger render={<button aria-label="Board settings" className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors" />}>
+                    <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
+                </TooltipTrigger>
+                <TooltipContent>Board settings</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger render={<button aria-label="Full screen" className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors" />}>
+                    <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M14 10l6.1-6.1M9 21H3v-6M10 14l-6.1 6.1" /></svg>
+                </TooltipTrigger>
+                <TooltipContent>Full screen</TooltipContent>
+              </Tooltip>
+            </div>
           </div>
+        </div>
+
+        {/* Navigation tabs */}
+        <div className="px-6 border-b">
+          <div className="flex items-center gap-0">
+            {[
+              { label: "Summary", href: `/projects/${project.key}/summary`, icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg> },
+              { label: "Backlog", href: `/projects/${project.key}/backlog`, icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M7 7h10M7 12h10M7 17h6" /></svg> },
+              { label: "Board", href: `/projects/${project.key}/board`, active: true, icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="5" height="18" rx="1" /><rect x="10" y="3" width="5" height="18" rx="1" /><rect x="17" y="3" width="5" height="18" rx="1" /></svg> },
+              { label: "Code", href: `/projects/${project.key}/code`, icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg> },
+            ].map((tab) => (
+              <Link
+                key={tab.label}
+                href={tab.href}
+                className={`flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  tab.active
+                    ? "border-blue-600 text-blue-600"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-gray-300"
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </Link>
+            ))}
+            {/* Add tab button */}
+            <button className="flex items-center justify-center size-8 ml-1 rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Toolbar */}
+        <div className="flex items-center justify-between px-6 py-2.5">
           <div className="flex items-center gap-2">
+            {/* Search board */}
+            <div className="relative">
+              <svg className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+              <input
+                value={searchBoard}
+                onChange={(e) => setSearchBoard(e.target.value)}
+                placeholder="Search board"
+                className="h-8 w-[160px] rounded-md border bg-background pl-7 pr-2 text-xs outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30 focus:border-ring"
+              />
+            </div>
+
+            {/* User avatar */}
+            <Avatar className="size-7 cursor-pointer">
+              <AvatarFallback className="text-[10px] bg-blue-500 text-white">AS</AvatarFallback>
+            </Avatar>
+
+            {/* Filter */}
             <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant={filterType ? "secondary" : "ghost"} size="sm" className="h-7 text-xs gap-1" />}>
-                <HugeiconsIcon icon={FilterIcon} className="size-3" />
-                {filterType ? (typeLabel[filterType] ?? filterType) : "Type"}
+              <DropdownMenuTrigger render={<Button variant={hasFilters ? "secondary" : "ghost"} size="sm" className="h-8 text-xs gap-1.5" />}>
+                <HugeiconsIcon icon={FilterIcon} className="size-3.5" />
+                Filter
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setFilterType(null)}>All types</DropdownMenuItem>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => { setFilterType(null); setFilterAssignee(null) }}>Clear all</DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-xs font-semibold text-muted-foreground" disabled>Type</DropdownMenuItem>
                 {Object.entries(TYPE_ICON).map(([key, cfg]) => (
-                  <DropdownMenuItem key={key} onClick={() => setFilterType(key)}>
+                  <DropdownMenuItem key={key} onClick={() => setFilterType(filterType === key ? null : key)}>
                     <span className={`mr-1 ${cfg.color}`}>{cfg.icon}</span> {typeLabel[key] ?? key}
+                    {filterType === key && <svg className="size-3 ml-auto text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>}
                   </DropdownMenuItem>
                 ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant={filterAssignee ? "secondary" : "ghost"} size="sm" className="h-7 text-xs gap-1" />}>
-                {filterAssignee ? users.find((u) => u.id === filterAssignee)?.name ?? "Assignee" : "Assignee"}
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setFilterAssignee(null)}>All members</DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-xs font-semibold text-muted-foreground" disabled>Assignee</DropdownMenuItem>
                 {projectUsers.map((u) => (
-                  <DropdownMenuItem key={u.id} onClick={() => setFilterAssignee(u.id)}>
+                  <DropdownMenuItem key={u.id} onClick={() => setFilterAssignee(filterAssignee === u.id ? null : u.id)}>
                     <Avatar className="size-4 mr-1.5">
                       <AvatarImage src={u.avatar} />
                       <AvatarFallback className="text-[7px]">{u.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     {u.name}
+                    {filterAssignee === u.id && <svg className="size-3 ml-auto text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {/* Complete sprint */}
+            {project.type === "scrum" && (
+              <Button
+                size="sm"
+                className="bg-blue-600 text-white hover:bg-blue-700 h-8 text-xs font-medium"
+                onClick={() => setSprintCompleteOpen(true)}
+              >
+                Complete sprint
+              </Button>
+            )}
+
+            {/* Refresh */}
+            <Tooltip>
+              <TooltipTrigger
+                render={<button aria-label="Refresh" className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors" />}
+                onClick={() => {
+                  setLoading(true)
+                  Promise.all([
+                    fetch(`/api/data/projects/${projectKey}`).then((r) => r.json()),
+                    fetch("/api/data/issues").then((r) => r.json()),
+                    fetch("/api/data/users").then((r) => r.json()),
+                    fetch("/api/data/epics").then((r) => r.json()),
+                  ]).then(([p, i, u, e]) => { setProject(p); setIssues(i); setUsers(u); setEpics(e); setLoading(false) })
+                }}
+              >
+                  <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6M23 20v-6h-6" /><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" /></svg>
+              </TooltipTrigger>
+              <TooltipContent>Refresh</TooltipContent>
+            </Tooltip>
+
+            {/* Group dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<button aria-label="Group by" className="flex items-center gap-1.5 h-8 px-2.5 rounded border hover:bg-accent transition-colors text-xs font-medium text-foreground" />}>
+                Group
+                <svg className="size-3 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {[
+                  { value: "none", label: "None" },
+                  { value: "assignee", label: "Assignee" },
+                  { value: "priority", label: "Priority" },
+                  { value: "type", label: "Type" },
+                ].map((g) => (
+                  <DropdownMenuItem key={g.value} onClick={() => setGroupBy(g.value)}>
+                    {g.label}
+                    {groupBy === g.value && <svg className="size-3 ml-auto text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {hasFilters && (
-              <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={() => { setFilterType(null); setFilterAssignee(null) }}>
-                Clear
-              </Button>
-            )}
+            {/* Insights */}
+            <Tooltip>
+              <TooltipTrigger render={<button aria-label="Insights" className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors" />}>
+                  <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+              </TooltipTrigger>
+              <TooltipContent>Insights</TooltipContent>
+            </Tooltip>
+
+            {/* Board settings */}
+            <Tooltip>
+              <TooltipTrigger render={<button aria-label="Board settings" className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors" />}>
+                  <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v1m0 16v1m-9-9h1m16 0h1m-2.64-6.36l-.7.7M6.34 17.66l-.7.7m0-12.72l.7.7m11.32 11.32l.7.7" /><circle cx="12" cy="12" r="3" /></svg>
+              </TooltipTrigger>
+              <TooltipContent>Board settings</TooltipContent>
+            </Tooltip>
+
+            {/* More menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<button aria-label="More options" className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors" />}>
+                <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4 text-muted-foreground" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>Export board</DropdownMenuItem>
+                <DropdownMenuItem>Print board</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Configure board</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
+
+        {/* Sprint complete confirmation */}
+        {sprintCompleteOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setSprintCompleteOpen(false)}>
+            <div className="fixed inset-0 bg-black/50" />
+            <div className="relative z-10 w-full max-w-[400px] rounded-lg border bg-popover p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-base font-semibold mb-2">Complete sprint</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {projectIssues.filter((i) => i.status === workflow[workflow.length - 1]).length} of {projectIssues.length} issues are done.
+                Incomplete issues will be moved to the backlog.
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setSprintCompleteOpen(false)}>Cancel</Button>
+                <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setSprintCompleteOpen(false)}>Complete</Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Board columns with DnD */}
         <DndContext
@@ -503,7 +803,7 @@ export default function BoardPage() {
         >
           <div className="flex flex-1 min-h-0 overflow-x-auto">
             {columns.map((col, colIdx) => {
-              const colIssues = projectIssues.filter((i) => i.status === col.key)
+              const colIssues = searchFiltered.filter((i) => i.status === col.key)
               return (
                 <DroppableColumn
                   key={col.key}
@@ -514,16 +814,140 @@ export default function BoardPage() {
                   epics={epics}
                   moveIssue={moveIssue}
                   isLast={colIdx === columns.length - 1}
+                  onCreateInColumn={(status) => {
+                    setInlineCreateStatus(status)
+                    setInlineCreateText("")
+                  }}
                 />
               )
             })}
+            {/* Add column / create issue button */}
+            <div className="flex items-start pt-2.5 px-2 shrink-0">
+              <button
+                aria-label="Create issue"
+                title="Create issue"
+                className="flex size-8 items-center justify-center rounded border hover:bg-accent transition-colors"
+                onClick={() => {
+                  setInlineCreateStatus(workflow[workflow.length - 1])
+                  setInlineCreateText("")
+                }}
+              >
+                <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+            </div>
           </div>
 
           <DragOverlay>
             {activeIssue ? <DragOverlayCard issue={activeIssue} users={users} /> : null}
           </DragOverlay>
         </DndContext>
+
+        {/* Inline create input */}
+        {inlineCreateStatus && (
+          <div className="fixed inset-0 z-50" onClick={() => setInlineCreateStatus(null)}>
+            <div className="fixed inset-0 bg-black/30" />
+            <div className="fixed left-1/2 top-1/3 -translate-x-1/2 z-10 w-full max-w-[400px] rounded-lg border bg-popover p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <p className="text-sm font-medium mb-2">Create issue in &quot;{inlineCreateStatus}&quot;</p>
+              <input
+                value={inlineCreateText}
+                onChange={(e) => setInlineCreateText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && inlineCreateText.trim()) handleInlineCreate(inlineCreateStatus, inlineCreateText)
+                  if (e.key === "Escape") setInlineCreateStatus(null)
+                }}
+                autoFocus
+                placeholder="What needs to be done?"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+              />
+              <div className="flex justify-end gap-2 mt-3">
+                <Button variant="ghost" size="sm" onClick={() => setInlineCreateStatus(null)}>Cancel</Button>
+                <Button
+                  size="sm"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  disabled={!inlineCreateText.trim()}
+                  onClick={() => handleInlineCreate(inlineCreateStatus, inlineCreateText)}
+                >
+                  Create
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Add people modal */}
+      {addPeopleOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setAddPeopleOpen(false)}>
+          <div className="fixed inset-0 bg-black/50" />
+          <div className="relative z-10 w-full max-w-[400px] rounded-lg border bg-popover shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <h3 className="text-base font-semibold">Add people to {project.name}</h3>
+              <button onClick={() => setAddPeopleOpen(false)} className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors">
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-muted-foreground">Invite team members by email address.</p>
+              <input placeholder="Enter email addresses" className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30" />
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-3 border-t">
+              <Button variant="ghost" size="sm" onClick={() => setAddPeopleOpen(false)}>Cancel</Button>
+              <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => { setAddPeopleOpen(false); setToast("Invitations sent") }}>Add</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Archive confirmation */}
+      {archiveConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setArchiveConfirmOpen(false)}>
+          <div className="fixed inset-0 bg-black/50" />
+          <div className="relative z-10 w-full max-w-[400px] rounded-lg border bg-popover p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-semibold mb-2">Archive this space?</h3>
+            <p className="text-sm text-muted-foreground mb-4">Archived spaces can be restored later from the project directory.</p>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setArchiveConfirmOpen(false)}>Cancel</Button>
+              <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => { setArchiveConfirmOpen(false); setToast("Space archived") }}>Archive</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setDeleteConfirmOpen(false)}>
+          <div className="fixed inset-0 bg-black/50" />
+          <div className="relative z-10 w-full max-w-[440px] rounded-lg border bg-popover shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b">
+              <h3 className="text-base font-semibold text-red-600">Delete {project.name}?</h3>
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-sm text-muted-foreground mb-3">This action cannot be undone. All issues, sprints, and project data will be permanently deleted.</p>
+              <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20 p-3">
+                <p className="text-xs text-red-700 dark:text-red-300 font-medium">Warning: This will permanently delete all {projectIssues.length} issues in this project.</p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-3 border-t">
+              <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+              <Button size="sm" className="bg-red-600 text-white hover:bg-red-700" onClick={() => { setDeleteConfirmOpen(false); setToast("Space deleted"); window.location.href = "/projects" }}>Delete</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4">
+          <div className="flex items-center gap-2 rounded-lg border bg-popover px-4 py-2.5 shadow-lg">
+            <svg className="size-4 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5" /></svg>
+            <span className="text-sm">{toast}</span>
+            <button onClick={() => setToast(null)} className="ml-2 text-muted-foreground hover:text-foreground">
+              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+            </button>
+          </div>
+        </div>
+      )}
+
     </TooltipProvider>
   )
 }

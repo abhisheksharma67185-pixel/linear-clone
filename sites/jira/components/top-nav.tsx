@@ -8,15 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -37,8 +28,9 @@ import {
 } from "@/components/ui/sheet"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Add01Icon } from "@hugeicons/core-free-icons"
-import type { Issue, Project, User, Sprint, Epic } from "@/app/lib/mock-data"
+import type { Issue, Project, User } from "@/app/lib/mock-data"
 import { useIssueDrawer } from "@/components/issue-drawer-provider"
+import { CreateTaskDialog } from "@/components/create-task-dialog"
 import { useTheme } from "next-themes"
 
 // ─── Search Bar ─────────────────────────────────────────────────────────────
@@ -843,97 +835,7 @@ function HelpPanel({ isBlue = true }: { isBlue?: boolean }) {
 
 function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
   const router = useRouter()
-  const { openIssue } = useIssueDrawer()
   const [open, setOpen] = useState(false)
-  const [projects, setProjects] = useState<Project[]>([])
-  const [users, setUsers] = useState<User[]>([])
-  const [sprints, setSprints] = useState<Sprint[]>([])
-  const [epics, setEpics] = useState<Epic[]>([])
-  const [saving, setSaving] = useState(false)
-
-  // Form state
-  const [projectId, setProjectId] = useState("")
-  const [issueType, setIssueType] = useState("task")
-  const [summary, setSummary] = useState("")
-  const [description, setDescription] = useState("")
-  const [priority, setPriority] = useState("medium")
-  const [assigneeId, setAssigneeId] = useState("__none__")
-  const [reporterId, setReporterId] = useState("usr-1")
-  const [sprintId, setSprintId] = useState("")
-  const [epicId, setEpicId] = useState("")
-  const [storyPoints, setStoryPoints] = useState("")
-  const [labelsStr, setLabelsStr] = useState("")
-
-  useEffect(() => {
-    if (!open) return
-    Promise.all([
-      fetch("/api/data/projects").then((r) => r.json()),
-      fetch("/api/data/users").then((r) => r.json()),
-      fetch("/api/data/sprints").then((r) => r.json()),
-      fetch("/api/data/epics").then((r) => r.json()),
-    ]).then(([p, u, s, e]) => {
-      setProjects(p)
-      setUsers(u)
-      setSprints(s)
-      setEpics(e)
-      if (p.length > 0) setProjectId((prev) => prev || p[0].id)
-    })
-  }, [open])
-
-  const resetForm = () => {
-    setSummary("")
-    setDescription("")
-    setIssueType("task")
-    setPriority("medium")
-    setAssigneeId("__none__")
-    setReporterId("usr-1")
-    setSprintId("")
-    setEpicId("")
-    setStoryPoints("")
-    setLabelsStr("")
-  }
-
-  const [error, setError] = useState("")
-
-  const handleCreate = async () => {
-    if (!summary.trim()) return
-    setError("")
-    setSaving(true)
-    try {
-      const res = await fetch("/api/data/issues", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          summary: summary.trim(),
-          description,
-          type: issueType,
-          priority,
-          projectId: projectId || undefined,
-          assigneeId: assigneeId && assigneeId !== "__none__" ? assigneeId : null,
-          reporterId: reporterId || "usr-1",
-          sprintId: sprintId || null,
-          epicId: epicId || null,
-          storyPoints: storyPoints ? Number(storyPoints) : null,
-          labels: labelsStr.split(",").map((l) => l.trim()).filter(Boolean),
-        }),
-      })
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        setError(body.error || `Failed to create issue (${res.status})`)
-        setSaving(false)
-        return
-      }
-      const issue = await res.json()
-      resetForm()
-      setError("")
-      setSaving(false)
-      setOpen(false)
-      openIssue(issue.key)
-    } catch {
-      setError("Network error — could not create issue")
-      setSaving(false)
-    }
-  }
 
   // Dropdown menu state
   const [menuOpen, setMenuOpen] = useState(false)
@@ -943,8 +845,14 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
   const [projectOpen, setProjectOpen] = useState(false)
   const [projectName, setProjectName] = useState("")
   const [projectKey, setProjectKey] = useState("")
+  const [projectEmoji, setProjectEmoji] = useState("")
+  const [projectSearchApps, setProjectSearchApps] = useState("")
+  const [projectPrivate, setProjectPrivate] = useState(false)
   const [teamOpen, setTeamOpen] = useState(false)
   const [teamName, setTeamName] = useState("")
+  const [teamDescription, setTeamDescription] = useState("")
+  const [teamMemberSearch, setTeamMemberSearch] = useState("")
+  const [teamPrivate, setTeamPrivate] = useState(false)
 
   const handleCreateGoal = async () => {
     if (!goalName.trim()) return
@@ -957,27 +865,35 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
     if (!projectName.trim()) return
     const key = projectKey.trim() || projectName.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 4) || "PROJ"
     await fetch("/api/data/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: projectName.trim(), key, type: "scrum" }) }).catch(() => null)
-    setProjectOpen(false); setProjectName(""); setProjectKey("")
+    setProjectOpen(false); setProjectName(""); setProjectKey(""); setProjectEmoji(""); setProjectSearchApps(""); setProjectPrivate(false)
     router.push("/projects")
   }
 
-  const handleCreateTeam = () => {
-    setTeamOpen(false); setTeamName("")
+  const handleCreateTeam = async () => {
+    if (!teamName.trim()) return
+    await fetch("/api/data/teams", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: teamName.trim(), description: teamDescription.trim() }) }).catch(() => null)
+    setTeamOpen(false); setTeamName(""); setTeamDescription(""); setTeamMemberSearch(""); setTeamPrivate(false)
+    window.dispatchEvent(new CustomEvent("team-created"))
     router.push("/teams")
   }
 
   return (
     <>
-      {/* Create button with dropdown */}
-      <div className="relative">
-        <Button
-          size="sm"
-          className={`gap-1.5 border-0 ${isBlue ? "bg-white/20 text-white hover:bg-white/30" : "bg-blue-600 text-white hover:bg-blue-700"}`}
-          onClick={() => setMenuOpen(!menuOpen)}
+      {/* Split Create button: main = open task dialog, chevron = dropdown */}
+      <div className="relative flex">
+        <button
+          onClick={() => setOpen(true)}
+          className={`flex items-center gap-1.5 rounded-l-md px-3 py-1.5 text-sm font-medium transition-colors ${isBlue ? "bg-white/20 text-white hover:bg-white/30" : "bg-blue-600 text-white hover:bg-blue-700"}`}
         >
           <HugeiconsIcon icon={Add01Icon} className="size-4" />
           Create
-        </Button>
+        </button>
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className={`flex items-center rounded-r-md px-1.5 py-1.5 transition-colors border-l ${isBlue ? "bg-white/20 text-white hover:bg-white/30 border-white/30" : "bg-blue-600 text-white hover:bg-blue-700 border-blue-500"}`}
+        >
+          <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg>
+        </button>
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
@@ -988,13 +904,13 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
               </button>
               <button onClick={() => { setMenuOpen(false); setOpen(true) }} className="flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
                 <svg className="size-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /><path d="M9 14l2 2 4-4" /></svg>
-                Work item
+                Work Item
               </button>
-              <button onClick={() => { setMenuOpen(false); setProjectOpen(true); setProjectName(""); setProjectKey("") }} className="flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
+              <button onClick={() => { setMenuOpen(false); setProjectOpen(true); setProjectName(""); setProjectKey(""); setProjectEmoji(""); setProjectSearchApps(""); setProjectPrivate(false) }} className="flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
                 <svg className="size-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
                 Project
               </button>
-              <button onClick={() => { setMenuOpen(false); setTeamOpen(true); setTeamName("") }} className="flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
+              <button onClick={() => { setMenuOpen(false); setTeamOpen(true); setTeamName(""); setTeamDescription(""); setTeamMemberSearch(""); setTeamPrivate(false) }} className="flex w-full items-center gap-3 px-3 py-2.5 text-sm hover:bg-accent transition-colors text-left">
                 <svg className="size-5 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                 Team
               </button>
@@ -1030,28 +946,81 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
 
       {/* Project creation dialog */}
       {projectOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh]" onClick={() => setProjectOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh]" onClick={() => setProjectOpen(false)}>
           <div className="fixed inset-0 bg-black/50" />
           <div className="relative z-10 w-full max-w-[420px] rounded-lg border bg-popover shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-2 px-6 pt-5 pb-2">
-              <svg className="size-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
-              <span className="text-lg font-semibold">Create project</span>
+            {/* Header */}
+            <div className="flex items-center gap-2.5 px-6 pt-5 pb-1">
+              <svg className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+              <span className="text-base font-semibold">Project</span>
             </div>
-            <div className="px-6 py-4 space-y-3">
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">Name <span className="text-red-500">*</span></label>
-                <input value={projectName} onChange={(e) => { setProjectName(e.target.value); setProjectKey(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 4)) }} autoFocus placeholder="e.g. Marketing"
-                  onKeyDown={(e) => { if (e.key === "Enter") handleCreateProject(); if (e.key === "Escape") setProjectOpen(false) }}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
+            <p className="px-6 pt-1 pb-3 text-xs text-muted-foreground">Required fields are marked with an asterisk <span className="text-red-500">*</span></p>
+
+            {/* Form */}
+            <div className="max-h-[55vh] overflow-y-auto px-6 pb-4 space-y-4">
+              {/* Name */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold block">Name <span className="text-red-500">*</span></label>
+                <input
+                  value={projectName}
+                  onChange={(e) => { setProjectName(e.target.value); setProjectKey(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 4)) }}
+                  autoFocus
+                  placeholder="e.g. Marketing"
+                  onKeyDown={(e) => { if (e.key === "Enter" && projectName.trim()) handleCreateProject(); if (e.key === "Escape") setProjectOpen(false) }}
+                  className="w-full rounded-md border border-input bg-input/20 px-3 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:bg-input/30"
+                />
               </div>
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">Key</label>
-                <input value={projectKey} onChange={(e) => setProjectKey(e.target.value.toUpperCase())} placeholder="e.g. MARK"
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm font-mono outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
+
+              {/* Choose an emoji */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold block">Choose an emoji</label>
+                <div className="flex items-center gap-1">
+                  {["📋", "🚀", "💻", "🎯", "📊", "🔧", "📦", "🌟"].map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setProjectEmoji(projectEmoji === emoji ? "" : emoji)}
+                      className={`flex size-8 items-center justify-center rounded-md text-base transition-colors ${projectEmoji === emoji ? "bg-blue-100 ring-2 ring-blue-500 dark:bg-blue-900/40" : "hover:bg-accent"}`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Link to an existing Jira app */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold block">Link to an existing Jira app</label>
+                <div className="relative">
+                  <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+                  <input
+                    value={projectSearchApps}
+                    onChange={(e) => setProjectSearchApps(e.target.value)}
+                    placeholder="Search apps"
+                    className="w-full rounded-md border border-input bg-input/20 pl-8 pr-3 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:bg-input/30"
+                  />
+                </div>
+              </div>
+
+              {/* Privacy controls */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold block">Privacy controls</label>
+                <div className="flex items-start gap-3">
+                  <p className="flex-1 text-xs text-muted-foreground leading-relaxed">Only contributors or people you share with can view a private project.</p>
+                  <button
+                    type="button"
+                    onClick={() => setProjectPrivate(!projectPrivate)}
+                    className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${projectPrivate ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"}`}
+                  >
+                    <span className={`inline-block size-3.5 rounded-full bg-white shadow-sm transition-transform ${projectPrivate ? "translate-x-4.5" : "translate-x-0.5"}`} />
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="flex justify-end gap-2 px-6 py-4 border-t">
-              <Button variant="outline" size="sm" onClick={() => setProjectOpen(false)}>Cancel</Button>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-2 px-6 py-3 border-t">
+              <Button variant="ghost" size="sm" onClick={() => setProjectOpen(false)}>Cancel</Button>
               <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700" disabled={!projectName.trim()} onClick={handleCreateProject}>Create</Button>
             </div>
           </div>
@@ -1060,23 +1029,76 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
 
       {/* Team creation dialog */}
       {teamOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh]" onClick={() => setTeamOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh]" onClick={() => setTeamOpen(false)}>
           <div className="fixed inset-0 bg-black/50" />
           <div className="relative z-10 w-full max-w-[420px] rounded-lg border bg-popover shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-2 px-6 pt-5 pb-2">
-              <svg className="size-5 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-              <span className="text-lg font-semibold">Create team</span>
+            {/* Header */}
+            <div className="flex items-center gap-2.5 px-6 pt-5 pb-1">
+              <svg className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+              <span className="text-base font-semibold">Team</span>
             </div>
-            <div className="px-6 py-4 space-y-3">
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">Team name <span className="text-red-500">*</span></label>
-                <input value={teamName} onChange={(e) => setTeamName(e.target.value)} autoFocus placeholder="e.g. Engineering"
-                  onKeyDown={(e) => { if (e.key === "Enter") handleCreateTeam(); if (e.key === "Escape") setTeamOpen(false) }}
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
+            <p className="px-6 pt-1 pb-3 text-xs text-muted-foreground">Required fields are marked with an asterisk <span className="text-red-500">*</span></p>
+
+            {/* Form */}
+            <div className="max-h-[55vh] overflow-y-auto px-6 pb-4 space-y-4">
+              {/* Team name */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold block">Team name <span className="text-red-500">*</span></label>
+                <input
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  autoFocus
+                  placeholder="e.g. Engineering"
+                  onKeyDown={(e) => { if (e.key === "Enter" && teamName.trim()) handleCreateTeam(); if (e.key === "Escape") setTeamOpen(false) }}
+                  className="w-full rounded-md border border-input bg-input/20 px-3 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:bg-input/30"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold block">Description</label>
+                <textarea
+                  value={teamDescription}
+                  onChange={(e) => setTeamDescription(e.target.value)}
+                  placeholder="What does this team work on?"
+                  rows={3}
+                  className="w-full resize-none rounded-md border border-input bg-input/20 px-3 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:bg-input/30"
+                />
+              </div>
+
+              {/* Add members */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold block">Add members</label>
+                <div className="relative">
+                  <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+                  <input
+                    value={teamMemberSearch}
+                    onChange={(e) => setTeamMemberSearch(e.target.value)}
+                    placeholder="Search people"
+                    className="w-full rounded-md border border-input bg-input/20 pl-8 pr-3 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:bg-input/30"
+                  />
+                </div>
+              </div>
+
+              {/* Privacy controls */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold block">Privacy controls</label>
+                <div className="flex items-start gap-3">
+                  <p className="flex-1 text-xs text-muted-foreground leading-relaxed">Only members can see who is on the team and what they are working on.</p>
+                  <button
+                    type="button"
+                    onClick={() => setTeamPrivate(!teamPrivate)}
+                    className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${teamPrivate ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"}`}
+                  >
+                    <span className={`inline-block size-3.5 rounded-full bg-white shadow-sm transition-transform ${teamPrivate ? "translate-x-4.5" : "translate-x-0.5"}`} />
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="flex justify-end gap-2 px-6 py-4 border-t">
-              <Button variant="outline" size="sm" onClick={() => setTeamOpen(false)}>Cancel</Button>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-2 px-6 py-3 border-t">
+              <Button variant="ghost" size="sm" onClick={() => setTeamOpen(false)}>Cancel</Button>
               <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700" disabled={!teamName.trim()} onClick={handleCreateTeam}>Create</Button>
             </div>
           </div>
@@ -1084,214 +1106,15 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
       )}
 
       {/* Work item (issue) creation dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-base">Create issue</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 pt-1 max-h-[70vh] overflow-y-auto pr-1">
-            {/* Project */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Project <span className="text-red-500">*</span></Label>
-              <Select value={projectId || undefined} onValueChange={(v) => v && setProjectId(v)}>
-                <SelectTrigger>
-                  {(() => { const p = projects.find((p) => p.id === projectId); return p ? <span className="truncate">{p.name} ({p.key})</span> : <span className="text-muted-foreground">Select project</span> })()}
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id} label={`${p.name} (${p.key})`}>
-                      <span className="flex items-center gap-2">
-                        <span className="flex size-5 items-center justify-center rounded bg-blue-100 dark:bg-blue-900/30 shrink-0">
-                          <svg className="size-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /></svg>
-                        </span>
-                        {p.name} <span className="text-muted-foreground">({p.key})</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Issue Type with icons */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Issue type <span className="text-red-500">*</span></Label>
-              <Select value={issueType} onValueChange={(v) => v && setIssueType(v)}>
-                <SelectTrigger>
-                  {(() => { const labels: Record<string,string> = { story: "Story", task: "Task", bug: "Bug", subtask: "Sub-task" }; return <span>{labels[issueType] ?? issueType}</span> })()}
-                </SelectTrigger>
-                <SelectContent>
-                  {[
-                    { value: "story", label: "Story", color: "bg-green-500" },
-                    { value: "task", label: "Task", color: "bg-blue-500" },
-                    { value: "bug", label: "Bug", color: "bg-red-500" },
-                    { value: "subtask", label: "Sub-task", color: "bg-cyan-500" },
-                  ].map((t) => (
-                    <SelectItem key={t.value} value={t.value} label={t.label}>
-                      <span className="flex items-center gap-2">
-                        <span className={`flex size-4 items-center justify-center rounded-sm ${t.color} shrink-0`}>
-                          <svg className="size-2.5 text-white" viewBox="0 0 16 16" fill="currentColor">
-                            {t.value === "bug" ? <circle cx="8" cy="8" r="4" /> : <path d="M3 3h10v10H3z" />}
-                          </svg>
-                        </span>
-                        {t.label}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Summary */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Summary <span className="text-red-500">*</span></Label>
-              <Input
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && summary.trim()) { e.preventDefault(); handleCreate() } }}
-                placeholder="What needs to be done?"
-                autoFocus
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Description</Label>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add a description..."
-                rows={3}
-              />
-            </div>
-
-            {/* Two-column row: Priority + Assignee */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Priority</Label>
-                <Select value={priority} onValueChange={(v) => v && setPriority(v)}>
-                  <SelectTrigger>
-                    {(() => { const labels: Record<string,string> = { highest: "Highest", high: "High", medium: "Medium", low: "Low", lowest: "Lowest" }; return <span>{labels[priority] ?? priority}</span> })()}
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[
-                      { value: "highest", label: "Highest", icon: <svg className="size-3.5 text-red-600" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5H7z" /></svg> },
-                      { value: "high", label: "High", icon: <svg className="size-3.5 text-orange-500" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5H7z" /></svg> },
-                      { value: "medium", label: "Medium", icon: <svg className="size-3.5 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M7 11h10v2H7z" /></svg> },
-                      { value: "low", label: "Low", icon: <svg className="size-3.5 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5H7z" /></svg> },
-                      { value: "lowest", label: "Lowest", icon: <svg className="size-3.5 text-blue-400" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5H7z" /></svg> },
-                    ].map((p) => (
-                      <SelectItem key={p.value} value={p.value} label={p.label}>
-                        <span className="flex items-center gap-2">{p.icon} {p.label}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Assignee</Label>
-                <Select value={assigneeId} onValueChange={(v) => v && setAssigneeId(v)}>
-                  <SelectTrigger>
-                    {(() => { const u = users.find((u) => u.id === assigneeId); return u ? <span className="truncate">{u.displayName ?? u.name}</span> : <span className="text-muted-foreground">Unassigned</span> })()}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__" label="Unassigned">Unassigned</SelectItem>
-                    {users.map((u) => (
-                      <SelectItem key={u.id} value={u.id} label={u.displayName ?? u.name}>{u.displayName ?? u.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Reporter */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Reporter</Label>
-              <Select value={reporterId || undefined} onValueChange={(v) => v && setReporterId(v)}>
-                <SelectTrigger>
-                  {(() => { const u = users.find((u) => u.id === reporterId); return u ? <span className="truncate">{u.displayName ?? u.name}</span> : <span className="text-muted-foreground">Select reporter</span> })()}
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((u) => (
-                    <SelectItem key={u.id} value={u.id} label={u.displayName ?? u.name}>{u.displayName ?? u.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Two-column row: Sprint + Epic */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Sprint</Label>
-                <Select value={sprintId || "__none__"} onValueChange={(v) => setSprintId(v === "__none__" || v === null ? "" : v)}>
-                  <SelectTrigger>
-                    {(() => { const s = sprints.find((s) => s.id === sprintId); return s ? <span className="truncate">{s.name}</span> : <span className="text-muted-foreground">No sprint</span> })()}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__" label="No sprint">No sprint</SelectItem>
-                    {sprints.filter((s) => s.state !== "closed").map((s) => (
-                      <SelectItem key={s.id} value={s.id} label={s.name}>{s.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Epic</Label>
-                <Select value={epicId || "__none__"} onValueChange={(v) => setEpicId(v === "__none__" || v === null ? "" : v)}>
-                  <SelectTrigger>
-                    {(() => { const ep = epics.find((e) => e.id === epicId); return ep ? <span className="truncate">{ep.name}</span> : <span className="text-muted-foreground">No epic</span> })()}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__" label="No epic">No epic</SelectItem>
-                    {epics.map((e) => (
-                      <SelectItem key={e.id} value={e.id} label={e.name}>{e.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Two-column row: Story Points + Labels */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Story Points</Label>
-                <Input
-                  type="number"
-                  value={storyPoints}
-                  onChange={(e) => setStoryPoints(e.target.value)}
-                  placeholder="0"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Labels</Label>
-                <Input
-                  value={labelsStr}
-                  onChange={(e) => setLabelsStr(e.target.value)}
-                  placeholder="frontend, bug"
-                />
-              </div>
-            </div>
-          </div>
-
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400 px-1">{error}</p>
-          )}
-
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={() => { setOpen(false); setError("") }}>Cancel</Button>
-            <Button
-              type="button"
-              className="bg-blue-600 text-white hover:bg-blue-700"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCreate() }}
-              disabled={!summary.trim() || saving}
-            >
-              {saving ? "Creating..." : "Create"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateTaskDialog open={open} onOpenChange={setOpen} />
     </>
   )
+}
+
+// ─── Exported Create Button (reusable in other layouts) ─────────────────────
+
+export function CreateButton({ isBlue = false }: { isBlue?: boolean }) {
+  return <CreateIssueDialog isBlue={isBlue} />
 }
 
 // ─── Chevron Icon ───────────────────────────────────────────────────────────
@@ -1586,32 +1409,74 @@ function AppSwitcherIcon() {
 
 function ThreeDotsMenu() {
   const [open, setOpen] = useState(false)
+  const [themeSubOpen, setThemeSubOpen] = useState(false)
+  const { theme, setTheme } = useTheme()
   const router = useRouter()
+
+  const themeChoices = [
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Dark" },
+    { value: "system", label: "Match system" },
+  ] as const
+
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)} className="flex size-8 items-center justify-center rounded-md border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+      <button onClick={() => { setOpen(!open); setThemeSubOpen(false) }} aria-label="Account menu" title="Account menu" className="flex size-8 items-center justify-center rounded-md border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
         <svg className="size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-40" onClick={() => { setOpen(false); setThemeSubOpen(false) }} />
           <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border bg-popover shadow-lg py-1">
-            {[
-              { label: "Notifications", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>, action: () => router.push("/home/notifications") },
-              { label: "Help", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>, action: () => {} },
-              { label: "Settings", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>, action: () => router.push("/admin") },
-              { label: "Premium trial", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>, action: () => {} },
-            ].map((item) => (
-              <button key={item.label} onClick={() => { setOpen(false); item.action() }} className="flex w-full items-center gap-3 px-3 py-2 text-sm text-left hover:bg-accent transition-colors">
-                <span className="text-muted-foreground">{item.icon}</span>
-                {item.label}
-              </button>
-            ))}
-            <div className="border-t my-1" />
-            <button onClick={() => { setOpen(false); router.push("/home/profile") }} className="flex w-full items-center gap-3 px-3 py-2 text-sm text-left hover:bg-accent transition-colors">
-              <Avatar className="size-5"><AvatarFallback className="bg-blue-600 text-[8px] font-semibold text-white">AS</AvatarFallback></Avatar>
-              Profile
-            </button>
+            {themeSubOpen ? (
+              <>
+                <button onClick={() => setThemeSubOpen(false)} className="flex w-full items-center gap-3 px-3 py-2 text-sm text-left hover:bg-accent transition-colors">
+                  <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
+                  Theme
+                </button>
+                <div className="border-t my-1" />
+                {themeChoices.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => { setTheme(option.value); setOpen(false); setThemeSubOpen(false) }}
+                    aria-label={`Set theme to ${option.label}`}
+                    className="flex w-full items-center gap-3 px-3 py-2 text-sm text-left hover:bg-accent transition-colors"
+                  >
+                    <span className="flex size-4 items-center justify-center">
+                      {theme === option.value && (
+                        <svg className="size-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+                      )}
+                    </span>
+                    {option.label}
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                {[
+                  { label: "Notifications", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>, action: () => router.push("/home/notifications") },
+                  { label: "Help", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>, action: () => {} },
+                  { label: "Settings", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>, action: () => router.push("/admin") },
+                  { label: "Premium trial", icon: <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>, action: () => {} },
+                ].map((item) => (
+                  <button key={item.label} onClick={() => { setOpen(false); item.action() }} className="flex w-full items-center gap-3 px-3 py-2 text-sm text-left hover:bg-accent transition-colors">
+                    <span className="text-muted-foreground">{item.icon}</span>
+                    {item.label}
+                  </button>
+                ))}
+                <div className="border-t my-1" />
+                <button onClick={() => setThemeSubOpen(true)} aria-label="Change theme" className="flex w-full items-center gap-3 px-3 py-2 text-sm text-left hover:bg-accent transition-colors">
+                  <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
+                  Theme
+                  <svg className="size-4 text-muted-foreground ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+                </button>
+                <div className="border-t my-1" />
+                <button onClick={() => { setOpen(false); router.push("/home/profile") }} className="flex w-full items-center gap-3 px-3 py-2 text-sm text-left hover:bg-accent transition-colors">
+                  <Avatar className="size-5"><AvatarFallback className="bg-blue-600 text-[8px] font-semibold text-white">AS</AvatarFallback></Avatar>
+                  Profile
+                </button>
+              </>
+            )}
           </div>
         </>
       )}
@@ -1625,7 +1490,7 @@ export function TopNav() {
   useSidebar() // keep sidebar context connected
 
   return (
-    <header className="flex h-12 items-center justify-between px-3 border-b bg-background overflow-hidden">
+    <header className="flex h-12 items-center justify-between px-3 border-b bg-background">
       {/* Left */}
       <div className="flex items-center gap-1.5 min-w-0">
         {/* Sidebar collapse/expand toggle */}
@@ -1664,6 +1529,9 @@ export function TopNav() {
 
         {/* Three-dot menu */}
         <ThreeDotsMenu />
+
+        {/* User avatar & theme menu */}
+        <UserMenu />
       </div>
     </header>
   )
@@ -1766,7 +1634,12 @@ function UserMenu() {
   return (
     <>
       <Popover onOpenChange={(open) => { if (!open) setThemeMenuOpen(false) }}>
-        <PopoverTrigger className="rounded-full">
+        <PopoverTrigger
+          className="rounded-full"
+          aria-label="Account menu"
+          role="button"
+          title="Account menu"
+        >
           <Avatar className="size-8 cursor-pointer hover:ring-2 hover:ring-white/50 hover:ring-offset-1 hover:ring-offset-[#0052CC] transition-all">
             <AvatarFallback className="bg-blue-600 text-xs font-semibold text-white">
               AS

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { UserProfileCard } from "@/components/user-profile-card"
 import {
   Dialog,
   DialogContent,
@@ -26,7 +27,7 @@ interface Person {
   goals: string[]
 }
 
-const initialPeople: Person[] = [
+const hardcodedPeople: Person[] = [
   { name: "Abhishek Sharma", initials: "AS", jobTitle: "Engineering Manager", manager: "", department: "Engineering", location: "Bangalore, India", teams: ["Platform", "Infrastructure"], projects: ["My Scrum Project", "Kanban Project"], goals: ["Ship v2.0", "Improve reliability"] },
   { name: "Sam Williams", initials: "SW", jobTitle: "Senior Developer", manager: "Abhishek Sharma", department: "Engineering", location: "San Francisco, USA", teams: ["Platform"], projects: ["My Scrum Project"], goals: ["Ship v2.0"] },
   { name: "Priya Patel", initials: "PP", jobTitle: "Product Designer", manager: "Abhishek Sharma", department: "Design", location: "Bangalore, India", teams: ["Design System"], projects: ["My Scrum Project", "Kanban Project"], goals: ["Design system v3"] },
@@ -240,7 +241,28 @@ export default function PeoplePage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
-  const [people, setPeople] = useState(initialPeople)
+  const [people, setPeople] = useState(hardcodedPeople)
+
+  // Also load users from the API and merge (dedup by name)
+  useEffect(() => {
+    fetch("/api/data/users").then((r) => r.json()).then((apiUsers: Array<{ name: string; displayName?: string; email?: string; role?: string }>) => {
+      const existingNames = new Set(hardcodedPeople.map((p) => p.name.toLowerCase()))
+      const newPeople: Person[] = apiUsers
+        .filter((u) => !existingNames.has((u.displayName ?? u.name).toLowerCase()))
+        .map((u) => ({
+          name: u.displayName ?? u.name,
+          initials: (u.displayName ?? u.name).split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2),
+          jobTitle: u.role ?? "Team Member",
+          manager: "",
+          department: "General",
+          location: "",
+          teams: [],
+          projects: [],
+          goals: [],
+        }))
+      if (newPeople.length > 0) setPeople((prev) => [...prev, ...newPeople])
+    }).catch(() => {})
+  }, [])
   const [columnsOpen, setColumnsOpen] = useState(false)
   const [colSearch, setColSearch] = useState("")
   const [wrapText, setWrapText] = useState(false)
@@ -294,7 +316,11 @@ export default function PeoplePage() {
 
   // Apply search + all active filters
   const filtered = people.filter((p) => {
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
+    if (search) {
+      const q = search.toLowerCase()
+      const matchesAny = p.name.toLowerCase().includes(q) || p.jobTitle.toLowerCase().includes(q) || p.department.toLowerCase().includes(q) || p.location.toLowerCase().includes(q) || p.teams.some((t) => t.toLowerCase().includes(q))
+      if (!matchesAny) return false
+    }
     for (const [key, values] of Object.entries(activeFilters)) {
       if (values.size === 0) continue
       const def = filterDefs.find((f) => f.key === key)
@@ -488,8 +514,8 @@ export default function PeoplePage() {
       {view === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.length > 0 ? (
-            filtered.map((person) => (
-              <div key={person.name} className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-accent/50 cursor-pointer">
+            filtered.map((person, i) => (
+              <div key={`grid-${i}-${person.name}`} className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-accent/50 cursor-pointer">
                 <Avatar className="size-14 rounded-md">
                   <AvatarFallback className="rounded-md bg-blue-600 text-lg font-semibold text-white">{person.initials}</AvatarFallback>
                 </Avatar>
@@ -524,12 +550,16 @@ export default function PeoplePage() {
             </thead>
             <tbody>
               {filtered.length > 0 ? (
-                filtered.map((person) => (
-                  <tr key={person.name} className="border-b last:border-b-0 hover:bg-accent/50 cursor-pointer transition-colors">
+                filtered.map((person, i) => (
+                  <tr key={`list-${i}-${person.name}`} className="border-b last:border-b-0 hover:bg-accent/50 cursor-pointer transition-colors">
                     {visibleCols.name && (
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <Avatar className="size-6"><AvatarFallback className="bg-blue-600 text-[9px] font-semibold text-white">{person.initials}</AvatarFallback></Avatar>
+                          <UserProfileCard
+                            name={person.name}
+                            initials={person.initials}
+                            size="sm"
+                          />
                           <span className={`text-sm ${wrapText ? "" : "truncate max-w-[200px]"}`}>{person.name}</span>
                         </div>
                       </td>
