@@ -13,6 +13,13 @@ simbench/
 │   ├── linear/              # Linear simulation (project management, 80 tasks)
 │   └── jira/                # Jira simulation (project management, 80 tasks)
 ├── sdk/                     # Python SDK (pip install simbench)
+├── observability/           # Theta Observability — external SaaS for AI interaction traces
+│   ├── api-go/              # Go ingest API (chi + GCS + BigQuery + Postgres)
+│   ├── sdk-python/          # theta-observability (pip)
+│   ├── sdk-node/            # @theta/observability (npm)
+│   ├── dashboard/           # Next.js 16 dashboard (multi-tenant SaaS)
+│   ├── schema/              # Trace JSON Schema, BQ table schemas, Postgres migrations
+│   └── docker-compose.dev.yml
 └── paper/                   # Research paper
 ```
 
@@ -75,6 +82,24 @@ See [paper/simbench-paper.md](paper/simbench-paper.md) for the full research pap
 | Shopify Admin | 39 | 104 | Complete |
 | Linear | - | 80 | Complete |
 | Jira | - | 80 | Complete |
+
+## Observability
+
+`observability/` hosts **Theta Observability**, an external SaaS product for visualizing multimodal AI interaction traces (text / image / audio / video / robotics sensor frames). Customers install an SDK in their agent code; traces land in GCS + BigQuery and appear in a polished web dashboard.
+
+```bash
+# Spin up the full local stack (postgres, fake-gcs, bq emulator, go api, dashboard)
+cd observability && docker compose -f docker-compose.dev.yml up
+
+# Python SDK
+pip install -e observability/sdk-python
+
+# Node SDK (installed via root workspace)
+npm install
+npm run dev:obs                       # dashboard at http://localhost:3100
+```
+
+See [observability/README.md](observability/README.md) for the full quickstart, SDK references, and self-host guide.
 
 ## License
 

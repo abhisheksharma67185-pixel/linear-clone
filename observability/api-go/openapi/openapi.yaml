@@ -1,0 +1,436 @@
+openapi: 3.1.0
+info:
+  title: theta-observability ingest API
+  version: "1.0.0"
+  description: Multi-tenant observability ingest & control plane.
+servers:
+  - url: https://api.theta-observability.com
+  - url: http://localhost:8080
+security:
+  - apiKey: []
+  - bearer: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: x-api-key
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+    Trace:
+      type: object
+      required: [project_id]
+      properties:
+        schema_version: { type: string }
+        trace_id: { type: string }
+        project_id: { type: string }
+        name: { type: string }
+        run_id: { type: string }
+        run_type: { type: string }
+        use_case: { type: string }
+        user_id: { type: string }
+        group: { type: string }
+        platform: { type: string }
+        model: { type: string }
+        status:
+          type: string
+          enum: [success, error, running]
+        tags:
+          type: array
+          items: { type: string }
+        metadata: { type: object }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: string, format: date-time }
+        latency_ms: { type: integer }
+        cost_usd: { type: number }
+        token_usage:
+          type: object
+          properties:
+            input: { type: integer }
+            output: { type: integer }
+            total: { type: integer }
+        steps:
+          type: array
+          items: { $ref: "#/components/schemas/Step" }
+    Step:
+      type: object
+      required: [step_id, type]
+      properties:
+        step_id: { type: string }
+        parent_step_id: { type: string }
+        index: { type: integer }
+        type:
+          type: string
+          enum: [llm, tool, retrieval, robotics, human, annotation, custom]
+        name: { type: string }
+        model: { type: string }
+        status: { type: string }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: string, format: date-time }
+        latency_ms: { type: integer }
+        input_tokens: { type: integer }
+        output_tokens: { type: integer }
+        messages: { type: array, items: { type: object } }
+        tool_calls: { type: array, items: { type: object } }
+        sensor_frames: { type: array, items: { type: object } }
+        metadata: { type: object }
+    IngestResponse:
+      type: object
+      properties:
+        trace_id: { type: string }
+        ingest_status: { type: string, enum: [accepted] }
+        gcs_uri: { type: string }
+    TraceListItem:
+      type: object
+      properties:
+        trace_id: { type: string }
+        project_id: { type: string }
+        name: { type: string }
+        status: { type: string }
+        platform: { type: string }
+        model: { type: string }
+        user_id: { type: string }
+        started_at: { type: string, format: date-time }
+        latency_ms: { type: integer }
+        total_tokens: { type: integer }
+        cost_usd: { type: number }
+        step_count: { type: integer }
+        has_media: { type: boolean }
+        tags: { type: array, items: { type: string } }
+    TraceListResponse:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/TraceListItem" } }
+        next_cursor: { type: string }
+    SignedURLRequest:
+      type: object
+      required: [content_type]
+      properties:
+        trace_id: { type: string }
+        filename: { type: string }
+        content_type: { type: string }
+        size_bytes: { type: integer }
+    SignedURLResponse:
+      type: object
+      properties:
+        url: { type: string }
+        gs_uri: { type: string }
+        expires_at: { type: string, format: date-time }
+    Project:
+      type: object
+      properties:
+        id: { type: string }
+        org_id: { type: string }
+        name: { type: string }
+        slug: { type: string }
+        created_at: { type: string, format: date-time }
+    APIKey:
+      type: object
+      properties:
+        id: { type: string }
+        project_id: { type: string }
+        name: { type: string }
+        prefix: { type: string }
+        created_at: { type: string, format: date-time }
+        revoked_at: { type: string, format: date-time }
+        last_used_at: { type: string, format: date-time }
+    SignupRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string }
+        password: { type: string }
+        name: { type: string }
+        org_name: { type: string }
+paths:
+  /healthz:
+    get:
+      summary: Liveness probe
+      security: []
+      responses:
+        "200": { description: OK }
+  /readyz:
+    get:
+      summary: Readiness probe (pings Postgres)
+      security: []
+      responses:
+        "200": { description: OK }
+        "503": { description: DB unreachable }
+  /v1/openapi.json:
+    get:
+      summary: OpenAPI spec as JSON
+      security: []
+      responses:
+        "200": { description: OK }
+  /v1/signup:
+    post:
+      summary: Create a user + default org
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SignupRequest" }
+      responses:
+        "201": { description: Created }
+        "409": { description: Email in use }
+  /v1/orgs:
+    get:
+      summary: List orgs for the dashboard user
+      security: [{ bearer: [] }]
+      responses:
+        "200": { description: OK }
+    post:
+      summary: Create a new org
+      security: [{ bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+      responses:
+        "201": { description: Created }
+  /v1/orgs/{org_id}/members:
+    get:
+      summary: List org members
+      security: [{ bearer: [] }]
+      parameters:
+        - in: path
+          name: org_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+  /v1/invites:
+    post:
+      summary: Invite a user to an org
+      security: [{ bearer: [] }]
+      responses:
+        "201": { description: Created }
+  /v1/invites/accept:
+    post:
+      summary: Accept an invite token
+      security: [{ bearer: [] }]
+      responses:
+        "200": { description: OK }
+  /v1/projects:
+    get:
+      summary: List projects in an org
+      security: [{ bearer: [] }]
+      parameters:
+        - in: query
+          name: org_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+    post:
+      summary: Create a project
+      security: [{ bearer: [] }]
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Project" }
+  /v1/projects/{id}:
+    get:
+      summary: Get a project
+      security: [{ bearer: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+  /v1/projects/{id}/keys:
+    get:
+      summary: List API keys
+      security: [{ bearer: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+    post:
+      summary: Create an API key (returns plaintext once)
+      security: [{ bearer: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/APIKey" }
+  /v1/projects/{id}/keys/{key_id}:
+    delete:
+      summary: Revoke an API key
+      security: [{ bearer: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: path
+          name: key_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+  /v1/traces:
+    post:
+      summary: Ingest a trace
+      security: [{ apiKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Trace" }
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IngestResponse" }
+    get:
+      summary: List traces
+      parameters:
+        - in: query
+          name: project_id
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: platform
+          schema: { type: string }
+        - in: query
+          name: model
+          schema: { type: string }
+        - in: query
+          name: user_id
+          schema: { type: string }
+        - in: query
+          name: run_id
+          schema: { type: string }
+        - in: query
+          name: run_type
+          schema: { type: string }
+        - in: query
+          name: use_case
+          schema: { type: string }
+        - in: query
+          name: group
+          schema: { type: string }
+        - in: query
+          name: tags
+          schema: { type: string }
+        - in: query
+          name: since
+          schema: { type: string, format: date-time }
+        - in: query
+          name: until
+          schema: { type: string, format: date-time }
+        - in: query
+          name: limit
+          schema: { type: integer }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TraceListResponse" }
+  /v1/traces/{id}:
+    get:
+      summary: Get trace meta + raw JSON
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+        "404": { description: Not found }
+  /v1/traces/{id}/steps:
+    post:
+      summary: Append steps (JSON array or NDJSON)
+      security: [{ apiKey: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "202": { description: Accepted }
+  /v1/traces/{id}/tail:
+    get:
+      summary: SSE live tail of a trace
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: text/event-stream
+          content:
+            text/event-stream:
+              schema: { type: string }
+  /v1/media/signed-url:
+    post:
+      summary: Issue a V4 signed URL for media upload
+      security: [{ apiKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SignedURLRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SignedURLResponse" }
+  /v1/billing/stripe/webhook:
+    post:
+      summary: Stripe webhook receiver
+      security: []
+      responses:
+        "200": { description: OK }
+  /v1/usage:
+    get:
+      summary: Current-period usage for an org
+      security: [{ bearer: [] }]
+      parameters:
+        - in: query
+          name: org_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }

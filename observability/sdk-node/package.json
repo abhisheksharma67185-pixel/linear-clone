@@ -1,0 +1,76 @@
+{
+  "name": "@theta/observability",
+  "version": "0.1.0",
+  "description": "Theta Observability SDK for Node.js — multimodal AI agent tracing.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./openai": {
+      "types": "./dist/integrations/openai.d.ts",
+      "import": "./dist/integrations/openai.js",
+      "require": "./dist/integrations/openai.cjs"
+    },
+    "./anthropic": {
+      "types": "./dist/integrations/anthropic.d.ts",
+      "import": "./dist/integrations/anthropic.js",
+      "require": "./dist/integrations/anthropic.cjs"
+    },
+    "./openclaw": {
+      "types": "./dist/integrations/openclaw.d.ts",
+      "import": "./dist/integrations/openclaw.js",
+      "require": "./dist/integrations/openclaw.cjs"
+    },
+    "./next": {
+      "types": "./dist/integrations/next.d.ts",
+      "import": "./dist/integrations/next.js",
+      "require": "./dist/integrations/next.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "observability",
+    "tracing",
+    "llm",
+    "ai",
+    "agents",
+    "theta"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theagi/theta-rl-labs",
+    "directory": "observability/sdk-node"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.89.0",
+    "ulid": "^2.3.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
