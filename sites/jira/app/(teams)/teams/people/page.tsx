@@ -63,6 +63,12 @@ interface FilterDef {
   icon: React.ReactNode
 }
 
+const AVATAR_COLORS = [
+  "bg-blue-600", "bg-red-500", "bg-emerald-600", "bg-violet-600",
+  "bg-orange-500", "bg-teal-600", "bg-rose-500", "bg-indigo-500",
+  "bg-cyan-600", "bg-amber-600", "bg-lime-600", "bg-fuchsia-600",
+]
+
 const filterDefs: FilterDef[] = [
   { key: "project",    field: "projects",   label: "Filter by Project", chipLabel: "Project is",    placeholder: "Choose a project",    icon: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></> },
   { key: "goal",       field: "goals",      label: "Goal",              chipLabel: "Goal is",        placeholder: "Choose a goal",       icon: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></> },
@@ -102,26 +108,21 @@ function FilterDropdown({
   return (
     <div className="relative" ref={ref}>
       {hasValue ? (
-        /* Active chip: label outside + value pill with single × button */
-        <div className="flex items-center gap-1.5">
-          <span className="flex items-center gap-1.5 text-sm text-foreground select-none">
-            <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
-            {def.chipLabel}
+        /* Solid blue active chip */
+        <div data-testid={`filter-chip-${def.key}`}
+          className="flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1.5 text-sm text-white">
+          <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
+          <span onClick={() => onToggleOpen(def.key)} className="cursor-pointer select-none">
+            {def.chipLabel} {selectedValue}
           </span>
-          <div className="flex items-center gap-1.5 rounded-full border border-blue-500 px-3 py-1">
-            <span onClick={() => onToggleOpen(def.key)}
-              className="cursor-pointer text-sm text-blue-600 leading-none select-none dark:text-blue-400">
-              {selectedValue}
-            </span>
-            <button onClick={() => onRemoveFilter(def.key)}
-              className="flex items-center text-blue-500 hover:text-blue-700 dark:text-blue-400">
-              <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/></svg>
-            </button>
-          </div>
+          <button onClick={() => onRemoveFilter(def.key)}
+            className="ml-0.5 flex items-center text-white/80 hover:text-white transition-colors">
+            <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/></svg>
+          </button>
         </div>
       ) : (
-        /* Default pill button */
-        <button onClick={() => onToggleOpen(def.key)}
+        /* Default gray outline pill */
+        <button data-testid={`filter-btn-${def.key}`} onClick={() => onToggleOpen(def.key)}
           className="flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent dark:border-gray-700">
           <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
           {def.label}
@@ -478,18 +479,25 @@ export default function PeoplePage() {
       {view === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.length > 0 ? (
-            filtered.map((person, i) => (
-              <div key={`grid-${i}-${person.name}`} className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-accent/50 cursor-pointer">
-                <Avatar className="size-14 rounded-md">
-                  <AvatarFallback className="rounded-md bg-blue-600 text-lg font-semibold text-white">{person.initials}</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{person.name}</p>
-                  {person.jobTitle && <p className="text-xs text-muted-foreground truncate">{person.jobTitle}</p>}
-                  {person.department && <p className="text-xs text-muted-foreground truncate">{person.department}</p>}
+            filtered.map((person, i) => {
+              const color = AVATAR_COLORS[i % AVATAR_COLORS.length]
+              return (
+                <div key={`grid-${i}-${person.name}`} data-testid="person-card"
+                  className="flex rounded-lg border overflow-hidden bg-background hover:shadow-sm transition-shadow cursor-pointer">
+                  {/* Left: full-height color block */}
+                  <div data-testid="person-card-avatar-block"
+                    className={`w-20 shrink-0 flex items-center justify-center ${color}`}>
+                    <span className="text-xl font-bold text-white select-none">{person.initials}</span>
+                  </div>
+                  {/* Right: details vertically centered */}
+                  <div className="flex flex-col justify-center px-4 py-3 min-w-0 flex-1">
+                    <p className="text-sm font-semibold truncate">{person.name}</p>
+                    {person.jobTitle && <p className="text-xs text-muted-foreground truncate">{person.jobTitle}</p>}
+                    {person.department && <p className="text-xs text-muted-foreground truncate">{person.department}</p>}
+                  </div>
                 </div>
-              </div>
-            ))
+              )
+            })
           ) : (
             <div className="col-span-full py-12 text-center">
               <p className="text-sm text-muted-foreground">No people match the current filters.</p>
