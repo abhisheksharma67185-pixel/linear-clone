@@ -8,12 +8,12 @@ test.describe("Teams directory – tab navigation & empty state", () => {
     await page.waitForLoadState("networkidle")
   })
 
-  test("'Your teams' tab shows 'Team Member is Theta Computer' filter chip", async ({ page }) => {
+  test("'Your teams' tab shows 'Team Member is Abhishek Sharma' filter chip", async ({ page }) => {
     await page.getByTestId("tab-your-teams").click()
     const chip = page.getByTestId("filter-chip-member")
     await expect(chip).toBeVisible()
     await expect(chip).toContainText("Team Member is")
-    await expect(chip).toContainText("Theta Computer")
+    await expect(chip).toContainText("Abhishek Sharma")
   })
 
   test("'Your teams' tab puts filter bar in active state", async ({ page }) => {

@@ -104,8 +104,8 @@ test.describe("Teams directory – Add filter + button", () => {
 
   test("'Add filter +' opens a dropdown with remaining filters", async ({ page }) => {
     await page.getByTestId("add-filter-btn").click()
-    await expect(page.locator("text=Goal")).toBeVisible()
-    await expect(page.locator("text=Team type")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Goal" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Team type" })).toBeVisible()
   })
 
   test("selecting a second filter from 'Add filter +' shows two chips", async ({ page }) => {

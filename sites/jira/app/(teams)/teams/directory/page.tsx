@@ -113,7 +113,7 @@ export default function TeamsDirectoryPage() {
     setAddFilterOpen(false)
     if (tab === "Your teams") {
       setActiveFilters(new Set(["member"]))
-      setFilterValues({ member: "Theta Computer" })
+      setFilterValues({ member: "Abhishek Sharma" })
     }
   }
 
@@ -242,16 +242,20 @@ export default function TeamsDirectoryPage() {
             {activeFilterIds.map((id) => {
               const f = FILTER_BTNS.find((fb) => fb.id === id)!
               const val = filterValues[id]
-              const label = val ? `${f.chipLabel} ${val}` : f.chipLabel
               return (
-                <div key={id} data-testid={`filter-chip-${id}`} className="relative">
-                  <div className="flex items-center">
-                    <button onClick={() => handleFilterClick(id)}
-                      className="flex items-center gap-1.5 rounded-l-full border border-r-0 border-blue-500 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-                      {f.icon}{label}
-                    </button>
+                <div key={id} data-testid={`filter-chip-${id}`} className="relative flex items-center gap-1.5">
+                  {/* Label — plain text */}
+                  <span className="flex items-center gap-1.5 text-sm text-foreground select-none">
+                    {f.icon}{f.chipLabel}
+                  </span>
+                  {/* Value + × in one pill — value is a div (opens dropdown), × is the only button */}
+                  <div className="flex items-center gap-1.5 rounded-full border border-blue-500 px-3 py-1">
+                    <span onClick={() => handleFilterClick(id)}
+                      className="cursor-pointer text-sm text-blue-600 leading-none select-none dark:text-blue-400">
+                      {val ?? "…"}
+                    </span>
                     <button onClick={() => handleRemoveFilter(id)}
-                      className="flex items-center justify-center rounded-r-full border border-blue-500 bg-blue-50 px-2 py-1.5 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400">
+                      className="flex items-center text-blue-500 hover:text-blue-700 dark:text-blue-400">
                       <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/></svg>
                     </button>
                   </div>
@@ -259,6 +263,8 @@ export default function TeamsDirectoryPage() {
                 </div>
               )
             })}
+            {/* + separator before Add filter */}
+            <span className="text-sm text-muted-foreground select-none">+</span>
 
             {/* Add filter + */}
             {inactiveFilters.length > 0 && (
