@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -9,7 +10,6 @@ import {
   UserMultiple02Icon,
   IdentityCardIcon,
   CreditCardIcon,
-  ArrowUpRight01Icon,
   Settings02Icon,
 } from "@hugeicons/core-free-icons"
 import {
@@ -17,27 +17,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Atlassian-style Settings menu.
-//
-// Rich list of 6 items across 3 categories:
-//
-//   ── (no header) ────────────────────────────
-//   Goal settings       — internal route
-//
-//   Atlassian Home settings
-//   Workspace settings  — opens in new tab
-//   Personal settings   — opens in new tab
-//
-//   Atlassian admin settings
-//   User management     — internal route
-//   Licensing           — internal route
-//   Billing             — internal route
-//
-// Each row: leading icon, bold title, muted-gray description, hover-accent
-// background, and a trailing arrow-up-right for the two external items.
-// ─────────────────────────────────────────────────────────────────────────────
 
 type IconDef = Parameters<typeof HugeiconsIcon>[0]["icon"]
 
@@ -75,7 +54,6 @@ const categories: SettingsCategory[] = [
         description: "Manage workspace name, domains, user groups and time zone",
         icon: ComputerIcon,
         href: "/admin/organization-settings",
-        external: true,
         testId: "settings-item-workspace-settings",
       },
       {
@@ -83,7 +61,6 @@ const categories: SettingsCategory[] = [
         description: "Manage notification preferences and themes",
         icon: UserIcon,
         href: "/home/account-settings",
-        external: true,
         testId: "settings-item-personal-settings",
       },
     ],
@@ -116,47 +93,60 @@ const categories: SettingsCategory[] = [
   },
 ]
 
-function SettingsRow({ item }: { item: SettingsItem }) {
-  const linkProps = item.external
-    ? { target: "_blank", rel: "noopener noreferrer" as const }
-    : {}
+function ExternalIcon() {
+  return (
+    <svg
+      className="size-4 shrink-0 text-[#626f86] dark:text-muted-foreground mt-0.5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-label="Opens in new tab"
+    >
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  )
+}
 
+function SettingsRow({ item, onClose }: { item: SettingsItem; onClose: () => void }) {
   return (
     <Link
       href={item.href}
       data-testid={item.testId}
-      {...linkProps}
-      className="group flex items-start gap-3 px-4 py-2.5 text-sm hover:bg-accent focus:bg-accent focus:outline-none transition-colors"
+      onClick={onClose}
+      target={item.external ? "_blank" : undefined}
+      rel={item.external ? "noopener noreferrer" : undefined}
+      className="group flex items-start gap-3 px-4 py-3 hover:bg-[#f4f5f7] dark:hover:bg-accent focus:bg-[#f4f5f7] focus:outline-none transition-colors"
     >
       <HugeiconsIcon
         icon={item.icon}
-        className="size-5 shrink-0 text-foreground mt-0.5"
+        className="size-5 shrink-0 text-[#44546f] dark:text-foreground mt-0.5"
         aria-hidden="true"
       />
       <div className="min-w-0 flex-1">
-        <p className="font-medium text-foreground leading-snug">{item.title}</p>
-        <p className="text-sm text-gray-500 dark:text-muted-foreground leading-snug">
+        <p className="text-[13px] font-semibold text-[#172b4d] dark:text-foreground leading-snug">
+          {item.title}
+        </p>
+        <p className="text-[12px] text-[#626f86] dark:text-muted-foreground leading-snug mt-0.5">
           {item.description}
         </p>
       </div>
-      {item.external && (
-        <HugeiconsIcon
-          icon={ArrowUpRight01Icon}
-          className="size-4 shrink-0 text-gray-400 mt-1"
-          aria-label="Opens in new tab"
-          data-testid={`${item.testId}-external`}
-        />
-      )}
+      {item.external && <ExternalIcon />}
     </Link>
   )
 }
 
 export function SettingsMenu() {
+  const [open, setOpen] = useState(false)
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         aria-label="Settings"
-        className="rounded-full p-1.5 text-muted-foreground hover:bg-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        data-testid="settings-menu-trigger"
+        className="rounded-full p-1.5 text-[#626f86] dark:text-muted-foreground hover:bg-[#f4f5f7] dark:hover:bg-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       >
         <HugeiconsIcon icon={Settings02Icon} className="size-5" aria-hidden="true" />
       </PopoverTrigger>
@@ -164,20 +154,22 @@ export function SettingsMenu() {
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[380px] p-0 overflow-hidden rounded-lg border shadow-xl"
+        className="w-[360px] p-0 overflow-hidden rounded-[3px] border border-[#dfe1e6] shadow-[0_8px_24px_rgba(9,30,66,0.15)]"
       >
         <div className="py-2">
           {categories.map((cat, i) => (
             <div key={cat.header ?? `cat-${i}`}>
               {cat.header && (
-                <p className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-muted-foreground">
+                <p className="px-4 pt-3 pb-1.5 text-[11px] font-bold text-[#626f86] dark:text-muted-foreground">
                   {cat.header}
                 </p>
               )}
               {cat.items.map((item) => (
-                <SettingsRow key={item.testId} item={item} />
+                <SettingsRow key={item.testId} item={item} onClose={() => setOpen(false)} />
               ))}
-              {i < categories.length - 1 && <div className="my-2 border-t" />}
+              {i < categories.length - 1 && (
+                <div className="my-1 border-t border-[#dfe1e6] dark:border-border" />
+              )}
             </div>
           ))}
         </div>

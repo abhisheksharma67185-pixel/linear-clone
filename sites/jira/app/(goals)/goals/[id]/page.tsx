@@ -6,6 +6,8 @@ import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { useCustomFields } from "@/hooks/use-custom-fields"
+import { CustomFieldCell } from "@/components/custom-field-cell"
 
 const statusColors: Record<string, string> = {
   "ON TRACK": "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
@@ -31,16 +33,17 @@ interface GoalData {
 export default function GoalDetailPage() {
   const params = useParams<{ id: string }>()
   const goalId = params.id
+  const { fields: customFields } = useCustomFields()
+
   const [goal, setGoal] = useState<GoalData | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
   const [following, setFollowing] = useState(true)
   const [commentBody, setCommentBody] = useState("")
   const [comments, setComments] = useState<Array<{ id: string; author: string; body: string; time: string }>>([])
+  const [fieldValues, setFieldValues] = useState<Record<string, unknown>>({})
 
   useEffect(() => {
-    // Archived goals are seeded in the archived page's local state and not in the main
-    // goals API. Provide a fallback for arch-* IDs so their detail pages still open.
     const archivedFallback: Record<string, GoalData> = {
       "arch-1": { id: "arch-1", name: "Reduce customer churn by 15%", status: "AT RISK", progress: 72, targetDate: "Sep 2026", owner: "usr-1", team: "Engineering", following: true, createdAt: "2025-12-01", ownerUser: { id: "usr-1", name: "Abhishek Sharma", displayName: "Abhishek Sharma", email: "abhishek@example.com" } },
       "arch-2": { id: "arch-2", name: "Complete infrastructure migration to AWS", status: "COMPLETED", progress: 100, targetDate: "Feb 2026", owner: "usr-pp", team: "Platform", following: true, createdAt: "2025-09-01", ownerUser: { id: "usr-pp", name: "Priya Patel", displayName: "Priya Patel", email: "priya@example.com" } },
@@ -49,13 +52,15 @@ export default function GoalDetailPage() {
 
     fetch("/api/data/goals")
       .then((r) => r.json())
-      .then((goals: GoalData[]) => {
+      .then(async (goals: GoalData[]) => {
         const found = goals.find((g) => g.id === goalId) ?? archivedFallback[goalId]
-        if (found) {
-          setGoal(found)
-          setFollowing(found.following)
-        }
+        if (found) { setGoal(found); setFollowing(found.following) }
         setLoading(false)
+        // Fetch field values
+        try {
+          const fvRes = await fetch(`/api/data/goals/${goalId}/field-values`)
+          if (fvRes.ok) setFieldValues(await fvRes.json())
+        } catch { /* silent */ }
       })
       .catch(() => {
         const fallback = archivedFallback[goalId]
@@ -64,6 +69,16 @@ export default function GoalDetailPage() {
       })
   }, [goalId])
 
+  const handleSaveFieldValue = async (fieldId: string, value: unknown) => {
+    // Optimistic update
+    setFieldValues((prev) => ({ ...prev, [fieldId]: value }))
+    await fetch(`/api/data/goals/${goalId}/field-values`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [fieldId]: value }),
+    }).catch(() => null)
+  }
+
   const postComment = () => {
     const text = commentBody.trim()
     if (!text) return
@@ -71,9 +86,7 @@ export default function GoalDetailPage() {
     setCommentBody("")
   }
 
-  if (loading) {
-    return <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">Loading...</div>
-  }
+  if (loading) return <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">Loading...</div>
 
   if (!goal) {
     return (
@@ -101,7 +114,6 @@ export default function GoalDetailPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* LEFT — main content */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Title + status badge */}
           <div>
             <div className="flex items-start gap-3 mb-2">
               <div className="flex size-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30 mt-0.5 shrink-0">
@@ -116,7 +128,6 @@ export default function GoalDetailPage() {
             </div>
           </div>
 
-          {/* Tabs — overview */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList variant="line" className="mb-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -152,36 +163,18 @@ export default function GoalDetailPage() {
                     </div>
                   ))}
                 </div>
-                {/* Comment form */}
                 <div className="flex gap-3">
                   <Avatar className="size-7 shrink-0 mt-0.5">
                     <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">A</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-2">
-                    <textarea
-                      value={commentBody}
-                      onChange={(e) => setCommentBody(e.target.value)}
-                      placeholder="Add a comment..."
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                          e.preventDefault()
-                          postComment()
-                        }
-                      }}
-                      className="w-full rounded-md border bg-background px-3 py-2 text-sm min-h-[70px] resize-none outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-                    />
+                    <textarea value={commentBody} onChange={(e) => setCommentBody(e.target.value)} placeholder="Add a comment..."
+                      onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); postComment() } }}
+                      className="w-full rounded-md border bg-background px-3 py-2 text-sm min-h-[70px] resize-none outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        {typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent) ? "\u2318" : "Ctrl"}+Enter to submit
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => { postComment() }}
-                        disabled={!commentBody.trim()}
-                        className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/80 disabled:pointer-events-none disabled:opacity-50"
-                      >
-                        Comment
-                      </button>
+                      <span className="text-xs text-muted-foreground">{typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent) ? "\u2318" : "Ctrl"}+Enter to submit</span>
+                      <button type="button" onClick={postComment} disabled={!commentBody.trim()}
+                        className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/80 disabled:pointer-events-none disabled:opacity-50">Comment</button>
                     </div>
                   </div>
                 </div>
@@ -238,17 +231,38 @@ export default function GoalDetailPage() {
           {/* Following toggle */}
           <div className="rounded-lg border p-4">
             <span className="text-xs text-muted-foreground block mb-2">Following</span>
-            <button
-              onClick={() => setFollowing(!following)}
-              className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors w-full ${
-                following
-                  ? "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:bg-blue-900/20 dark:text-blue-400"
-                  : "bg-muted text-muted-foreground hover:bg-blue-50 hover:text-blue-700"
-              }`}
-            >
+            <button onClick={() => setFollowing(!following)}
+              className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors w-full ${following ? "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:bg-blue-900/20 dark:text-blue-400" : "bg-muted text-muted-foreground hover:bg-blue-50 hover:text-blue-700"}`}>
               {following ? "Following" : "Follow"}
             </button>
           </div>
+
+          {/* Custom Fields */}
+          {customFields.length > 0 && (
+            <div className="rounded-lg border p-4 space-y-3">
+              <span className="text-xs font-semibold text-[#626f86] uppercase tracking-wider block">Custom fields</span>
+              {customFields.map((cf) => (
+                <div key={cf.id} className="flex items-start justify-between gap-2">
+                  <div className="flex-shrink-0 min-w-0">
+                    <span className="text-xs text-[#626f86] block mb-1 truncate max-w-[100px]" title={cf.name}>{cf.name}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <CustomFieldCell
+                      fieldId={cf.id}
+                      goalId={goalId}
+                      type={cf.type}
+                      options={cf.options}
+                      multi={cf.multi}
+                      description={cf.description}
+                      value={fieldValues[cf.id]}
+                      onSave={handleSaveFieldValue}
+                      detailView
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

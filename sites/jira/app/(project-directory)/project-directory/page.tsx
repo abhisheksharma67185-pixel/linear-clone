@@ -12,6 +12,9 @@ const projectStatusStyle: Record<string, string> = {
   "PENDING": "border-gray-300 text-gray-600 bg-gray-50 dark:bg-gray-800/30 dark:text-gray-400",
 }
 
+const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+function fmtDate(d: Date) { return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}` }
+
 function formatRelativeDate(dateStr: string): string {
   if (!dateStr) return "just now"
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -49,7 +52,7 @@ interface ProjectItem {
   projectType?: string
 }
 
-const allStatuses = ["ON TRACK", "AT RISK", "OFF TRACK"]
+const allStatuses = ["OFF TRACK", "AT RISK", "ON TRACK", "PENDING", "PAUSED", "COMPLETED", "CANCELLED"]
 const allGoals = ["Employee experience", "Platform reliability", "Customer experience"]
 const allTags = ["onboarding", "infrastructure", "design", "performance"]
 const allTeams = ["HR", "Engineering", "Design", "QA", "Product"]
@@ -57,7 +60,7 @@ const allOwners = ["Abhishek Sharma", "Sam Williams", "Jordan Lee", "Taylor Brow
 
 const tabs = ["All projects", "My projects", "Archived"]
 
-type FilterKey = "status" | "goal" | "tag" | "team" | "owner" | "projectType"
+type FilterKey = "status" | "goal" | "tag" | "team" | "owner" | "projectType" | "contributor" | "following"
 
 interface FilterConfig {
   key: FilterKey
@@ -92,6 +95,14 @@ const filterConfigs: FilterConfig[] = [
   {
     key: "projectType", label: "Project type", options: allProjectTypes,
     icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>,
+  },
+  {
+    key: "contributor", label: "Contributor", options: allOwners,
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></svg>,
+  },
+  {
+    key: "following", label: "Following", options: ["Following", "Not following"],
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>,
   },
 ]
 
@@ -227,90 +238,44 @@ function ProjectRowMenu({ project, onArchive, onDelete, onToast, onEdit, followi
   )
 }
 
-function FilterPopover({ config, selected, onToggle, onClear }: {
-  config: FilterConfig
-  selected: Set<string>
-  onToggle: (value: string) => void
-  onClear: () => void
-}) {
-  const [open, setOpen] = useState(false)
-  const [filterSearch, setFilterSearch] = useState("")
-  const ref = useRef<HTMLDivElement>(null)
-  const hasSelection = selected.size > 0
-  const filtered = config.options.filter((o) => o.toLowerCase().includes(filterSearch.toLowerCase()))
+const STATUS_BADGE_STYLE: Record<string, string> = {
+  "OFF TRACK": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+  "AT RISK": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-700",
+  "ON TRACK": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+}
 
-  useEffect(() => {
-    if (!open) return
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setFilterSearch("") }
-    }
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setOpen(false); setFilterSearch("") }
-    }
-    document.addEventListener("mousedown", handleOutsideClick)
-    document.addEventListener("keydown", handleEscape)
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick)
-      document.removeEventListener("keydown", handleEscape)
-    }
-  }, [open])
-
+function FilterChipDropdown({ config, onSelect }: { config: FilterConfig; onSelect: (value: string) => void }) {
+  const [search, setSearch] = useState("")
+  const filtered = config.options.filter((o) => o.toLowerCase().includes(search.toLowerCase()))
+  const isStatus = config.key === "status"
   return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors ${hasSelection ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400" : "text-muted-foreground hover:bg-accent"}`}
-      >
-        {config.icon}
-        {config.label}
-        {hasSelection && <span className="ml-0.5 rounded-full bg-blue-600 px-1.5 text-[10px] font-bold text-white">{selected.size}</span>}
-        <svg className="size-3 text-muted-foreground" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
-      </button>
-
-      {open && (
-        <div className="absolute left-0 top-full mt-1 z-50 w-56 rounded-lg border bg-popover shadow-lg">
-          {/* Search */}
-          <div className="p-2 border-b">
-            <div className="relative">
-              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-              <input
-                type="text"
-                placeholder={`Search ${config.label.toLowerCase()}...`}
-                value={filterSearch}
-                onChange={(e) => setFilterSearch(e.target.value)}
-                autoFocus
-                className="w-full rounded-md border bg-background py-1.5 pl-8 pr-2 text-xs outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-              />
-            </div>
-          </div>
-          {/* Options */}
-          <div className="max-h-48 overflow-y-auto py-1">
-            {filtered.length === 0 && (
-              <p className="px-3 py-2 text-xs text-muted-foreground">No matches</p>
-            )}
-            {filtered.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => onToggle(option)}
-                className="flex w-full items-center gap-2.5 px-3 py-1.5 text-sm hover:bg-accent transition-colors"
-              >
-                <span className={`flex size-4 items-center justify-center rounded border ${selected.has(option) ? "bg-blue-600 border-blue-600 text-white" : "border-muted-foreground/40"}`}>
-                  {selected.has(option) && <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>}
-                </span>
-                <span className="truncate">{option}</span>
-              </button>
-            ))}
-          </div>
-          {/* Footer */}
-          {hasSelection && (
-            <div className="border-t px-3 py-2">
-              <button type="button" onClick={() => { onClear(); setOpen(false); setFilterSearch("") }} className="text-xs text-blue-600 hover:underline">Clear filter</button>
-            </div>
-          )}
+    <div data-testid={`filter-dropdown-${config.key}`} className="absolute left-0 top-full mt-1 z-50 w-56 rounded-lg border bg-popover shadow-lg">
+      <div className="p-2 border-b">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder={`Choose a ${config.label.toLowerCase()}`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoFocus
+            className="w-full rounded-md border bg-background py-1.5 pl-3 pr-8 text-xs outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+          />
+          <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
         </div>
-      )}
+      </div>
+      <div className="max-h-48 overflow-y-auto py-1">
+        {filtered.length === 0 && <p className="px-3 py-2 text-xs text-muted-foreground">No matches</p>}
+        {filtered.map((option) => (
+          <button key={option} type="button" onClick={() => onSelect(option)}
+            className="flex w-full items-center px-3 py-1.5 hover:bg-accent transition-colors text-left">
+            {isStatus && STATUS_BADGE_STYLE[option] ? (
+              <span className={`rounded px-2 py-0.5 text-xs font-bold uppercase ${STATUS_BADGE_STYLE[option]}`}>{option}</span>
+            ) : (
+              <span className="text-sm font-medium text-foreground">{option === "COMPLETED" ? "COMPLETED 🎉" : option}</span>
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
@@ -327,7 +292,7 @@ function SortByDropdown({ sortBy, sortAsc, onSelect }: { sortBy: string; sortAsc
   const options = ["following", "name", "status", "updated", "target date"]
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <button onClick={() => setOpen(!open)} className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors whitespace-nowrap">
         Sort by {sortBy}
         <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path d={sortAsc ? "M8 4l-4 4h8z" : "M8 12l-4-4h8z"} /></svg>
       </button>
@@ -366,7 +331,7 @@ function ColumnsPopover({ open, setOpen, visibleColumns, setVisibleColumns }: {
     { id: "status", label: "Status", locked: false },
     { id: "target_date", label: "Target date", locked: false },
     { id: "owner", label: "Owner", locked: false },
-    { id: "team", label: "Team", locked: false },
+    { id: "following", label: "Following", locked: false },
     { id: "last_updated", label: "Last updated", locked: false },
   ]
   return (
@@ -411,8 +376,8 @@ function MoreMenu({ open, setOpen, onExport, onSettings }: { open: boolean; setO
   }, [open, setOpen])
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} className="text-muted-foreground hover:text-foreground rounded p-1 hover:bg-accent">
-        <svg className="size-5" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
+      <button onClick={() => setOpen(!open)} className="flex items-center justify-center rounded-md border p-2 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+        <svg className="size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-full z-50 mt-1 w-40 rounded-lg border bg-popover shadow-lg py-1">
@@ -440,7 +405,7 @@ export default function ProjectDirectoryPage() {
   const [sortAsc, setSortAsc] = useState(true)
   const [columnsOpen, setColumnsOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
-    project: true, status: true, target_date: true, owner: true, team: true, last_updated: true,
+    project: true, status: true, target_date: true, owner: true, following: true, last_updated: true,
   })
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
 
@@ -477,15 +442,35 @@ export default function ProjectDirectoryPage() {
     setToast("Project updated")
     setTimeout(() => setToast(null), 3000)
   }
-  const [filters, setFilters] = useState<Record<FilterKey, Set<string>>>({
-    status: new Set(),
-    goal: new Set(),
-    tag: new Set(),
-    team: new Set(),
-    owner: new Set(),
-    projectType: new Set(),
-  })
-  const [viewMode, setViewMode] = useState<"list" | "board">("list")
+  const [activeChips, setActiveChips] = useState<Set<FilterKey>>(new Set())
+  const [chipValues, setChipValues] = useState<Partial<Record<FilterKey, string>>>({})
+  const [openFilter, setOpenFilter] = useState<FilterKey | null>(null)
+  const filterBarRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!openFilter) return
+    const handler = (e: MouseEvent) => {
+      if (filterBarRef.current && !filterBarRef.current.contains(e.target as Node)) setOpenFilter(null)
+    }
+    const escHandler = (e: KeyboardEvent) => { if (e.key === "Escape") setOpenFilter(null) }
+    document.addEventListener("mousedown", handler)
+    document.addEventListener("keydown", escHandler)
+    return () => { document.removeEventListener("mousedown", handler); document.removeEventListener("keydown", escHandler) }
+  }, [openFilter])
+
+  const [viewMode, setViewMode] = useState<"list" | "timeline">("list")
+  const [tlRangeStart] = useState(new Date(2025, 11, 17))
+  const [tlRangeEnd] = useState(new Date(2027, 5, 17))
+  const [tlViewBy, setTlViewBy] = useState("Months")
+  const [tlViewByOpen, setTlViewByOpen] = useState(false)
+  const tlViewByRef = useRef<HTMLDivElement>(null)
+  const [tlSortAsc, setTlSortAsc] = useState(true)
+  useEffect(() => {
+    if (!tlViewByOpen) return
+    const h = (e: MouseEvent) => { if (tlViewByRef.current && !tlViewByRef.current.contains(e.target as Node)) setTlViewByOpen(false) }
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [tlViewByOpen])
   const [activeTab, setActiveTab] = useState<"all" | "my" | "archived">("all")
   const [followedProjects, setFollowedProjects] = useState<Set<number>>(new Set())
 
@@ -546,36 +531,39 @@ export default function ProjectDirectoryPage() {
     } catch {}
   }
 
-  const toggleFilter = (key: FilterKey, value: string) => {
-    setFilters((prev) => {
-      const next = new Set(prev[key])
-      if (next.has(value)) next.delete(value)
-      else next.add(value)
-      return { ...prev, [key]: next }
-    })
+  const activateChip = (key: FilterKey) => {
+    setActiveChips((prev) => { const next = new Set(prev); next.add(key); return next })
+    setOpenFilter(key)
   }
 
-  const clearFilter = (key: FilterKey) => {
-    setFilters((prev) => ({ ...prev, [key]: new Set() }))
+  const setChip = (key: FilterKey, value: string) => {
+    setChipValues((prev) => ({ ...prev, [key]: value }))
+    setOpenFilter(null)
   }
 
-  const clearAllFilters = () => {
-    setFilters({ status: new Set(), goal: new Set(), tag: new Set(), team: new Set(), owner: new Set(), projectType: new Set() })
+  const removeChip = (key: FilterKey) => {
+    setActiveChips((prev) => { const next = new Set(prev); next.delete(key); return next })
+    setChipValues((prev) => { const next = { ...prev }; delete next[key]; return next })
+    setOpenFilter(null)
   }
 
-  const hasAnyFilter = Object.values(filters).some((s) => s.size > 0)
+  const clearAllFilters = () => { setActiveChips(new Set()); setChipValues({}); setOpenFilter(null) }
+
+  const anyChipActive = activeChips.size > 0
 
   const filteredProjects = projects.filter((p) => {
     // Tab filter
     if (activeTab === "my" && p.owner !== "Abhishek Sharma") return false
     if (activeTab === "archived") return false // archived tab shows empty — archived projects live at /project-directory/archived
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false
-    if (filters.status.size > 0 && !filters.status.has(p.status)) return false
-    if (filters.goal.size > 0 && !filters.goal.has(p.goal)) return false
-    if (filters.tag.size > 0 && !filters.tag.has(p.tag)) return false
-    if (filters.team.size > 0 && !filters.team.has(p.team)) return false
-    if (filters.owner.size > 0 && !filters.owner.has(p.owner)) return false
-    if (filters.projectType.size > 0 && (!p.projectType || ![...filters.projectType].some((t) => t.toLowerCase() === p.projectType!.toLowerCase()))) return false
+    if (chipValues.status && p.status !== chipValues.status) return false
+    if (chipValues.goal && p.goal !== chipValues.goal) return false
+    if (chipValues.tag && p.tag !== chipValues.tag) return false
+    if (chipValues.team && p.team !== chipValues.team) return false
+    if (chipValues.owner && p.owner !== chipValues.owner) return false
+    if (chipValues.projectType && (!p.projectType || p.projectType.toLowerCase() !== chipValues.projectType.toLowerCase())) return false
+    if (chipValues.following === "Following" && !followedProjects.has(p.id)) return false
+    if (chipValues.following === "Not following" && followedProjects.has(p.id)) return false
     return true
   }).slice().sort((a, b) => {
     const dir = sortAsc ? 1 : -1
@@ -732,94 +720,250 @@ export default function ProjectDirectoryPage() {
         />
       </div>
 
-      {/* Filter buttons — each is a Popover */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {filterConfigs.map((config) => (
-          <FilterPopover
-            key={config.key}
-            config={config}
-            selected={filters[config.key]}
-            onToggle={(v) => toggleFilter(config.key, v)}
-            onClear={() => clearFilter(config.key)}
-          />
-        ))}
-
-        {/* Reporting line — static link */}
-        <Link href="/teams/people" className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors">
-          <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></svg>
-          Reporting line
-        </Link>
-
-        {hasAnyFilter && (
-          <button onClick={clearAllFilters} className="text-xs text-blue-600 hover:underline ml-1">Clear all</button>
-        )}
+      {/* Filter bar — chips/buttons left, Reset + Create view always right */}
+      <div ref={filterBarRef} className="mb-4 flex items-center gap-2">
+        <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
+          {filterConfigs.map((config) => {
+            const value = chipValues[config.key]
+            const isChip = activeChips.has(config.key)
+            if (anyChipActive && !isChip) return null
+            return (
+              <div key={config.key} className="relative">
+                {isChip ? (
+                  <button
+                    type="button"
+                    data-testid={`filter-chip-${config.key}`}
+                    onClick={() => setOpenFilter(openFilter === config.key ? null : config.key)}
+                    className="flex items-center gap-1.5 rounded-full border border-blue-500 bg-blue-50 px-3 py-1 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                  >
+                    {config.icon}
+                    <span>{config.label} is{value ? ` ${value}` : ""}</span>
+                    <span
+                      role="button"
+                      aria-label={`Remove ${config.label} filter`}
+                      onClick={(e) => { e.stopPropagation(); removeChip(config.key) }}
+                      className="ml-0.5 flex size-4 items-center justify-center rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-600 cursor-pointer"
+                    >
+                      <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    data-testid={`filter-btn-${config.key}`}
+                    onClick={() => activateChip(config.key)}
+                    className="flex items-center gap-1 rounded-full border px-3 py-1 text-sm text-muted-foreground hover:bg-accent transition-colors"
+                  >
+                    {config.icon}
+                    {config.label}
+                  </button>
+                )}
+                {openFilter === config.key && (
+                  <FilterChipDropdown config={config} onSelect={(v) => setChip(config.key, v)} />
+                )}
+              </div>
+            )
+          })}
+          {!anyChipActive && (
+            <button type="button" className="flex items-center justify-center rounded-full border px-2 py-1 text-sm text-muted-foreground hover:bg-accent transition-colors">
+              <svg className="size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
+            </button>
+          )}
+        </div>
+        {/* Always-visible right side */}
+        <div className="flex shrink-0 items-center gap-2 ml-2">
+          <button onClick={clearAllFilters} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Reset</button>
+          <button className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 transition-colors">
+            <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M3 15h18M9 3v18" /></svg>
+            Create view
+          </button>
+        </div>
       </div>
 
-      {/* Count + sort */}
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}</p>
+      {/* Count + controls row */}
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <p className="text-sm font-medium shrink-0">Showing {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}</p>
         <div className="flex items-center gap-2">
-          <div className="flex rounded border">
-            <button onClick={() => setViewMode("list")} className={`px-2 py-1 ${viewMode === "list" ? "bg-accent" : "text-muted-foreground hover:bg-accent"}`}>
+          {/* Timeline-only: date range + view by */}
+          {viewMode === "timeline" && (
+            <>
+              <button className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors whitespace-nowrap">
+                {fmtDate(tlRangeStart)} - {fmtDate(tlRangeEnd)}
+              </button>
+              <div ref={tlViewByRef} className="relative">
+                <button
+                  onClick={() => setTlViewByOpen((v) => !v)}
+                  className="flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors whitespace-nowrap"
+                >
+                  View by {tlViewBy}
+                  <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
+                </button>
+                {tlViewByOpen && (
+                  <div className="absolute left-0 top-full z-50 mt-1 w-36 rounded-lg border bg-popover shadow-lg py-1">
+                    {["Days", "Weeks", "Months", "Quarters"].map((opt) => (
+                      <button key={opt} onClick={() => { setTlViewBy(opt); setTlViewByOpen(false) }}
+                        className={`flex w-full items-center px-3 py-1.5 text-sm hover:bg-accent transition-colors text-left ${tlViewBy === opt ? "text-blue-600 font-medium" : ""}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+          {/* View toggle — separate bordered buttons */}
+          <div className="flex items-center gap-1">
+            <button
+              title="Display as list"
+              onClick={() => setViewMode("list")}
+              className={`rounded-md border p-2 transition-colors ${viewMode === "list" ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "border-border text-muted-foreground hover:bg-accent"}`}
+            >
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
             </button>
-            <button onClick={() => setViewMode("board")} className={`px-2 py-1 ${viewMode === "board" ? "bg-accent" : "text-muted-foreground hover:bg-accent"}`}>
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" /></svg>
+            <button
+              title="Display as timeline"
+              onClick={() => setViewMode("timeline")}
+              className={`rounded-md border p-2 transition-colors ${viewMode === "timeline" ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "border-border text-muted-foreground hover:bg-accent"}`}
+            >
+              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="15" y2="12" /><line x1="3" y1="18" x2="18" y2="18" /></svg>
             </button>
           </div>
-          <SortByDropdown sortBy={sortBy} sortAsc={sortAsc} onSelect={(s) => { if (s === sortBy) setSortAsc((v) => !v); else { setSortBy(s); setSortAsc(true) } }} />
-          <ColumnsPopover open={columnsOpen} setOpen={setColumnsOpen} visibleColumns={visibleColumns} setVisibleColumns={setVisibleColumns} />
+          {/* List-only controls */}
+          {viewMode === "list" && (
+            <>
+              <SortByDropdown sortBy={sortBy} sortAsc={sortAsc} onSelect={(s) => { if (s === sortBy) setSortAsc((v) => !v); else { setSortBy(s); setSortAsc(true) } }} />
+              <ColumnsPopover open={columnsOpen} setOpen={setColumnsOpen} visibleColumns={visibleColumns} setVisibleColumns={setVisibleColumns} />
+            </>
+          )}
+          {/* Timeline-only: sort by start date */}
+          {viewMode === "timeline" && (
+            <button
+              onClick={() => setTlSortAsc((v) => !v)}
+              className="flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors whitespace-nowrap"
+            >
+              Sort by start date
+              <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor">
+                <path d={tlSortAsc ? "M8 4l-4 4h8z" : "M8 12l-4-4h8z"} />
+              </svg>
+            </button>
+          )}
           <MoreMenu open={moreMenuOpen} setOpen={setMoreMenuOpen} onExport={() => { showToast("Export started"); setMoreMenuOpen(false) }} onSettings={() => { router.push("/project-directory"); setMoreMenuOpen(false) }} />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-lg border">
-        <div className="grid grid-cols-[1fr_100px_100px_80px_100px_100px] gap-4 border-b px-4 py-2 text-xs font-medium text-muted-foreground">
-          <span>Project</span>
-          {visibleColumns.status && <span>Status</span>}
-          {visibleColumns.target_date && <span>Target date</span>}
-          {visibleColumns.owner && <span>Owner</span>}
-          {visibleColumns.team && <span>Team</span>}
-          {visibleColumns.last_updated && <span>Last updated</span>}
-        </div>
-        {filteredProjects.map((project) => (
-          <div
-            key={project.id}
-            onClick={() => router.push(`/projects/${project.key}/board`)}
-            className="grid grid-cols-[1fr_100px_100px_80px_100px_100px] gap-4 border-b last:border-b-0 px-4 py-3 items-center hover:bg-accent/50 transition-colors cursor-pointer"
-          >
-            <Link href={`/projects/${project.key}/board`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 hover:text-blue-600">
-              <span className="text-base">{project.icon}</span>
-              <span className="text-sm truncate">{project.name}</span>
-            </Link>
-            {visibleColumns.status && (
-              <div>
-                <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase ${projectStatusStyle[project.status]}`}>
-                  {project.status}
-                </span>
+      {/* Table (list view) */}
+      {viewMode === "list" && (
+        <div className="rounded-lg border">
+          <div className="grid grid-cols-[1fr_110px_110px_90px_100px_110px] gap-4 border-b px-4 py-2 text-xs font-medium text-muted-foreground">
+            <span>Name</span>
+            {visibleColumns.status && <span>Status</span>}
+            {visibleColumns.target_date && <span>Target date</span>}
+            {visibleColumns.owner && <span>Owner</span>}
+            {visibleColumns.following && <span>Following</span>}
+            {visibleColumns.last_updated && <span>Last updated</span>}
+          </div>
+          {filteredProjects.map((project) => (
+            <div
+              key={project.id}
+              onClick={() => router.push(`/projects/${project.key}/board`)}
+              className="grid grid-cols-[1fr_110px_110px_90px_100px_110px] gap-4 border-b last:border-b-0 px-4 py-3 items-center hover:bg-accent/50 transition-colors cursor-pointer"
+            >
+              <Link href={`/projects/${project.key}/board`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 hover:text-blue-600">
+                <span className="text-base">{project.icon}</span>
+                <span className="text-sm truncate">{project.name}</span>
+              </Link>
+              {visibleColumns.status && (
+                <div>
+                  <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase ${projectStatusStyle[project.status] ?? "border-gray-300 text-gray-600 bg-gray-50"}`}>
+                    {project.status}
+                  </span>
+                </div>
+              )}
+              {visibleColumns.target_date && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                  <span>No date</span>
+                </div>
+              )}
+              {visibleColumns.owner && (
+                <div className="flex items-center gap-1.5">
+                  <span className="flex size-6 items-center justify-center rounded-full bg-teal-500 text-[10px] font-bold text-white uppercase shrink-0">
+                    {project.owner.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                  </span>
+                  <span className="text-xs text-muted-foreground truncate">{project.owner.split(" ")[0]}</span>
+                </div>
+              )}
+              {visibleColumns.following && (
+                <div className="text-xs text-muted-foreground">
+                  {followedProjects.has(project.id) ? "Following" : "—"}
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                {visibleColumns.last_updated && <span className="text-xs text-muted-foreground">{project.lastUpdated}</span>}
+                <ProjectRowMenu project={project} onArchive={handleArchive} onDelete={handleDelete} onToast={showToast} onEdit={handleEditProject} following={followedProjects.has(project.id)} onToggleFollow={toggleFollow} />
               </div>
-            )}
-            {visibleColumns.target_date && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-                <div className="h-2.5 w-12 rounded bg-muted" />
-              </div>
-            )}
-            {visibleColumns.owner && <div className="text-xs text-muted-foreground truncate">{project.owner.split(" ")[0]}</div>}
-            {visibleColumns.team && <div className="text-xs text-muted-foreground truncate">{project.team}</div>}
-            <div className="flex items-center justify-between">
-              {visibleColumns.last_updated && <span className="text-xs text-muted-foreground">{project.lastUpdated}</span>}
-              <ProjectRowMenu project={project} onArchive={handleArchive} onDelete={handleDelete} onToast={showToast} onEdit={handleEditProject} following={followedProjects.has(project.id)} onToggleFollow={toggleFollow} />
             </div>
-          </div>
-        ))}
-        {filteredProjects.length === 0 && (
-          <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-            No projects match your filters.
-          </div>
-        )}
-      </div>
+          ))}
+          {filteredProjects.length === 0 && (
+            <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+              <svg className="mb-5 w-32 h-28" viewBox="0 0 160 140" fill="none">
+                <circle cx="30" cy="30" r="3" fill="#CBD5E1" opacity="0.7" />
+                <circle cx="130" cy="25" r="2.5" fill="#CBD5E1" opacity="0.6" />
+                <circle cx="18" cy="75" r="2" fill="#CBD5E1" opacity="0.5" />
+                <circle cx="142" cy="80" r="3" fill="#CBD5E1" opacity="0.5" />
+                <circle cx="50" cy="118" r="2.5" fill="#CBD5E1" opacity="0.6" />
+                <circle cx="110" cy="122" r="2" fill="#CBD5E1" opacity="0.5" />
+                <circle cx="70" cy="62" r="38" fill="white" stroke="#CBD5E1" strokeWidth="5" />
+                <circle cx="70" cy="62" r="26" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="3" />
+                <line x1="58" y1="50" x2="82" y2="74" stroke="#94A3B8" strokeWidth="5" strokeLinecap="round" />
+                <line x1="82" y1="50" x2="58" y2="74" stroke="#94A3B8" strokeWidth="5" strokeLinecap="round" />
+                <line x1="100" y1="92" x2="124" y2="118" stroke="#CBD5E1" strokeWidth="8" strokeLinecap="round" />
+              </svg>
+              <p className="text-sm text-muted-foreground max-w-xs">
+                We couldn&apos;t find any projects matching your search.{" "}
+                Try changing your search criteria or{" "}
+                <button onClick={clearAllFilters} className="text-blue-600 hover:underline">clear all filters</button>.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Timeline view */}
+      {viewMode === "timeline" && (
+        <div className="rounded-lg border">
+          {filteredProjects.length === 0 ? (
+            <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+              <svg className="mb-5 w-32 h-28" viewBox="0 0 160 140" fill="none">
+                {/* outer glow dots */}
+                <circle cx="30" cy="30" r="3" fill="#CBD5E1" opacity="0.7" />
+                <circle cx="130" cy="25" r="2.5" fill="#CBD5E1" opacity="0.6" />
+                <circle cx="18" cy="75" r="2" fill="#CBD5E1" opacity="0.5" />
+                <circle cx="142" cy="80" r="3" fill="#CBD5E1" opacity="0.5" />
+                <circle cx="50" cy="118" r="2.5" fill="#CBD5E1" opacity="0.6" />
+                <circle cx="110" cy="122" r="2" fill="#CBD5E1" opacity="0.5" />
+                {/* magnifying glass lens */}
+                <circle cx="70" cy="62" r="38" fill="white" stroke="#CBD5E1" strokeWidth="5" />
+                <circle cx="70" cy="62" r="26" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="3" />
+                {/* X inside lens */}
+                <line x1="58" y1="50" x2="82" y2="74" stroke="#94A3B8" strokeWidth="5" strokeLinecap="round" />
+                <line x1="82" y1="50" x2="58" y2="74" stroke="#94A3B8" strokeWidth="5" strokeLinecap="round" />
+                {/* handle */}
+                <line x1="100" y1="92" x2="124" y2="118" stroke="#CBD5E1" strokeWidth="8" strokeLinecap="round" />
+              </svg>
+              <p className="text-sm text-muted-foreground max-w-xs">
+                We couldn&apos;t find any projects matching your search.{" "}
+                Try changing your search criteria or{" "}
+                <button onClick={clearAllFilters} className="text-blue-600 hover:underline">clear all filters</button>.
+              </p>
+            </div>
+          ) : (
+            <div className="p-6 text-sm text-muted-foreground">
+              Timeline view — {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

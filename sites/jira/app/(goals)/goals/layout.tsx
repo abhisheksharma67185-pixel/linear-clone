@@ -6,13 +6,10 @@ import { usePathname } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { AppSwitcher } from "@/components/app-switcher"
 import { CreateButton } from "@/components/top-nav"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { UserProfileDropdown } from "@/components/user-profile-dropdown"
 import { SettingsMenu } from "@/components/settings-menu"
+import { HelpMenu } from "@/components/help-menu"
+import { NotificationsPanel } from "@/components/notifications-panel"
 
 const sidebarItems = [
   { name: "Goal directory", href: "/goals", icon: "target" },
@@ -84,48 +81,11 @@ export default function GoalsLayout({ children }: { children: React.ReactNode })
         <div className="flex items-center gap-2">
           <CreateButton />
 
-          {/* Notifications — opens a dropdown listing recent goal activity */}
-          <Popover>
-            <PopoverTrigger
-              aria-label="Notifications"
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-accent transition-colors"
-            >
-              <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
-            </PopoverTrigger>
-            <PopoverContent align="end" sideOffset={8} className="w-80 p-0">
-              <div className="flex items-center justify-between border-b px-4 py-3">
-                <p className="text-sm font-semibold">Notifications</p>
-                <Link href="/home/notifications" className="text-xs text-blue-600 hover:underline">
-                  View all
-                </Link>
-              </div>
-              <div className="py-2">
-                <p className="px-4 py-6 text-center text-xs text-muted-foreground">
-                  You&apos;re all caught up.
-                </p>
-              </div>
-            </PopoverContent>
-          </Popover>
+          {/* Notifications — full Jira-style side panel */}
+          <NotificationsPanel />
 
-          {/* Help — dropdown with support links */}
-          <Popover>
-            <PopoverTrigger
-              aria-label="Help"
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-accent transition-colors"
-            >
-              <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-            </PopoverTrigger>
-            <PopoverContent align="end" sideOffset={8} className="w-72 p-0">
-              <div className="border-b px-4 py-3">
-                <p className="text-sm font-semibold">Help</p>
-              </div>
-              <div className="py-1.5">
-                <Link href="/home" className="block px-4 py-2 text-sm hover:bg-accent transition-colors">Documentation</Link>
-                <Link href="/home" className="block px-4 py-2 text-sm hover:bg-accent transition-colors">Keyboard shortcuts</Link>
-                <Link href="/home" className="block px-4 py-2 text-sm hover:bg-accent transition-colors">Contact support</Link>
-              </div>
-            </PopoverContent>
-          </Popover>
+          {/* Help — 6-item Jira-style help menu */}
+          <HelpMenu />
 
           {/* Settings — Atlassian-style rich menu with 3 categories */}
           <SettingsMenu />

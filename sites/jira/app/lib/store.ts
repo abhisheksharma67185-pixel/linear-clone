@@ -873,6 +873,127 @@ export function addHistoryEntry(fields: {
 }
 
 // ---------------------------------------------------------------------------
+// Custom Goal Fields
+// ---------------------------------------------------------------------------
+
+export interface CustomField {
+  id: string;
+  name: string;
+  type: "Text" | "Number" | "User" | "Select" | "Date" | "URL";
+  options?: string[];
+  multi?: boolean;
+  description?: string;
+  createdAt: string;
+}
+
+// Custom fields and field-values are stored on globalThis so they survive
+// Turbopack's per-route module isolation in Next.js dev mode (each route file
+// gets its own module bundle, but all bundles share the same globalThis).
+const _g = globalThis as typeof globalThis & {
+  __cf?: CustomField[];
+  __cfId?: number;
+  __cfValues?: Record<string, Record<string, unknown>>;
+};
+if (!_g.__cf) _g.__cf = [];
+if (!_g.__cfId) _g.__cfId = 1;
+if (!_g.__cfValues) _g.__cfValues = {};
+
+function getCFState() { return _g.__cf!; }
+function getCFIdState() { return _g.__cfId!; }
+function incCFId() { _g.__cfId = (_g.__cfId ?? 1) + 1; return _g.__cfId! - 1; }
+function getCFValues() { return _g.__cfValues!; }
+
+export function getCustomFields(): CustomField[] {
+  return deepClone(getCFState());
+}
+
+export function createCustomField(fields: {
+  name?: string;
+  type?: CustomField["type"];
+  options?: string[];
+  multi?: boolean;
+  description?: string;
+}): Result<CustomField> {
+  if (!fields.name || String(fields.name).trim() === "") {
+    return { success: false, error: "Name is required" };
+  }
+  const name = String(fields.name).trim();
+  if (name.length > 50) {
+    return { success: false, error: "Name must be 50 characters or fewer" };
+  }
+  const cf = getCFState();
+  const dup = cf.find((f) => f.name.toLowerCase() === name.toLowerCase());
+  if (dup) {
+    return { success: false, error: `A field named "${dup.name}" already exists` };
+  }
+  const id = `cf-${incCFId()}`;
+  const field: CustomField = {
+    id,
+    name,
+    type: fields.type ?? "Text",
+    options: fields.options ?? [],
+    multi: fields.multi ?? false,
+    description: fields.description ?? "",
+    createdAt: now(),
+  };
+  cf.push(field);
+  return { success: true, data: deepClone(field) };
+}
+
+export function updateCustomField(id: string, fields: {
+  name?: string;
+  options?: string[];
+  multi?: boolean;
+  description?: string;
+}): Result<CustomField> {
+  const cf = getCFState();
+  const item = cf.find((f) => f.id === id);
+  if (!item) return { success: false, error: "Field not found" };
+  if (fields.name !== undefined) {
+    const name = fields.name.trim();
+    if (!name) return { success: false, error: "Name cannot be empty" };
+    if (name.length > 50) return { success: false, error: "Name must be 50 characters or fewer" };
+    const dup = cf.find((f) => f.id !== id && f.name.toLowerCase() === name.toLowerCase());
+    if (dup) return { success: false, error: `A field named "${dup.name}" already exists` };
+    item.name = name;
+  }
+  if (fields.options !== undefined) item.options = fields.options;
+  if (fields.multi !== undefined) item.multi = fields.multi;
+  if (fields.description !== undefined) item.description = fields.description;
+  return { success: true, data: deepClone(item) };
+}
+
+export function deleteCustomField(id: string): Result<void> {
+  const cf = getCFState();
+  const idx = cf.findIndex((f) => f.id === id);
+  if (idx === -1) return { success: false, error: "Field not found" };
+  cf.splice(idx, 1);
+  const vals = getCFValues();
+  for (const gid of Object.keys(vals)) {
+    delete vals[gid][id];
+  }
+  return { success: true, data: undefined };
+}
+
+// ---------------------------------------------------------------------------
+// Goal Custom Field Values
+// ---------------------------------------------------------------------------
+
+export function getGoalFieldValues(goalId: string): Record<string, unknown> {
+  return deepClone(getCFValues()[goalId] ?? {});
+}
+
+export function patchGoalFieldValues(goalId: string, patch: Record<string, unknown>): Result<Record<string, unknown>> {
+  if (!_goals.some((g) => g.id === goalId)) {
+    return { success: false, error: "Goal not found" };
+  }
+  const vals = getCFValues();
+  if (!vals[goalId]) vals[goalId] = {};
+  Object.assign(vals[goalId], patch);
+  return { success: true, data: deepClone(vals[goalId]) };
+}
+
+// ---------------------------------------------------------------------------
 // Reset — restores everything to initial state
 // ---------------------------------------------------------------------------
 
@@ -922,6 +1043,9 @@ export function reset(seed?: number): void {
   _nextPlanId = deriveNextId(_plans, "plan", 1);
   _nextCommentId = deriveNextId(_comments, "cmt", 8);
   _nextHistoryId = deriveNextId(_history, "hist", 9);
+  _g.__cf = [];
+  _g.__cfValues = {};
+  _g.__cfId = 1;
   // _goals is not reset by design (in-memory only, no seed file), so the
   // counter doesn't need to be reset either — leave _nextGoalId as-is.
 
@@ -934,4 +1058,114 @@ export function reset(seed?: number): void {
     _dateOverride = null;
   }
   _dateCounter = 0;
+}
+
+// ---------------------------------------------------------------------------
+// Goal Types — globalThis singleton (same Turbopack-isolation fix as custom fields)
+// ---------------------------------------------------------------------------
+
+export interface StoredGoalType {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  seeded: boolean;
+  children: { name: string; description: string }[];
+}
+
+const DEFAULT_GOAL_TYPES: StoredGoalType[] = [
+  {
+    id: "goal",
+    name: "Goal",
+    description: "All-purpose goals",
+    enabled: false,
+    seeded: true,
+    children: [],
+  },
+  {
+    id: "objective",
+    name: "Objective",
+    description: "The outcome you want to achieve (OKR framework).",
+    enabled: true,
+    seeded: true,
+    children: [
+      {
+        name: "Key result",
+        description: "The quantitative way to measure an objective (OKR framework).",
+      },
+    ],
+  },
+];
+
+const _ggt = globalThis as typeof globalThis & {
+  __gt?: StoredGoalType[];
+  __gtId?: number;
+};
+if (!_ggt.__gt) _ggt.__gt = deepClone(DEFAULT_GOAL_TYPES);
+if (!_ggt.__gtId) _ggt.__gtId = 1;
+
+function getGTState() { return _ggt.__gt!; }
+function incGTId() { _ggt.__gtId = (_ggt.__gtId ?? 1) + 1; return `gt-${_ggt.__gtId! - 1}`; }
+
+export function getGoalTypes(): StoredGoalType[] {
+  return deepClone(getGTState());
+}
+
+export function createGoalType(fields: {
+  name?: string;
+  description?: string;
+  enabled?: boolean;
+  children?: { name: string; description: string }[];
+}): Result<StoredGoalType> {
+  if (!fields.name || String(fields.name).trim() === "") {
+    return { success: false, error: "Name is required" };
+  }
+  const name = String(fields.name).trim();
+  if (name.length > 25) {
+    return { success: false, error: "Name must be 25 characters or fewer" };
+  }
+  const gt = getGTState();
+  const id = incGTId();
+  const item: StoredGoalType = {
+    id,
+    name,
+    description: String(fields.description ?? "").trim(),
+    enabled: fields.enabled ?? false,
+    seeded: false,
+    children: fields.children ?? [],
+  };
+  gt.push(item);
+  return { success: true, data: deepClone(item) };
+}
+
+export function updateGoalType(id: string, fields: {
+  name?: string;
+  description?: string;
+  enabled?: boolean;
+}): Result<StoredGoalType> {
+  const gt = getGTState();
+  const item = gt.find((t) => t.id === id);
+  if (!item) return { success: false, error: "Goal type not found" };
+  if (fields.name !== undefined) {
+    const name = fields.name.trim();
+    if (!name) return { success: false, error: "Name cannot be empty" };
+    if (name.length > 25) return { success: false, error: "Name must be 25 characters or fewer" };
+    item.name = name;
+  }
+  if (fields.description !== undefined) item.description = fields.description.trim();
+  if (fields.enabled !== undefined) item.enabled = fields.enabled;
+  return { success: true, data: deepClone(item) };
+}
+
+export function deleteGoalType(id: string): Result<void> {
+  const gt = getGTState();
+  const idx = gt.findIndex((t) => t.id === id);
+  if (idx === -1) return { success: false, error: "Goal type not found" };
+  gt.splice(idx, 1);
+  return { success: true, data: undefined };
+}
+
+export function resetGoalTypes(): void {
+  _ggt.__gt = deepClone(DEFAULT_GOAL_TYPES);
+  _ggt.__gtId = 1;
 }
