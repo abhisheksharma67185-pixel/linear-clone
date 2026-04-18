@@ -653,19 +653,6 @@ export default function GoalsPage() {
                       {col.custom && <span className="ml-1 rounded bg-[#e9f2ff] px-1.5 py-0.5 text-[10px] font-medium text-[#0052cc] shrink-0">{col.fieldType}</span>}
                     </div>
                     <div className="flex items-center gap-1 ml-2 shrink-0">
-                      {col.custom && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger render={
-                            <button className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-colors">
-                              <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
-                            </button>
-                          } />
-                          <DropdownMenuContent align="end" className="w-36">
-                            <DropdownMenuItem onClick={() => { setRenameFieldId(col.id); setRenameValue(col.label ?? ""); setRenameError(null); setRenameOpen(true); setShowColumns(false) }}>Rename</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { setDeleteConfirmId(col.id); setDeleteConfirmLabel(col.label ?? ""); setShowColumns(false) }} className="text-red-600">Delete</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
                       {col.locked ? (
                         <svg className="size-4 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
                       ) : (

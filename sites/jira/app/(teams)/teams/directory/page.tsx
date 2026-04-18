@@ -1,24 +1,98 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 
 interface TeamData {
-  id: string
-  name: string
-  description: string
-  members: number
-  color: string
+  id: string; name: string; description: string; members: number; color: string
+}
+
+const TABS = ["All teams", "Your teams", "Archived"] as const
+type Tab = (typeof TABS)[number]
+
+const MOCK_PROJECTS = ["SCRUM Project", "Mobile App", "Platform Core", "Frontend App", "Cloud Migration"]
+
+interface FilterBtn {
+  id: string; label: string; chipLabel: string; options?: string[]
+  icon: React.ReactNode
+}
+
+const FILTER_BTNS: FilterBtn[] = [
+  {
+    id: "project", label: "Filter by Project", chipLabel: "Project is",
+    options: MOCK_PROJECTS,
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>,
+  },
+  {
+    id: "goal", label: "Goal", chipLabel: "Goal is",
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+  },
+  {
+    id: "team-type", label: "Team type", chipLabel: "Team type is",
+    options: ["Official", "Community", "Project"],
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  },
+  {
+    id: "starred", label: "Starred", chipLabel: "Starred v",
+    options: ["Starred", "Not starred"],
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  },
+  {
+    id: "verified", label: "Verified", chipLabel: "Verified v",
+    options: ["Verified", "Not verified"],
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>,
+  },
+  {
+    id: "member", label: "Team Member", chipLabel: "Team Member is",
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg>,
+  },
+]
+
+function FilterDropdown({ filter, onSelect }: { filter: FilterBtn; onSelect: (v: string) => void }) {
+  const [search, setSearch] = useState("")
+  const options = (filter.options ?? []).filter((o) => o.toLowerCase().includes(search.toLowerCase()))
+  return (
+    <div className="absolute left-0 top-full z-50 mt-1 w-60 rounded-lg border bg-popover shadow-lg">
+      <div className="p-2 border-b">
+        <div className="relative">
+          <input type="text" placeholder="Choose a project" value={search} onChange={(e) => setSearch(e.target.value)} autoFocus
+            className="w-full rounded-md border bg-background py-1.5 pl-3 pr-8 text-xs outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
+          <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+      </div>
+      <div className="max-h-52 overflow-y-auto py-1">
+        {options.length === 0 && <p className="px-3 py-2 text-xs text-muted-foreground">No options</p>}
+        {options.map((opt) => (
+          <button key={opt} onClick={() => onSelect(opt)}
+            className="flex w-full items-center px-3 py-1.5 text-sm hover:bg-accent transition-colors text-left">
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export default function TeamsDirectoryPage() {
   const [teams, setTeams] = useState<TeamData[]>([])
   const [search, setSearch] = useState("")
+  const [activeTab, setActiveTab] = useState<Tab>("All teams")
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [sortBy, setSortBy] = useState<"none" | "name" | "members">("none")
+  const [moreOpen, setMoreOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [newName, setNewName] = useState("")
   const [newDesc, setNewDesc] = useState("")
+
+  // Filter state
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set())
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({})
+  const [openFilter, setOpenFilter] = useState<string | null>(null)
+  const [addFilterOpen, setAddFilterOpen] = useState(false)
+  const filterBarRef = useRef<HTMLDivElement>(null)
+  const addFilterRef = useRef<HTMLDivElement>(null)
 
   const fetchTeams = () => {
     fetch("/api/data/teams").then((r) => r.json()).then(setTeams).catch(() => {})
@@ -31,6 +105,24 @@ export default function TeamsDirectoryPage() {
     return () => window.removeEventListener("team-created", onCreated)
   }, [])
 
+  useEffect(() => {
+    if (!openFilter) return
+    const h = (e: MouseEvent) => {
+      if (filterBarRef.current && !filterBarRef.current.contains(e.target as Node)) setOpenFilter(null)
+    }
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [openFilter])
+
+  useEffect(() => {
+    if (!addFilterOpen) return
+    const h = (e: MouseEvent) => {
+      if (addFilterRef.current && !addFilterRef.current.contains(e.target as Node)) setAddFilterOpen(false)
+    }
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [addFilterOpen])
+
   const handleCreate = async () => {
     if (!newName.trim()) return
     const res = await fetch("/api/data/teams", {
@@ -41,69 +133,229 @@ export default function TeamsDirectoryPage() {
     if (res.ok) {
       const t = await res.json()
       setTeams((prev) => [...prev, t])
-      setCreateOpen(false)
-      setNewName("")
-      setNewDesc("")
+      setCreateOpen(false); setNewName(""); setNewDesc("")
     }
   }
 
-  const filteredTeams = teams.filter((team) =>
-    team.name.toLowerCase().includes(search.toLowerCase()) ||
-    team.description.toLowerCase().includes(search.toLowerCase())
-  )
+  function handleFilterClick(id: string) {
+    if (activeFilters.has(id)) {
+      setOpenFilter(openFilter === id ? null : id)
+    } else {
+      setActiveFilters((prev) => new Set([...prev, id]))
+      setOpenFilter(id)
+    }
+  }
+
+  function handleRemoveFilter(id: string) {
+    setActiveFilters((prev) => { const next = new Set(prev); next.delete(id); return next })
+    setFilterValues((prev) => { const next = { ...prev }; delete next[id]; return next })
+    setOpenFilter(null)
+  }
+
+  function handleSelectValue(id: string, value: string) {
+    setFilterValues((prev) => ({ ...prev, [id]: value }))
+    setOpenFilter(null)
+  }
+
+  function resetFilters() {
+    setActiveFilters(new Set()); setFilterValues({}); setOpenFilter(null); setAddFilterOpen(false)
+  }
+
+  const filteredTeams = teams
+    .filter((team) =>
+      team.name.toLowerCase().includes(search.toLowerCase()) ||
+      team.description.toLowerCase().includes(search.toLowerCase())
+    )
+    .slice()
+    .sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name)
+      if (sortBy === "members") return b.members - a.members
+      return 0
+    })
+
+  const activeFilterIds = Array.from(activeFilters)
+  const inactiveFilters = FILTER_BTNS.filter((f) => !activeFilters.has(f.id))
+  const hasActiveFilters = activeFilters.size > 0
 
   return (
     <div className="p-8 max-w-5xl">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Team directory</h1>
-        <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setCreateOpen(true)}>
-          Create team
-        </Button>
+      {/* Header */}
+      <div className="mb-4 flex items-center justify-between">
+        <h1 data-testid="teams-heading" className="text-2xl font-semibold">Teams</h1>
+        <Button variant="outline" onClick={() => setCreateOpen(true)}>Create team</Button>
+      </div>
+
+      {/* Tabs */}
+      <div data-testid="teams-tabs" className="mb-5 flex border-b">
+        {TABS.map((tab) => (
+          <button key={tab} data-testid={`tab-${tab.toLowerCase().replace(/\s+/g, "-")}`}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === tab ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+            {tab}
+          </button>
+        ))}
       </div>
 
       {/* Search */}
-      <div className="relative mb-6">
-        <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-        <input
-          type="text"
-          placeholder="Search teams..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-lg border bg-background py-2 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
+      <div className="relative mb-4">
+        <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search teams..." value={search} onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-lg border bg-background py-2 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
       </div>
 
-      <p className="mb-4 text-sm text-muted-foreground">{filteredTeams.length} {filteredTeams.length === 1 ? "team" : "teams"} found</p>
+      {/* Filter bar */}
+      <div ref={filterBarRef} className="mb-5 flex flex-wrap items-center gap-2">
+        {!hasActiveFilters ? (
+          /* Default state — all filter buttons */
+          FILTER_BTNS.map((f) => (
+            <button key={f.id} data-testid={`filter-btn-${f.id}`} onClick={() => handleFilterClick(f.id)}
+              className="flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent dark:border-gray-700">
+              {f.icon}{f.label}
+            </button>
+          ))
+        ) : (
+          /* Active state — chips + Add filter + Reset */
+          <>
+            {activeFilterIds.map((id) => {
+              const f = FILTER_BTNS.find((fb) => fb.id === id)!
+              const val = filterValues[id]
+              const label = val ? `${f.chipLabel} ${val}` : f.chipLabel
+              return (
+                <div key={id} data-testid={`filter-chip-${id}`} className="relative">
+                  <div className="flex items-center">
+                    <button onClick={() => handleFilterClick(id)}
+                      className="flex items-center gap-1.5 rounded-l-full border border-r-0 border-blue-500 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                      {f.icon}{label}
+                    </button>
+                    <button onClick={() => handleRemoveFilter(id)}
+                      className="flex items-center justify-center rounded-r-full border border-blue-500 bg-blue-50 px-2 py-1.5 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400">
+                      <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/></svg>
+                    </button>
+                  </div>
+                  {openFilter === id && <FilterDropdown filter={f} onSelect={(v) => handleSelectValue(id, v)} />}
+                </div>
+              )
+            })}
 
-      {filteredTeams.length > 0 ? (
+            {/* Add filter + */}
+            {inactiveFilters.length > 0 && (
+              <div ref={addFilterRef} className="relative">
+                <button data-testid="add-filter-btn" onClick={() => setAddFilterOpen((v) => !v)}
+                  className="flex items-center gap-1 rounded-full border border-dashed border-gray-400 px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent transition-colors">
+                  Add filter
+                  <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3a.75.75 0 0 1 .75.75v3.5h3.5a.75.75 0 0 1 0 1.5h-3.5v3.5a.75.75 0 0 1-1.5 0v-3.5h-3.5a.75.75 0 0 1 0-1.5h3.5v-3.5A.75.75 0 0 1 8 3z"/></svg>
+                </button>
+                {addFilterOpen && (
+                  <div className="absolute left-0 top-full z-50 mt-1 w-44 rounded-lg border bg-popover shadow-lg py-1">
+                    {inactiveFilters.map((f) => (
+                      <button key={f.id} onClick={() => { handleFilterClick(f.id); setAddFilterOpen(false) }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent text-left">
+                        {f.icon}{f.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Reset */}
+            <button data-testid="teams-reset-btn" onClick={resetFilters}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Reset
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Count + view toggles */}
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">{filteredTeams.length} team{filteredTeams.length !== 1 ? "s" : ""}</p>
+        <div className="flex items-center">
+          <button data-testid="view-grid-btn" onClick={() => setViewMode("grid")} title="Grid view"
+            className={`rounded-l-lg border border-r-0 p-2 transition-colors ${viewMode === "grid" ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "border-border text-muted-foreground hover:bg-accent"}`}>
+            <svg className="size-4" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          </button>
+          <button data-testid="view-list-btn" onClick={() => setViewMode("list")} title="List view"
+            className={`border border-r-0 p-2 transition-colors ${viewMode === "list" ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "border-border text-muted-foreground hover:bg-accent"}`}>
+            <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="2.5" cy="4.5" r="1.5"/><rect x="6" y="3.5" width="16" height="2" rx="1"/>
+              <circle cx="2.5" cy="12" r="1.5"/><rect x="6" y="11" width="16" height="2" rx="1"/>
+              <circle cx="2.5" cy="19.5" r="1.5"/><rect x="6" y="18.5" width="16" height="2" rx="1"/>
+            </svg>
+          </button>
+          <div className="relative">
+            <button data-testid="view-more-btn" onClick={() => setMoreOpen((v) => !v)}
+              className={`rounded-r-lg border p-2 transition-colors ${moreOpen ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "border-border text-muted-foreground hover:bg-accent"}`}>
+              <svg className="size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+            </button>
+            {moreOpen && (
+              <div className="absolute right-0 top-full z-50 mt-1 w-44 rounded-lg border bg-popover shadow-lg py-1">
+                <button data-testid="sort-by-name" onClick={() => { setSortBy("name"); setMoreOpen(false) }}
+                  className={`flex w-full items-center px-3 py-2 text-sm hover:bg-accent text-left ${sortBy === "name" ? "text-blue-600 font-medium" : ""}`}>
+                  Sort by name
+                  {sortBy === "name" && <svg className="ml-auto size-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>}
+                </button>
+                <button data-testid="sort-by-members" onClick={() => { setSortBy("members"); setMoreOpen(false) }}
+                  className={`flex w-full items-center px-3 py-2 text-sm hover:bg-accent text-left ${sortBy === "members" ? "text-blue-600 font-medium" : ""}`}>
+                  Sort by members
+                  {sortBy === "members" && <svg className="ml-auto size-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Grid view */}
+      {viewMode === "grid" && filteredTeams.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredTeams.map((team) => (
-            <Link key={team.id} href={`/teams/${team.id}`} className="group flex flex-col rounded-lg border p-5 hover:shadow-md transition-all">
-              <div className="flex items-start justify-between mb-4">
-                <div className={`flex size-10 items-center justify-center rounded-lg ${team.color}`}>
-                  <svg className="size-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            <Link key={team.id} href={`/teams/${team.id}`} className="group flex flex-col rounded-xl border p-5 hover:shadow-md transition-all bg-background">
+              <div className="flex items-start justify-between mb-5">
+                <div className={`flex size-12 items-center justify-center rounded-2xl ${team.color} shadow-sm`}>
+                  <svg className="size-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
                 </div>
-                <Avatar className="size-7">
-                  <AvatarFallback className="text-[10px] bg-teal-500 text-white font-bold">AS</AvatarFallback>
-                </Avatar>
+                <Avatar className="size-7"><AvatarFallback className="text-[10px] bg-teal-500 text-white font-bold">AS</AvatarFallback></Avatar>
               </div>
-              <h3 className="text-sm font-semibold group-hover:text-blue-600 transition-colors">{team.name}</h3>
-              <div className="flex items-center gap-1 mt-0.5">
+              <h3 data-testid="team-name" className="text-sm font-semibold group-hover:text-blue-600 transition-colors mb-1">{team.name}</h3>
+              <div className="flex items-center gap-1">
                 <span className="text-xs text-muted-foreground">Official team</span>
-                <svg className="size-3.5 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
-                <span className="text-xs text-muted-foreground">· {team.members} member{team.members !== 1 ? "s" : ""}</span>
+                <svg className="size-3.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>
+                <span className="text-xs text-muted-foreground">• {team.members} member{team.members !== 1 ? "s" : ""}</span>
               </div>
             </Link>
           ))}
         </div>
-      ) : (
+      )}
+
+      {/* List view */}
+      {viewMode === "list" && filteredTeams.length > 0 && (
+        <div className="rounded-xl border divide-y">
+          {filteredTeams.map((team) => (
+            <Link key={team.id} href={`/teams/${team.id}`} className="group flex items-center gap-4 px-5 py-3 hover:bg-accent/50 transition-colors">
+              <div className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${team.color}`}>
+                <svg className="size-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p data-testid="team-name" className="text-sm font-medium group-hover:text-blue-600 transition-colors">{team.name}</p>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground">Official team</span>
+                  <svg className="size-3 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>
+                  <span className="text-xs text-muted-foreground">• {team.members} member{team.members !== 1 ? "s" : ""}</span>
+                </div>
+              </div>
+              <Avatar className="size-7 shrink-0"><AvatarFallback className="text-[10px] bg-teal-500 text-white font-bold">AS</AvatarFallback></Avatar>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {filteredTeams.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <svg className="mb-4 size-12 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+          <svg className="mb-4 size-12 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <h3 className="mb-1 text-sm font-medium">No teams found</h3>
-          <p className="text-sm text-muted-foreground">
-            Try a different search term or{" "}
-            <button className="text-blue-600 hover:underline" onClick={() => setCreateOpen(true)}>create a new team</button>
-          </p>
+          <p className="text-sm text-muted-foreground">Try a different search or <button className="text-blue-600 hover:underline" onClick={() => setCreateOpen(true)}>create a new team</button></p>
         </div>
       )}
 
@@ -115,17 +367,17 @@ export default function TeamsDirectoryPage() {
             <div className="flex items-center justify-between px-5 py-4 border-b">
               <h3 className="text-base font-semibold">Create a team</h3>
               <button onClick={() => setCreateOpen(false)} className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors">
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
             </div>
             <div className="px-5 py-4 space-y-4">
               <div>
                 <label className="text-xs font-medium mb-1.5 block">Team name <span className="text-red-500">*</span></label>
-                <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Marketing" autoFocus onKeyDown={(e) => { if (e.key === "Enter" && newName.trim()) handleCreate() }} className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30" />
+                <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Marketing" autoFocus onKeyDown={(e) => { if (e.key === "Enter" && newName.trim()) handleCreate() }} className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30"/>
               </div>
               <div>
                 <label className="text-xs font-medium mb-1.5 block">Description</label>
-                <textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="What does this team work on?" rows={3} className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30" />
+                <textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} placeholder="What does this team work on?" rows={3} className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/30"/>
               </div>
             </div>
             <div className="flex justify-end gap-2 px-5 py-3 border-t">
