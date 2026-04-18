@@ -58,122 +58,98 @@ interface FilterDef {
   key: string
   field: keyof Person
   label: string
-  activeLabel: string
+  chipLabel: string
   placeholder: string
   icon: React.ReactNode
 }
 
 const filterDefs: FilterDef[] = [
-  { key: "project", field: "projects", label: "Filter by Project", activeLabel: "Project", placeholder: "Search projects...", icon: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></> },
-  { key: "goal", field: "goals", label: "Goal", activeLabel: "Goal", placeholder: "Search goals...", icon: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></> },
-  { key: "team", field: "teams", label: "Team", activeLabel: "Team", placeholder: "Search teams...", icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
-  { key: "jobtitle", field: "jobTitle", label: "Job title", activeLabel: "Job title", placeholder: "Search job titles...", icon: <><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></> },
-  { key: "manager", field: "manager", label: "Manager", activeLabel: "Manager", placeholder: "Search managers...", icon: <><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></> },
-  { key: "department", field: "department", label: "Department", activeLabel: "Department", placeholder: "Search departments...", icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
-  { key: "location", field: "location", label: "Location", activeLabel: "Location", placeholder: "Search locations...", icon: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></> },
+  { key: "project",    field: "projects",   label: "Filter by Project", chipLabel: "Project is",    placeholder: "Choose a project",    icon: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></> },
+  { key: "goal",       field: "goals",      label: "Goal",              chipLabel: "Goal is",        placeholder: "Choose a goal",       icon: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></> },
+  { key: "team",       field: "teams",      label: "Team",              chipLabel: "Team is",        placeholder: "Choose a team",       icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
+  { key: "jobtitle",   field: "jobTitle",   label: "Job title",         chipLabel: "Job title is",   placeholder: "Choose a job title",  icon: <><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></> },
+  { key: "manager",    field: "manager",    label: "Manager",           chipLabel: "Manager is",     placeholder: "Choose a manager",    icon: <><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></> },
+  { key: "department", field: "department", label: "Department",        chipLabel: "Department is",  placeholder: "Choose a department", icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
+  { key: "location",   field: "location",   label: "Location",          chipLabel: "Location is",    placeholder: "Choose a location",   icon: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></> },
 ]
 
 // ─── Filter dropdown component ───────────────────────────────────────────────
 
 function FilterDropdown({
-  def,
-  options,
-  selectedValues,
-  onToggleValue,
-  onRemoveFilter,
+  def, options, selectedValue, onSelectValue, onRemoveFilter, isOpen, onToggleOpen,
 }: {
-  def: FilterDef
-  options: string[]
-  selectedValues: Set<string>
-  onToggleValue: (key: string, value: string) => void
+  def: FilterDef; options: string[]; selectedValue: string | undefined
+  onSelectValue: (key: string, value: string) => void
   onRemoveFilter: (key: string) => void
+  isOpen: boolean; onToggleOpen: (key: string | null) => void
 }) {
-  const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false)
-        setSearch("")
-      }
+    function h(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) onToggleOpen(null)
     }
-    if (open) document.addEventListener("mousedown", handleClick)
-    return () => document.removeEventListener("mousedown", handleClick)
-  }, [open])
+    if (isOpen) document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [isOpen, onToggleOpen])
 
-  const hasSelection = selectedValues.size > 0
-  const filteredOptions = options.filter((o) => o.toLowerCase().includes(search.toLowerCase()))
+  useEffect(() => { if (!isOpen) setSearch("") }, [isOpen])
+
+  const filtered = options.filter((o) => o.toLowerCase().includes(search.toLowerCase()))
+  const hasValue = !!selectedValue
 
   return (
     <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
-          hasSelection
-            ? "border-blue-600 bg-blue-50 text-blue-700 font-medium dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-500"
-            : "text-muted-foreground hover:bg-accent hover:text-foreground"
-        }`}
-      >
-        <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
-        {hasSelection ? (
-          <>
-            {def.activeLabel}: {[...selectedValues].join(", ")}
-            <button
-              onClick={(e) => { e.stopPropagation(); onRemoveFilter(def.key) }}
-              className="ml-0.5 rounded-full p-0.5 hover:bg-blue-200 dark:hover:bg-blue-800"
-            >
-              <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+      {hasValue ? (
+        /* Active chip: label outside + value pill with single × button */
+        <div className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 text-sm text-foreground select-none">
+            <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
+            {def.chipLabel}
+          </span>
+          <div className="flex items-center gap-1.5 rounded-full border border-blue-500 px-3 py-1">
+            <span onClick={() => onToggleOpen(def.key)}
+              className="cursor-pointer text-sm text-blue-600 leading-none select-none dark:text-blue-400">
+              {selectedValue}
+            </span>
+            <button onClick={() => onRemoveFilter(def.key)}
+              className="flex items-center text-blue-500 hover:text-blue-700 dark:text-blue-400">
+              <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/></svg>
             </button>
-          </>
-        ) : (
-          def.label
-        )}
-      </button>
+          </div>
+        </div>
+      ) : (
+        /* Default pill button */
+        <button onClick={() => onToggleOpen(def.key)}
+          className="flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent dark:border-gray-700">
+          <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
+          {def.label}
+        </button>
+      )}
 
-      {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-64 rounded-lg border bg-popover shadow-lg">
-          <div className="flex items-center border-b px-3 py-2">
-            <svg className="size-4 text-muted-foreground mr-2 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={def.placeholder}
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              autoFocus
-            />
-          </div>
-          <div className="max-h-56 overflow-y-auto py-1">
-            {filteredOptions.length > 0 ? (
-              filteredOptions.map((opt) => {
-                const isSelected = selectedValues.has(opt)
-                return (
-                  <button
-                    key={opt}
-                    onClick={() => onToggleValue(def.key, opt)}
-                    className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm hover:bg-accent transition-colors"
-                  >
-                    <div className={`flex size-4 shrink-0 items-center justify-center rounded border transition-colors ${isSelected ? "border-blue-600 bg-blue-600" : "border-muted-foreground/40"}`}>
-                      {isSelected && (
-                        <svg className="size-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
-                      )}
-                    </div>
-                    <span className={isSelected ? "font-medium" : ""}>{opt}</span>
-                  </button>
-                )
-              })
-            ) : (
-              <p className="px-3 py-4 text-center text-sm text-muted-foreground">No results found</p>
-            )}
-          </div>
-          {selectedValues.size > 0 && (
-            <div className="border-t px-3 py-2">
-              <button onClick={() => onRemoveFilter(def.key)} className="text-xs text-blue-600 hover:underline">
-                Clear selection
-              </button>
+      {isOpen && (
+        <div className="absolute left-0 top-full z-50 mt-1 w-60 rounded-lg border bg-popover shadow-lg">
+          <div className="p-2 border-b">
+            <div className="relative">
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+                placeholder={def.placeholder} autoFocus
+                className="w-full rounded-md border bg-background py-1.5 pl-3 pr-8 text-xs outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring" />
+              <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </div>
-          )}
+          </div>
+          <div className="max-h-52 overflow-y-auto py-1">
+            {filtered.length === 0 && <p className="px-3 py-2 text-xs text-muted-foreground">No options</p>}
+            {filtered.map((opt) => (
+              <button key={opt} onClick={() => { onSelectValue(def.key, opt); onToggleOpen(null) }}
+                className={`flex w-full items-center px-3 py-1.5 text-sm hover:bg-accent transition-colors text-left ${opt === selectedValue ? "font-medium text-blue-600" : ""}`}>
+                {opt === selectedValue && (
+                  <svg className="mr-2 size-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                )}
+                {opt}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -270,30 +246,20 @@ export default function PeoplePage() {
     name: true, jobTitle: true, manager: true, department: true, location: false, teams: false,
   })
 
-  // Multi-filter state: { filterKey -> Set of selected values }
-  const [activeFilters, setActiveFilters] = useState<Record<string, Set<string>>>({})
+  // Single-select filter state: { filterKey -> selected value }
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({})
+  const [openFilter, setOpenFilter] = useState<string | null>(null)
 
-  const toggleFilterValue = (key: string, value: string) => {
-    setActiveFilters((prev) => {
-      const next = { ...prev }
-      const set = new Set(next[key] ?? [])
-      if (set.has(value)) set.delete(value)
-      else set.add(value)
-      if (set.size === 0) delete next[key]
-      else next[key] = set
-      return next
-    })
+  const selectFilterValue = (key: string, value: string) => {
+    setActiveFilters((prev) => ({ ...prev, [key]: value }))
   }
 
   const removeFilter = (key: string) => {
-    setActiveFilters((prev) => {
-      const next = { ...prev }
-      delete next[key]
-      return next
-    })
+    setActiveFilters((prev) => { const next = { ...prev }; delete next[key]; return next })
+    setOpenFilter(null)
   }
 
-  const clearAllFilters = () => setActiveFilters({})
+  const clearAllFilters = () => { setActiveFilters({}); setOpenFilter(null) }
 
   const toggleCol = (key: string) => {
     if (key === "name") return
@@ -314,22 +280,22 @@ export default function PeoplePage() {
     setPeople((prev) => [...prev, { name, initials, jobTitle: "", manager: "", department: "", location: "", teams: [], projects: [], goals: [] }])
   }
 
-  // Apply search + all active filters
+  // Apply search + all active filters (single-select)
   const filtered = people.filter((p) => {
     if (search) {
       const q = search.toLowerCase()
       const matchesAny = p.name.toLowerCase().includes(q) || p.jobTitle.toLowerCase().includes(q) || p.department.toLowerCase().includes(q) || p.location.toLowerCase().includes(q) || p.teams.some((t) => t.toLowerCase().includes(q))
       if (!matchesAny) return false
     }
-    for (const [key, values] of Object.entries(activeFilters)) {
-      if (values.size === 0) continue
+    for (const [key, value] of Object.entries(activeFilters)) {
+      if (!value) continue
       const def = filterDefs.find((f) => f.key === key)
       if (!def) continue
       const personVal = p[def.field]
       if (Array.isArray(personVal)) {
-        if (!personVal.some((v) => values.has(v))) return false
+        if (!personVal.includes(value)) return false
       } else {
-        if (!values.has(personVal as string)) return false
+        if (personVal !== value) return false
       }
     }
     return true
@@ -357,7 +323,6 @@ export default function PeoplePage() {
     setMenuOpen(false)
   }
 
-  // Derive options from current people data
   const optionsMap: Record<string, string[]> = {}
   for (const def of filterDefs) {
     optionsMap[def.key] = deriveOptions(people, def.field)
@@ -381,23 +346,22 @@ export default function PeoplePage() {
         <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search people" className="pl-9" />
       </div>
 
-      {/* Filters — all shown at once, each independently toggleable */}
+      {/* Filters */}
       <div className="mb-6 flex flex-wrap items-center gap-2">
         {filterDefs.map((def) => (
           <FilterDropdown
             key={def.key}
             def={def}
             options={optionsMap[def.key]}
-            selectedValues={activeFilters[def.key] ?? new Set()}
-            onToggleValue={toggleFilterValue}
+            selectedValue={activeFilters[def.key]}
+            onSelectValue={selectFilterValue}
             onRemoveFilter={removeFilter}
+            isOpen={openFilter === def.key}
+            onToggleOpen={setOpenFilter}
           />
         ))}
         {activeFilterCount > 0 && (
-          <button
-            onClick={clearAllFilters}
-            className="text-xs text-blue-600 hover:underline ml-1"
-          >
+          <button onClick={clearAllFilters} className="text-xs text-muted-foreground hover:text-foreground ml-1 transition-colors">
             Clear all
           </button>
         )}
@@ -409,25 +373,25 @@ export default function PeoplePage() {
           {filtered.length} {filtered.length === 1 ? "person" : "people"}
           {activeFilterCount > 0 && <span className="text-muted-foreground font-normal"> (filtered)</span>}
         </p>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setView("grid")}
-            className={`rounded p-1.5 transition-colors ${view === "grid" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30" : "text-muted-foreground hover:bg-accent"}`}
-          >
-            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+        <div className="flex items-center">
+          <button onClick={() => setView("grid")}
+            className={`rounded-l-lg border border-r-0 p-2 transition-colors ${view === "grid" ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "border-border text-muted-foreground hover:bg-accent"}`}>
+            <svg className="size-4" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           </button>
-          <button
-            onClick={() => setView("list")}
-            className={`rounded p-1.5 transition-colors ${view === "list" ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30" : "text-muted-foreground hover:bg-accent"}`}
-          >
-            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+          <button onClick={() => setView("list")}
+            className={`border border-r-0 p-2 transition-colors ${view === "list" ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "border-border text-muted-foreground hover:bg-accent"}`}>
+            <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="2.5" cy="4.5" r="1.5"/><rect x="6" y="3.5" width="16" height="2" rx="1"/>
+              <circle cx="2.5" cy="12" r="1.5"/><rect x="6" y="11" width="16" height="2" rx="1"/>
+              <circle cx="2.5" cy="19.5" r="1.5"/><rect x="6" y="18.5" width="16" height="2" rx="1"/>
+            </svg>
           </button>
           {/* Columns dropdown (list view only) */}
           {view === "list" && (
             <div className="relative">
               <button
                 onClick={() => { setColumnsOpen(!columnsOpen); setMenuOpen(false) }}
-                className={`flex items-center gap-1 rounded border px-2 py-1 text-xs transition-colors ${columnsOpen ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/20" : "text-muted-foreground hover:bg-accent"}`}
+                className={`flex items-center gap-1 border border-r-0 p-2 text-xs transition-colors ${columnsOpen ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "border-border text-muted-foreground hover:bg-accent"}`}
               >
                 <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></svg>
                 Columns
@@ -475,7 +439,7 @@ export default function PeoplePage() {
           <div className="relative">
             <button
               onClick={() => { setMenuOpen(!menuOpen); setColumnsOpen(false) }}
-              className={`rounded p-1.5 transition-colors ${menuOpen ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30" : "text-muted-foreground hover:bg-accent"}`}
+              className={`rounded-r-lg border p-2 transition-colors ${menuOpen ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "border-border text-muted-foreground hover:bg-accent"}`}
             >
               <svg className="size-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" /></svg>
             </button>
