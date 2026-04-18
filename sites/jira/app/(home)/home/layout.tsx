@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import type { Issue, Project, User } from "@/app/lib/mock-data"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -1553,6 +1554,346 @@ function CreateDropdown() {
   )
 }
 
+function HomeSearchBar() {
+  const router = useRouter()
+  const [query, setQuery] = useState("")
+  const [open, setOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<"Home" | "Jira">("Jira")
+  const [recentIssues, setRecentIssues] = useState<Issue[]>([])
+  const [recentProjects, setRecentProjects] = useState<Project[]>([])
+  const [recentUsers, setRecentUsers] = useState<User[]>([])
+  const [results, setResults] = useState<{ issues: Issue[]; projects: Project[]; users: User[] } | null>(null)
+  const [loading, setLoading] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const ref = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    fetch("/api/data/issues")
+      .then((r) => r.json())
+      .then((data: Issue[]) => {
+        const sorted = [...data].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        setRecentIssues(sorted.slice(0, 3))
+      })
+      .catch(() => {})
+    fetch("/api/data/projects")
+      .then((r) => r.json())
+      .then((data: Project[]) => setRecentProjects(data.slice(0, 2)))
+      .catch(() => {})
+    fetch("/api/data/users")
+      .then((r) => r.json())
+      .then((data: User[]) => setRecentUsers(data.slice(0, 2)))
+      .catch(() => {})
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) { setOpen(false); setQuery(""); setResults(null) }
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [open])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setOpen(false); setQuery(""); setResults(null) }
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [])
+
+  const doSearch = useCallback((q: string) => {
+    if (!q.trim()) { setResults(null); return }
+    setLoading(true)
+    fetch(`/api/data/search?q=${encodeURIComponent(q.trim())}`)
+      .then((r) => r.json())
+      .then((data) => { setResults(data); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const handleInput = (val: string) => {
+    setQuery(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => doSearch(val), 200)
+  }
+
+  const go = (href: string) => {
+    setOpen(false); setQuery(""); setResults(null)
+    router.push(href)
+  }
+
+  const hasResults = results && (results.issues.length > 0 || results.projects.length > 0 || results.users.length > 0)
+
+  const CheckboxIssueIcon = ({ type }: { type: string }) => (
+    <div className={`flex size-[18px] shrink-0 items-center justify-center rounded border-2 ${type === "bug" ? "border-red-500 bg-red-500" : type === "story" ? "border-green-500 bg-green-500" : "border-blue-500 bg-blue-500"}`}>
+      <svg className="size-2.5 text-white" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="2,6 5,9 10,3" /></svg>
+    </div>
+  )
+
+  const BoardIconSm = ({ color = "bg-gray-700" }: { color?: string }) => (
+    <div className={`flex size-[22px] shrink-0 items-center justify-center rounded ${color}`}>
+      <svg className="size-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+    </div>
+  )
+
+  const ProjectIcon = ({ color = "bg-blue-500" }: { color?: string }) => (
+    <div className={`flex size-[22px] shrink-0 items-center justify-center rounded ${color}`}>
+      <svg className="size-3 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v4H3zm0 6h18v4H3zm0 6h18v4H3z" /></svg>
+    </div>
+  )
+
+  const TeamIcon = ({ color = "bg-blue-500" }: { color?: string }) => (
+    <div className={`flex size-[22px] shrink-0 items-center justify-center rounded ${color}`}>
+      <svg className="size-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+    </div>
+  )
+
+  const handleClear = () => { setQuery(""); setResults(null); inputRef.current?.focus() }
+
+  return (
+    <div className="relative flex-1" ref={ref}>
+      {/* Input */}
+      <div
+        className={`flex items-center h-9 rounded-md border px-3 gap-2 transition-colors ${open ? "border-blue-500 bg-white ring-2 ring-blue-500/20" : "border-input bg-muted/50"}`}
+        onClick={() => { setOpen(true); inputRef.current?.focus() }}
+      >
+        <svg className="size-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Search Jira"
+          value={query}
+          onChange={(e) => handleInput(e.target.value)}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && query.trim()) go(`/search?q=${encodeURIComponent(query.trim())}`)
+          }}
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+        {loading && <div className="size-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground shrink-0" />}
+        {query && !loading && (
+          <button onClick={handleClear} className="text-muted-foreground hover:text-foreground shrink-0">
+            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        )}
+      </div>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute left-0 right-0 top-full mt-1 z-[200] rounded-lg border bg-popover shadow-xl overflow-hidden">
+          {/* Tabs — Home | Jira */}
+          <div className="flex border-b px-2 pt-1">
+            {(["Home", "Jira"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === tab ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Jira tab ── */}
+          {activeTab === "Jira" && (
+            <div>
+              {!query.trim() ? (
+                <>
+                  {/* View all issues */}
+                  <button onClick={() => go("/filters/all-work-items")} className="flex items-center gap-3 px-4 py-3 w-full text-left hover:bg-accent transition-colors border-b">
+                    <svg className="size-4 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <span className="flex-1 text-sm font-medium">View all issues</span>
+                    <span className="text-xs text-muted-foreground border rounded px-1 py-0.5">↵</span>
+                  </button>
+
+                  {/* Recently viewed issues */}
+                  <div className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recently viewed issues</div>
+                  {recentIssues.length > 0 ? recentIssues.map((issue) => (
+                    <button key={issue.id} onClick={() => go(`/issue/${issue.key}`)} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                      <CheckboxIssueIcon type={issue.type} />
+                      <span className="flex-1 text-sm truncate">{issue.key} {issue.summary}</span>
+                      <span className="text-xs text-muted-foreground shrink-0 w-20 text-right">My Team</span>
+                      <span className="text-xs text-muted-foreground shrink-0 w-28 text-right">Recently viewed</span>
+                    </button>
+                  )) : (
+                    <>
+                      {[{ key: "SCRUM-6", summary: "wxdxadxax" }, { key: "SCRUM-5", summary: "vijay" }, { key: "SCRUM-1", summary: "Task 1" }].map((item) => (
+                        <button key={item.key} onClick={() => go(`/issue/${item.key}`)} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                          <CheckboxIssueIcon type="task" />
+                          <span className="flex-1 text-sm truncate">{item.key} {item.summary}</span>
+                          <span className="text-xs text-muted-foreground shrink-0 w-20 text-right">My Team</span>
+                          <span className="text-xs text-muted-foreground shrink-0 w-28 text-right">Recently viewed</span>
+                        </button>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Recent projects and filters */}
+                  <div className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent projects and filters</div>
+                  {recentProjects.length > 0 ? recentProjects.map((proj) => (
+                    <button key={proj.id} onClick={() => go(`/projects/${proj.key}/board`)} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                      <BoardIconSm />
+                      <span className="flex-1 text-sm truncate">{proj.name}</span>
+                      <span className="text-xs text-muted-foreground shrink-0">My Team</span>
+                    </button>
+                  )) : (
+                    <>
+                      <button onClick={() => go("/projects/SCRUM/board")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                        <BoardIconSm color="bg-gray-700" />
+                        <span className="flex-1 text-sm">SCRUM board</span>
+                        <span className="text-xs text-muted-foreground shrink-0">My Team</span>
+                      </button>
+                      <button onClick={() => go("/projects")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                        <BoardIconSm color="bg-violet-600" />
+                        <span className="flex-1 text-sm">My Team (SCRUM)</span>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Footer — pill buttons */}
+                  <div className="flex items-center gap-2 px-4 py-3 border-t mt-1">
+                    <span className="text-sm text-muted-foreground shrink-0">Go to all:</span>
+                    {[
+                      { label: "Issues", href: "/filters/all-work-items" },
+                      { label: "Projects", href: "/projects" },
+                      { label: "Filters", href: "/filters" },
+                      { label: "People", href: "/teams/people" },
+                    ].map(({ label, href }) => (
+                      <button key={label} onClick={() => go(href)} className="px-3 py-1 text-xs border rounded-sm hover:bg-accent transition-colors font-medium">
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                /* Search results */
+                <div>
+                  {!hasResults && !loading && (
+                    <div className="px-4 py-8 text-center text-sm text-muted-foreground">No results for &ldquo;{query}&rdquo;</div>
+                  )}
+                  {results && results.issues.length > 0 && (
+                    <div>
+                      <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Issues</div>
+                      {results.issues.map((issue) => (
+                        <button key={issue.id} onClick={() => go(`/issue/${issue.key}`)} className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors">
+                          <CheckboxIssueIcon type={issue.type} />
+                          <span className="flex-1 text-sm truncate">{issue.key} {issue.summary}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {results && results.projects.length > 0 && (
+                    <div>
+                      <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Projects</div>
+                      {results.projects.map((project) => (
+                        <button key={project.id} onClick={() => go(`/projects/${project.key}/board`)} className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors">
+                          <BoardIconSm />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm truncate block">{project.name}</span>
+                            <span className="text-xs text-muted-foreground">{project.key}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {results && results.users.length > 0 && (
+                    <div>
+                      <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">People</div>
+                      {results.users.map((user) => (
+                        <button key={user.id} onClick={() => go("/teams/people")} className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors">
+                          <Avatar className="size-[22px]">
+                            <AvatarFallback className="text-[9px] bg-teal-500 text-white">{(user.displayName ?? user.name).charAt(0).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm truncate block">{user.displayName ?? user.name}</span>
+                            <span className="text-xs text-muted-foreground">{user.email}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 px-4 py-3 border-t">
+                    <span className="text-sm text-muted-foreground shrink-0">Go to all:</span>
+                    {[
+                      { label: "Issues", href: "/filters/all-work-items" },
+                      { label: "Projects", href: "/projects" },
+                      { label: "Filters", href: "/filters" },
+                      { label: "People", href: "/teams/people" },
+                    ].map(({ label, href }) => (
+                      <button key={label} onClick={() => go(href)} className="px-3 py-1 text-xs border rounded-sm hover:bg-accent transition-colors font-medium">
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Home tab ── */}
+          {activeTab === "Home" && (
+            <div className="max-h-[520px] overflow-y-auto">
+              <div className="px-4 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent projects</div>
+              {recentProjects.length > 0 ? recentProjects.map((proj) => (
+                <button key={proj.id} onClick={() => go(`/projects/${proj.key}/board`)} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                  <ProjectIcon color="bg-blue-500" />
+                  <span className="text-sm">{proj.name}</span>
+                </button>
+              )) : (
+                <button onClick={() => go("/projects")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                  <ProjectIcon color="bg-orange-400" />
+                  <span className="text-sm">vijay</span>
+                </button>
+              )}
+
+              <div className="px-4 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent goals</div>
+              {["geeta", "geeta", "geeta"].map((name, i) => (
+                <button key={i} onClick={() => go("/goals")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                  <ProjectIcon color="bg-blue-400" />
+                  <span className="text-sm">{name}</span>
+                </button>
+              ))}
+
+              <div className="px-4 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent people</div>
+              {recentUsers.length > 0 ? recentUsers.map((user) => (
+                <button key={user.id} onClick={() => go("/teams/people")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                  <Avatar className="size-[22px]">
+                    <AvatarFallback className="text-[9px] bg-teal-500 text-white">{(user.displayName ?? user.name).charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm">{user.displayName ?? user.name}</span>
+                </button>
+              )) : (
+                <>
+                  <button onClick={() => go("/teams/people")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                    <Avatar className="size-[22px]"><AvatarFallback className="text-[9px] bg-teal-500 text-white">TC</AvatarFallback></Avatar>
+                    <span className="text-sm">Theta Computer</span>
+                  </button>
+                  <button onClick={() => go("/teams/people")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                    <Avatar className="size-[22px]"><AvatarFallback className="text-[9px] bg-orange-500 text-white">V</AvatarFallback></Avatar>
+                    <span className="text-sm">vijay2</span>
+                  </button>
+                </>
+              )}
+
+              <div className="px-4 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recently viewed teams</div>
+              {[{ name: "geeta", color: "bg-blue-500" }, { name: "geeta", color: "bg-pink-500" }, { name: "geeta2", color: "bg-pink-600" }].map(({ name, color }, i) => (
+                <button key={i} onClick={() => go("/teams")} className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
+                  <TeamIcon color={color} />
+                  <span className="text-sm">{name}</span>
+                  <svg className="size-4 text-blue-500 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </button>
+              ))}
+              <div className="h-3" />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [customizeOpen, setCustomizeOpen] = useState(false)
@@ -1579,10 +1920,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
           </button>
         </div>
         <div className="flex flex-1 items-center gap-2 mx-4">
-          <div className="relative flex-1">
-            <svg aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-            <Input placeholder="Search" className="h-9 pl-9 bg-muted/50" onKeyDown={(e) => { if (e.key === "Enter") { const val = (e.target as HTMLInputElement).value.trim(); if (val) window.location.href = `/search?q=${encodeURIComponent(val)}` } }} />
-          </div>
+          <HomeSearchBar />
           <CreateDropdown />
         </div>
         <div className="flex items-center gap-2">

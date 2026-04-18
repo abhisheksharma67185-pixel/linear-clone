@@ -2,11 +2,8 @@
 
 import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import type { Project, User } from "@/app/lib/mock-data"
-import { resolveUser } from "@/lib/resolve-user"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { UserProfileCard } from "@/components/user-profile-card"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -17,11 +14,62 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  ArrowDown01Icon,
-  ArrowUp01Icon,
-  Layers01Icon,
-} from "@hugeicons/core-free-icons"
+import { Layers01Icon } from "@hugeicons/core-free-icons"
+import { CreateSpaceModal } from "@/components/CreateSpaceModal"
+
+// Shape returned by /api/jira/projects (Atlassian REST API proxy)
+interface JiraProject {
+  id: string
+  key: string
+  name: string
+  projectTypeKey: "software" | "business" | "service_desk"
+  simplified: boolean
+  avatarUrls: { "32x32": string; "24x24": string; "48x48": string; "16x16": string }
+  lead?: {
+    displayName: string
+    avatarUrls: { "24x24": string; "32x32": string; "48x48": string }
+  }
+}
+
+const FALLBACK_PROJECTS: JiraProject[] = [
+  {
+    id: "10000", key: "SCRUM", name: "My Scrum Project",
+    projectTypeKey: "software", simplified: true,
+    avatarUrls: { "32x32": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "24x24": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "48x48": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "16x16": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium" },
+    lead: { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } },
+  },
+  {
+    id: "10036", key: "SUP", name: "Support",
+    projectTypeKey: "service_desk", simplified: false,
+    avatarUrls: { "32x32": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10408?size=medium", "24x24": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10408?size=medium", "48x48": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10408?size=medium", "16x16": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10408?size=medium" },
+    lead: { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } },
+  },
+  {
+    id: "10035", key: "BVJWBEF", name: "bvjwbefeow",
+    projectTypeKey: "software", simplified: true,
+    avatarUrls: { "32x32": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10412?size=medium", "24x24": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10412?size=medium", "48x48": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10412?size=medium", "16x16": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10412?size=medium" },
+    lead: { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } },
+  },
+  {
+    id: "10033", key: "IJDAIDJAIP", name: "hcu",
+    projectTypeKey: "software", simplified: true,
+    avatarUrls: { "32x32": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10404?size=medium", "24x24": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10404?size=medium", "48x48": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10404?size=medium", "16x16": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10404?size=medium" },
+    lead: { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } },
+  },
+  {
+    id: "10034", key: "KHFIYF", name: "khfiyfifiyfy",
+    projectTypeKey: "software", simplified: true,
+    avatarUrls: { "32x32": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "24x24": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "48x48": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "16x16": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium" },
+    lead: { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } },
+  },
+]
+
+function getProjectType(p: JiraProject): string {
+  if (p.projectTypeKey === "service_desk") return "Service management"
+  const managed = p.simplified ? "Team-managed" : "Company-managed"
+  const type = p.projectTypeKey === "software" ? "software" : "business"
+  return `${managed} ${type}`
+}
 
 function SpaceActionsDropdown({ projectKey, projectName }: { projectKey: string; projectName: string }) {
   const [open, setOpen] = useState(false)
@@ -198,20 +246,130 @@ const templateList = [
   },
 ]
 
+const ALL_FILTER_OPTIONS = [
+  "Jira - business spaces",
+  "Jira - software spaces",
+  "Jira Service Management",
+  "Jira Product Discovery",
+  "Customer Service Management",
+]
+
 const filterChips = [
   "Jira - software spaces",
   "Jira - business spaces",
 ]
 
+function FilterBar({
+  search, onSearch, activeFilters, onRemoveFilter, onClearFilters, onToggleFilter,
+}: {
+  search: string
+  onSearch: (v: string) => void
+  activeFilters: string[]
+  onRemoveFilter: (f: string) => void
+  onClearFilters: () => void
+  onToggleFilter: (f: string) => void
+}) {
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!dropdownOpen) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setDropdownOpen(false)
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [dropdownOpen])
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+      {/* Search box */}
+      <div style={{ position: "relative", width: 240 }}>
+        <svg style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#6B778C", width: 16, height: 16, pointerEvents: "none" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+        <input
+          type="text"
+          placeholder="Search spaces"
+          value={search}
+          onChange={(e) => onSearch(e.target.value)}
+          style={{ width: "100%", height: 36, paddingLeft: 32, paddingRight: 12, border: "1px solid #DFE1E6", borderRadius: 3, fontSize: 14, color: "#172B4D", outline: "none", background: "white" }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = "#0052CC")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "#DFE1E6")}
+        />
+      </div>
+
+      {/* Type filter multi-select */}
+      <div ref={ref} style={{ position: "relative" }}>
+        <div
+          style={{ display: "inline-flex", alignItems: "center", gap: 4, minHeight: 36, padding: "4px 4px 4px 8px", border: `1px solid ${dropdownOpen ? "#0052CC" : "#DFE1E6"}`, borderRadius: 3, background: "white", cursor: "default", flexWrap: "wrap" }}
+        >
+          {/* Chips */}
+          {activeFilters.map((f) => (
+            <span key={f} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "white", border: "1px solid #DFE1E6", borderRadius: 2, padding: "1px 6px", fontSize: 13, color: "#172B4D", whiteSpace: "nowrap" }}>
+              {f}
+              <button onClick={() => onRemoveFilter(f)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, lineHeight: 1, color: "#6B778C", fontSize: 14 }}>×</button>
+            </span>
+          ))}
+
+          {/* Separator + clear + chevron */}
+          <div style={{ display: "flex", alignItems: "center", gap: 2, marginLeft: 2 }}>
+            {activeFilters.length > 0 && (
+              <>
+                <span style={{ width: 1, height: 18, background: "#DFE1E6", display: "inline-block" }} />
+                <button onClick={onClearFilters} title="Clear all" style={{ background: "none", border: "none", cursor: "pointer", padding: "0 4px", color: "#6B778C", display: "flex", alignItems: "center" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </>
+            )}
+            <button onClick={() => setDropdownOpen((o) => !o)} style={{ background: "none", border: "none", cursor: "pointer", padding: "0 4px", color: "#6B778C", display: "flex", alignItems: "center" }}>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ transform: dropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }}>
+                <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Dropdown */}
+        {dropdownOpen && (
+          <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, minWidth: 280, background: "white", border: "1px solid #DFE1E6", borderRadius: 4, boxShadow: "0 4px 8px rgba(9,30,66,0.25)", zIndex: 100 }}>
+            {ALL_FILTER_OPTIONS.map((opt) => {
+              const checked = activeFilters.includes(opt)
+              return (
+                <label key={opt} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", cursor: "pointer", fontSize: 14, color: "#172B4D" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#F4F5F7")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "white")}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => onToggleFilter(opt)}
+                    style={{ width: 16, height: 16, accentColor: "#0052CC", cursor: "pointer", flexShrink: 0 }}
+                  />
+                  {opt}
+                </label>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function SpacesPage() {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [users, setUsers] = useState<User[]>([])
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [projects, setProjects] = useState<JiraProject[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [showTemplates, setShowTemplates] = useState(false)
   const [activeFilters, setActiveFilters] = useState<string[]>([...filterChips])
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">(
+    (searchParams.get("sortOrder") ?? "ASC").toUpperCase() === "DESC" ? "desc" : "asc"
+  )
   const [starredProjects, setStarredProjects] = useState<Set<string>>(new Set())
+  const [refetchTrigger, setRefetchTrigger] = useState(0)
   const [createOpen, setCreateOpen] = useState(false)
   const [newSpaceName, setNewSpaceName] = useState("")
   const [newSpaceKey, setNewSpaceKey] = useState("")
@@ -221,17 +379,6 @@ export default function SpacesPage() {
   const handleCreateSpace = () => {
     const name = newSpaceName.trim()
     if (!name) return
-    const key = newSpaceKey.trim() || name.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 5) || "PROJ"
-    fetch("/api/data/projects", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, key, type: "scrum" }),
-    })
-      .then((r) => r.json())
-      .then((created) => {
-        if (created && !created.error) setProjects((prev) => [...prev, created])
-      })
-      .catch(() => {})
     setCreateOpen(false)
     setNewSpaceName("")
     setNewSpaceKey("")
@@ -251,15 +398,35 @@ export default function SpacesPage() {
   }
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/data/projects").then((r) => r.json()),
-      fetch("/api/data/users").then((r) => r.json()),
-    ]).then(([p, u]) => {
-      setProjects(p)
-      setUsers(u)
-      setLoading(false)
-    })
-  }, [])
+    const fetchProjects = async () => {
+      try {
+        const params = new URLSearchParams({
+          orderBy: "name",
+          sortOrder: sortDir === "desc" ? "DESC" : "ASC",
+        })
+        const res = await fetch(`/api/jira/projects?${params}`)
+        if (!res.ok) throw new Error(`${res.status}`)
+        const data = await res.json()
+        if (data.error) throw new Error(data.error)
+        const list = data.values ?? []
+        setProjects(list.length > 0 ? list : FALLBACK_PROJECTS)
+      } catch {
+        setProjects(FALLBACK_PROJECTS)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProjects()
+  }, [sortDir, refetchTrigger])
+
+  const toggleSort = () => {
+    const next = sortDir === "asc" ? "desc" : "asc"
+    setSortDir(next)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("sortKey", "name")
+    params.set("sortOrder", next === "asc" ? "ASC" : "DESC")
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
 
   const removeFilter = (filter: string) => {
     setActiveFilters((prev) => prev.filter((f) => f !== filter))
@@ -271,17 +438,20 @@ export default function SpacesPage() {
 
   const softwareActive = activeFilters.includes("Jira - software spaces")
   const businessActive = activeFilters.includes("Jira - business spaces")
+  const serviceActive = activeFilters.includes("Jira Service Management")
+  const hasTypeFilter = activeFilters.length > 0
 
   const filteredProjects = projects
     .filter((p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.key.toLowerCase().includes(search.toLowerCase())
     )
-    // Chip semantics: scrum == software, anything else (kanban) == business.
-    // If neither chip is active, show no projects. If both active, show all.
     .filter((p) => {
-      const isSoftware = p.type === "scrum"
-      return (isSoftware && softwareActive) || (!isSoftware && businessActive)
+      if (!hasTypeFilter) return true
+      if (p.projectTypeKey === "software" && softwareActive) return true
+      if ((p.projectTypeKey === "business") && businessActive) return true
+      if (p.projectTypeKey === "service_desk" && serviceActive) return true
+      return false
     })
     .sort((a, b) => {
       const cmp = a.name.localeCompare(b.name)
@@ -290,8 +460,10 @@ export default function SpacesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
-        Loading...
+      <div style={{ padding: '80px 0', textAlign: 'center' }}>
+        {[1, 2, 3].map((i) => (
+          <div key={i} style={{ height: 48, background: '#F4F5F7', borderRadius: 3, marginBottom: 1, animation: 'pulse 1.5s ease-in-out infinite' }} />
+        ))}
       </div>
     )
   }
@@ -305,12 +477,14 @@ export default function SpacesPage() {
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-semibold tracking-tight">Spaces</h1>
             <div className="flex items-center gap-2">
-              <Button
-                className="bg-blue-600 text-white hover:bg-blue-700"
-                onClick={() => setCreateOpen(true)}
+              <button
+                onClick={() => router.push("/templates")}
+                style={{ background: "#1868DB", color: "white", border: "none", borderRadius: 3, padding: "0 12px", height: 32, fontSize: 14, fontWeight: 500, cursor: "pointer" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#1558B0" }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "#1868DB" }}
               >
                 Create space
-              </Button>
+              </button>
               <Button
                 variant="outline"
                 onClick={() => { setShowTemplates(!showTemplates); setSelectedTemplate(null) }}
@@ -390,172 +564,111 @@ export default function SpacesPage() {
           <>
         {/* Spaces list content below */}
 
-        {/* Search */}
-        <div className="mb-4">
-          <div className="relative">
-            <svg
-              className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-              />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search spaces"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-md border bg-background py-2 pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-            />
-          </div>
-        </div>
-
-        {/* Filter Chips */}
-        {activeFilters.length > 0 && (
-          <div className="mb-4 flex items-center gap-2">
-            <div className="flex flex-wrap items-center gap-1.5">
-              {activeFilters.map((filter) => (
-                <span
-                  key={filter}
-                  className="inline-flex items-center gap-1 rounded-md border bg-card px-2.5 py-1 text-sm"
-                >
-                  {filter}
-                  <button
-                    onClick={() => removeFilter(filter)}
-                    className="ml-0.5 text-muted-foreground hover:text-foreground"
-                  >
-                    <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor">
-                      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
-                    </svg>
-                  </button>
-                </span>
-              ))}
-            </div>
-            <button
-              onClick={clearAllFilters}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
-              </svg>
-            </button>
-            <button className="text-muted-foreground hover:text-foreground">
-              <HugeiconsIcon icon={ArrowDown01Icon} className="size-4" />
-            </button>
-          </div>
-        )}
+        {/* Search + Type filter row */}
+        <FilterBar
+          search={search}
+          onSearch={setSearch}
+          activeFilters={activeFilters}
+          onRemoveFilter={removeFilter}
+          onClearFilters={clearAllFilters}
+          onToggleFilter={(f) => setActiveFilters((prev) =>
+            prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]
+          )}
+        />
 
         {/* Table */}
-        <div className="rounded-lg border">
+        <div className="border rounded-md overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-8">
-                  <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                </TableHead>
-                <TableHead>
+              <TableRow style={{ background: 'white', borderBottom: '2px solid #DFE1E6', height: 40 }} className="hover:bg-transparent">
+                <TableHead style={{ width: 32, padding: '0 8px', textAlign: 'center', color: '#5E6C84' }} />
+                <TableHead style={{ width: '35%', fontSize: 12, fontWeight: 600, color: '#5E6C84', padding: '0 12px', height: 40 }}>
                   <button
-                    className="flex items-center gap-1 text-xs font-medium hover:text-foreground transition-colors"
-                    onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+                    style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600, color:"#172B4D", background:"none", border:"none", cursor:"pointer", padding:0 }}
+                    onClick={toggleSort}
                   >
                     Name
-                    <HugeiconsIcon
-                      icon={sortDir === "asc" ? ArrowDown01Icon : ArrowUp01Icon}
-                      className="size-3"
-                    />
+                    <svg style={{ width:14, height:14, color:"#6B778C", transform: sortDir === "desc" ? "rotate(180deg)" : "none", transition:"transform 0.15s" }} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M8 3v10M4 9l4 4 4-4" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </button>
                 </TableHead>
-                <TableHead className="text-xs font-medium">Key</TableHead>
-                <TableHead className="text-xs font-medium">Type</TableHead>
-                <TableHead className="text-xs font-medium">Lead</TableHead>
-                <TableHead className="text-xs font-medium">Space URL</TableHead>
+                <TableHead style={{ width: 120, fontSize: 12, fontWeight: 600, color: '#5E6C84', padding: '0 12px', height: 40 }}>Key</TableHead>
+                <TableHead style={{ width: '25%', fontSize: 12, fontWeight: 600, color: '#5E6C84', padding: '0 12px', height: 40 }}>Type</TableHead>
+                <TableHead style={{ width: '20%', fontSize: 12, fontWeight: 600, color: '#5E6C84', padding: '0 12px', height: 40 }}>Lead</TableHead>
+                <TableHead style={{ width: 80, fontSize: 12, fontWeight: 600, color: '#5E6C84', padding: '0 12px', height: 40, textAlign: 'right' }}>Space URL</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProjects.map((project) => {
-                const lead = resolveUser(project.lead, users)
-                const typeLabel =
-                  project.type === "scrum"
-                    ? "Team-managed software"
-                    : "Team-managed business"
-                return (
-                  <TableRow key={project.id}>
-                    <TableCell>
-                      <button
-                        className={starredProjects.has(project.id) ? "text-yellow-500" : "text-muted-foreground hover:text-yellow-500"}
-                        onClick={() => toggleStar(project.id)}
-                      >
-                        <svg className="size-4" viewBox="0 0 24 24" fill={starredProjects.has(project.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                        </svg>
-                      </button>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/projects/${project.key}/board`}
-                        className="flex items-center gap-2.5 font-medium text-blue-600 hover:underline"
-                      >
-                        {(() => {
-                          const colors = [
-                            "bg-red-500", "bg-orange-500", "bg-green-500", "bg-blue-500",
-                            "bg-purple-500", "bg-pink-500", "bg-teal-500", "bg-indigo-500",
-                          ]
-                          const idx = project.key.charCodeAt(0) % colors.length
-                          return (
-                            <div className={`flex size-7 items-center justify-center rounded ${colors[idx]} text-[11px] font-bold text-white shrink-0`}>
-                              {project.key.slice(0, 2)}
-                            </div>
-                          )
-                        })()}
-                        {project.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-mono text-sm text-muted-foreground">
-                      {project.key}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {typeLabel}
-                    </TableCell>
-                    <TableCell>
-                      {lead && (
-                        <div className="flex items-center gap-2">
-                          <UserProfileCard
-                            name={lead.displayName ?? lead.name}
-                            email={lead.email}
-                            size="sm"
-                          />
-                          <span className="text-sm">{(lead.displayName ?? lead.name)}</span>
-                        </div>
+              {filteredProjects.map((project) => (
+                <TableRow key={project.id} className="group" style={{ height: 48, borderBottom: '1px solid #F4F5F7', fontSize: 14, color: '#172B4D', cursor: 'pointer' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#F4F5F7')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = '')}
+                >
+                  <TableCell style={{ width: 32, padding: '0 8px', textAlign: 'center' }}>
+                    <button
+                      onClick={() => toggleStar(project.id)}
+                      style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", alignItems:"center", color: starredProjects.has(project.id) ? "#FFC400" : "#C1C7D0" }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill={starredProjects.has(project.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
+                    </button>
+                  </TableCell>
+                  <TableCell style={{ padding: '0 12px' }}>
+                    <Link
+                      href={`/projects/${project.key}/board`}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#0052CC', textDecoration: 'none', fontWeight: 'normal', fontSize: 14 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                      onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                    >
+                      <img
+                        src={project.avatarUrls?.["32x32"]}
+                        width={24}
+                        height={24}
+                        style={{ borderRadius: 3, flexShrink: 0 }}
+                        alt={project.name}
+                      />
+                      {project.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell style={{ padding: '0 12px', fontSize: 14, color: '#172B4D' }}>
+                    {project.key}
+                  </TableCell>
+                  <TableCell style={{ padding: '0 12px', fontSize: 14, color: '#172B4D' }}>
+                    {getProjectType(project)}
+                  </TableCell>
+                  <TableCell style={{ padding: '0 12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {project.lead?.avatarUrls?.["24x24"] && (
+                        <img
+                          src={project.lead.avatarUrls["24x24"]}
+                          width={20}
+                          height={20}
+                          style={{ borderRadius: "50%", flexShrink: 0 }}
+                          alt={project.lead.displayName}
+                        />
                       )}
-                    </TableCell>
-                    <TableCell>
+                      <span style={{ fontSize: 14, color: '#172B4D' }}>{project.lead?.displayName ?? '—'}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell style={{ width: 80, textAlign: 'right', padding: '0 8px' }}>
+                    <div className="invisible group-hover:visible flex justify-end">
                       <SpaceActionsDropdown projectKey={project.key} projectName={project.name} />
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-              {filteredProjects.length === 0 && (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="h-24 text-center text-sm text-muted-foreground"
-                  >
-                    No spaces found.
+                    </div>
                   </TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
         </div>
+
+        {filteredProjects.length === 0 && !loading && (
+          <div style={{ padding: '80px 0', textAlign: 'center' }}>
+            <p style={{ fontSize: 16, color: '#172B4D' }}>No projects found</p>
+            <p style={{ fontSize: 14, color: '#6B778C' }}>Create a project to get started.</p>
+          </div>
+        )}
 
         {/* Pagination */}
         <div className="mt-4 flex items-center justify-center gap-1">
@@ -645,53 +758,9 @@ export default function SpacesPage() {
         </div>
       )}
 
-      {/* Create space dialog — manual modal */}
+      {/* Create space modal */}
       {createOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50" onClick={(e) => { if (e.target === e.currentTarget) { setCreateOpen(false); setNewSpaceName(""); setNewSpaceKey("") } }}>
-          <div className="w-full max-w-md rounded-lg border bg-background shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <div className="border-b px-6 py-4">
-              <h3 className="text-lg font-semibold">Create space</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Create a new space to organize and manage your work.</p>
-            </div>
-            <div className="flex flex-col gap-3 px-6 py-5">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium">Space name <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  autoFocus
-                  value={newSpaceName}
-                  onChange={(e) => {
-                    setNewSpaceName(e.target.value)
-                    setNewSpaceKey(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 5))
-                  }}
-                  placeholder="e.g. Marketing"
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium">Key</label>
-                <input
-                  type="text"
-                  value={newSpaceKey}
-                  onChange={(e) => setNewSpaceKey(e.target.value.toUpperCase())}
-                  placeholder="e.g. MARK"
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm font-mono outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 border-t px-6 py-4">
-              <button type="button" onClick={() => { setCreateOpen(false); setNewSpaceName(""); setNewSpaceKey("") }} className="rounded-md border px-4 py-2 text-sm hover:bg-accent transition-colors">Cancel</button>
-              <button
-                type="button"
-                disabled={!newSpaceName.trim()}
-                onClick={handleCreateSpace}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                Create
-              </button>
-            </div>
-          </div>
-        </div>
+        <CreateSpaceModal onClose={() => setCreateOpen(false)} />
       )}
 
       {/* Toast */}

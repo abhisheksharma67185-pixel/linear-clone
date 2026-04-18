@@ -303,6 +303,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         <AdminSearchBar />
         <div className="flex items-center gap-2">
+          <Link
+            href="/admin/users"
+            className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors whitespace-nowrap"
+          >
+            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="17" y1="11" x2="23" y2="11"/></svg>
+            Invite users
+          </Link>
           <button
             ref={bellRef}
             onClick={() => setNotificationsOpen(!notificationsOpen)}

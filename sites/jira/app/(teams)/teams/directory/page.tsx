@@ -23,29 +23,35 @@ const FILTER_BTNS: FilterBtn[] = [
   {
     id: "project", label: "Filter by Project", chipLabel: "Project is",
     options: MOCK_PROJECTS,
-    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>,
+    // Bug 5: 2×2 grid icon (signals "project view"), not a funnel/layers icon
+    icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#42526E" }}><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>,
   },
   {
     id: "goal", label: "Goal", chipLabel: "Goal is",
+    // Bug 5: target/bullseye icon
     icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
   },
   {
     id: "team-type", label: "Team type", chipLabel: "Team type is",
     options: ["Official", "Community", "Project"],
+    // Bug 5: people-group icon
     icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
   },
   {
     id: "starred", label: "Starred", chipLabel: "Starred v",
     options: ["Starred", "Not starred"],
+    // Bug 5: star icon
     icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   },
   {
     id: "verified", label: "Verified", chipLabel: "Verified v",
     options: ["Verified", "Not verified"],
+    // Bug 5: check-circle icon
     icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>,
   },
   {
     id: "member", label: "Team Member", chipLabel: "Team Member is",
+    // Bug 5: person icon
     icon: <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg>,
   },
 ]
@@ -343,14 +349,20 @@ export default function TeamsDirectoryPage() {
       {viewMode === "grid" && filteredTeams.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredTeams.map((team) => (
-            <Link key={team.id} href={`/teams/${team.id}`} className="group flex flex-col rounded-xl border p-5 hover:shadow-md transition-all bg-background">
-              <div className="flex items-start justify-between mb-5">
+            <Link key={team.id} href={`/teams/${team.id}`}
+              className="team-card group flex flex-col rounded-xl border p-4 hover:shadow-md transition-all bg-background"
+              style={{ textDecoration: "none", color: "inherit", position: "relative", overflow: "visible", border: "1px solid #DFE1E6", borderRadius: 3, padding: 16 }}>
+              {/* Bug 6: owner avatar absolutely positioned top-right, overlaps border */}
+              <div className="owner-avatar"
+                style={{ position: "absolute", top: 12, right: 12, width: 24, height: 24, borderRadius: "50%", background: "#36B37E", fontSize: 10, fontWeight: 500, color: "white", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1 }}>
+                AS
+              </div>
+              <div className="mb-5">
                 <div className={`flex size-12 items-center justify-center rounded-2xl ${team.color} shadow-sm`}>
                   <svg className="size-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
                 </div>
-                <Avatar className="size-7"><AvatarFallback className="text-[10px] bg-teal-500 text-white font-bold">AS</AvatarFallback></Avatar>
               </div>
-              <h3 data-testid="team-name" className="text-sm font-semibold group-hover:text-blue-600 transition-colors mb-1">{team.name}</h3>
+              <h3 data-testid="team-name" className="team-name mb-1" style={{ fontSize: 14, fontWeight: 500, color: "#172B4D", textDecoration: "none" }}>{team.name}</h3>
               <div className="flex items-center gap-1">
                 <span className="text-xs text-muted-foreground">Official team</span>
                 <svg className="size-3.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>
@@ -365,12 +377,12 @@ export default function TeamsDirectoryPage() {
       {viewMode === "list" && filteredTeams.length > 0 && (
         <div className="rounded-xl border divide-y">
           {filteredTeams.map((team) => (
-            <Link key={team.id} href={`/teams/${team.id}`} className="group flex items-center gap-4 px-5 py-3 hover:bg-accent/50 transition-colors">
+            <Link key={team.id} href={`/teams/${team.id}`} className="team-card group flex items-center gap-4 px-5 py-3 hover:bg-accent/50 transition-colors" style={{ textDecoration: "none", color: "inherit" }}>
               <div className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${team.color}`}>
                 <svg className="size-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
               </div>
               <div className="flex-1 min-w-0">
-                <p data-testid="team-name" className="text-sm font-medium group-hover:text-blue-600 transition-colors">{team.name}</p>
+                <p data-testid="team-name" className="team-name" style={{ fontSize: 14, fontWeight: 500, color: "#172B4D", textDecoration: "none" }}>{team.name}</p>
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-muted-foreground">Official team</span>
                   <svg className="size-3 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>

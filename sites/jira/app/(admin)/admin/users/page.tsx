@@ -352,6 +352,27 @@ export default function AdminUsersPage() {
         </svg>
       </p>
 
+      {/* Groups panel — Bug 3: groups API returns total:0 → show empty state */}
+      <div className="mb-8 rounded-xl border bg-background p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="font-semibold text-sm">Groups</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Organise users into groups to manage access at scale.</p>
+          </div>
+          <button className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors">
+            <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Create group
+          </button>
+        </div>
+        <div data-testid="groups-empty-state" className="flex flex-col items-center justify-center rounded-lg border border-dashed py-10 text-center">
+          <svg className="mb-3 size-10 text-muted-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <p className="text-sm font-medium mb-1">No groups configured yet</p>
+          <p className="text-xs text-muted-foreground">Groups help you manage user access to apps and products.</p>
+        </div>
+      </div>
+
       {/* Table */}
       <div className="rounded-md border">
         <table className="w-full text-sm">

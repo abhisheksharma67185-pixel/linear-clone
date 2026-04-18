@@ -2,6 +2,17 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.notif-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 299;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

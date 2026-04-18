@@ -112,10 +112,37 @@ export default function BillingPage() {
 
   return (
     <div className="p-8 max-w-6xl">
-      <h1 className="text-2xl font-semibold mb-2">Billing preview</h1>
+      <h1 className="text-2xl font-semibold mb-2">Billing</h1>
+
+      {/* Bug 4: Billing data is not API-accessible — link out to admin.atlassian.com */}
+      <div data-testid="billing-manage-section" className="mb-6 flex items-start gap-4 rounded-xl border bg-background p-5">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-100">
+          <svg className="size-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm">Current plan: <span className="text-blue-600">Jira Premium</span></p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Billing data is managed at <span className="font-mono">admin.atlassian.com</span>. Use the button to manage subscriptions, invoices, and payment methods.
+          </p>
+        </div>
+        <a
+          href="https://admin.atlassian.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="manage-billing-btn"
+          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+        >
+          Manage billing
+          <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
+      </div>
 
       <p className="text-sm text-muted-foreground mb-6">
-        Centrally manage and view a summary of all your Atlassian and Marketplace apps.
+        Summary below is a static preview. Centrally manage subscriptions at admin.atlassian.com.
       </p>
 
       {/* Sites dropdown */}

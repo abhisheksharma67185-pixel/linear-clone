@@ -461,7 +461,9 @@ export function AppSidebar() {
   const [appsOpen, setAppsOpen] = useState(false)
   const [appsHidden, setAppsHidden] = useState(false)
   const [plansOpen, setPlansOpen] = useState(pathname.startsWith("/plans"))
+  const [plansHidden, setPlansHidden] = useState(false)
   const [spacesOpen, setSpacesOpen] = useState(true)
+  const [spacesHidden, setSpacesHidden] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(pathname.startsWith("/filters"))
   const [defaultFiltersOpen, setDefaultFiltersOpen] = useState(true)
   const [dashboardsOpen, setDashboardsOpen] = useState(pathname.startsWith("/dashboards"))
@@ -473,17 +475,13 @@ export function AppSidebar() {
           <div className="flex items-center gap-2">
             {/* App switcher */}
             <AppSwitcher />
-            {/* Jira blue diamond logo */}
+            {/* Jira logo — blue square with white J chevron */}
             <Link href="/projects" className="flex items-center gap-2">
-              <svg className="size-7" viewBox="0 0 32 32" fill="none">
-                <defs>
-                  <linearGradient id="jira-blue-1" x1="50%" y1="0%" x2="50%" y2="100%">
-                    <stop offset="0%" stopColor="#2684FF" />
-                    <stop offset="100%" stopColor="#0052CC" />
-                  </linearGradient>
-                </defs>
-                <path d="M27.545 15.2L16.8 4.454 16 3.654l-8.345 8.346-.855.854L4.454 15.2a1.547 1.547 0 000 2.189L12.2 25.135 16 28.935l8.345-8.346.354-.354 2.846-2.846a1.547 1.547 0 000-2.189zM16 20.6l-4.254-4.254L16 12.092l4.254 4.254L16 20.6z" fill="url(#jira-blue-1)" />
-              </svg>
+              <div style={{ width: 28, height: 28, borderRadius: 4, background: 'linear-gradient(180deg, #357DE8 0%, #1D68D9 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="18" height="18" viewBox="0 0 32 32" fill="none" style={{ pointerEvents: 'none' }}>
+                  <path d="M27.55 15.1L17.29 4.47 16 3.13 6.45 13.01l-2.14 2.2a.73.73 0 000 1.02l6.97 7.17L16 28.87l5.35-5.5.39-.4 5.81-5.98a.73.73 0 000-1.02zM16 20.28l-4.07-4.18L16 11.92l4.07 4.18L16 20.28z" fill="white"/>
+                </svg>
+              </div>
               <span className="text-base font-bold tracking-tight">Jira</span>
             </Link>
           </div>
@@ -593,70 +591,74 @@ export function AppSidebar() {
             )}
 
             {/* Plans - expandable section */}
-            <SidebarMenuItem>
-              <div className="group/plans flex items-center">
-                <SidebarMenuButton
-                  className="flex-1"
-                  onClick={() => setPlansOpen(!plansOpen)}
-                  isActive={pathname === "/plans"}
-                >
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                  </svg>
-                  <span>Plans</span>
-                </SidebarMenuButton>
-                <div className="mr-1 flex items-center gap-0.5 opacity-0 group-hover/plans:opacity-100">
-                  <Link href="/plans" className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground" title="Create plan">
-                    <HugeiconsIcon icon={Add01Icon} className="size-4" />
-                  </Link>
-                  <Popover>
-                    <PopoverTrigger className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground">
-                      {ThreeDotsIcon}
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[220px] p-1" align="start" side="bottom">
-                      <Link href="/plans" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
-                        <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
-                        Create demo plan
+            {!plansHidden && (
+              <>
+                <SidebarMenuItem>
+                  <div className="group/plans flex items-center">
+                    <SidebarMenuButton
+                      className="flex-1"
+                      onClick={() => setPlansOpen(!plansOpen)}
+                      isActive={pathname === "/plans"}
+                    >
+                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                      </svg>
+                      <span>Plans</span>
+                    </SidebarMenuButton>
+                    <div className="mr-1 flex items-center gap-0.5 opacity-0 group-hover/plans:opacity-100">
+                      <Link href="/plans" className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground" title="Create plan">
+                        <HugeiconsIcon icon={Add01Icon} className="size-4" />
                       </Link>
-                      <Link href="/admin/settings" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
-                        <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
-                        Admin configuration
-                      </Link>
-                      <div className="my-1 border-t" />
-                      <button onClick={() => setPlansOpen(false)} className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full">
-                        <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
-                        Hide from sidebar
-                      </button>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-            </SidebarMenuItem>
-            {plansOpen && (
-              <div className="ml-4 border-l pl-3 py-1">
-                <p className="px-2 py-1 text-xs text-muted-foreground leading-relaxed">
-                  Once you open or create plans, they&apos;ll show up here.
-                </p>
-                <Link
-                  href="/plans"
-                  className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors ${
-                    pathname === "/plans"
-                      ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20"
-                      : "text-blue-600 hover:bg-accent"
-                  }`}
-                >
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
-                    <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
-                  </svg>
-                  View all plans
-                </Link>
-              </div>
+                      <Popover>
+                        <PopoverTrigger className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground">
+                          {ThreeDotsIcon}
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[220px] p-1" align="start" side="bottom">
+                          <Link href="/plans" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></svg>
+                            Create demo plan
+                          </Link>
+                          <Link href="/admin/settings" className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+                            Admin configuration
+                          </Link>
+                          <div className="my-1 border-t" />
+                          <button onClick={() => { setPlansHidden(true); setPlansOpen(false) }} className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full">
+                            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+                            Hide from sidebar
+                          </button>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                </SidebarMenuItem>
+                {plansOpen && (
+                  <div className="ml-4 border-l pl-3 py-1">
+                    <p className="px-2 py-1 text-xs text-muted-foreground leading-relaxed">
+                      Once you open or create plans, they&apos;ll show up here.
+                    </p>
+                    <Link
+                      href="/plans"
+                      className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors ${
+                        pathname === "/plans"
+                          ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20"
+                          : "text-blue-600 hover:bg-accent"
+                      }`}
+                    >
+                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+                        <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+                      </svg>
+                      View all plans
+                    </Link>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Spaces - collapsible section */}
-            <SidebarMenuItem>
+            {!spacesHidden && <SidebarMenuItem>
               <div className="group/spaces flex items-center">
                 <SidebarMenuButton
                   className="flex-1"
@@ -690,7 +692,7 @@ export function AppSidebar() {
                         Change view
                       </button>
                       <div className="my-1 border-t" />
-                      <button onClick={() => setSpacesOpen(false)} className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full">
+                      <button onClick={() => { setSpacesHidden(true); setSpacesOpen(false) }} className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors w-full">
                         <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
                         Hide from sidebar
                       </button>
@@ -698,15 +700,15 @@ export function AppSidebar() {
                   </Popover>
                 </div>
               </div>
-            </SidebarMenuItem>
+            </SidebarMenuItem>}
           </SidebarMenu>
         </SidebarGroup>
 
         {/* Spaces expanded content */}
-        {spacesOpen && (
+        {spacesOpen && !spacesHidden && (
           <>
             <SidebarGroup>
-              <SidebarGroupLabel className="text-[11px] font-semibold uppercase text-muted-foreground/70">
+              <SidebarGroupLabel style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#6B778C' }}>
                 Recent
               </SidebarGroupLabel>
               <SidebarMenu>
@@ -728,21 +730,20 @@ export function AppSidebar() {
 
             {/* Recommended */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-[11px] font-semibold uppercase text-muted-foreground/70">
+              <SidebarGroupLabel style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', color: '#6B778C' }}>
                 Recommended
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton render={<Link href="/plans" />}>
-                      <div className="flex size-5 items-center justify-center rounded bg-blue-100 dark:bg-blue-900/30">
-                        <svg className="size-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                      <div className="flex size-5 items-center justify-center rounded" style={{ background:"#EAE6FF" }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5243AA" strokeWidth="2">
+                          <path d="M9 12h6M9 8h6M9 16h4M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
                         </svg>
                       </div>
-                      <span className="text-sm">Create a roadmap</span>
-                      <span className="ml-auto rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                      <span className="text-sm">Collect IT requests</span>
+                      <span className="ml-auto" style={{ background:"#EAE6FF", color:"#403294", fontSize:10, fontWeight:700, padding:"1px 5px", borderRadius:3 }}>
                         TRY
                       </span>
                     </SidebarMenuButton>
@@ -752,28 +753,6 @@ export function AppSidebar() {
             </SidebarGroup>
           </>
         )}
-
-        <SidebarSeparator />
-
-        {/* Teams */}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton render={<Link href="/teams" />}>
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                  <span className="text-sm">Teams</span>
-                  {ExternalLinkIcon}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
         <SidebarSeparator />
 
@@ -936,6 +915,44 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+
+        {/* Goals */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton render={<Link href="/jira/goals" target="_blank" rel="noopener noreferrer" />}>
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <span className="text-sm">Goals</span>
+                  {ExternalLinkIcon}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Teams */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton render={<Link href="/teams" />}>
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                  <span className="text-sm">Teams</span>
+                  {ExternalLinkIcon}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
         <SidebarSeparator />
 
