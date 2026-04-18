@@ -48,32 +48,31 @@ test.describe("People directory – filter bar state transformation", () => {
     await expect(page.getByTestId("filter-btn-project")).not.toBeVisible()
   })
 
-  test("active chip contains 'Project is' and selected value", async ({ page }) => {
+  test("active chip shows 'Project is' (label only, no value inline)", async ({ page }) => {
     await page.getByTestId("filter-btn-project").click()
     await page.getByRole("button", { name: "My Scrum Project" }).click()
 
     const chip = page.getByTestId("filter-chip-project")
     await expect(chip).toContainText("Project is")
-    await expect(chip).toContainText("My Scrum Project")
-    await expect(chip).toHaveClass(/bg-blue-600/)
+    // Label part (first button) has light blue style
+    await expect(chip.getByRole("button").first()).toHaveClass(/bg-blue-50/)
+    // X part (last button) has solid blue style
+    await expect(chip.getByRole("button").last()).toHaveClass(/bg-blue-600/)
   })
 
   test("clicking X on chip returns to default state with all buttons visible", async ({ page }) => {
     await page.getByTestId("filter-btn-project").click()
     await page.getByRole("button", { name: "My Scrum Project" }).click()
 
-    // Confirm active state
     await expect(page.getByTestId("filter-chip-project")).toBeVisible()
 
-    // Click X (the only button inside the chip)
-    await page.getByTestId("filter-chip-project").getByRole("button").click()
+    // Click X — the last button inside the chip
+    await page.getByTestId("filter-chip-project").getByRole("button").last().click()
 
-    // All buttons back
     await expect(page.getByTestId("filter-btn-project")).toBeVisible()
     await expect(page.getByTestId("filter-btn-goal")).toBeVisible()
     await expect(page.getByTestId("filter-btn-jobtitle")).toBeVisible()
     await expect(page.getByTestId("filter-btn-location")).toBeVisible()
-    // Chip gone
     await expect(page.getByTestId("filter-chip-project")).not.toBeVisible()
   })
 

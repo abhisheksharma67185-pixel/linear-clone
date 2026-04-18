@@ -18,39 +18,38 @@ test.describe("People directory – filter bar active state", () => {
     await expect(page.locator("input[placeholder='Choose a project']")).toBeVisible()
   })
 
-  test("selecting a project transforms button into solid blue chip", async ({ page }) => {
+  test("selecting a project shows active chip with 'Project is'", async ({ page }) => {
     await page.getByTestId("filter-btn-project").click()
-    // Select first available project option
     await page.getByRole("button", { name: "My Scrum Project" }).click()
 
     const chip = page.getByTestId("filter-chip-project")
     await expect(chip).toBeVisible()
     await expect(chip).toContainText("Project is")
-    await expect(chip).toHaveClass(/bg-blue-600/)
+    // Label part has light-blue style
+    await expect(chip.getByRole("button").first()).toHaveClass(/bg-blue-50/)
+    // X button has solid-blue style
+    await expect(chip.getByRole("button").last()).toHaveClass(/bg-blue-600/)
   })
 
-  test("selecting 'My Scrum Project' shows it in chip", async ({ page }) => {
+  test("selecting 'My Scrum Project' shows 'Project is' chip", async ({ page }) => {
     await page.getByTestId("filter-btn-project").click()
     await page.getByRole("button", { name: "My Scrum Project" }).click()
 
     const chip = page.getByTestId("filter-chip-project")
     await expect(chip).toBeVisible()
     await expect(chip).toContainText("Project is")
-    await expect(chip).toContainText("My Scrum Project")
   })
 
   test("clicking X on chip returns to default state", async ({ page }) => {
     await page.getByTestId("filter-btn-project").click()
     await page.getByRole("button", { name: "My Scrum Project" }).click()
 
-    // Chip visible, default button gone
     await expect(page.getByTestId("filter-chip-project")).toBeVisible()
     await expect(page.getByTestId("filter-btn-project")).not.toBeVisible()
 
-    // Click X (the only button inside the chip)
-    await page.getByTestId("filter-chip-project").getByRole("button").click()
+    // Click X — the last (second) button inside the chip
+    await page.getByTestId("filter-chip-project").getByRole("button").last().click()
 
-    // Should return to default
     await expect(page.getByTestId("filter-chip-project")).not.toBeVisible()
     await expect(page.getByTestId("filter-btn-project")).toBeVisible()
   })

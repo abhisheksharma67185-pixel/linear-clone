@@ -108,22 +108,22 @@ function FilterDropdown({
   return (
     <div className="relative" ref={ref}>
       {hasValue ? (
-        /* Solid blue active chip */
-        <div data-testid={`filter-chip-${def.key}`}
-          className="flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1.5 text-sm text-white">
-          <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
-          <span onClick={() => onToggleOpen(def.key)} className="cursor-pointer select-none">
-            {def.chipLabel} {selectedValue}
-          </span>
+        /* Active chip: light-blue label part + solid-blue square X */
+        <div data-testid={`filter-chip-${def.key}`} className="flex items-center text-sm">
+          <button onClick={() => onToggleOpen(def.key)}
+            className="flex items-center gap-1.5 rounded-l-md border border-r-0 border-blue-500 bg-blue-50 px-3 py-1.5 text-blue-700 hover:bg-blue-100 transition-colors dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-500">
+            <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
+            <span className="select-none">{def.chipLabel}</span>
+          </button>
           <button onClick={() => onRemoveFilter(def.key)}
-            className="ml-0.5 flex items-center text-white/80 hover:text-white transition-colors">
+            className="flex items-center justify-center rounded-r-md border border-blue-600 bg-blue-600 px-2 py-1.5 text-white hover:bg-blue-700 transition-colors">
             <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/></svg>
           </button>
         </div>
       ) : (
-        /* Default gray outline pill */
+        /* Default rectangular outline button */
         <button data-testid={`filter-btn-${def.key}`} onClick={() => onToggleOpen(def.key)}
-          className="flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent dark:border-gray-700">
+          className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent dark:border-gray-700">
           <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
           {def.label}
         </button>
