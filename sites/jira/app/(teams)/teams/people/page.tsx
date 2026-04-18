@@ -347,23 +347,41 @@ export default function PeoplePage() {
         <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search people" className="pl-9" />
       </div>
 
-      {/* Filters */}
+      {/* Filters — default: all buttons; active: only chips for applied filters */}
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        {filterDefs.map((def) => (
-          <FilterDropdown
-            key={def.key}
-            def={def}
-            options={optionsMap[def.key]}
-            selectedValue={activeFilters[def.key]}
-            onSelectValue={selectFilterValue}
-            onRemoveFilter={removeFilter}
-            isOpen={openFilter === def.key}
-            onToggleOpen={setOpenFilter}
-          />
-        ))}
+        {activeFilterCount === 0 ? (
+          filterDefs.map((def) => (
+            <FilterDropdown
+              key={def.key}
+              def={def}
+              options={optionsMap[def.key]}
+              selectedValue={undefined}
+              onSelectValue={selectFilterValue}
+              onRemoveFilter={removeFilter}
+              isOpen={openFilter === def.key}
+              onToggleOpen={setOpenFilter}
+            />
+          ))
+        ) : (
+          filterDefs
+            .filter((def) => activeFilters[def.key])
+            .map((def) => (
+              <FilterDropdown
+                key={def.key}
+                def={def}
+                options={optionsMap[def.key]}
+                selectedValue={activeFilters[def.key]}
+                onSelectValue={selectFilterValue}
+                onRemoveFilter={removeFilter}
+                isOpen={openFilter === def.key}
+                onToggleOpen={setOpenFilter}
+              />
+            ))
+        )}
         {activeFilterCount > 0 && (
-          <button onClick={clearAllFilters} className="text-xs text-muted-foreground hover:text-foreground ml-1 transition-colors">
-            Clear all
+          <button onClick={clearAllFilters}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            Reset
           </button>
         )}
       </div>
