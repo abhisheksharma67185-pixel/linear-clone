@@ -243,28 +243,32 @@ export default function TeamsDirectoryPage() {
               const f = FILTER_BTNS.find((fb) => fb.id === id)!
               const val = filterValues[id]
               return (
-                <div key={id} data-testid={`filter-chip-${id}`} className="relative flex items-center gap-1.5">
-                  {/* Label — plain text */}
-                  <span className="flex items-center gap-1.5 text-sm text-foreground select-none">
-                    {f.icon}{f.chipLabel}
-                  </span>
-                  {/* Value + × in one pill — value is a div (opens dropdown), × is the only button */}
-                  <div className="flex items-center gap-1.5 rounded-full border border-blue-500 px-3 py-1">
-                    <span onClick={() => handleFilterClick(id)}
-                      className="cursor-pointer text-sm text-blue-600 leading-none select-none dark:text-blue-400">
-                      {val ?? "…"}
+                <div key={id} className="relative flex items-center gap-1.5">
+                  {/* testid wraps only the label + pill (one button: ×) */}
+                  <div data-testid={`filter-chip-${id}`} className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-1.5 text-sm text-foreground select-none">
+                      {f.icon}{f.chipLabel}
                     </span>
-                    <button onClick={() => handleRemoveFilter(id)}
-                      className="flex items-center text-blue-500 hover:text-blue-700 dark:text-blue-400">
-                      <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/></svg>
-                    </button>
+                    <div className="flex items-center gap-1.5 rounded-full border border-blue-500 px-3 py-1">
+                      <span onClick={() => handleFilterClick(id)}
+                        className="cursor-pointer text-sm text-blue-600 leading-none select-none dark:text-blue-400">
+                        {val ?? "…"}
+                      </span>
+                      <button onClick={() => handleRemoveFilter(id)}
+                        className="flex items-center text-blue-500 hover:text-blue-700 dark:text-blue-400">
+                        <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/></svg>
+                      </button>
+                    </div>
                   </div>
+                  {/* + outside the testid div — opens dropdown to change value */}
+                  <button onClick={() => handleFilterClick(id)}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors leading-none">
+                    +
+                  </button>
                   {openFilter === id && <FilterDropdown filter={f} onSelect={(v) => handleSelectValue(id, v)} />}
                 </div>
               )
             })}
-            {/* + separator before Add filter */}
-            <span className="text-sm text-muted-foreground select-none">+</span>
 
             {/* Add filter + */}
             {inactiveFilters.length > 0 && (
