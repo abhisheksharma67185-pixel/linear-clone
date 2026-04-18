@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 
 interface TeamData {
-  id: string; name: string; description: string; members: number; color: string
+  id: string; name: string; description: string; members: number; color: string; archived?: boolean
 }
 
 const TABS = ["All teams", "Your teams", "Archived"] as const
@@ -105,6 +105,27 @@ export default function TeamsDirectoryPage() {
     return () => window.removeEventListener("team-created", onCreated)
   }, [])
 
+  function handleTabClick(tab: Tab) {
+    setActiveTab(tab)
+    setActiveFilters(new Set())
+    setFilterValues({})
+    setOpenFilter(null)
+    setAddFilterOpen(false)
+    if (tab === "Your teams") {
+      setActiveFilters(new Set(["member"]))
+      setFilterValues({ member: "Theta Computer" })
+    }
+  }
+
+  function clearAllFilters() {
+    setActiveTab("All teams")
+    setActiveFilters(new Set())
+    setFilterValues({})
+    setOpenFilter(null)
+    setAddFilterOpen(false)
+    setSearch("")
+  }
+
   useEffect(() => {
     if (!openFilter) return
     const h = (e: MouseEvent) => {
@@ -162,10 +183,12 @@ export default function TeamsDirectoryPage() {
   }
 
   const filteredTeams = teams
-    .filter((team) =>
-      team.name.toLowerCase().includes(search.toLowerCase()) ||
-      team.description.toLowerCase().includes(search.toLowerCase())
-    )
+    .filter((team) => {
+      if (activeTab === "Archived") return team.archived === true
+      if (!team.name.toLowerCase().includes(search.toLowerCase()) &&
+          !team.description.toLowerCase().includes(search.toLowerCase())) return false
+      return true
+    })
     .slice()
     .sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name)
@@ -189,7 +212,7 @@ export default function TeamsDirectoryPage() {
       <div data-testid="teams-tabs" className="mb-5 flex border-b">
         {TABS.map((tab) => (
           <button key={tab} data-testid={`tab-${tab.toLowerCase().replace(/\s+/g, "-")}`}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabClick(tab)}
             className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === tab ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
             {tab}
           </button>
@@ -269,7 +292,7 @@ export default function TeamsDirectoryPage() {
 
       {/* Count + view toggles */}
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{filteredTeams.length} team{filteredTeams.length !== 1 ? "s" : ""}</p>
+        <p data-testid="teams-count" className="text-sm text-muted-foreground">{filteredTeams.length} team{filteredTeams.length !== 1 ? "s" : ""}</p>
         <div className="flex items-center">
           <button data-testid="view-grid-btn" onClick={() => setViewMode("grid")} title="Grid view"
             className={`rounded-l-lg border border-r-0 p-2 transition-colors ${viewMode === "grid" ? "border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/20" : "border-border text-muted-foreground hover:bg-accent"}`}>
@@ -352,10 +375,25 @@ export default function TeamsDirectoryPage() {
 
       {/* Empty state */}
       {filteredTeams.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <svg className="mb-4 size-12 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <h3 className="mb-1 text-sm font-medium">No teams found</h3>
-          <p className="text-sm text-muted-foreground">Try a different search or <button className="text-blue-600 hover:underline" onClick={() => setCreateOpen(true)}>create a new team</button></p>
+        <div data-testid="teams-empty-state" className="flex flex-col items-center justify-center py-20 text-center">
+          {/* Magnifying glass with X */}
+          <svg className="mb-5 size-20 text-muted-foreground/40" viewBox="0 0 80 80" fill="none">
+            <circle cx="34" cy="34" r="22" stroke="currentColor" strokeWidth="4"/>
+            <line x1="50" y1="50" x2="70" y2="70" stroke="currentColor" strokeWidth="4" strokeLinecap="round"/>
+            <line x1="27" y1="27" x2="41" y2="41" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+            <line x1="41" y1="27" x2="27" y2="41" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+          </svg>
+          <p className="mb-4 max-w-sm text-sm text-muted-foreground">
+            We couldn&apos;t find any teams matching your search. Try changing your search criteria or clear your filters.
+          </p>
+          <button data-testid="clear-all-filters-btn" onClick={clearAllFilters}
+            className="mb-6 rounded-md border border-gray-300 bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent dark:border-gray-600">
+            Clear all filters
+          </button>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+            <svg className="size-3.5 shrink-0" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/></svg>
+            Some teams may not be found on this site due to changes in team visibility.
+          </div>
         </div>
       )}
 
