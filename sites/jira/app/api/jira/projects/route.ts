@@ -1,4 +1,40 @@
 import { NextResponse } from "next/server"
+import { getProjects, getUsers } from "@/app/lib/store"
+
+const PLACEHOLDER_AVATAR = "https://api.atlassian.com/ex/jira/10000/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium"
+
+function storeProjectsToJiraFormat(sortOrder: string) {
+  const allProjects = getProjects()
+  const allUsers = getUsers()
+  const BUSINESS_KEYS = new Set(["SUS", "SEU", "SAP"])
+  const projects = allProjects.map((p) => {
+    const lead = allUsers.find((u) => u.id === p.lead)
+    const projectTypeKey = BUSINESS_KEYS.has(p.key) ? "business" as const : "software" as const
+    return {
+      id: p.id,
+      key: p.key,
+      name: p.name,
+      projectTypeKey,
+      simplified: p.teamManaged ?? false,
+      avatarUrls: {
+        "16x16": PLACEHOLDER_AVATAR,
+        "24x24": PLACEHOLDER_AVATAR,
+        "32x32": PLACEHOLDER_AVATAR,
+        "48x48": PLACEHOLDER_AVATAR,
+      },
+      lead: lead ? {
+        displayName: lead.displayName,
+        avatarUrls: { "24x24": "", "32x32": "", "48x48": "" },
+      } : undefined,
+    }
+  })
+  if (sortOrder === "DESC") {
+    projects.sort((a, b) => b.name.localeCompare(a.name))
+  } else {
+    projects.sort((a, b) => a.name.localeCompare(b.name))
+  }
+  return { values: projects, total: projects.length, maxResults: 50, startAt: 0 }
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -10,10 +46,7 @@ export async function GET(request: Request) {
   const token   = process.env.ATLASSIAN_API_TOKEN
 
   if (!baseUrl || !email || !token) {
-    return NextResponse.json(
-      { error: "Atlassian credentials not configured" },
-      { status: 500 }
-    )
+    return NextResponse.json(storeProjectsToJiraFormat(sortOrder))
   }
 
   const credentials = Buffer.from(`${email}:${token}`).toString("base64")

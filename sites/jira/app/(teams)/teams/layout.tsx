@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { AppSwitcher } from "@/components/app-switcher"
-import { CreateButton } from "@/components/top-nav"
+import { CreateButton, SearchBar } from "@/components/top-nav"
 import {
   Select,
   SelectContent,
@@ -261,6 +261,17 @@ function AdminDropdown({ onClose }: { onClose: () => void }) {
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">User management</p>
             <p className="text-xs text-muted-foreground leading-snug mt-0.5">Manage users, groups, and access requests</p>
+          </div>
+          <ExternalLinkIcon />
+        </Link>
+        <Link href="/admin/licensing" onClick={onClose} data-testid="admin-menu-licensing"
+          className="flex w-full items-start gap-3 px-4 py-2.5 hover:bg-accent transition-colors">
+          <svg className="size-5 shrink-0 text-muted-foreground mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          </svg>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium">Licensing</p>
+            <p className="text-xs text-muted-foreground leading-snug mt-0.5">Server and Data Center licensing</p>
           </div>
           <ExternalLinkIcon />
         </Link>
@@ -602,7 +613,7 @@ export default function TeamsLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="flex h-14 items-center justify-between border-b px-4 shrink-0">
+      <header className="flex h-14 items-center justify-between border-b px-4 shrink-0 relative z-50">
         <div className="flex items-center gap-3">
           <AppSwitcher />
           <div className="flex items-center gap-2">
@@ -621,9 +632,8 @@ export default function TeamsLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
         <div className="flex flex-1 items-center gap-2 mx-4">
-          <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-            <Input placeholder="Search" className="h-9 pl-9 bg-muted/50" />
+          <div className="flex-1 min-w-0">
+            <SearchBar isBlue={false} defaultTab="home" />
           </div>
           <CreateButton />
         </div>

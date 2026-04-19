@@ -31,37 +31,20 @@ interface JiraProject {
   }
 }
 
+const AVATAR_URL = "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium"
+const LEAD_AS = { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } }
+const mkAvatar = () => ({ "16x16": AVATAR_URL, "24x24": AVATAR_URL, "32x32": AVATAR_URL, "48x48": AVATAR_URL })
+
 const FALLBACK_PROJECTS: JiraProject[] = [
-  {
-    id: "10000", key: "SCRUM", name: "My Scrum Project",
-    projectTypeKey: "software", simplified: true,
-    avatarUrls: { "32x32": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "24x24": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "48x48": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "16x16": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium" },
-    lead: { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } },
-  },
-  {
-    id: "10036", key: "SUP", name: "Support",
-    projectTypeKey: "service_desk", simplified: false,
-    avatarUrls: { "32x32": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10408?size=medium", "24x24": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10408?size=medium", "48x48": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10408?size=medium", "16x16": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10408?size=medium" },
-    lead: { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } },
-  },
-  {
-    id: "10035", key: "BVJWBEF", name: "bvjwbefeow",
-    projectTypeKey: "software", simplified: true,
-    avatarUrls: { "32x32": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10412?size=medium", "24x24": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10412?size=medium", "48x48": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10412?size=medium", "16x16": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10412?size=medium" },
-    lead: { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } },
-  },
-  {
-    id: "10033", key: "IJDAIDJAIP", name: "hcu",
-    projectTypeKey: "software", simplified: true,
-    avatarUrls: { "32x32": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10404?size=medium", "24x24": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10404?size=medium", "48x48": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10404?size=medium", "16x16": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10404?size=medium" },
-    lead: { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } },
-  },
-  {
-    id: "10034", key: "KHFIYF", name: "khfiyfifiyfy",
-    projectTypeKey: "software", simplified: true,
-    avatarUrls: { "32x32": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "24x24": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "48x48": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium", "16x16": "https://api.atlassian.com/ex/jira/bef43714-49b9-43e9-9f83-3e75487b6553/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium" },
-    lead: { displayName: "Abhishek Sharma", avatarUrls: { "24x24": "", "32x32": "", "48x48": "" } },
-  },
+  { id: "10000", key: "SCRUM",   name: "My Scrum Project",   projectTypeKey: "software", simplified: true,  avatarUrls: mkAvatar(), lead: LEAD_AS },
+  { id: "10035", key: "BVJWBEF", name: "bvjwbefeow",         projectTypeKey: "software", simplified: true,  avatarUrls: mkAvatar(), lead: LEAD_AS },
+  { id: "10033", key: "IJDAIP",  name: "hcu",                projectTypeKey: "software", simplified: true,  avatarUrls: mkAvatar(), lead: LEAD_AS },
+  { id: "10034", key: "KHFIYF",  name: "khfiyfifiyfy",       projectTypeKey: "software", simplified: true,  avatarUrls: mkAvatar(), lead: LEAD_AS },
+  { id: "10037", key: "PLAT",    name: "Platform Engineering",projectTypeKey: "software", simplified: false, avatarUrls: mkAvatar(), lead: LEAD_AS },
+  { id: "10038", key: "FAPP",    name: "Frontend App",       projectTypeKey: "software", simplified: false, avatarUrls: mkAvatar(), lead: LEAD_AS },
+  { id: "10039", key: "BUSOPS",  name: "Business Operations",projectTypeKey: "business", simplified: true,  avatarUrls: mkAvatar(), lead: LEAD_AS },
+  { id: "10040", key: "MKTG",    name: "Marketing",          projectTypeKey: "business", simplified: true,  avatarUrls: mkAvatar(), lead: LEAD_AS },
+  { id: "10041", key: "ONBOARD",  name: "Onboarding",          projectTypeKey: "business", simplified: false, avatarUrls: mkAvatar(), lead: LEAD_AS },
 ]
 
 function getProjectType(p: JiraProject): string {
@@ -308,7 +291,7 @@ function FilterBar({
           {activeFilters.map((f) => (
             <span key={f} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "white", border: "1px solid #DFE1E6", borderRadius: 2, padding: "1px 6px", fontSize: 13, color: "#172B4D", whiteSpace: "nowrap" }}>
               {f}
-              <button onClick={() => onRemoveFilter(f)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, lineHeight: 1, color: "#6B778C", fontSize: 14 }}>×</button>
+              <button onClick={() => onRemoveFilter(f)} aria-label={`Remove ${f} filter`} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, lineHeight: 1, color: "#6B778C", display: "flex", alignItems: "center" }}><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </span>
           ))}
 
@@ -447,7 +430,7 @@ export default function SpacesPage() {
       p.key.toLowerCase().includes(search.toLowerCase())
     )
     .filter((p) => {
-      if (!hasTypeFilter) return true
+      if (!hasTypeFilter) return false
       if (p.projectTypeKey === "software" && softwareActive) return true
       if ((p.projectTypeKey === "business") && businessActive) return true
       if (p.projectTypeKey === "service_desk" && serviceActive) return true

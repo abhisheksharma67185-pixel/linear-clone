@@ -153,11 +153,11 @@ export default function KudosPage() {
     setKudos((prev) => [{
       id: `k-${Date.now()}`,
       from: { name: "Abhishek Sharma", initials: "AS" },
-      to: selectedRecipient,
+      to: { ...selectedRecipient, kind: "peer" as const },
       message: message.trim(),
       card: selectedBadge,
       createdAt: new Date().toISOString(),
-      reactions: [],
+      reactions: [] as { emoji: string; count: number }[],
     }, ...prev])
     closeModal()
     showToast("Kudos sent!")

@@ -273,8 +273,8 @@ test.describe("Filter chips", () => {
     // Close the popover.
     await page.keyboard.press("Escape")
 
-    // The chip now reflects the active selection: "Department: Engineering".
-    await expect(main.getByRole("button", { name: /Department:\s*Engineering/ })).toBeVisible()
+    // The chip now reflects the active selection: "Department is Engineering".
+    await expect(main.getByRole("button", { name: /Department is\s+Engineering/ })).toBeVisible()
     // And a non-Engineering person is no longer visible (Priya Patel = Design).
     await expect(page.getByText("Priya Patel", { exact: true })).toHaveCount(0)
   })

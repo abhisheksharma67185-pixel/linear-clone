@@ -54,6 +54,7 @@ const categories: SettingsCategory[] = [
         description: "Manage workspace name, domains, user groups and time zone",
         icon: ComputerIcon,
         href: "/admin/organization-settings",
+        external: true,
         testId: "settings-item-workspace-settings",
       },
       {
@@ -61,6 +62,7 @@ const categories: SettingsCategory[] = [
         description: "Manage notification preferences and themes",
         icon: UserIcon,
         href: "/home/account-settings",
+        external: true,
         testId: "settings-item-personal-settings",
       },
     ],

@@ -70,13 +70,13 @@ const AVATAR_COLORS = [
 ]
 
 const filterDefs: FilterDef[] = [
-  { key: "project",    field: "projects",   label: "Filter by Project", chipLabel: "Project is",    placeholder: "Choose a project",    icon: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></> },
-  { key: "goal",       field: "goals",      label: "Goal",              chipLabel: "Goal is",        placeholder: "Choose a goal",       icon: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></> },
-  { key: "team",       field: "teams",      label: "Team",              chipLabel: "Team is",        placeholder: "Choose a team",       icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
-  { key: "jobtitle",   field: "jobTitle",   label: "Job title",         chipLabel: "Job title is",   placeholder: "Choose a job title",  icon: <><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></> },
-  { key: "manager",    field: "manager",    label: "Manager",           chipLabel: "Manager is",     placeholder: "Choose a manager",    icon: <><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></> },
-  { key: "department", field: "department", label: "Department",        chipLabel: "Department is",  placeholder: "Choose a department", icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
-  { key: "location",   field: "location",   label: "Location",          chipLabel: "Location is",    placeholder: "Choose a location",   icon: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></> },
+  { key: "project",    field: "projects",   label: "Filter by Project", chipLabel: "Project is",    placeholder: "Search projects...",    icon: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></> },
+  { key: "goal",       field: "goals",      label: "Goal",              chipLabel: "Goal is",        placeholder: "Search goals...",       icon: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></> },
+  { key: "team",       field: "teams",      label: "Team",              chipLabel: "Team is",        placeholder: "Search teams...",       icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
+  { key: "jobtitle",   field: "jobTitle",   label: "Job title",         chipLabel: "Job title is",   placeholder: "Search job titles...",  icon: <><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></> },
+  { key: "manager",    field: "manager",    label: "Manager",           chipLabel: "Manager is",     placeholder: "Search managers...",    icon: <><circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></> },
+  { key: "department", field: "department", label: "Department",        chipLabel: "Department is",  placeholder: "Search departments...", icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></> },
+  { key: "location",   field: "location",   label: "Location",          chipLabel: "Location is",    placeholder: "Search locations...",   icon: <><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></> },
 ]
 
 // ─── Filter dropdown component ───────────────────────────────────────────────
@@ -113,7 +113,7 @@ function FilterDropdown({
           <button onClick={() => onToggleOpen(def.key)}
             className="flex items-center gap-1.5 rounded-l-md border border-r-0 border-blue-500 bg-blue-50 px-3 py-1.5 text-blue-700 hover:bg-blue-100 transition-colors dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-500">
             <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{def.icon}</svg>
-            <span className="select-none">{def.chipLabel}</span>
+            <span className="select-none">{def.chipLabel}{selectedValue ? ` ${selectedValue}` : ""}</span>
           </button>
           <button onClick={() => onRemoveFilter(def.key)}
             className="flex items-center justify-center rounded-r-md border border-blue-600 bg-blue-600 px-2 py-1.5 text-white hover:bg-blue-700 transition-colors">

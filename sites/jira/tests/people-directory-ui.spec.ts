@@ -15,7 +15,7 @@ test.describe("People directory – filter bar active state", () => {
 
   test("clicking 'Filter by Project' opens dropdown with search", async ({ page }) => {
     await page.getByTestId("filter-btn-project").click()
-    await expect(page.locator("input[placeholder='Choose a project']")).toBeVisible()
+    await expect(page.locator("input[placeholder='Search projects...']")).toBeVisible()
   })
 
   test("selecting a project shows active chip with 'Project is'", async ({ page }) => {

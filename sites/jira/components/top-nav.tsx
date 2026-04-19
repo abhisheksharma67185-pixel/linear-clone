@@ -41,10 +41,10 @@ interface SearchResults {
   users: User[]
 }
 
-function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
+export function SearchBar({ isBlue = true, defaultTab = "jira" }: { isBlue?: boolean; defaultTab?: "jira" | "home" }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<"jira" | "home">("jira")
+  const [activeTab, setActiveTab] = useState<"jira" | "home">(defaultTab)
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<SearchResults | null>(null)
   const [recentIssues, setRecentIssues] = useState<Issue[]>([])
@@ -117,32 +117,43 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
 
   const hasResults = results && (results.issues.length > 0 || results.projects.length > 0 || results.users.length > 0)
 
-  const CheckboxIssueIcon = ({ type }: { type: string }) => (
-    <div className={`flex size-[18px] shrink-0 items-center justify-center rounded border-2 ${type === "bug" ? "border-red-500 bg-red-500" : type === "story" ? "border-green-500 bg-green-500" : "border-blue-500 bg-blue-500"}`}>
-      <svg className="size-2.5 text-white" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="2,6 5,9 10,3" /></svg>
+  const IssueTypeIcon = ({ type }: { type: string }) => {
+    const bg = type === "bug" ? "bg-red-500" : type === "story" ? "bg-green-500" : "bg-blue-500"
+    return (
+      <div className={`flex size-6 shrink-0 items-center justify-center rounded-md ${bg}`}>
+        <svg className="size-3.5 text-white" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="2,7 5.5,10.5 12,3.5" /></svg>
+      </div>
+    )
+  }
+
+  const BoardGridIcon = () => (
+    <div className="flex size-6 shrink-0 items-center justify-center rounded-md border border-border bg-background">
+      <svg className="size-3.5 text-foreground" viewBox="0 0 16 16" fill="currentColor">
+        <rect x="1" y="1" width="6" height="6" rx="0.5" /><rect x="9" y="1" width="6" height="6" rx="0.5" /><rect x="1" y="9" width="6" height="6" rx="0.5" /><rect x="9" y="9" width="6" height="6" rx="0.5" />
+      </svg>
     </div>
   )
 
-  const BoardIconSm = ({ color = "bg-violet-600" }: { color?: string }) => (
-    <div className={`flex size-[22px] shrink-0 items-center justify-center rounded ${color}`}>
-      <svg className="size-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+  const JiraProjectIcon = ({ color = "bg-violet-600" }: { color?: string }) => (
+    <div className={`flex size-6 shrink-0 items-center justify-center rounded-md ${color}`}>
+      <svg className="size-3.5 text-white" viewBox="0 0 32 32" fill="white"><path d="M27.545 15.2L16.8 4.454 16 3.654l-8.345 8.346-.855.854L4.454 15.2a1.547 1.547 0 000 2.189L12.2 25.135 16 28.935l8.345-8.346.354-.354 2.846-2.846a1.547 1.547 0 000-2.189zM16 20.6l-4.254-4.254L16 12.092l4.254 4.254L16 20.6z" /></svg>
     </div>
   )
 
   const ProjectIcon = ({ color = "bg-blue-500" }: { color?: string }) => (
-    <div className={`flex size-[22px] shrink-0 items-center justify-center rounded ${color}`}>
-      <svg className="size-3 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v4H3zm0 6h18v4H3zm0 6h18v4H3z" /></svg>
+    <div className={`flex size-6 shrink-0 items-center justify-center rounded-md ${color}`}>
+      <svg className="size-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v4H3zm0 6h18v4H3zm0 6h18v4H3z" /></svg>
     </div>
   )
 
   const TeamIcon = ({ color = "bg-blue-500" }: { color?: string }) => (
-    <div className={`flex size-[22px] shrink-0 items-center justify-center rounded ${color}`}>
-      <svg className="size-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+    <div className={`flex size-6 shrink-0 items-center justify-center rounded-md ${color}`}>
+      <svg className="size-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
     </div>
   )
 
   return (
-    <div ref={wrapperRef} style={{ position: "relative", width: 600, maxWidth: "100%" }}>
+    <div ref={wrapperRef} style={{ position: "relative", width: "100%", maxWidth: 600 }}>
       {/* Trigger input */}
       <div style={{ position: "relative" }}>
         <svg
@@ -181,12 +192,12 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
       {/* Dropdown */}
       {open && (
         <div className="absolute left-0 top-[calc(100%+4px)] z-50 w-full bg-popover rounded-md border shadow-xl overflow-hidden" style={{ minWidth: 680 }}>
-          {/* Tabs — Home first, then Jira */}
+          {/* Tabs — order follows defaultTab */}
           <div className="flex border-b px-4 pt-1">
-            {(["home", "jira"] as const).map((tab) => (
+            {(defaultTab === "home" ? ["home", "jira"] : ["jira", "home"] as const).map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => setActiveTab(tab as "jira" | "home")}
                 className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors capitalize ${activeTab === tab ? "border-blue-600 text-blue-600" : "border-transparent text-muted-foreground hover:text-foreground"}`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -211,8 +222,8 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
                     Recently viewed issues
                   </div>
                   {recentIssues.length > 0 ? recentIssues.map((issue) => (
-                    <button key={issue.id} onClick={() => go(`/issue/${issue.key}`)} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors group">
-                      <CheckboxIssueIcon type={issue.type} />
+                    <button key={issue.id} onClick={() => go(`/issue/${issue.key}`)} className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors">
+                      <IssueTypeIcon type={issue.type} />
                       <span className="flex-1 text-sm truncate">{issue.key} {issue.summary}</span>
                       <span className="text-xs text-muted-foreground shrink-0 w-24 text-right">My Team</span>
                       <span className="text-xs text-muted-foreground shrink-0 w-28 text-right">Recently viewed</span>
@@ -220,8 +231,8 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
                   )) : (
                     <>
                       {[{ key: "SCRUM-6", summary: "wxdxadxax" }, { key: "SCRUM-5", summary: "vijay" }, { key: "SCRUM-1", summary: "Task 1" }].map((item) => (
-                        <button key={item.key} onClick={() => go(`/issue/${item.key}`)} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
-                          <CheckboxIssueIcon type="task" />
+                        <button key={item.key} onClick={() => go(`/issue/${item.key}`)} className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors">
+                          <IssueTypeIcon type="task" />
                           <span className="flex-1 text-sm truncate">{item.key} {item.summary}</span>
                           <span className="text-xs text-muted-foreground shrink-0 w-24 text-right">My Team</span>
                           <span className="text-xs text-muted-foreground shrink-0 w-28 text-right">Recently viewed</span>
@@ -235,22 +246,21 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
                     Recent projects and filters
                   </div>
                   {recentProjects.length > 0 ? recentProjects.map((proj) => (
-                    <button key={proj.id} onClick={() => go(`/projects/${proj.key}/board`)} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
-                      <BoardIconSm />
+                    <button key={proj.id} onClick={() => go(`/projects/${proj.key}/board`)} className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors">
+                      <BoardGridIcon />
                       <span className="flex-1 text-sm truncate">{proj.name}</span>
                       <span className="text-xs text-muted-foreground shrink-0">My Team</span>
                     </button>
                   )) : (
                     <>
-                      <button onClick={() => go("/projects/SCRUM/board")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
-                        <BoardIconSm color="bg-gray-700" />
+                      <button onClick={() => go("/projects/SCRUM/board")} className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors">
+                        <BoardGridIcon />
                         <span className="flex-1 text-sm">SCRUM board</span>
                         <span className="text-xs text-muted-foreground shrink-0">My Team</span>
                       </button>
-                      <button onClick={() => go("/projects")} className="flex items-center gap-3 px-4 py-2 w-full text-left hover:bg-accent transition-colors">
-                        <ProjectIcon color="bg-violet-600" />
+                      <button onClick={() => go("/projects")} className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors">
+                        <JiraProjectIcon color="bg-violet-600" />
                         <span className="flex-1 text-sm">My Team (SCRUM)</span>
-                        <span className="text-xs text-muted-foreground shrink-0"></span>
                       </button>
                     </>
                   )}
@@ -264,10 +274,25 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
                       { label: "Filters", href: "/filters" },
                       { label: "People", href: "/teams/people" },
                     ].map(({ label, href }) => (
-                      <button key={label} onClick={() => go(href)} className="px-3 py-1 text-xs border rounded-sm hover:bg-accent transition-colors font-medium">
+                      <button key={label} onClick={() => go(href)} className="px-3 py-1 text-sm border rounded hover:bg-accent transition-colors font-medium">
                         {label}
                       </button>
                     ))}
+                  </div>
+
+                  {/* Search for pages hint + help link */}
+                  <div className="flex items-center gap-2 px-4 py-2.5 border-t bg-muted/30">
+                    <svg className="size-4 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <span className="text-xs text-muted-foreground flex-1">Search for pages, users, and more</span>
+                    <a
+                      href="https://support.atlassian.com/jira-work-management/docs/search-for-issues/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline shrink-0"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Tell me more about search
+                    </a>
                   </div>
                 </>
               ) : (
@@ -278,23 +303,23 @@ function SearchBar({ isBlue = true }: { isBlue?: boolean }) {
                   )}
                   {results && results.issues.length > 0 && (
                     <div>
-                      <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Issues</div>
+                      <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recently viewed issues</div>
                       {results.issues.map((issue) => (
                         <button key={issue.id} onClick={() => go(`/issue/${issue.key}`)} className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors">
-                          <CheckboxIssueIcon type={issue.type} />
-                          <div className="flex-1 min-w-0">
-                            <span className="text-sm truncate block">{issue.key} {issue.summary}</span>
-                          </div>
+                          <IssueTypeIcon type={issue.type} />
+                          <span className="flex-1 text-sm truncate">{issue.key} {issue.summary}</span>
+                          <span className="text-xs text-muted-foreground shrink-0 w-20 text-right">My Team</span>
+                          <span className="text-xs text-muted-foreground shrink-0 w-28 text-right">Recently viewed</span>
                         </button>
                       ))}
                     </div>
                   )}
                   {results && results.projects.length > 0 && (
                     <div>
-                      <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Projects</div>
+                      <div className="px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent projects and filters</div>
                       {results.projects.map((project) => (
                         <button key={project.id} onClick={() => go(`/projects/${project.key}/board`)} className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-accent transition-colors">
-                          <BoardIconSm />
+                          <BoardGridIcon />
                           <div className="flex-1 min-w-0">
                             <span className="text-sm truncate block">{project.name}</span>
                             <span className="text-xs text-muted-foreground">{project.key}</span>
@@ -778,15 +803,43 @@ function CreateIssueDialog({ isBlue = true }: { isBlue?: boolean }) {
 
   return (
     <>
-      {/* BUG 3: plain "+ Create" button — no chevron, no dropdown */}
-      <button
-        onClick={() => setOpen(true)}
-        style={{ background: "#0052CC", color: "white", border: "none", borderRadius: 3, padding: "0 12px", height: 32, fontSize: 14, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap" }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "#0747A6")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "#0052CC")}
-      >
-        + Create
-      </button>
+      {/* Split Create button: primary action + chevron dropdown */}
+      <div className="relative flex items-stretch">
+        <button
+          aria-label="Create"
+          onClick={() => setOpen(true)}
+          style={{ background: "#0052CC", color: "white", border: "none", borderRadius: "3px 0 0 3px", padding: "0 12px", height: 32, fontSize: 14, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#0747A6")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#0052CC")}
+        >
+          Create
+        </button>
+        <button
+          aria-label="Create menu"
+          onClick={() => setMenuOpen((v) => !v)}
+          style={{ background: "#0052CC", color: "white", border: "none", borderLeft: "1px solid rgba(255,255,255,0.3)", borderRadius: "0 3px 3px 0", padding: "0 6px", height: 32, cursor: "pointer" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#0747A6")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#0052CC")}
+        >
+          <svg className="size-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L3 6h10z"/></svg>
+        </button>
+        {menuOpen && (
+          <div className="absolute right-0 top-[calc(100%+4px)] z-50 w-48 rounded-md border bg-popover shadow-lg py-1"
+            style={{ minWidth: 160 }}>
+            {[
+              { label: "Goal", action: () => { setMenuOpen(false); setGoalOpen(true) } },
+              { label: "Work Item", action: () => { setMenuOpen(false); setOpen(true) } },
+              { label: "Project", action: () => { setMenuOpen(false); setProjectOpen(true) } },
+              { label: "Team", action: () => { setMenuOpen(false); setTeamOpen(true) } },
+            ].map(({ label, action }) => (
+              <button key={label} onClick={action}
+                className="flex w-full items-center px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Goal creation dialog */}
       {goalOpen && (

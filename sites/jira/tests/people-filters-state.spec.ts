@@ -18,14 +18,14 @@ test.describe("People directory – filter bar state transformation", () => {
     await expect(page.getByTestId("filter-btn-location")).toBeVisible()
   })
 
-  test("'Filter by Project' dropdown has 'Choose a project' placeholder", async ({ page }) => {
+  test("'Filter by Project' dropdown has 'Search projects...' placeholder", async ({ page }) => {
     await page.getByTestId("filter-btn-project").click()
-    await expect(page.locator("input[placeholder='Choose a project']")).toBeVisible()
+    await expect(page.locator("input[placeholder='Search projects...']")).toBeVisible()
   })
 
   test("search icon is on the right side of the dropdown input", async ({ page }) => {
     await page.getByTestId("filter-btn-project").click()
-    const input = page.locator("input[placeholder='Choose a project']")
+    const input = page.locator("input[placeholder='Search projects...']")
     const inputBox = await input.boundingBox()
     const svg = input.locator("~ svg")
     // The SVG sibling should exist (absolute-positioned to the right)

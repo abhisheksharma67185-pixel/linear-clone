@@ -395,9 +395,9 @@ function ColumnsPopover({ open, setOpen, visibleColumns, setVisibleColumns, cust
                 <div key={col.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-accent transition-colors">
                   <span className="text-muted-foreground">{col.icon}</span>
                   <span className="flex-1 text-sm">{col.label}</span>
-                  {"type" in col && col.type && (
+                  {"type" in col && !!col.type && (
                     <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[11px] font-medium capitalize text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
-                      {col.type}
+                      {String(col.type)}
                     </span>
                   )}
                   {col.locked ? (

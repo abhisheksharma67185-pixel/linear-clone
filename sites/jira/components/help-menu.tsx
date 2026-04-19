@@ -257,7 +257,7 @@ interface HelpItem {
 
 const HELP_ITEMS: HelpItem[] = [
   {
-    label: "Read help articles",
+    label: "Documentation",
     icon: <HelpArticlesIcon />,
     external: true,
     href: "https://support.atlassian.com/jira-software-cloud/",
@@ -274,7 +274,7 @@ const HELP_ITEMS: HelpItem[] = [
     action: "feedback",
   },
   {
-    label: "Get support",
+    label: "Contact support",
     icon: <SupportIcon />,
     external: true,
     href: "https://support.atlassian.com/contact/",
@@ -288,7 +288,8 @@ const HELP_ITEMS: HelpItem[] = [
   {
     label: "Keyboard shortcuts",
     icon: <KeyboardIcon />,
-    action: "shortcuts",
+    external: true,
+    href: "https://support.atlassian.com/jira-software-cloud/docs/use-keyboard-shortcuts/",
   },
 ]
 
@@ -313,6 +314,18 @@ export function HelpMenu() {
     }
     document.addEventListener("keydown", handler)
     return () => document.removeEventListener("keydown", handler)
+  }, [open])
+
+  // Close panel on click outside
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        closePanel()
+      }
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
   }, [open])
 
   const handleItemClick = (item: HelpItem) => {
@@ -352,6 +365,9 @@ export function HelpMenu() {
       {open && (
         <div
           ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Help"
           data-testid="help-panel"
           className="fixed inset-y-0 right-0 z-50 flex w-[380px] max-w-full flex-col border-l border-[#dfe1e6] dark:border-border bg-white dark:bg-background shadow-[-4px_0_24px_rgba(9,30,66,0.12)]"
           style={{ top: 0, bottom: 0 }}

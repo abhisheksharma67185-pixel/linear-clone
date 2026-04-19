@@ -25,7 +25,7 @@ const INITIAL: Notification[] = [
     meta: "SCRUM-5 · Jira",
     timestamp: "2h ago",
     category: "direct",
-    read: false,
+    read: true,
   },
   {
     id: "n2",
@@ -35,7 +35,7 @@ const INITIAL: Notification[] = [
     meta: "SCRUM-3 · Jira",
     timestamp: "5h ago",
     category: "watching",
-    read: false,
+    read: true,
   },
   {
     id: "n3",
@@ -45,7 +45,7 @@ const INITIAL: Notification[] = [
     meta: "SCRUM · Jira",
     timestamp: "1d ago",
     category: "watching",
-    read: false,
+    read: true,
   },
   {
     id: "n4",
@@ -107,7 +107,7 @@ function AtlassianFlag() {
 export function NotificationsPanel() {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState<"direct" | "watching">("direct")
-  const [showUnread, setShowUnread] = useState(false)
+  const [showUnread, setShowUnread] = useState(true)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>(INITIAL)
@@ -135,6 +135,18 @@ export function NotificationsPanel() {
     }
     document.addEventListener("keydown", handler)
     return () => document.removeEventListener("keydown", handler)
+  }, [open])
+
+  // Close panel on click outside
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
   }, [open])
 
   return (
@@ -169,6 +181,9 @@ export function NotificationsPanel() {
       {open && (
         <div
           ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Notifications"
           data-testid="notifications-panel"
           className="fixed top-14 right-2 bottom-2 z-50 flex w-[480px] max-w-[calc(100vw-1rem)] flex-col rounded-lg border border-[#dfe1e6] dark:border-border bg-white dark:bg-background shadow-[0_8px_32px_rgba(9,30,66,0.18)] overflow-hidden"
         >
@@ -355,11 +370,16 @@ export function NotificationsPanel() {
             ) : (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <AtlassianFlag />
-                <p className="text-[14px] text-[#44546f] dark:text-muted-foreground leading-relaxed">
-                  You have no notifications from
-                  <br />
-                  the last 30 days.
+                <p className="text-[14px] font-medium text-[#172b4d] dark:text-foreground leading-relaxed">
+                  You&apos;re all caught up.
                 </p>
+                <p className="mt-1 text-[12px] text-[#44546f] dark:text-muted-foreground">
+                  No new notifications to show.
+                </p>
+                <Link href="/home/notifications" onClick={() => setOpen(false)}
+                  className="mt-4 text-[13px] font-medium text-[#0052cc] hover:underline">
+                  View all
+                </Link>
               </div>
             )}
           </div>

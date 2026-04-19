@@ -3,9 +3,8 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Input } from "@/components/ui/input"
 import { AppSwitcher } from "@/components/app-switcher"
-import { CreateButton } from "@/components/top-nav"
+import { CreateButton, SearchBar } from "@/components/top-nav"
 import { UserProfileDropdown } from "@/components/user-profile-dropdown"
 import { SettingsMenu } from "@/components/settings-menu"
 import { HelpMenu } from "@/components/help-menu"
@@ -48,7 +47,7 @@ export default function GoalsLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex h-screen flex-col">
       {/* Top nav */}
-      <header className="flex h-14 items-center justify-between border-b px-4 shrink-0">
+      <header className="flex h-14 items-center justify-between border-b px-4 shrink-0 relative z-50">
         <div className="flex items-center gap-3">
           <AppSwitcher />
           <div className="flex items-center gap-2">
@@ -71,11 +70,8 @@ export default function GoalsLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
 
-        <div className="relative w-full max-w-md mx-4">
-          <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <Input placeholder="Search" className="h-9 pl-9 bg-muted/50" />
+        <div className="flex flex-1 justify-center mx-4">
+          <SearchBar isBlue={false} defaultTab="home" />
         </div>
 
         <div className="flex items-center gap-2">

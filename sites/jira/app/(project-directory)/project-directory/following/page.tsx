@@ -665,11 +665,12 @@ export default function ProjectFollowingPage() {
             return (
               <div key={filterId} data-testid={`filter-chip-${filterId}`} className="relative">
                 <div className="flex items-center">
-                  <button onClick={() => handleFilterClick(filterId)}
-                    className="flex items-center gap-1.5 rounded-l-full border border-r-0 border-blue-500 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 transition-colors dark:bg-blue-900/20 dark:text-blue-400">
+                  <div onClick={() => handleFilterClick(filterId)} role="presentation"
+                    className="flex cursor-pointer items-center gap-1.5 rounded-l-full border border-r-0 border-blue-500 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 transition-colors dark:bg-blue-900/20 dark:text-blue-400">
                     {config.icon}{chipLabel}
-                  </button>
+                  </div>
                   <button onClick={() => handleRemoveFilter(filterId)}
+                    aria-label={`Remove ${config.label} filter`}
                     className="flex items-center justify-center rounded-r-full border border-blue-500 bg-blue-50 px-2 py-1.5 text-blue-700 hover:bg-blue-100 transition-colors dark:bg-blue-900/20 dark:text-blue-400">
                     <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z" /></svg>
                   </button>
@@ -700,7 +701,7 @@ export default function ProjectFollowingPage() {
                     <button
                       key={f.id}
                       data-testid={f.id === "starred" ? "more-filter-starred" : f.id === "reporting" ? "more-filter-reporting-line" : undefined}
-                      onClick={() => { handleFilterClick(f.id); setMoreFiltersOpen(false) }}
+                      onClick={() => { setActiveFilters((prev) => new Set([...prev, f.id])); setMoreFiltersOpen(false) }}
                       className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent text-left">
                       {f.icon}{f.label}
                     </button>

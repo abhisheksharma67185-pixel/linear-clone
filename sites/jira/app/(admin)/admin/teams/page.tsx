@@ -30,10 +30,10 @@ function ExternalIcon({ size = 14 }: { size?: number }) {
 }
 
 // Bug 1: disabled mutation button with tooltip
-function MutationButton({ label, testid, className = "" }: { label: string; testid?: string; className?: string }) {
+function MutationButton({ label, testid, className = "", style }: { label: string; testid?: string; className?: string; style?: React.CSSProperties }) {
   if (HAS_SCOPE) {
     return (
-      <button data-testid={testid}
+      <button data-testid={testid} style={style}
         className={`inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors ${className || "border border-[#DFE1E6] bg-white hover:bg-gray-50 text-gray-700"}`}>
         {label}
       </button>
@@ -41,7 +41,7 @@ function MutationButton({ label, testid, className = "" }: { label: string; test
   }
   return (
     <div className="group relative inline-block">
-      <button data-testid={testid} disabled
+      <button data-testid={testid} disabled style={style}
         className={`inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium opacity-40 cursor-not-allowed ${className || "border border-[#DFE1E6] bg-white text-gray-700"}`}>
         {label}
       </button>

@@ -59,7 +59,7 @@ test.describe("Following page – row-level actions (SCRUM Project)", () => {
   test("Archive project: shows success toast", async ({ page }) => {
     await openRowMenu(page, "SCRUM Project")
     await page.getByTestId("row-action-archive").click()
-    await expect(page.locator("text=archived")).toBeVisible()
+    await expect(page.getByText('"SCRUM Project" archived', { exact: false })).toBeVisible()
   })
 
   test("Copy project: opens copy modal pre-filled with project name", async ({ page }) => {

@@ -225,11 +225,12 @@ export function UserProfileDropdown({
             Account settings
           </Link>
 
-          {/* Theme — flyout submenu */}
+          {/* Theme — direct toggle light ↔ dark */}
           <div className="relative">
             <button
               type="button"
-              onClick={() => setShowThemeMenu((v) => !v)}
+              aria-label="Theme"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               data-testid="menu-theme"
               className="flex w-full items-center justify-between px-4 py-2 text-[13px] text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7] dark:hover:bg-accent transition-colors"
             >
@@ -249,41 +250,6 @@ export function UserProfileDropdown({
                 data-testid="icon-theme-chevron"
               />
             </button>
-
-            {showThemeMenu && (
-              <div
-                data-testid="theme-submenu"
-                className="absolute right-full top-0 mr-1.5 w-[220px] rounded-[3px] border border-[#dfe1e6] dark:border-border bg-white dark:bg-popover shadow-[0_8px_24px_rgba(9,30,66,0.15)] py-1 z-50"
-              >
-                {THEMES.map(({ id, label, Thumb }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => {
-                      setTheme(id)
-                      setShowThemeMenu(false)
-                    }}
-                    data-testid={`theme-option-${id}`}
-                    className="flex w-full items-center gap-3 px-3 py-2.5 text-[13px] text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7] dark:hover:bg-accent transition-colors"
-                  >
-                    {/* Radio indicator */}
-                    <div
-                      className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                        theme === id
-                          ? "border-[#0052cc] bg-[#0052cc]"
-                          : "border-[#97a0af]"
-                      }`}
-                    >
-                      {theme === id && (
-                        <div className="size-1.5 rounded-full bg-white" />
-                      )}
-                    </div>
-                    <Thumb />
-                    <span className="text-left leading-tight">{label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
