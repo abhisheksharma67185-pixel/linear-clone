@@ -5,10 +5,16 @@ import (
 	"errors"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/ids"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
+	"github.com/jackc/pgx/v5"
 )
+
+type WebhookDestination struct {
+	ID     string
+	URL    string
+	Secret string
+}
 
 func defaultWebhookEvents(events []string) []string {
 	if len(events) == 0 {
@@ -134,4 +140,43 @@ func (s *Store) DeleteWebhook(ctx context.Context, projectID, webhookID string) 
 		return errors.New("not found")
 	}
 	return nil
+}
+
+func (s *Store) ListWebhookDestinations(
+	ctx context.Context,
+	projectID, event string,
+) ([]WebhookDestination, error) {
+	rows, err := s.Pool.Query(ctx, `
+		SELECT id, url, secret
+		FROM webhooks
+		WHERE project_id = $1
+		  AND active = true
+		  AND $2 = ANY(events)
+		ORDER BY created_at DESC
+	`, projectID, event)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []WebhookDestination
+	for rows.Next() {
+		var destination WebhookDestination
+		if err := rows.Scan(&destination.ID, &destination.URL, &destination.Secret); err != nil {
+			return nil, err
+		}
+		out = append(out, destination)
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) RecordWebhookDelivery(ctx context.Context, webhookID string, status int) error {
+	_, err := s.Pool.Exec(ctx, `
+		UPDATE webhooks
+		SET last_delivery_at = NOW(),
+		    last_delivery_status = $2,
+		    updated_at = NOW()
+		WHERE id = $1
+	`, webhookID, status)
+	return err
 }

@@ -2,10 +2,12 @@ package store
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/ids"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
+	"github.com/jackc/pgx/v5"
 )
 
 // CreateOrg creates an org + an owner membership row for the creating user.
@@ -71,4 +73,81 @@ func (s *Store) ListOrgsForUser(ctx context.Context, userID string) ([]models.Or
 		out = append(out, o)
 	}
 	return out, rows.Err()
+}
+
+// GetOrg fetches a single org by ID.
+func (s *Store) GetOrg(ctx context.Context, id string) (*models.Org, error) {
+	var org models.Org
+	err := s.Pool.QueryRow(ctx, `
+		SELECT id, name, slug, plan, created_at
+		FROM orgs
+		WHERE id = $1
+	`, id).Scan(&org.ID, &org.Name, &org.Slug, &org.Plan, &org.CreatedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &org, nil
+}
+
+// GetOrgByStripeCustomerID looks up the org bound to a Stripe customer.
+func (s *Store) GetOrgByStripeCustomerID(ctx context.Context, customerID string) (*models.Org, error) {
+	var org models.Org
+	err := s.Pool.QueryRow(ctx, `
+		SELECT id, name, slug, plan, created_at
+		FROM orgs
+		WHERE stripe_customer_id = $1
+	`, customerID).Scan(&org.ID, &org.Name, &org.Slug, &org.Plan, &org.CreatedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &org, nil
+}
+
+// SetOrgStripeCustomer stores the Stripe customer mapping for an org.
+func (s *Store) SetOrgStripeCustomer(ctx context.Context, orgID, customerID string) error {
+	if customerID == "" {
+		return nil
+	}
+	_, err := s.Pool.Exec(ctx, `
+		UPDATE orgs
+		SET stripe_customer_id = $2,
+		    updated_at = NOW()
+		WHERE id = $1
+	`, orgID, customerID)
+	return err
+}
+
+// UpdateOrgSubscription stores the latest Stripe subscription state for an org.
+func (s *Store) UpdateOrgSubscription(
+	ctx context.Context,
+	orgID, customerID, subscriptionID string,
+	plan *string,
+) error {
+	_, err := s.Pool.Exec(ctx, `
+		UPDATE orgs
+		SET stripe_customer_id = COALESCE(NULLIF($2, ''), stripe_customer_id),
+		    stripe_subscription_id = $3,
+		    plan = COALESCE($4, plan),
+		    updated_at = NOW()
+		WHERE id = $1
+	`, orgID, customerID, subscriptionID, plan)
+	return err
+}
+
+// ClearOrgSubscription removes the active subscription binding for an org.
+func (s *Store) ClearOrgSubscription(ctx context.Context, orgID string, plan *string) error {
+	_, err := s.Pool.Exec(ctx, `
+		UPDATE orgs
+		SET stripe_subscription_id = NULL,
+		    plan = COALESCE($2, plan),
+		    updated_at = NOW()
+		WHERE id = $1
+	`, orgID, plan)
+	return err
 }

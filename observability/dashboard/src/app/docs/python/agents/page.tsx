@@ -114,7 +114,7 @@ client.record_metric("response_quality", run_id, score=0.92)`}
 
       <Callout type="info">
         <p>
-          The agent wrapper automatically sets <code>run_type="agent"</code> on the trace
+          The agent wrapper automatically sets <code>run_type=&quot;agent&quot;</code> on the trace
           and stores the function arguments in <code>metadata.input</code>.
         </p>
       </Callout>
@@ -122,7 +122,7 @@ client.record_metric("response_quality", run_id, score=0.92)`}
       <h2>Error Handling</h2>
       <p>
         If the agent function raises an exception, the trace is marked with
-        <code>status="error"</code> and the error message is captured. The exception
+        <code>status=&quot;error&quot;</code> and the error message is captured. The exception
         is then re-raised to the caller.
       </p>
       <CodeBlock lang="python">

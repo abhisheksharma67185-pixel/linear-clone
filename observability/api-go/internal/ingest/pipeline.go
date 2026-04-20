@@ -66,8 +66,9 @@ func (p *Pipeline) Ingest(ctx context.Context, orgID string, t *models.Trace) (*
 	// 3) SSE publish for live-tail onboarding
 	p.Hub.Publish(t.TraceID, buf)
 
-	// 4) Embedding (non-blocking)
-	if p.Embedder != nil && p.Embedder.Enabled() {
+	// 4) Text indexing / optional semantic enrichment (non-blocking).
+	// Full-text indexing should work even when semantic re-ranking is disabled.
+	if p.Embedder != nil {
 		traceBuf := make([]byte, len(buf))
 		copy(traceBuf, buf)
 		go p.Embedder.EmbedTrace(context.Background(), t.TraceID, t.ProjectID, traceBuf)

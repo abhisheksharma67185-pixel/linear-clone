@@ -16,14 +16,70 @@ import {
 } from "@/components/ui/empty";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { MonitorConfig } from "@/lib/types";
-import { formatRelative } from "@/lib/utils";
+import type { MonitorConfig, MonitorEvaluation } from "@/lib/types";
+import { formatNumber, formatRelative } from "@/lib/utils";
 
 function thresholdSummary(monitor: MonitorConfig): string {
   const warn = monitor.warn_threshold !== undefined ? `warn ${monitor.warn_threshold}` : null;
   const critical =
     monitor.critical_threshold !== undefined ? `critical ${monitor.critical_threshold}` : null;
   return [warn, critical].filter(Boolean).join(" · ") || "No thresholds";
+}
+
+function stateBadgeVariant(state: MonitorEvaluation["state"] | undefined) {
+  switch (state) {
+    case "critical":
+      return "destructive";
+    case "warn":
+      return "warning";
+    case "ok":
+      return "success";
+    default:
+      return "secondary";
+  }
+}
+
+function formatMonitorValue(monitor: MonitorConfig): string {
+  const value = monitor.latest_evaluation?.value;
+  if (value === undefined) {
+    return "—";
+  }
+  switch (monitor.signal_key) {
+    case "latency_ms":
+      return `${Math.round(value)} ms`;
+    case "error_rate":
+    case "success_rate":
+      return `${value.toFixed(1)}%`;
+    case "cost_usd":
+      return `$${value.toFixed(4)}`;
+    case "trace_count":
+    case "total_tokens":
+      return formatNumber(Math.round(value));
+    default:
+      return value.toFixed(2);
+  }
+}
+
+function evaluationLabel(monitor: MonitorConfig): string {
+  const state = monitor.latest_evaluation?.state;
+  switch (state) {
+    case "critical":
+      return "Critical";
+    case "warn":
+      return "Warn";
+    case "ok":
+      return "Healthy";
+    case "paused":
+      return "Paused";
+    case "no_data":
+      return "No data";
+    case "unsupported":
+      return "Unsupported";
+    case "error":
+      return "Query error";
+    default:
+      return "Unknown";
+  }
 }
 
 export function MonitorsTable({ monitors }: { monitors: MonitorConfig[] }) {
@@ -79,10 +135,11 @@ export function MonitorsTable({ monitors }: { monitors: MonitorConfig[] }) {
           <TableRow>
             <TableHead>Monitor</TableHead>
             <TableHead>Signal</TableHead>
+            <TableHead>Current</TableHead>
             <TableHead>Thresholds</TableHead>
             <TableHead>Window</TableHead>
             <TableHead>Updated</TableHead>
-            <TableHead className="w-24 text-right">State</TableHead>
+            <TableHead className="w-40 text-right">State</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -110,11 +167,29 @@ export function MonitorsTable({ monitors }: { monitors: MonitorConfig[] }) {
                   </p>
                 </div>
               </TableCell>
+              <TableCell>
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">{formatMonitorValue(monitor)}</span>
+                  <p className="text-xs text-muted-foreground">
+                    {monitor.latest_evaluation
+                      ? `${formatNumber(monitor.latest_evaluation.sample_size)} traces in window`
+                      : "No recent evaluation"}
+                  </p>
+                  {monitor.latest_evaluation?.group_states?.length ? (
+                    <p className="text-xs text-muted-foreground">
+                      Top group {monitor.latest_evaluation.group_states[0].group}
+                    </p>
+                  ) : null}
+                </div>
+              </TableCell>
               <TableCell className="text-muted-foreground">{thresholdSummary(monitor)}</TableCell>
               <TableCell className="text-muted-foreground">{monitor.window_minutes} min</TableCell>
               <TableCell className="text-muted-foreground">{formatRelative(monitor.updated_at)}</TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-2">
+                  <Badge variant={stateBadgeVariant(monitor.latest_evaluation?.state)}>
+                    {evaluationLabel(monitor)}
+                  </Badge>
                   <Switch
                     checked={monitor.active}
                     disabled={pendingId === monitor.id}

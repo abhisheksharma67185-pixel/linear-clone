@@ -181,6 +181,26 @@ console.log(data); // { trace_id: "trc_abc123", ingest_status: "accepted", ... }
         </p>
       </Callout>
 
+      <h3>Metadata field discovery</h3>
+      <p>
+        <code>GET /v1/projects/:id/metadata-fields</code> returns discovered metadata fields
+        and sampled values from recent traces in the project. The dashboard uses this to power
+        the metadata filter builder, so new JSON keys can become filterable without custom UI work.
+      </p>
+      <CodeBlock lang="json" title="200 OK">
+        {`{
+  "items": [
+    {
+      "key": "workflow.stage",
+      "value_type": "string",
+      "occurrences": 186,
+      "example_values": ["checkout", "review", "submit"]
+    }
+  ],
+  "sampled_traces": 300
+}`}
+      </CodeBlock>
+
       <h3>Response</h3>
       <CodeBlock lang="json" title="200 OK">
         {`{

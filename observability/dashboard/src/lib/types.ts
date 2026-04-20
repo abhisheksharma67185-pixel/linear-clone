@@ -163,6 +163,13 @@ export interface TraceMetadataFilter {
   value: string;
 }
 
+export interface TraceMetadataField {
+  key: string;
+  value_type: "string" | "number" | "boolean" | "null" | "mixed";
+  occurrences: number;
+  example_values?: string[];
+}
+
 export interface Project {
   id: string;
   slug: string;
@@ -256,6 +263,7 @@ export interface MetricEvent {
   passed?: boolean;
   score?: number;
   label?: string;
+  metadata?: Record<string, unknown>;
   evaluated_at: string;
 }
 
@@ -290,6 +298,24 @@ export interface MonitorConfig {
   created_by?: string;
   created_at: string;
   updated_at: string;
+  latest_evaluation?: MonitorEvaluation;
+}
+
+export interface MonitorEvaluation {
+  state: "ok" | "warn" | "critical" | "paused" | "no_data" | "unsupported" | "error";
+  value?: number;
+  sample_size: number;
+  window_start: string;
+  window_end: string;
+  evaluated_at: string;
+  group_states?: MonitorGroupState[];
+}
+
+export interface MonitorGroupState {
+  group: string;
+  value: number;
+  state: "ok" | "warn" | "critical" | "paused" | "no_data" | "unsupported" | "error";
+  sample_size: number;
 }
 
 export interface Usage {

@@ -1,7 +1,6 @@
 import { CodeBlock } from "@/components/docs/code-block";
 import { ParamTable } from "@/components/docs/param-table";
 import { Callout } from "@/components/docs/callout";
-import Link from "next/link";
 
 export default function AuthPage() {
   return (
@@ -204,7 +203,7 @@ export default function AuthPage() {
 
       <Callout type="tip">
         <p>
-          In production, set <code>JWT_JWKS_URL</code> to the dashboard's JWKS
+          In production, set <code>JWT_JWKS_URL</code> to the dashboard&apos;s JWKS
           endpoint (e.g.{" "}
           <code>https://dashboard.example.com/api/auth/jwks</code>) instead of
           relying on a shared <code>JWT_SECRET</code>. This enables key

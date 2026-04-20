@@ -94,7 +94,7 @@ await client.trace({ name: "visual-agent" }, async (t) => {
 
       <h2>How Proxy Upload Works</h2>
       <p>
-        For binary sources, the SDK uploads through the Theta ingest API's proxy
+        For binary sources, the SDK uploads through the Theta ingest API&apos;s proxy
         endpoint (<code>POST /v1/media/upload</code>). The flow is:
       </p>
       <ol>

@@ -218,6 +218,58 @@ components:
         url: { type: string }
         gs_uri: { type: string }
         expires_at: { type: string, format: date-time }
+    MonitorGroupState:
+      type: object
+      properties:
+        group: { type: string }
+        value: { type: number }
+        state: { type: string }
+        sample_size: { type: integer }
+    MonitorEvaluation:
+      type: object
+      properties:
+        state: { type: string }
+        value: { type: number }
+        sample_size: { type: integer }
+        window_start: { type: string, format: date-time }
+        window_end: { type: string, format: date-time }
+        evaluated_at: { type: string, format: date-time }
+        group_states:
+          type: array
+          items: { $ref: "#/components/schemas/MonitorGroupState" }
+    MonitorConfig:
+      type: object
+      properties:
+        id: { type: string }
+        project_id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        signal_key: { type: string }
+        operator: { type: string }
+        warn_threshold: { type: number }
+        critical_threshold: { type: number }
+        window_minutes: { type: integer }
+        group_by: { type: string }
+        filters: { type: object }
+        active: { type: boolean }
+        created_by: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        latest_evaluation: { $ref: "#/components/schemas/MonitorEvaluation" }
+    CreateMonitorConfigRequest:
+      type: object
+      required: [name, signal_key, operator]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        signal_key: { type: string }
+        operator: { type: string }
+        warn_threshold: { type: number }
+        critical_threshold: { type: number }
+        window_minutes: { type: integer }
+        group_by: { type: string }
+        filters: { type: object }
+        active: { type: boolean }
     Project:
       type: object
       properties:
@@ -391,6 +443,89 @@ paths:
           schema: { type: string }
       responses:
         "200": { description: OK }
+  /v1/projects/{id}/monitors:
+    get:
+      summary: List monitor configs for a project
+      security: [{ bearer: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/MonitorConfig" }
+    post:
+      summary: Create a monitor config
+      security: [{ bearer: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateMonitorConfigRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MonitorConfig" }
+  /v1/monitors/{monitor_id}:
+    get:
+      summary: Get a single monitor config
+      security: [{ bearer: [] }]
+      parameters:
+        - in: path
+          name: monitor_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MonitorConfig" }
+    patch:
+      summary: Update a monitor config
+      security: [{ bearer: [] }]
+      parameters:
+        - in: path
+          name: monitor_id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateMonitorConfigRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MonitorConfig" }
+    delete:
+      summary: Delete a monitor config
+      security: [{ bearer: [] }]
+      parameters:
+        - in: path
+          name: monitor_id
+          required: true
+          schema: { type: string }
+      responses:
+        "204": { description: No Content }
   /v1/traces:
     post:
       summary: Ingest a trace

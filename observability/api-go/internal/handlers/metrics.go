@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/auth"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
+	"github.com/go-chi/chi/v5"
 )
 
 // Metrics handles metric definitions and metric events.
@@ -86,7 +86,7 @@ func (h *Metrics) Create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	m, err := h.Store.CreateMetric(r.Context(), projectID, req.Name, req.Type, req.EvaluatorPrompt, req.Description)
+	m, err := h.Store.GetOrCreateMetricByName(r.Context(), projectID, req.Name, req.Type, req.EvaluatorPrompt, req.Description)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "db_error", err.Error())
 		return
@@ -172,14 +172,17 @@ func (h *Metrics) RecordEvent(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if m == nil {
-			writeErr(w, http.StatusNotFound, "not_found", "metric not found")
-			return
+			m, err = h.Store.GetOrCreateMetricByName(r.Context(), pid, idOrName, "observed", nil, nil)
+			if err != nil {
+				writeErr(w, http.StatusInternalServerError, "db_error", err.Error())
+				return
+			}
 		}
 		metricID = m.ID
 		projectID = m.ProjectID
 	}
 
-	ev, err := h.Store.RecordMetricEvent(r.Context(), metricID, req.TraceID, projectID, req.Passed, req.Score, req.Label)
+	ev, err := h.Store.RecordMetricEvent(r.Context(), metricID, req.TraceID, projectID, req.Passed, req.Score, req.Label, req.Metadata)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "db_error", err.Error())
 		return

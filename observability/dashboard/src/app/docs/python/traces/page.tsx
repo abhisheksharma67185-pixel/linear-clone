@@ -153,8 +153,8 @@ client = TraceClient(
 
       <h2>Status and Errors</h2>
       <p>
-        Step and trace status is automatically set to <code>"success"</code> on normal exit
-        and <code>"error"</code> if an exception propagates through the context manager.
+        Step and trace status is automatically set to <code>&quot;success&quot;</code> on normal exit
+        and <code>&quot;error&quot;</code> if an exception propagates through the context manager.
         You can also set it manually:
       </p>
       <CodeBlock lang="python">
@@ -205,8 +205,9 @@ print(resp.data[0]["metadata"]["workflow"]["stage"])`}
 
       <Callout type="tip" title="Configurable dashboard filters">
         <p>
-          The dashboard reads metadata keys from trace summaries, so new keys can be turned
-          into saved filters without changing the trace schema first.
+          The dashboard discovers metadata fields from recent project traces via
+          <code> GET /v1/projects/:id/metadata-fields</code>, so new keys can become saved
+          filters without changing the trace schema first.
         </p>
       </Callout>
 
@@ -262,7 +263,7 @@ with TraceClient() as client:
       <Callout type="tip">
         <p>
           The client registers an <code>atexit</code> handler that automatically flushes
-          pending traces when the process exits. You usually don't need to call
+          pending traces when the process exits. You usually don&apos;t need to call
           <code>flush()</code> or <code>close()</code> manually in long-running apps.
         </p>
       </Callout>

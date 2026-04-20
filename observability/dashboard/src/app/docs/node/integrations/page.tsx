@@ -168,7 +168,7 @@ await client.trace({ name: "claude-chat" }, async (t) => {
       <p>
         The <code>withTrace</code> helper wraps a Next.js route handler so each
         request is automatically traced. Any thrown errors propagate normally, but
-        the trace is recorded with <code>status: "error"</code>.
+        the trace is recorded with <code>status: &quot;error&quot;</code>.
       </p>
       <CodeBlock lang="typescript" title="app/api/chat/route.ts">
         {`import { withTrace } from "@theta/observability/next";

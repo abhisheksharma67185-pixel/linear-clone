@@ -21,3 +21,7 @@ export async function flagTraceAction(traceId: string) {
 export async function semanticSearchAction(projectId: string, query: string, limit?: number) {
   return api.semanticSearch(projectId, query, limit);
 }
+
+export async function listTraceMetadataFieldsAction(projectId: string, sampleLimit?: number) {
+  return api.listProjectMetadataFields(projectId, sampleLimit);
+}

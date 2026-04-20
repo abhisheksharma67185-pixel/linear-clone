@@ -13,18 +13,20 @@ import (
 
 	"cloud.google.com/go/bigquery"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/bq"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
 	"google.golang.org/api/iterator"
 )
 
 // Detector scans for recent error traces and groups them into incidents.
 type Detector struct {
-	Store        *store.Store
-	BQ           *bq.Writer
-	AnthropicKey string // for root cause generation
-	Log          *slog.Logger
-	ProjectID    string // BQ project
-	Dataset      string // BQ dataset
+	Store             *store.Store
+	BQ                *bq.Writer
+	AnthropicKey      string // for root cause generation
+	Log               *slog.Logger
+	ProjectID         string // BQ project
+	Dataset           string // BQ dataset
+	OnIncidentCreated func(context.Context, *models.Incident)
 }
 
 // errorTrace represents a trace row returned from BQ with an error status.
@@ -80,6 +82,9 @@ func (d *Detector) DetectIncidents(ctx context.Context, projectID string) error 
 			continue
 		}
 		d.Log.Info("created incident", "incident_id", inc.ID, "traces", len(traceIDs))
+		if d.OnIncidentCreated != nil {
+			d.OnIncidentCreated(ctx, inc)
+		}
 
 		// Generate root cause analysis asynchronously.
 		if d.AnthropicKey != "" {

@@ -264,7 +264,7 @@ curl -X POST http://localhost:8080/v1/projects/proj_first/keys \\
         </li>
         <li>
           <strong>Dashboard</strong>: Deploy to Vercel (or any Node.js host).
-          Set <code>NEXT_PUBLIC_API_URL</code> to your API's public URL and{" "}
+          Set <code>NEXT_PUBLIC_API_URL</code> to your API&apos;s public URL and{" "}
           <code>API_URL_INTERNAL</code> to its internal/VPC URL.
         </li>
         <li>
@@ -274,7 +274,7 @@ curl -X POST http://localhost:8080/v1/projects/proj_first/keys \\
         </li>
         <li>
           <strong>Object Storage</strong>: Use a real GCS bucket. Leave{" "}
-          <code>GCS_ENDPOINT</code> unset so the client uses Google's default
+          <code>GCS_ENDPOINT</code> unset so the client uses Google&apos;s default
           endpoint. Set <code>GOOGLE_APPLICATION_CREDENTIALS</code> to a
           service account with Storage Object Admin permissions.
         </li>

@@ -14,14 +14,25 @@ import { VideoPlayer } from "./modalities/video-player";
 import { SensorPlot } from "./modalities/sensor-plot";
 import { ToolCallCard } from "./tool-call-card";
 import { JsonViewer } from "./json-viewer";
-import type { Attachment, MessageContent, ObservedEvent, Step, Trace, ToolCall } from "@/lib/types";
+import type {
+  Attachment,
+  Message,
+  MessageContent,
+  ObservedEvent,
+  Step,
+  Trace,
+  ToolCall,
+} from "@/lib/types";
 import {
   ArrowRight,
   Bot,
   Cpu,
   FileIcon,
+  Globe,
+  Hash,
   ImageIcon,
   Music,
+  TriangleAlert,
   Video,
 } from "lucide-react";
 
@@ -72,6 +83,25 @@ function stepHasRenderableContent(step?: Step): boolean {
   );
 }
 
+function stepHasSummaryContent(step?: Step): boolean {
+  if (!step) {
+    return false;
+  }
+
+  if (step.error_message) {
+    return true;
+  }
+
+  const metadata = step.metadata ?? {};
+  return Object.keys(metadata).some((key) => {
+    if (key === "source_input" || key === "source_output" || key === "usage") {
+      return false;
+    }
+    const value = metadata[key];
+    return value !== undefined && value !== null && value !== "";
+  });
+}
+
 function resolveAttachmentUrl(attachment: Pick<Attachment, "url" | "uri">): string | null {
   if (attachment.url) {
     return attachment.url;
@@ -117,6 +147,79 @@ function renderAttachment(
     );
   }
   return null;
+}
+
+function messagePartFingerprint(part: MessageContent): string {
+  return JSON.stringify({
+    type: part.type,
+    text: part.text ?? "",
+    uri: part.uri ?? "",
+    url: part.url ?? "",
+    mime: part.mime ?? "",
+    width: part.width ?? null,
+    height: part.height ?? null,
+  });
+}
+
+function messageFingerprint(message: Message): string {
+  return JSON.stringify({
+    role: message.role,
+    name: message.name ?? "",
+    tool_call_id: message.tool_call_id ?? "",
+    content: message.content.map(messagePartFingerprint),
+  });
+}
+
+function sharedMessagePrefix(previous: Message[], current: Message[]): number {
+  const max = Math.min(previous.length, current.length);
+  let index = 0;
+  while (index < max && messageFingerprint(previous[index]) === messageFingerprint(current[index])) {
+    index += 1;
+  }
+  return index;
+}
+
+function displayedMessagesForSteps(trace: Trace, steps: Step[], showAll?: boolean): Map<string, Message[]> {
+  const byStep = new Map<string, Message[]>();
+  let previousLLMMessages: Message[] | undefined;
+
+  for (const currentStep of steps) {
+    const messages = currentStep.messages ?? [];
+    if (!showAll || trace.platform !== "desktop" || currentStep.type !== "llm" || !previousLLMMessages?.length) {
+      byStep.set(currentStep.step_id, messages);
+      if (currentStep.type === "llm" && messages.length > 0) {
+        previousLLMMessages = messages;
+      }
+      continue;
+    }
+
+    const prefixLength = sharedMessagePrefix(previousLLMMessages, messages);
+    byStep.set(currentStep.step_id, prefixLength > 0 ? messages.slice(prefixLength) : messages);
+    if (messages.length > 0) {
+      previousLLMMessages = messages;
+    }
+  }
+
+  return byStep;
+}
+
+function stepSummaryEntries(step: Step): Array<{ key: string; value: string }> {
+  const metadata = step.metadata ?? {};
+  const entries: Array<{ key: string; value: string }> = [];
+
+  for (const [key, rawValue] of Object.entries(metadata)) {
+    if (key === "url" || key === "source_input" || key === "source_output" || key === "usage") {
+      continue;
+    }
+    if (rawValue === undefined || rawValue === null || rawValue === "") {
+      continue;
+    }
+    if (typeof rawValue === "string" || typeof rawValue === "number" || typeof rawValue === "boolean") {
+      entries.push({ key, value: String(rawValue) });
+    }
+  }
+
+  return entries.slice(0, 6);
 }
 
 function eventHasDistinctRenderableContent(event: ObservedEvent, step?: Step): boolean {
@@ -240,6 +343,180 @@ function EventCard({
   );
 }
 
+function StepContextCard({ step }: { step: Step }) {
+  if (!stepHasSummaryContent(step)) {
+    return null;
+  }
+
+  const metadata = step.metadata ?? {};
+  const url = typeof metadata.url === "string" ? metadata.url : undefined;
+  const summaryEntries = stepSummaryEntries(step);
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
+        <Badge variant="outline" className="uppercase">
+          Step context
+        </Badge>
+        {step.error_message ? <Badge variant="destructive">error</Badge> : null}
+        {step.status === "running" ? <Badge variant="outline">running</Badge> : null}
+      </div>
+      <div className="mt-3 flex flex-col gap-3">
+        {url ? (
+          <div className="rounded-lg border border-border bg-muted/25 p-3">
+            <div className="mb-1 flex items-center gap-2 text-[0.625rem] font-semibold uppercase tracking-wider text-muted-foreground">
+              <Globe className="size-3" />
+              URL
+            </div>
+            <p className="break-all font-mono text-xs text-foreground">{url}</p>
+          </div>
+        ) : null}
+
+        {summaryEntries.length > 0 ? (
+          <div className="grid gap-2 md:grid-cols-2">
+            {summaryEntries.map((entry) => (
+              <div key={entry.key} className="rounded-lg border border-border bg-muted/25 p-3">
+                <div className="mb-1 flex items-center gap-2 text-[0.625rem] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Hash className="size-3" />
+                  {entry.key.replaceAll("_", " ")}
+                </div>
+                <p className="break-words text-sm text-foreground">{entry.value}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {step.error_message ? (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+            <div className="mb-1 flex items-center gap-2 text-[0.625rem] font-semibold uppercase tracking-wider text-destructive">
+              <TriangleAlert className="size-3" />
+              Error
+            </div>
+            <p className="whitespace-pre-wrap text-sm text-foreground">{step.error_message}</p>
+          </div>
+        ) : null}
+
+        {Object.keys(metadata).length > 0 ? (
+          <div className="rounded-lg border border-border bg-muted/15 p-3">
+            <p className="mb-2 text-[0.625rem] font-semibold uppercase tracking-wider text-muted-foreground">
+              Raw metadata
+            </p>
+            <JsonViewer value={metadata} initialDepth={1} />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function MessageCard({
+  message,
+  trace,
+  toolName,
+}: {
+  message: Message;
+  trace: Trace;
+  toolName?: string;
+}) {
+  const roleLabel = message.role === "tool" ? "tool result" : message.role;
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-muted-foreground">
+          {roleLabel}
+        </p>
+        {toolName ? (
+          <Badge variant="outline" className="font-mono text-[10px]">
+            {toolName}
+          </Badge>
+        ) : null}
+      </div>
+      <div className="mt-2 flex flex-col gap-3 text-sm">
+        {message.content.map((content, index) => {
+          if (content.type === "text" && content.text) {
+            return (
+              <p key={index} className="whitespace-pre-wrap leading-relaxed">
+                {content.text}
+              </p>
+            );
+          }
+
+          const url = resolveUrl(content);
+
+          if (isImageType(content) && url) {
+            return (
+              <ImageFrame
+                key={index}
+                url={url}
+                alt={toolName ? `${toolName} output` : "attachment"}
+                platform={trace.platform}
+                width={content.width}
+                height={content.height}
+              />
+            );
+          }
+          if (isAudioType(content) && url) {
+            return <AudioPlayer key={index} url={url} />;
+          }
+          if (isVideoType(content) && url) {
+            return <VideoPlayer key={index} url={url} />;
+          }
+
+          if (content.uri) {
+            const fetchUrl = resolveUri(content.uri);
+            if (!fetchUrl) {
+              return null;
+            }
+            return (
+              <AttachmentCard
+                key={index}
+                type={content.type}
+                uri={content.uri}
+                url={fetchUrl}
+                mime={content.mime}
+              />
+            );
+          }
+
+          return null;
+        })}
+      </div>
+    </div>
+  );
+}
+
+function renderStepConversation(step: Step, messages: Message[], trace: Trace): React.ReactNode[] {
+  const renderedToolCalls = new Set<string>();
+  const toolCallsById = new Map((step.tool_calls ?? []).map((call) => [call.id, call] as const));
+  const nodes: React.ReactNode[] = [];
+
+  messages.forEach((message, index) => {
+    const matchingCall = message.tool_call_id ? toolCallsById.get(message.tool_call_id) : undefined;
+    if (matchingCall && !renderedToolCalls.has(matchingCall.id)) {
+      nodes.push(<ToolCallCard key={`${step.step_id}-tool-${matchingCall.id}`} call={matchingCall} />);
+      renderedToolCalls.add(matchingCall.id);
+    }
+    nodes.push(
+      <MessageCard
+        key={`${step.step_id}-message-${index}`}
+        message={message}
+        trace={trace}
+        toolName={matchingCall?.name}
+      />
+    );
+  });
+
+  (step.tool_calls ?? []).forEach((call) => {
+    if (renderedToolCalls.has(call.id)) {
+      return;
+    }
+    nodes.push(<ToolCallCard key={`${step.step_id}-tool-${call.id}`} call={call} />);
+  });
+
+  return nodes;
+}
+
 export function MessagesView({
   step,
   trace,
@@ -262,6 +539,7 @@ export function MessagesView({
   }
 
   const steps = showAll ? trace.steps ?? [] : step ? [step] : [];
+  const displayMessages = displayedMessagesForSteps(trace, steps, showAll);
   const traceAttachments = trace.attachments ?? [];
   const traceEvents = trace.events ?? [];
   const selectedStep = showAll ? undefined : step;
@@ -270,7 +548,8 @@ export function MessagesView({
     traceAttachments.length === 0 &&
     traceEvents.length === 0 &&
     selectedStep &&
-    !stepHasRenderableContent(selectedStep);
+    !stepHasRenderableContent(selectedStep) &&
+    !stepHasSummaryContent(selectedStep);
 
   if (shouldShowStepEmptyState) {
     const canJumpToPreferredStep =
@@ -338,60 +617,9 @@ export function MessagesView({
             </div>
           )}
 
-          {/* Messages */}
-          {s.messages?.map((m, i) => (
-            <div key={i} className="rounded-lg border border-border bg-card p-4">
-              <p className="text-[0.625rem] font-semibold uppercase tracking-wider text-muted-foreground">
-                {m.role}
-              </p>
-              <div className="mt-2 flex flex-col gap-3 text-sm">
-                {m.content.map((c, j) => {
-                  if (c.type === "text" && c.text) {
-                    return <p key={j} className="whitespace-pre-wrap leading-relaxed">{c.text}</p>;
-                  }
+          <StepContextCard step={s} />
 
-                  const url = resolveUrl(c);
-
-                  if (isImageType(c) && url) {
-                    return (
-                      <ImageFrame
-                        key={j}
-                        url={url}
-                        alt="attachment"
-                        platform={trace.platform}
-                        width={c.width}
-                        height={c.height}
-                      />
-                    );
-                  }
-                  if (isAudioType(c) && url) {
-                    return <AudioPlayer key={j} url={url} />;
-                  }
-                  if (isVideoType(c) && url) {
-                    return <VideoPlayer key={j} url={url} />;
-                  }
-
-                  // Generic attachment with gs:// URI
-                  if (c.uri) {
-                    const fetchUrl = resolveUri(c.uri);
-                    if (!fetchUrl) {
-                      return null;
-                    }
-                    return (
-                      <AttachmentCard key={j} type={c.type} uri={c.uri} url={fetchUrl} mime={c.mime} />
-                    );
-                  }
-
-                  return null;
-                })}
-              </div>
-            </div>
-          ))}
-
-          {/* Tool calls */}
-          {s.tool_calls?.map((c) => (
-            <ToolCallCard key={c.id} call={c} />
-          ))}
+          {renderStepConversation(s, displayMessages.get(s.step_id) ?? [], trace)}
 
           {s.events?.map((event, index) => (
             <EventCard

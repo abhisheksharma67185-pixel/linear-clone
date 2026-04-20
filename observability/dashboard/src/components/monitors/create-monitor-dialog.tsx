@@ -28,6 +28,26 @@ const OPERATORS = [
   { value: "eq", label: "Equal" },
 ];
 
+const SIGNALS = [
+  { value: "latency_ms", label: "Average latency (ms)" },
+  { value: "error_rate", label: "Error rate (%)" },
+  { value: "success_rate", label: "Success rate (%)" },
+  { value: "total_tokens", label: "Total tokens" },
+  { value: "cost_usd", label: "Total cost (USD)" },
+  { value: "trace_count", label: "Trace count" },
+];
+
+const GROUP_BY_OPTIONS = [
+  { value: "", label: "No grouping" },
+  { value: "platform", label: "Platform" },
+  { value: "model", label: "Model" },
+  { value: "status", label: "Status" },
+  { value: "run_type", label: "Run type" },
+  { value: "use_case", label: "Use case" },
+  { value: "user_id", label: "User ID" },
+  { value: "group", label: "Trace group" },
+];
+
 function parseJson(value: string): Record<string, unknown> | undefined {
   const trimmed = value.trim();
   if (!trimmed) {
@@ -148,12 +168,17 @@ export function CreateMonitorDialog({ projectId }: { projectId: string }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-1.5">
               <Label htmlFor="monitor-signal-key">Signal key</Label>
-              <Input
+              <Select
                 id="monitor-signal-key"
                 value={signalKey}
                 onChange={(event) => setSignalKey(event.target.value)}
-                placeholder="latency_ms"
-              />
+              >
+                {SIGNALS.map((signal) => (
+                  <option key={signal.value} value={signal.value}>
+                    {signal.label}
+                  </option>
+                ))}
+              </Select>
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="monitor-operator">Operator</Label>
@@ -205,12 +230,17 @@ export function CreateMonitorDialog({ projectId }: { projectId: string }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-1.5">
               <Label htmlFor="monitor-group-by">Group by</Label>
-              <Input
+              <Select
                 id="monitor-group-by"
                 value={groupBy}
                 onChange={(event) => setGroupBy(event.target.value)}
-                placeholder="platform"
-              />
+              >
+                {GROUP_BY_OPTIONS.map((option) => (
+                  <option key={option.value || "none"} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="monitor-description">Description</Label>

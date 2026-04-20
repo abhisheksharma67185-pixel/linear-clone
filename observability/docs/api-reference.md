@@ -336,6 +336,47 @@ curl "https://api.theta-observability.com/v1/traces?status=error&meta_key=workfl
 
 ---
 
+### GET /v1/projects/:id/metadata-fields
+
+Discover metadata fields that already exist across recent traces in a project. Use this to power no-code filter builders and typed metadata exploration in the dashboard.
+
+**Auth:** Bearer
+
+**Query parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sample_limit` | integer | Optional number of recent traces to sample, capped at 500. Default: 200 |
+
+```bash
+curl "https://api.theta-observability.com/v1/projects/proj_abc/metadata-fields?sample_limit=300" \
+  -H "Authorization: Bearer $THETA_JWT"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "items": [
+    {
+      "key": "workflow.stage",
+      "value_type": "string",
+      "occurrences": 186,
+      "example_values": ["checkout", "review", "submit"]
+    },
+    {
+      "key": "release",
+      "value_type": "string",
+      "occurrences": 142,
+      "example_values": ["2026.04.20", "2026.04.21"]
+    }
+  ],
+  "sampled_traces": 300
+}
+```
+
+---
+
 ### GET /v1/traces/:id
 
 Get full trace detail including the raw trace JSON and all steps.
@@ -998,6 +1039,30 @@ Get current-period usage for an organization.
 ```bash
 curl "https://api.theta-observability.com/v1/usage?org_id=org_abc" \
   -H "Authorization: Bearer eyJhbG..."
+```
+
+### POST /v1/billing/stripe/webhook
+
+Receive Stripe billing lifecycle events.
+
+**Auth:** None
+
+Theta verifies the `Stripe-Signature` header when `STRIPE_WEBHOOK_SECRET` is configured. The current implementation routes these event types:
+
+- `checkout.session.completed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `invoice.paid`
+- `invoice.payment_failed`
+
+Supported events update stored Stripe customer/subscription bindings for orgs and mark unreported usage rows as billed on `invoice.paid`.
+
+```bash
+curl -X POST https://api.theta-observability.com/v1/billing/stripe/webhook \
+  -H "Stripe-Signature: t=...,v1=..." \
+  -H "Content-Type: application/json" \
+  -d '{ "id": "evt_123", "type": "invoice.paid", "data": { "object": { "customer": "cus_123" } } }'
 ```
 
 ---

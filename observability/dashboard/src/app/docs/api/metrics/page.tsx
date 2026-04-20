@@ -180,7 +180,9 @@ export default function APIMetricsPage() {
         <p>
           You can use the metric name instead of the ID in the URL path (e.g.{" "}
           <code>/v1/metrics/response_relevance/events</code>). This requires API
-          key authentication so the project can be resolved from the key.
+          key authentication so the project can be resolved from the key. If the
+          named metric does not exist yet, Theta creates an <code>observed</code>{" "}
+          metric definition automatically on first write.
         </p>
       </Callout>
 

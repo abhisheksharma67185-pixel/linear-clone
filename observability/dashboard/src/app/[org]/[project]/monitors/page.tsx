@@ -23,7 +23,8 @@ export default async function MonitorsPage({ params }: Props) {
   const orgProjects = await listProjectsForOrg(currentOrg.id);
 
   const activeCount = monitors.filter((monitor) => monitor.active).length;
-  const criticalCount = monitors.filter((monitor) => monitor.critical_threshold !== undefined).length;
+  const criticalCount = monitors.filter((monitor) => monitor.latest_evaluation?.state === "critical").length;
+  const warnCount = monitors.filter((monitor) => monitor.latest_evaluation?.state === "warn").length;
   const averageWindowMinutes = monitors.length
     ? Math.round(monitors.reduce((sum, monitor) => sum + monitor.window_minutes, 0) / monitors.length)
     : 0;
@@ -59,9 +60,10 @@ export default async function MonitorsPage({ params }: Props) {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <MonitorStat label="Configs" value={formatNumber(monitors.length)} icon={BellRing} />
               <MonitorStat label="Critical" value={formatNumber(criticalCount)} icon={AlertTriangle} />
+              <MonitorStat label="Warn" value={formatNumber(warnCount)} icon={AlertTriangle} />
               <MonitorStat label="Avg window" value={`${averageWindowMinutes || 0} min`} icon={TimerReset} />
             </div>
           </div>

@@ -25,6 +25,7 @@ import type {
   ListTracesFilters,
   Platform,
   RunType,
+  TraceMetadataField,
   TraceMetadataFilter,
   TraceStatus,
 } from "@/lib/types";
@@ -53,7 +54,7 @@ export interface FilterBarProps {
   modelOptions: string[];
   runTypeOptions: RunType[];
   useCaseOptions: string[];
-  metadataKeyOptions: string[];
+  metadataFields: TraceMetadataField[];
   annotationLabelOptions: string[];
   columns: TraceColumn[];
   density: TraceDensity;
@@ -78,7 +79,7 @@ export function FilterBar({
   modelOptions,
   runTypeOptions,
   useCaseOptions,
-  metadataKeyOptions,
+  metadataFields,
   annotationLabelOptions,
   columns,
   density,
@@ -231,7 +232,7 @@ export function FilterBar({
         />
         <MetadataPill
           metadataFilters={filters.metadata ?? []}
-          metadataKeyOptions={metadataKeyOptions}
+          metadataFields={metadataFields}
           onChange={(metadata) => setField("metadata", metadata.length > 0 ? metadata : undefined)}
         />
       </div>
@@ -423,15 +424,23 @@ function InputPill({
 
 function MetadataPill({
   metadataFilters,
-  metadataKeyOptions,
+  metadataFields,
   onChange,
 }: {
   metadataFilters: TraceMetadataFilter[];
-  metadataKeyOptions: string[];
+  metadataFields: TraceMetadataField[];
   onChange: (next: TraceMetadataFilter[]) => void;
 }) {
   const [draftKey, setDraftKey] = React.useState("");
   const [draftValue, setDraftValue] = React.useState("");
+  const selectedField = React.useMemo(
+    () => metadataFields.find((field) => field.key === draftKey.trim()),
+    [draftKey, metadataFields]
+  );
+  const metadataKeyOptions = React.useMemo(
+    () => metadataFields.map((field) => field.key),
+    [metadataFields]
+  );
 
   const addFilter = () => {
     const key = draftKey.trim();
@@ -464,9 +473,33 @@ function MetadataPill({
           <div>
             <p className="text-xs font-medium">Metadata filters</p>
             <p className="text-xs text-muted-foreground">
-              Pick a discovered key or type a new JSON path like <code>workflow.stage</code>.
+              Pick a discovered field or type a JSON path like <code>workflow.stage</code>.
             </p>
           </div>
+
+          {metadataFields.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <p className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
+                Common fields
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {metadataFields.slice(0, 8).map((field) => (
+                  <button
+                    key={field.key}
+                    type="button"
+                    onClick={() => setDraftKey(field.key)}
+                    className={cn(
+                      "rounded-md border px-2 py-1 text-left text-[0.7rem] transition-colors hover:bg-muted",
+                      draftKey.trim() === field.key && "border-primary/30 bg-accent"
+                    )}
+                  >
+                    <span className="font-medium">{field.key}</span>
+                    <span className="ml-1 text-muted-foreground">({field.occurrences})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             {metadataFilters.length === 0 ? (
@@ -508,7 +541,11 @@ function MetadataPill({
               ))}
             </datalist>
             <Input
-              placeholder="Value to match"
+              placeholder={
+                selectedField?.example_values?.length
+                  ? "Value to match or choose a suggestion"
+                  : "Value to match"
+              }
               value={draftValue}
               onChange={(event) => setDraftValue(event.target.value)}
               onKeyDown={(event) => {
@@ -518,6 +555,37 @@ function MetadataPill({
                 }
               }}
             />
+            {selectedField && (
+              <div className="flex flex-col gap-2 rounded-md border bg-muted/20 p-2">
+                <div className="flex items-center justify-between gap-2 text-[0.7rem] text-muted-foreground">
+                  <span>
+                    Type: <span className="font-medium text-foreground">{selectedField.value_type}</span>
+                  </span>
+                  <span>{selectedField.occurrences} traces</span>
+                </div>
+                {selectedField.example_values && selectedField.example_values.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedField.example_values.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setDraftValue(value)}
+                        className={cn(
+                          "rounded-md border px-2 py-1 text-[0.7rem] transition-colors hover:bg-background",
+                          draftValue.trim() === value && "border-primary/30 bg-background"
+                        )}
+                      >
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[0.7rem] text-muted-foreground">
+                    No sampled values yet. You can still enter a value manually.
+                  </p>
+                )}
+              </div>
+            )}
             <Button type="button" size="xs" onClick={addFilter}>
               <Plus data-icon="inline-start" />
               Add filter

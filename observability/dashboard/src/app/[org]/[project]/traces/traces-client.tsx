@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { Activity, AlertTriangle, Wallet, Workflow } from "lucide-react";
 import { FilterBar } from "@/components/trace-list/filter-bar";
 import { SavedViews } from "@/components/trace-list/saved-views";
 import { TraceTable } from "@/components/trace-list/trace-table";
@@ -12,7 +11,10 @@ import {
   type TraceColumn,
   type TraceDensity,
 } from "@/components/trace-list/view-config";
-import { semanticSearchAction } from "@/actions/traces";
+import {
+  listTraceMetadataFieldsAction,
+  semanticSearchAction,
+} from "@/actions/traces";
 import {
   listAnnotationLabelsAction,
   listProjectAnnotationsAction,
@@ -22,7 +24,6 @@ import {
   createSavedFilterAction,
   deleteSavedFilterAction,
 } from "@/actions/filters";
-import { formatCost, formatLatency, formatNumber } from "@/lib/utils";
 import type {
   Annotation,
   ListTracesFilters,
@@ -30,6 +31,7 @@ import type {
   RunType,
   SavedFilter,
   SearchResult,
+  TraceMetadataField,
   TraceMetadataFilter,
   TraceSummary,
 } from "@/lib/types";
@@ -63,6 +65,7 @@ export function TracesClient({
   >({});
   const [savedFilters, setSavedFilters] = React.useState<SavedFilter[]>([]);
   const [activeFilterId, setActiveFilterId] = React.useState<string | undefined>(undefined);
+  const [metadataFields, setMetadataFields] = React.useState<TraceMetadataField[]>([]);
 
   const viewStorageKey = React.useMemo(
     () => `theta.trace-view:${orgSlug}:${projectSlug}`,
@@ -120,6 +123,25 @@ export function TracesClient({
         if (!cancelled) setAnnotationLabelOptions(labels);
       } catch (e) {
         console.error("Failed to load annotation labels:", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [projectId]);
+
+  React.useEffect(() => {
+    if (!projectId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await listTraceMetadataFieldsAction(projectId, 300);
+        if (!cancelled) {
+          setMetadataFields(result.items);
+        }
+      } catch (error) {
+        console.error("Failed to load metadata field options:", error);
+        if (!cancelled) {
+          setMetadataFields([]);
+        }
       }
     })();
     return () => { cancelled = true; };
@@ -298,21 +320,6 @@ export function TracesClient({
     return sorted;
   }, [initial, filters, annotationsByTrace]);
 
-  const summary = React.useMemo(() => {
-    const totalCost = filtered.reduce((sum, trace) => sum + (trace.cost_usd ?? 0), 0);
-    const totalLatency = filtered.reduce((sum, trace) => sum + (trace.latency_ms ?? 0), 0);
-    const avgLatency = filtered.length ? Math.round(totalLatency / filtered.length) : null;
-    const errorCount = filtered.filter((trace) => trace.status === "error").length;
-    const runningCount = filtered.filter((trace) => trace.status === "running").length;
-
-    return {
-      totalCost,
-      avgLatency,
-      errorCount,
-      runningCount,
-    };
-  }, [filtered]);
-
   const platformOptions = React.useMemo(
     () => uniq(initial.map((trace) => trace.platform).filter(Boolean)) as Platform[],
     [initial]
@@ -329,12 +336,19 @@ export function TracesClient({
     () => uniq(initial.map((trace) => trace.use_case).filter(Boolean)),
     [initial]
   );
-  const metadataKeyOptions = React.useMemo(
+  const metadataFieldOptions = React.useMemo(
     () =>
-      uniq(
-        initial.flatMap((trace) => collectMetadataKeys(trace.metadata)).filter(Boolean)
-      ),
-    [initial]
+      metadataFields.length > 0
+        ? metadataFields
+        : uniq(
+            initial.flatMap((trace) => collectMetadataKeys(trace.metadata)).filter(Boolean)
+          ).map((key) => ({
+            key,
+            value_type: "mixed" as const,
+            occurrences: 0,
+            example_values: [],
+          })),
+    [initial, metadataFields]
   );
 
   const exportCsv = React.useCallback(() => {
@@ -397,7 +411,7 @@ export function TracesClient({
           modelOptions={modelOptions}
           runTypeOptions={runTypeOptions}
           useCaseOptions={useCaseOptions}
-          metadataKeyOptions={metadataKeyOptions}
+          metadataFields={metadataFieldOptions}
           annotationLabelOptions={annotationLabelOptions}
           columns={columns}
           density={density}
@@ -511,29 +525,4 @@ function normalizeMetadataValues(value: unknown): string[] {
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function SummaryCard({
-  label,
-  value,
-  detail,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-  icon: React.ComponentType<{ className?: string }>;
-}) {
-  return (
-    <div className="rounded-xl border bg-card px-4 py-4">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <div className="grid size-8 place-items-center rounded-md bg-muted text-foreground">
-          <Icon className="size-4" />
-        </div>
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      </div>
-      <p className="mt-3 text-2xl font-semibold tracking-tight">{value}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
-    </div>
-  );
 }

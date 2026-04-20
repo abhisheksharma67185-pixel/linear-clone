@@ -73,6 +73,10 @@ func NewWriter(ctx context.Context, project, dataset, endpoint string, log *slog
 		stop:       make(chan struct{}),
 		done:       make(chan struct{}),
 	}
+	if err := w.ensureSchema(ctx); err != nil {
+		_ = cli.Close()
+		return nil, fmt.Errorf("ensure bigquery schema: %w", err)
+	}
 	go w.loop(ctx)
 	return w, nil
 }

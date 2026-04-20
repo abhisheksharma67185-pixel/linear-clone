@@ -24,8 +24,10 @@ import (
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/incidents"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/ingest"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/logger"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/sse"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
+	thetawebhook "github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/webhook"
 )
 
 const version = "0.1.0"
@@ -61,10 +63,11 @@ func main() {
 
 	embedder := &embeddings.EmbeddingWorker{Store: pg, APIKey: cfg.AnthropicAPIKey, Log: log}
 	if !embedder.Enabled() {
-		log.Warn("ANTHROPIC_API_KEY not set — semantic search + embeddings disabled")
+		log.Warn("ANTHROPIC_API_KEY not set — semantic reranking disabled; full-text indexing remains enabled")
 	}
 
 	pipeline := &ingest.Pipeline{GCS: gcsCli, BQ: bqWriter, Hub: hub, Embedder: embedder, Log: log}
+	deliverer := &thetawebhook.Deliverer{Store: pg, Log: log}
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -84,10 +87,10 @@ func main() {
 
 	// Handlers.
 	h := &handlers.Health{Store: pg, Ver: version}
-	traceH := &handlers.Traces{Pipeline: pipeline, BQ: bqWriter, GCS: gcsCli, Hub: hub, Store: pg}
+	traceH := &handlers.Traces{Pipeline: pipeline, BQ: bqWriter, GCS: gcsCli, Hub: hub, Store: pg, Webhooks: deliverer}
 	stepH := &handlers.Steps{Pipeline: pipeline, BQ: bqWriter}
 	mediaH := &handlers.Media{GCS: gcsCli, Store: pg}
-	projectsH := &handlers.Projects{Store: pg}
+	projectsH := &handlers.Projects{Store: pg, BQ: bqWriter}
 	keysH := &handlers.Keys{Store: pg}
 	membersH := &handlers.Members{Store: pg}
 	authH := &handlers.Auth{Store: pg}
@@ -97,7 +100,7 @@ func main() {
 	webhooksH := &handlers.Webhooks{Store: pg}
 	annotationsH := &handlers.Annotations{Store: pg}
 	threadsH := &handlers.Threads{Store: pg}
-	monitorsH := &handlers.Monitors{Store: pg}
+	monitorsH := &handlers.Monitors{Store: pg, BQ: bqWriter}
 	exportsH := &handlers.Exports{Store: pg, BQ: bqWriter, GCS: gcsCli}
 
 	clusterDiscoverer := &clusters.Discoverer{
@@ -114,6 +117,9 @@ func main() {
 		Log:          log,
 		ProjectID:    cfg.BQProject,
 		Dataset:      cfg.BQDataset,
+		OnIncidentCreated: func(_ context.Context, incident *models.Incident) {
+			go deliverer.DeliverIncidentEvent(context.Background(), incident)
+		},
 	}
 	incidentsH := &handlers.Incidents{Store: pg, Detector: incidentDetector, Log: log}
 
@@ -166,6 +172,7 @@ func main() {
 		r.Get("/v1/projects", projectsH.List)
 		r.Post("/v1/projects", projectsH.Create)
 		r.Get("/v1/projects/{id}", projectsH.Get)
+		r.Get("/v1/projects/{id}/metadata-fields", projectsH.MetadataFields)
 		r.Get("/v1/projects/{id}/exports/otel", exportsH.ExportOTel)
 		r.Get("/v1/projects/{id}/threads", threadsH.List)
 		r.Post("/v1/projects/{id}/threads", threadsH.Create)

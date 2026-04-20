@@ -227,9 +227,10 @@ console.log(data[0]?.metadata?.workflow?.stage);`}
 
       <Callout type="tip" title="Configurable dashboard filters">
         <p>
-          The Traces page uses the same metadata keys exposed in trace summaries. When new
-          metadata keys appear, you can add filters for them in the UI and save them as
-          reusable project filters.
+          The dashboard discovers metadata fields from recent project traces via
+          <code>GET /v1/projects/:id/metadata-fields</code>. When new JSON keys appear, you
+          can select them directly in the metadata filter builder and save them as reusable
+          project filters.
         </p>
       </Callout>
 
@@ -251,8 +252,8 @@ console.log(data[0]?.metadata?.workflow?.stage);`}
 
       <h2>Status and Errors</h2>
       <p>
-        Step and trace status is automatically set to <code>"success"</code> on normal exit
-        and <code>"error"</code> if an exception propagates through the callback.
+        Step and trace status is automatically set to <code>&quot;success&quot;</code> on normal exit
+        and <code>&quot;error&quot;</code> if an exception propagates through the callback.
         You can also set status manually:
       </p>
       <CodeBlock lang="typescript">
@@ -312,7 +313,7 @@ THETA_DEBUG=1`}
       <p>
         The SDK uses Node.js <code>AsyncLocalStorage</code> to automatically track
         parent-child step relationships. When you call <code>t.step()</code> inside
-        another step's callback, the inner step's <code>parentStepId</code> is
+        another step&apos;s callback, the inner step&apos;s <code>parentStepId</code> is
         automatically set. This works across <code>async/await</code> boundaries,
         <code>Promise.all()</code>, and any async control flow.
       </p>

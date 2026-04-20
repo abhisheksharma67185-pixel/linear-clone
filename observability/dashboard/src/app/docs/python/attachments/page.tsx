@@ -108,7 +108,7 @@ export default function PythonAttachmentsPage() {
         The <code>source</code> parameter on all attachment methods accepts:
       </p>
       <ul>
-        <li><strong>File path (str)</strong> -- e.g., <code>"./image.png"</code>. MIME type is auto-detected.</li>
+        <li><strong>File path (str)</strong> -- e.g., <code>&quot;./image.png&quot;</code>. MIME type is auto-detected.</li>
         <li><strong>Bytes</strong> -- raw <code>bytes</code> object. You must provide the <code>mime</code> parameter.</li>
         <li><strong>File-like object</strong> -- any object with a <code>read()</code> method.</li>
       </ul>

@@ -174,6 +174,18 @@ type TraceListResponse struct {
 	NextCursor string          `json:"next_cursor,omitempty"`
 }
 
+type MetadataField struct {
+	Key           string   `json:"key"`
+	ValueType     string   `json:"value_type"`
+	Occurrences   int      `json:"occurrences"`
+	ExampleValues []string `json:"example_values,omitempty"`
+}
+
+type MetadataFieldListResponse struct {
+	Items         []MetadataField `json:"items"`
+	SampledTraces int             `json:"sampled_traces"`
+}
+
 // Usage.
 type UsageResponse struct {
 	OrgID          string    `json:"org_id"`
@@ -218,14 +230,15 @@ type Metric struct {
 }
 
 type MetricEvent struct {
-	ID          string    `json:"id"`
-	MetricID    string    `json:"metric_id"`
-	MetricName  string    `json:"metric_name,omitempty"`
-	TraceID     string    `json:"trace_id"`
-	Passed      *bool     `json:"passed,omitempty"`
-	Score       *float64  `json:"score,omitempty"`
-	Label       *string   `json:"label,omitempty"`
-	EvaluatedAt time.Time `json:"evaluated_at"`
+	ID          string          `json:"id"`
+	MetricID    string          `json:"metric_id"`
+	MetricName  string          `json:"metric_name,omitempty"`
+	TraceID     string          `json:"trace_id"`
+	Passed      *bool           `json:"passed,omitempty"`
+	Score       *float64        `json:"score,omitempty"`
+	Label       *string         `json:"label,omitempty"`
+	Metadata    json.RawMessage `json:"metadata,omitempty"`
+	EvaluatedAt time.Time       `json:"evaluated_at"`
 }
 
 // Cluster DTOs.
@@ -360,21 +373,39 @@ type UpdateConversationThreadRequest struct {
 
 // Monitor configs.
 type MonitorConfig struct {
-	ID                string          `json:"id"`
-	ProjectID         string          `json:"project_id"`
-	Name              string          `json:"name"`
-	Description       *string         `json:"description,omitempty"`
-	SignalKey         string          `json:"signal_key"`
-	Operator          string          `json:"operator"`
-	WarnThreshold     *float64        `json:"warn_threshold,omitempty"`
-	CriticalThreshold *float64        `json:"critical_threshold,omitempty"`
-	WindowMinutes     int             `json:"window_minutes"`
-	GroupBy           *string         `json:"group_by,omitempty"`
-	Filters           json.RawMessage `json:"filters,omitempty"`
-	Active            bool            `json:"active"`
-	CreatedBy         *string         `json:"created_by,omitempty"`
-	CreatedAt         time.Time       `json:"created_at"`
-	UpdatedAt         time.Time       `json:"updated_at"`
+	ID                string             `json:"id"`
+	ProjectID         string             `json:"project_id"`
+	Name              string             `json:"name"`
+	Description       *string            `json:"description,omitempty"`
+	SignalKey         string             `json:"signal_key"`
+	Operator          string             `json:"operator"`
+	WarnThreshold     *float64           `json:"warn_threshold,omitempty"`
+	CriticalThreshold *float64           `json:"critical_threshold,omitempty"`
+	WindowMinutes     int                `json:"window_minutes"`
+	GroupBy           *string            `json:"group_by,omitempty"`
+	Filters           json.RawMessage    `json:"filters,omitempty"`
+	Active            bool               `json:"active"`
+	CreatedBy         *string            `json:"created_by,omitempty"`
+	CreatedAt         time.Time          `json:"created_at"`
+	UpdatedAt         time.Time          `json:"updated_at"`
+	LatestEvaluation  *MonitorEvaluation `json:"latest_evaluation,omitempty"`
+}
+
+type MonitorEvaluation struct {
+	State       string              `json:"state"`
+	Value       *float64            `json:"value,omitempty"`
+	SampleSize  int64               `json:"sample_size"`
+	WindowStart time.Time           `json:"window_start"`
+	WindowEnd   time.Time           `json:"window_end"`
+	EvaluatedAt time.Time           `json:"evaluated_at"`
+	GroupStates []MonitorGroupState `json:"group_states,omitempty"`
+}
+
+type MonitorGroupState struct {
+	Group      string  `json:"group"`
+	Value      float64 `json:"value"`
+	State      string  `json:"state"`
+	SampleSize int64   `json:"sample_size"`
 }
 
 type CreateMonitorConfigRequest struct {

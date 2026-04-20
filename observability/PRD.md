@@ -1,12 +1,38 @@
 # Theta Observability PRD
 
 Status: Draft for implementation alignment  
-Last updated: 2026-04-18  
+Last updated: 2026-04-20  
 Scope: External SaaS and self-hosted observability platform for AI agents and multimodal runs
 
 ## 1. Product Summary
 
 Theta Observability is a full-stack observability platform for AI agents, LLM applications, and multimodal systems. It provides SDKs that instrument agent execution, an ingest API that stores and indexes traces, and a dashboard that helps teams inspect runs, debug failures, evaluate quality, and manage organizations, projects, members, and API keys.
+
+## 1.1 Positioning
+
+Theta is positioned as:
+
+`The reliability and observability platform for AI runtimes.`
+
+This positioning is intentional:
+
+- `Observability` explains what Theta does today: traces, replay-oriented inspection, artifacts, filters, search, incidents, monitors, and investigation workflows.
+- `Reliability` explains the customer outcome Theta should deliver: catch failures earlier, reduce regressions, debug faster, and trust production agents and workflows.
+
+Theta should not be positioned as only:
+
+- prompt tooling
+- model serving
+- a generic BI layer
+- a dashboard-only tracing product
+
+Theta should be positioned around runtime visibility and production trust for:
+
+- AI agents
+- computer-use and desktop/browser workflows
+- multimodal systems
+- tool-heavy and long-running automated workflows
+- backend jobs and evaluation runs that need the same trace contract
 
 Theta is positioned for teams building:
 - Text-first agents and copilots
@@ -303,7 +329,59 @@ These items should remain visible until closed:
 - Hosted auth flows still need full browser-driven QA for external OAuth providers.
 - Long-term pagination, retention enforcement, and data export/delete workflows should be validated at higher scale.
 
-## 13. Roadmap
+## 13. Feature Status
+
+### 13.1 Shipped today
+
+These capabilities are implemented and should be treated as part of the current product surface.
+
+- Multi-tenant control plane: organizations, projects, invites, members, API keys, usage views, retention settings, and project-scoped resources.
+- Trace ingestion: native `POST /v1/traces`, generic `POST /v1/events`, bulk import via `POST /v1/imports/traces`, and step append.
+- Canonical event model: provider-neutral envelope for external systems, adapters, replay jobs, and imported traces.
+- Multimodal evidence handling: image, audio, video, file, and sensor attachments plus browser-safe media serving.
+- Storage separation by tenant: object paths are org- and project-scoped.
+- Trace investigation surface: trace list, trace detail, annotations, saved filters, search, and live tail.
+- Reliability primitives: metrics, metric events, incidents, clusters, monitors, and conversation threads.
+- Desktop/computer-use import path: imported desktop traces with screenshot artifacts and action metadata.
+- Node and Python SDKs: trace creation, nested steps, attachments, batching, metrics, agent wrappers, and read APIs.
+- SDK integrations: OpenAI, Anthropic, LangChain, OpenClaw, and Next.js helpers.
+- Export and interoperability surface: OTel-style export and MCP server support.
+- Self-hosting and local stack: Docker-based dev environment and E2E stack validation.
+
+### 13.2 Partially shipped / needs hardening
+
+These capabilities exist, but the product has not fully earned the claim without more implementation, QA, or operational depth.
+
+- Reliability workflows: incidents and monitors exist, but alert execution, escalation, and remediation workflows are still thin.
+- Replay for computer-use traces: screenshots render, but the full action timeline and replay UX are not yet first-class.
+- Dynamic metadata filtering: metadata filters exist, but field discovery, typed operators, and no-code filter authoring still need work.
+- Experiments, clusters, and threads: real surfaces exist, but they still need deeper workflows, comparison tooling, and cross-trace navigation.
+- Search: full-text search works; semantic search depends on enrichment configuration and needs stronger validation at scale.
+- Webhooks, retention, and billing: control-plane endpoints and settings exist, but deeper production-grade delivery and billing behavior still need hardening.
+- Auth and onboarding: functional in local/dev flows, but hosted browser-grade QA and edge-case handling are still incomplete.
+- OTel interoperability: export exists; native ingest and broader translation coverage are still incomplete.
+- Documentation and API contract sync: docs are strong, but OpenAPI and implementation need continuous lockstep validation.
+- Scaling behavior: pagination, delete/export flows, retention enforcement, and large-volume validation still need systematic testing.
+
+### 13.3 Must build next
+
+These are the highest-value additions required for Theta to fully justify `reliability + observability` as a durable category position.
+
+- First-class replay viewer for desktop, browser, and mobile traces.
+- Unified action/event schema and renderer for click, type, scroll, drag, navigate, wait, ask-user, tool result, and custom actions.
+- Dynamic metadata field discovery with typed filtering and saved query support.
+- Stable query DSL and API-backed reusable investigation workflows.
+- Cross-trace correlation for sessions, request IDs, parent/root traces, releases, and user journeys.
+- Real monitor execution engine with alert policies, state transitions, notification delivery, history, and suppression.
+- Regression and drift detection tied to traces, releases, prompts, models, and experiments.
+- Queue-backed ingest with retries, deduplication, idempotency keys, backpressure handling, and dead-letter support.
+- Native OTel ingest and adapter-based import/export for external systems.
+- Governance layer: audit logs, fine-grained RBAC, redaction, PII scrubbing, and policy inheritance.
+- Enterprise identity and provisioning: SSO and SCIM.
+- Explicit export, delete, and retention enforcement workflows with scale validation.
+- BYO storage / warehouse modes and declarative infrastructure setup for enterprise deployments.
+
+## 14. Roadmap
 
 ### Phase 1
 
@@ -328,7 +406,7 @@ These items should remain visible until closed:
 - Export and deletion tooling
 - Large-scale query and storage optimization
 
-## 14. Out of Scope For This PRD
+## 15. Out of Scope For This PRD
 
 - New model provider wrappers beyond the currently supported integrations
 - Workflow orchestration and scheduling

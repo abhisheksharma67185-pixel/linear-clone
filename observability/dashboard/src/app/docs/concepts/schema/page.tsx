@@ -92,7 +92,7 @@ export default function TraceSchemaPage() {
 
       <Callout type="info" title="Robotics steps">
         <p>
-          When <code>type</code> is <code>"robotics"</code>, the step must include
+          When <code>type</code> is <code>&quot;robotics&quot;</code>, the step must include
           either <code>sensor_frames</code> or <code>messages</code> (or both).
           This constraint is enforced by the schema.
         </p>

@@ -8,6 +8,9 @@ Requires:
 Run:
   THETA_API_KEY=tk_... THETA_PROJECT=proj_... pytest observability/tests/integration_test.py -v
 """
+import base64
+import hashlib
+import hmac
 import json
 import os
 import time
@@ -18,6 +21,7 @@ import pytest
 API_URL = os.environ.get("THETA_BASE_URL", "http://localhost:8080")
 API_KEY = os.environ.get("THETA_API_KEY", "")
 PROJECT = os.environ.get("THETA_PROJECT", "")
+JWT_SECRET = os.environ.get("JWT_SECRET", "dev-jwt-secret-change-me")
 
 pytestmark = pytest.mark.skipif(
     not API_KEY or not PROJECT,
@@ -39,6 +43,30 @@ def http():
 def sdk_client():
     from theta_observability import TraceClient
     return TraceClient(api_key=API_KEY, project=PROJECT, base_url=API_URL)
+
+
+def _jwt_b64url(value: bytes) -> str:
+    return base64.urlsafe_b64encode(value).rstrip(b"=").decode()
+
+
+def mint_dashboard_jwt(user_id: str, org_id: str, ttl_s: int = 3600) -> str:
+    now = int(time.time())
+    header = {"alg": "HS256", "typ": "JWT"}
+    payload = {
+        "sub": user_id,
+        "email": "test@theta.dev",
+        "orgs": [org_id],
+        "iat": now,
+        "exp": now + ttl_s,
+    }
+    signing_input = ".".join(
+        [
+            _jwt_b64url(json.dumps(header, separators=(",", ":")).encode()),
+            _jwt_b64url(json.dumps(payload, separators=(",", ":")).encode()),
+        ]
+    )
+    signature = hmac.new(JWT_SECRET.encode(), signing_input.encode(), hashlib.sha256).digest()
+    return f"{signing_input}.{_jwt_b64url(signature)}"
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -191,10 +219,16 @@ class TestPythonSDK:
             return "ok"
 
         _, run_id = agent("test")
-        # This should not raise (fail-soft)
         sdk_client.record_metric("task_adherence", run_id, passed=True)
         sdk_client.record_metric("user_satisfaction", run_id, score=0.95)
         sdk_client.flush(timeout=10)
+
+        resp = sdk_client._http.get(f"/v1/traces/{run_id}/metrics")
+        assert resp.status_code == 200, resp.text
+        items = resp.json()["items"]
+        names = {item["metric_name"] for item in items}
+        assert "task_adherence" in names
+        assert "user_satisfaction" in names
 
     def test_attach_image(self, sdk_client):
         png = bytes.fromhex(
@@ -236,15 +270,9 @@ class TestPythonSDK:
 
 class TestIncidents:
     def test_detect(self, http: httpx.Client):
-        # Mint a JWT for this
-        import jwt as pyjwt
-        signup = json.load(open("/tmp/signup.json"))
-        token = pyjwt.encode(
-            {"sub": signup["user_id"], "email": "test@theta.dev",
-             "orgs": [signup["org_id"]],
-             "iat": int(time.time()), "exp": int(time.time()) + 3600},
-            "dev-jwt-secret-change-me", algorithm="HS256",
-        )
+        with open("/tmp/signup.json", "r", encoding="utf-8") as handle:
+            signup = json.load(handle)
+        token = mint_dashboard_jwt(signup["user_id"], signup["org_id"])
         r = http.post(
             "/v1/incidents/detect",
             json={"project_id": PROJECT},
@@ -253,14 +281,9 @@ class TestIncidents:
         assert r.status_code == 200, r.text
 
     def test_list_incidents(self, http: httpx.Client):
-        import jwt as pyjwt
-        signup = json.load(open("/tmp/signup.json"))
-        token = pyjwt.encode(
-            {"sub": signup["user_id"], "email": "test@theta.dev",
-             "orgs": [signup["org_id"]],
-             "iat": int(time.time()), "exp": int(time.time()) + 3600},
-            "dev-jwt-secret-change-me", algorithm="HS256",
-        )
+        with open("/tmp/signup.json", "r", encoding="utf-8") as handle:
+            signup = json.load(handle)
+        token = mint_dashboard_jwt(signup["user_id"], signup["org_id"])
         r = http.get(
             f"/v1/incidents?project_id={PROJECT}",
             headers={"authorization": f"Bearer {token}"},

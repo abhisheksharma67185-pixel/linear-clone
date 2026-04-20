@@ -29,6 +29,7 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import hmac
 import json
 import mimetypes
 import re
@@ -38,13 +39,26 @@ from pathlib import Path
 from typing import Any, Iterable
 from urllib.parse import quote, unquote, urlparse
 
-import jwt
-import psycopg
-import requests
-from google.cloud import firestore
-from google.cloud import storage
-from google.cloud.firestore_v1.base_query import FieldFilter
-from google.oauth2 import service_account
+try:
+    import requests
+except ModuleNotFoundError:  # pragma: no cover - exercised only in lightweight test envs
+    requests = None  # type: ignore[assignment]
+
+try:
+    import psycopg
+except ModuleNotFoundError:  # pragma: no cover - exercised only in lightweight test envs
+    psycopg = None  # type: ignore[assignment]
+
+try:
+    from google.cloud import firestore
+    from google.cloud import storage
+    from google.cloud.firestore_v1.base_query import FieldFilter
+    from google.oauth2 import service_account
+except ModuleNotFoundError:  # pragma: no cover - exercised only in lightweight test envs
+    firestore = None  # type: ignore[assignment]
+    storage = None  # type: ignore[assignment]
+    FieldFilter = Any  # type: ignore[assignment]
+    service_account = None  # type: ignore[assignment]
 
 
 LOCAL_THETA_DSN = "postgres://theta:theta@localhost:5432/theta_obs?sslmode=disable"
@@ -1096,17 +1110,26 @@ def resolve_theta_context(db_url: str, org_slug: str) -> ThetaContext:
 
 def mint_dashboard_jwt(secret: str, ctx: ThetaContext) -> str:
     now = int(datetime.now(tz=UTC).timestamp())
-    return jwt.encode(
-        {
-            "sub": ctx.user_id,
-            "email": ctx.user_email,
-            "orgs": [ctx.org_id],
-            "iat": now,
-            "exp": now + 3600,
-        },
-        secret,
-        algorithm="HS256",
+    header = {"alg": "HS256", "typ": "JWT"}
+    payload = {
+        "sub": ctx.user_id,
+        "email": ctx.user_email,
+        "orgs": [ctx.org_id],
+        "iat": now,
+        "exp": now + 3600,
+    }
+    signing_input = ".".join(
+        [
+            _jwt_b64url(json.dumps(header, separators=(",", ":")).encode()),
+            _jwt_b64url(json.dumps(payload, separators=(",", ":")).encode()),
+        ]
     )
+    signature = hmac.new(secret.encode(), signing_input.encode(), hashlib.sha256).digest()
+    return f"{signing_input}.{_jwt_b64url(signature)}"
+
+
+def _jwt_b64url(value: bytes) -> str:
+    return base64.urlsafe_b64encode(value).rstrip(b"=").decode()
 
 
 def theta_session(base_url: str, token: str) -> requests.Session:
@@ -1194,6 +1217,17 @@ def fetch_source_trace(storage_client: storage.Client, default_bucket: str, gcs_
 
 
 def main() -> None:
+    missing: list[str] = []
+    if psycopg is None:
+        missing.append("psycopg")
+    if requests is None:
+        missing.append("requests")
+    if firestore is None or storage is None or service_account is None:
+        missing.extend(["google-cloud-firestore", "google-cloud-storage"])
+    if missing:
+        joined = ", ".join(dict.fromkeys(missing))
+        raise SystemExit(f"Missing required import dependencies: {joined}")
+
     args = parse_args()
     source_env_path = Path(args.source_env)
     if not source_env_path.exists():

@@ -252,6 +252,11 @@ gs://bucket/p/{project_id}/tr/{trace_id}/att/{id}.{ext}    # Media attachments
 
 ## BigQuery Dataset Setup
 
+The Go API now bootstraps the configured dataset and the `traces` / `steps`
+tables automatically on startup when its credentials can read and create
+BigQuery resources. The manual commands below are still useful for locked-down
+environments or pre-provisioning infrastructure.
+
 ### Create the dataset
 
 ```bash

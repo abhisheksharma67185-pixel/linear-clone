@@ -18,6 +18,7 @@ import type {
   SavedFilter,
   SearchResult,
   Trace,
+  TraceMetadataField,
   TraceSummary,
   Usage,
   Webhook,
@@ -137,6 +138,25 @@ export async function updateProject(
     method: "PATCH",
     body: JSON.stringify(patch),
   });
+}
+
+export async function listProjectMetadataFields(
+  projectId: string,
+  sampleLimit = 200
+): Promise<{ items: TraceMetadataField[]; sampled_traces: number }> {
+  try {
+    const body = await apiFetch<{
+      items?: TraceMetadataField[];
+      sampled_traces?: number;
+    }>(`/v1/projects/${projectId}/metadata-fields?sample_limit=${sampleLimit}`);
+    return {
+      items: body.items ?? [],
+      sampled_traces: body.sampled_traces ?? 0,
+    };
+  } catch (error) {
+    console.error("listProjectMetadataFields failed:", error);
+    return { items: [], sampled_traces: 0 };
+  }
 }
 
 // ── API Keys ─────────────────────────────────────────────────────────────

@@ -46,3 +46,17 @@ func (s *Store) GetUsage(ctx context.Context, orgID string, since, until time.Ti
 	}
 	return u, rows.Err()
 }
+
+// MarkUsageReported stamps all currently-unreported usage rows for an org.
+func (s *Store) MarkUsageReported(ctx context.Context, orgID string) (int64, error) {
+	ct, err := s.Pool.Exec(ctx, `
+		UPDATE usage_events
+		SET stripe_reported_at = NOW()
+		WHERE org_id = $1
+		  AND stripe_reported_at IS NULL
+	`, orgID)
+	if err != nil {
+		return 0, err
+	}
+	return ct.RowsAffected(), nil
+}

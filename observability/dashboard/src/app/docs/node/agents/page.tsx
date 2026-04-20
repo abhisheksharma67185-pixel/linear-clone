@@ -109,7 +109,7 @@ await client.recordMetric("response_quality", runId, { score: 0.92 });`}
 
       <h2>Error Handling</h2>
       <p>
-        If the agent function throws, the trace is marked with <code>status: "error"</code>
+        If the agent function throws, the trace is marked with <code>status: &quot;error&quot;</code>
         and the error message is captured. The exception is re-thrown. The <code>runId</code>
         is still returned so you can record metrics against the failed run.
       </p>
@@ -128,7 +128,7 @@ try {
 
       <Callout type="info">
         <p>
-          The agent wrapper automatically sets <code>runType: "agent"</code> on the trace
+          The agent wrapper automatically sets <code>runType: &quot;agent&quot;</code> on the trace
           and stores the input in <code>metadata.agent_input</code>.
         </p>
       </Callout>

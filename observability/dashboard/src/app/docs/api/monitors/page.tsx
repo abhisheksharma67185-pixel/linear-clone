@@ -9,6 +9,16 @@ export default function APIMonitorsPage() {
         signals such as latency, error rate, token spend, or custom mapped metrics.
       </p>
 
+      <h2>Supported built-in signals</h2>
+      <ul>
+        <li><code>latency_ms</code> -- average latency across the window</li>
+        <li><code>error_rate</code> -- percentage of traces with <code>status=error</code></li>
+        <li><code>success_rate</code> -- percentage of traces with <code>status=success</code></li>
+        <li><code>total_tokens</code> -- summed token volume in the window</li>
+        <li><code>cost_usd</code> -- summed cost in the window</li>
+        <li><code>trace_count</code> -- total traces in the window</li>
+      </ul>
+
       <h2>Create Monitor</h2>
       <CodeBlock lang="json">
         {`{
@@ -31,6 +41,13 @@ export default function APIMonitorsPage() {
         Use <code>GET /v1/projects/:id/monitors</code> to list configs, then
         <code>PATCH /v1/monitors/:monitor_id</code> or
         <code>DELETE /v1/monitors/:monitor_id</code> to manage them.
+      </p>
+      <p>
+        Monitor responses include a <code>latest_evaluation</code> object with
+        the current state (<code>ok</code>, <code>warn</code>, <code>critical</code>,
+        <code>no_data</code>, <code>paused</code>, or <code>unsupported</code>),
+        sample size, window bounds, and optional grouped states when
+        <code>group_by</code> is configured.
       </p>
 
       <h2>Intended Use</h2>

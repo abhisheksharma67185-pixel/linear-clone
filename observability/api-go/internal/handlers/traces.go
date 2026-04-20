@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/bigquery"
-	"github.com/go-chi/chi/v5"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/auth"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/bq"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/gcs"
@@ -20,6 +19,8 @@ import (
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/sse"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/webhook"
+	"github.com/go-chi/chi/v5"
 )
 
 type Traces struct {
@@ -28,6 +29,7 @@ type Traces struct {
 	GCS      *gcs.Client
 	Hub      *sse.Hub
 	Store    *store.Store
+	Webhooks *webhook.Deliverer
 }
 
 // POST /v1/traces — accept full trace payload, run ingest pipeline.
@@ -54,6 +56,9 @@ func (h *Traces) Create(w http.ResponseWriter, r *http.Request) {
 		if len(t.Steps) > 0 {
 			_ = h.Store.RecordUsage(r.Context(), ac.OrgID, ac.ProjectID, "step.ingested", int64(len(t.Steps)))
 		}
+	}
+	if h.Webhooks != nil {
+		go h.Webhooks.DeliverTraceEvent(context.Background(), ac.OrgID, &t)
 	}
 	writeJSON(w, http.StatusAccepted, resp)
 }

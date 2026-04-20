@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/auth"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/bq"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
 	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
+	"github.com/go-chi/chi/v5"
 )
 
 type Monitors struct {
 	Store *store.Store
+	BQ    *bq.Writer
 }
 
 func (h *Monitors) List(w http.ResponseWriter, r *http.Request) {
@@ -24,6 +26,7 @@ func (h *Monitors) List(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "db_error", err.Error())
 		return
 	}
+	enrichMonitorEvaluations(r.Context(), h.BQ, items)
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
@@ -68,6 +71,7 @@ func (h *Monitors) Create(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusInternalServerError, "db_error", err.Error())
 		return
 	}
+	monitor.LatestEvaluation = evaluateMonitor(r.Context(), h.BQ, monitor)
 	writeJSON(w, http.StatusCreated, monitor)
 }
 
@@ -76,6 +80,7 @@ func (h *Monitors) Get(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	monitor.LatestEvaluation = evaluateMonitor(r.Context(), h.BQ, monitor)
 	writeJSON(w, http.StatusOK, monitor)
 }
 
@@ -99,6 +104,7 @@ func (h *Monitors) Patch(w http.ResponseWriter, r *http.Request) {
 		writeErr(w, http.StatusNotFound, "not_found", "monitor not found")
 		return
 	}
+	updated.LatestEvaluation = evaluateMonitor(r.Context(), h.BQ, updated)
 	writeJSON(w, http.StatusOK, updated)
 }
 

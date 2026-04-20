@@ -36,7 +36,7 @@ with client.trace(name="chat") as t:
 
       <h3>What Gets Captured</h3>
       <ul>
-        <li>An <code>llm</code> step named <code>"openai.chat.completions"</code></li>
+        <li>An <code>llm</code> step named <code>&quot;openai.chat.completions&quot;</code></li>
         <li>All input messages (role + content)</li>
         <li>The assistant response message</li>
         <li>Token usage (prompt_tokens, completion_tokens)</li>
@@ -135,7 +135,7 @@ with client.trace(name="claude-chat") as t:
 
       <h3>What Gets Captured</h3>
       <ul>
-        <li>An <code>llm</code> step named <code>"anthropic.messages"</code></li>
+        <li>An <code>llm</code> step named <code>&quot;anthropic.messages&quot;</code></li>
         <li>All input messages</li>
         <li>The assistant response (text blocks concatenated)</li>
         <li>Token usage (input_tokens, output_tokens)</li>

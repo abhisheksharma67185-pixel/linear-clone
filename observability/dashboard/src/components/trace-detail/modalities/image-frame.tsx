@@ -1,3 +1,6 @@
+"use client";
+
+import * as React from "react";
 import { DeviceFrame } from "./device-frame";
 
 function imageAspectRatio(
@@ -38,20 +41,39 @@ export function ImageFrame({
   width?: number;
   height?: number;
 }) {
-  const aspectRatio = imageAspectRatio(platform, width, height);
-  const isSquareDesktopImport = platform === "desktop" && width === height;
+  const [naturalSize, setNaturalSize] = React.useState<{ width: number; height: number } | null>(
+    width && height ? { width, height } : null
+  );
+
+  const resolvedWidth = width ?? naturalSize?.width;
+  const resolvedHeight = height ?? naturalSize?.height;
+  const aspectRatio = imageAspectRatio(platform, resolvedWidth, resolvedHeight);
+  const isSquareDesktopImport =
+    platform === "desktop" &&
+    Boolean(resolvedWidth && resolvedHeight && resolvedWidth === resolvedHeight);
   const img = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={url}
       alt={alt ?? ""}
+      onLoad={(event) => {
+        if (width && height) {
+          return;
+        }
+        const target = event.currentTarget;
+        setNaturalSize({
+          width: target.naturalWidth,
+          height: target.naturalHeight,
+        });
+      }}
       className={
         isSquareDesktopImport
-          ? "h-full w-full object-cover object-top"
+          ? "h-full w-full origin-center scale-[1.38] object-cover object-center"
           : "h-full w-full object-contain object-top"
       }
-      width={width}
-      height={height}
+      width={resolvedWidth}
+      height={resolvedHeight}
+      loading="lazy"
     />
   );
   if (platform === "mobile") {

@@ -27,8 +27,8 @@ from theta_observability import TraceClient
 HERE = Path(__file__).parent
 FIXTURES = HERE.parent / "multimodal" / "fixtures"
 BASE_URL = os.environ.get("THETA_BASE_URL", "http://localhost:8080")
-API_KEY = os.environ["THETA_API_KEY"]
-PROJECT = os.environ["THETA_PROJECT"]
+API_KEY = os.environ.get("THETA_API_KEY", "")
+PROJECT = os.environ.get("THETA_PROJECT", "")
 
 
 def read_fixture(name: str) -> bytes:
@@ -173,6 +173,8 @@ def emit_error_trace(client: TraceClient, run_tag: str) -> str:
 
 
 def main() -> None:
+    if not API_KEY or not PROJECT:
+        raise SystemExit("THETA_API_KEY and THETA_PROJECT are required")
     client = TraceClient(
         api_key=API_KEY,
         project=PROJECT,

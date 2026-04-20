@@ -89,7 +89,7 @@ export default function ApiAdminPage() {
 
       <h3>Dry Run</h3>
       <p>
-        Set <code>"dry_run": true</code> to preview the changes without applying them.
+        Set <code>&quot;dry_run&quot;: true</code> to preview the changes without applying them.
         The response shows how many traces would be affected:
       </p>
       <CodeBlock lang="json" title="200 OK (dry run)">
