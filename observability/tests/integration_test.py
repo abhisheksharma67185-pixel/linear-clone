@@ -90,10 +90,16 @@ class TestTraceIngest:
         assert "trace_id" in body
 
     def test_list_traces(self, http: httpx.Client):
-        r = http.get(f"/v1/traces?project_id={PROJECT}&limit=5")
-        assert r.status_code == 200
-        body = r.json()
-        assert "items" in body
+        deadline = time.time() + 5
+        body = {"items": []}
+        while time.time() < deadline:
+            r = http.get(f"/v1/traces?project_id={PROJECT}&limit=5")
+            assert r.status_code == 200
+            body = r.json()
+            assert "items" in body
+            if len(body["items"]) > 0:
+                break
+            time.sleep(0.5)
         assert len(body["items"]) > 0
 
     def test_get_trace(self, http: httpx.Client):

@@ -12,7 +12,7 @@ export default async function InvitePage({ params }: Props) {
     <div className="grid min-h-dvh place-items-center bg-background px-6">
       <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-sm">
         <Badge variant="outline">Invitation</Badge>
-        <h1 className="mt-3 text-lg font-semibold">You&apos;re invited to join Acme AI</h1>
+        <h1 className="mt-3 text-lg font-semibold">You&apos;re invited to join Theta Observability</h1>
         <p className="mt-1 text-xs text-muted-foreground">
           Sign in to accept your invitation. Token <span className="font-mono">{token.slice(0, 8)}…</span>
         </p>

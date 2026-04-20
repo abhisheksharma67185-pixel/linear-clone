@@ -6,10 +6,10 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/theagi/theta-observability/api-go/internal/bq"
-	"github.com/theagi/theta-observability/api-go/internal/embeddings"
-	"github.com/theagi/theta-observability/api-go/internal/models"
-	"github.com/theagi/theta-observability/api-go/internal/store"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/bq"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/embeddings"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
 )
 
 // Search handles full-text + semantic search over traces.

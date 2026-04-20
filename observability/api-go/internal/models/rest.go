@@ -323,3 +323,82 @@ type CreateWebhookResponse struct {
 	Webhook
 	Secret string `json:"secret"`
 }
+
+// Conversation threads.
+type ConversationThread struct {
+	ID         string          `json:"id"`
+	ProjectID  string          `json:"project_id"`
+	Title      string          `json:"title"`
+	ExternalID *string         `json:"external_id,omitempty"`
+	UserID     *string         `json:"user_id,omitempty"`
+	SessionID  *string         `json:"session_id,omitempty"`
+	Metadata   json.RawMessage `json:"metadata,omitempty"`
+	TraceIDs   []string        `json:"trace_ids,omitempty"`
+	TraceCount int             `json:"trace_count"`
+	CreatedBy  *string         `json:"created_by,omitempty"`
+	CreatedAt  time.Time       `json:"created_at"`
+	UpdatedAt  time.Time       `json:"updated_at"`
+}
+
+type CreateConversationThreadRequest struct {
+	Title      string          `json:"title"`
+	ExternalID *string         `json:"external_id,omitempty"`
+	UserID     *string         `json:"user_id,omitempty"`
+	SessionID  *string         `json:"session_id,omitempty"`
+	Metadata   json.RawMessage `json:"metadata,omitempty"`
+	TraceIDs   []string        `json:"trace_ids,omitempty"`
+}
+
+type UpdateConversationThreadRequest struct {
+	Title      *string          `json:"title,omitempty"`
+	ExternalID *string          `json:"external_id,omitempty"`
+	UserID     *string          `json:"user_id,omitempty"`
+	SessionID  *string          `json:"session_id,omitempty"`
+	Metadata   *json.RawMessage `json:"metadata,omitempty"`
+	TraceIDs   *[]string        `json:"trace_ids,omitempty"`
+}
+
+// Monitor configs.
+type MonitorConfig struct {
+	ID                string          `json:"id"`
+	ProjectID         string          `json:"project_id"`
+	Name              string          `json:"name"`
+	Description       *string         `json:"description,omitempty"`
+	SignalKey         string          `json:"signal_key"`
+	Operator          string          `json:"operator"`
+	WarnThreshold     *float64        `json:"warn_threshold,omitempty"`
+	CriticalThreshold *float64        `json:"critical_threshold,omitempty"`
+	WindowMinutes     int             `json:"window_minutes"`
+	GroupBy           *string         `json:"group_by,omitempty"`
+	Filters           json.RawMessage `json:"filters,omitempty"`
+	Active            bool            `json:"active"`
+	CreatedBy         *string         `json:"created_by,omitempty"`
+	CreatedAt         time.Time       `json:"created_at"`
+	UpdatedAt         time.Time       `json:"updated_at"`
+}
+
+type CreateMonitorConfigRequest struct {
+	Name              string          `json:"name"`
+	Description       *string         `json:"description,omitempty"`
+	SignalKey         string          `json:"signal_key"`
+	Operator          string          `json:"operator"`
+	WarnThreshold     *float64        `json:"warn_threshold,omitempty"`
+	CriticalThreshold *float64        `json:"critical_threshold,omitempty"`
+	WindowMinutes     *int            `json:"window_minutes,omitempty"`
+	GroupBy           *string         `json:"group_by,omitempty"`
+	Filters           json.RawMessage `json:"filters,omitempty"`
+	Active            *bool           `json:"active,omitempty"`
+}
+
+type UpdateMonitorConfigRequest struct {
+	Name              *string          `json:"name,omitempty"`
+	Description       *string          `json:"description,omitempty"`
+	SignalKey         *string          `json:"signal_key,omitempty"`
+	Operator          *string          `json:"operator,omitempty"`
+	WarnThreshold     *float64         `json:"warn_threshold,omitempty"`
+	CriticalThreshold *float64         `json:"critical_threshold,omitempty"`
+	WindowMinutes     *int             `json:"window_minutes,omitempty"`
+	GroupBy           *string          `json:"group_by,omitempty"`
+	Filters           *json.RawMessage `json:"filters,omitempty"`
+	Active            *bool            `json:"active,omitempty"`
+}

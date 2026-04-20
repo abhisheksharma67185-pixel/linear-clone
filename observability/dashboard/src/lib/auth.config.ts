@@ -11,7 +11,10 @@ export const authConfig = {
       const isAuthed = !!auth?.user;
       const isPublic =
         pathname === "/" ||
+        pathname.startsWith("/about") ||
         pathname.startsWith("/pricing") ||
+        pathname.startsWith("/privacy") ||
+        pathname.startsWith("/terms") ||
         pathname.startsWith("/docs") ||
         pathname.startsWith("/login") ||
         pathname.startsWith("/signup") ||

@@ -130,6 +130,7 @@ class Step(AbstractContextManager["Step"]):
         images: Optional[Iterable[MediaInput]] = None,
         audio: Optional[Iterable[MediaInput]] = None,
         video: Optional[Iterable[MediaInput]] = None,
+        attachments: Optional[Iterable[MediaInput]] = None,
         tool_calls: Optional[Iterable[dict[str, Any] | ToolCall]] = None,
     ) -> None:
         """Append a chat-style message to this step."""
@@ -142,6 +143,8 @@ class Step(AbstractContextManager["Step"]):
             content.append(self._trace._attach_as_attachment(aud, kind="audio"))
         for vid in video or []:
             content.append(self._trace._attach_as_attachment(vid, kind="video"))
+        for attachment in attachments or []:
+            content.append(self._trace._attach_as_attachment(attachment, kind="file"))
 
         tc_models: list[ToolCall] = []
         for tc in tool_calls or []:
@@ -196,6 +199,25 @@ class Step(AbstractContextManager["Step"]):
             self.model.sensor_frames.append(frame)
         return frame
 
+    def attach_image(self, source: MediaInput, mime: Optional[str] = None) -> str:
+        return self._attach_as_step_attachment(source, kind="image", mime=mime).uri or ""
+
+    def attach_audio(self, source: MediaInput, mime: Optional[str] = None) -> str:
+        return self._attach_as_step_attachment(source, kind="audio", mime=mime).uri or ""
+
+    def attach_video(self, source: MediaInput, mime: Optional[str] = None) -> str:
+        return self._attach_as_step_attachment(source, kind="video", mime=mime).uri or ""
+
+    def attach_file(self, source: MediaInput, mime: Optional[str] = None) -> str:
+        return self._attach_as_step_attachment(source, kind="file", mime=mime).uri or ""
+
+    def attach_sensor(
+        self, source: MediaInput, modality: str, mime: Optional[str] = None
+    ) -> str:
+        att = self._attach_as_step_attachment(source, kind="sensor", mime=mime)
+        att.modality = modality
+        return att.uri or ""
+
     def set_token_usage(self, input: int, output: int, total: Optional[int] = None) -> None:
         self.model.token_usage = TokenUsage(
             input=input, output=output, total=total if total is not None else input + output
@@ -212,6 +234,17 @@ class Step(AbstractContextManager["Step"]):
 
     def set_model(self, model: str) -> None:
         self.model.model = model
+
+    def _attach_as_step_attachment(
+        self,
+        source: MediaInput,
+        kind: str,
+        mime: Optional[str] = None,
+    ) -> Attachment:
+        attachment = self._trace._attach_as_attachment(source, kind=kind, mime=mime)
+        with self._lock:
+            self.model.attachments.append(attachment)
+        return attachment
 
     def annotate(
         self,
@@ -246,7 +279,6 @@ class Trace(AbstractContextManager["Trace"]):
         self._client = client
         self._lock = threading.Lock()
         self._step_counter = 0
-        self._trace_attachments: list[Attachment] = []
         self._token: Optional[contextvars.Token] = None
         self._started_wall = 0.0
 
@@ -320,21 +352,21 @@ class Trace(AbstractContextManager["Trace"]):
     # -- attachments --
 
     def attach_image(self, source: MediaInput, mime: Optional[str] = None) -> str:
-        return self._attach_as_attachment(source, kind="image", mime=mime).uri or ""
+        return self._attach_as_trace_attachment(source, kind="image", mime=mime).uri or ""
 
     def attach_audio(self, source: MediaInput, mime: Optional[str] = None) -> str:
-        return self._attach_as_attachment(source, kind="audio", mime=mime).uri or ""
+        return self._attach_as_trace_attachment(source, kind="audio", mime=mime).uri or ""
 
     def attach_video(self, source: MediaInput, mime: Optional[str] = None) -> str:
-        return self._attach_as_attachment(source, kind="video", mime=mime).uri or ""
+        return self._attach_as_trace_attachment(source, kind="video", mime=mime).uri or ""
 
     def attach_file(self, source: MediaInput, mime: Optional[str] = None) -> str:
-        return self._attach_as_attachment(source, kind="file", mime=mime).uri or ""
+        return self._attach_as_trace_attachment(source, kind="file", mime=mime).uri or ""
 
     def attach_sensor(
         self, source: MediaInput, modality: str, mime: Optional[str] = None
     ) -> str:
-        att = self._attach_as_attachment(source, kind="sensor", mime=mime)
+        att = self._attach_as_trace_attachment(source, kind="sensor", mime=mime)
         att.modality = modality
         return att.uri or ""
 
@@ -403,6 +435,16 @@ class Trace(AbstractContextManager["Trace"]):
             size_bytes=size or None,
         )
         return att
+
+    def _attach_as_trace_attachment(
+        self,
+        source: MediaInput,
+        kind: str,
+        mime: Optional[str] = None,
+    ) -> Attachment:
+        attachment = self._attach_as_attachment(source, kind=kind, mime=mime)
+        self.model.attachments.append(attachment)
+        return attachment
 
 
 __all__ = ["Trace", "Step"]

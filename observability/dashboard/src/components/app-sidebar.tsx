@@ -6,6 +6,7 @@ import {
   Activity,
   AlertTriangle,
   BarChart3,
+  BellRing,
   BookOpen,
   Boxes,
   FileLock2,
@@ -13,6 +14,7 @@ import {
   Home,
   KeyRound,
   LifeBuoy,
+  MessagesSquare,
   Settings,
   Users,
   Webhook,
@@ -41,7 +43,9 @@ export function AppSidebar({ org, orgs, projectSlug }: AppSidebarProps) {
     ...(projectBase
       ? [
           { href: `${projectBase}/traces`, label: "Traces", icon: Activity },
+          { href: `${projectBase}/threads`, label: "Threads", icon: MessagesSquare },
           { href: `${projectBase}/metrics`, label: "Metrics", icon: BarChart3 },
+          { href: `${projectBase}/monitors`, label: "Monitors", icon: BellRing },
           { href: `${projectBase}/incidents`, label: "Incidents", icon: AlertTriangle },
           { href: `${projectBase}/clusters`, label: "Clusters", icon: Boxes },
           { href: `${projectBase}/experiments`, label: "Experiments", icon: FlaskConical },
@@ -213,7 +217,9 @@ function MobileLink({
 
 function isActive(pathname: string, href: string) {
   if (href.endsWith("/traces")) return pathname.startsWith(href);
+  if (href.endsWith("/threads")) return pathname.startsWith(href);
   if (href.endsWith("/metrics")) return pathname.startsWith(href);
+  if (href.endsWith("/monitors")) return pathname.startsWith(href);
   if (href.endsWith("/incidents")) return pathname.startsWith(href);
   if (href.endsWith("/clusters")) return pathname.startsWith(href);
   if (href.endsWith("/experiments")) return pathname.startsWith(href);

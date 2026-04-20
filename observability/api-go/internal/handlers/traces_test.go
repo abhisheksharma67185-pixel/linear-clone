@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/theagi/theta-observability/api-go/internal/bq"
-	"github.com/theagi/theta-observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/bq"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
 )
 
 func TestQueryValues(t *testing.T) {

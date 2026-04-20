@@ -1,7 +1,6 @@
 import { CodeBlock } from "@/components/docs/code-block";
 import { ParamTable } from "@/components/docs/param-table";
 import { Callout } from "@/components/docs/callout";
-import Link from "next/link";
 
 export default function PythonTracesPage() {
   return (
@@ -179,10 +178,37 @@ t.annotate(label="thumbs_up", user="reviewer@example.com")`}
       <CodeBlock lang="python">
         {`with client.trace(name="agent") as t:
     t.set_metadata(environment="production", version="2.1.0")
+    t.set_metadata_path("workflow.stage", "checkout")
     t.set_tags("high-priority", "vip-customer")
     t.set_cost(0.0032)
     t.set_user("usr_456")`}
       </CodeBlock>
+
+      <h2>Metadata Paths and Server-side Filters</h2>
+      <p>
+        Use metadata path helpers to write nested JSON values and query them back with
+        <code> client.list_traces()</code>.
+      </p>
+      <CodeBlock lang="python">
+        {`with client.trace(name="checkout-agent") as t:
+    t.set_metadata(environment="production")
+    t.set_metadata_path("workflow.stage", "checkout")
+
+resp = client.list_traces(
+    run_type=["prod"],
+    metadata_filters=[{"key": "workflow.stage", "value": "checkout"}],
+    limit=25,
+)
+
+print(resp.data[0]["metadata"]["workflow"]["stage"])`}
+      </CodeBlock>
+
+      <Callout type="tip" title="Configurable dashboard filters">
+        <p>
+          The dashboard reads metadata keys from trace summaries, so new keys can be turned
+          into saved filters without changing the trace schema first.
+        </p>
+      </Callout>
 
       <h2>The observe Decorator</h2>
       <p>

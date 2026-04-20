@@ -108,4 +108,132 @@ describe("TraceClient", () => {
     expect(result.data[0].metadata).toEqual({ workflow: { stage: "checkout" } });
     expect(result.nextCursor).toBe("next-1");
   });
+
+  it("fetches a full trace by id", async () => {
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+      expect(url).toBe("https://example.test/v1/traces/tr_123");
+      return new Response(
+        JSON.stringify({
+          meta: {
+            trace_id: "tr_123",
+            project_id: "proj_1",
+            name: "checkout",
+            status: "success",
+            started_at: "2026-04-18T00:00:00Z",
+          },
+          trace: {
+            schema_version: "1.0",
+            trace_id: "tr_123",
+            project_id: "proj_1",
+            name: "checkout",
+            status: "success",
+            started_at: "2026-04-18T00:00:00Z",
+            steps: [
+              {
+                step_id: "st_1",
+                type: "llm",
+                name: "plan",
+                started_at: "2026-04-18T00:00:00Z",
+              },
+            ],
+          },
+        }),
+        { status: 200 },
+      );
+    }) as unknown as typeof fetch;
+
+    const client = new TraceClient({
+      apiKey: "sk_test",
+      project: "proj_1",
+      baseUrl: "https://example.test",
+      fetchImpl,
+    });
+
+    const result = await client.getTrace("tr_123");
+
+    expect(result?.meta.trace_id).toBe("tr_123");
+    expect(result?.trace?.steps).toHaveLength(1);
+    expect(result?.trace?.steps[0]?.name).toBe("plan");
+  });
+
+  it("ingests canonical event envelopes", async () => {
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.toString();
+      expect(url).toBe("https://example.test/v1/events");
+      const body = JSON.parse(init?.body as string);
+      expect(body.project_id).toBe("proj_1");
+      expect(body.events).toHaveLength(1);
+      return new Response(
+        JSON.stringify({
+          trace_id: "tr_canonical",
+          ingest_status: "accepted",
+          normalized: true,
+        }),
+        { status: 202 },
+      );
+    }) as unknown as typeof fetch;
+
+    const client = new TraceClient({
+      apiKey: "sk_test",
+      project: "proj_1",
+      baseUrl: "https://example.test",
+      fetchImpl,
+    });
+
+    const result = await client.ingestEvents({
+      name: "canonical-run",
+      events: [{ type: "message", role: "user", message: { role: "user", content: [{ type: "text", text: "hi" }] } }],
+    });
+
+    expect(result.trace_id).toBe("tr_canonical");
+    expect(result.normalized).toBe(true);
+  });
+
+  it("bulk imports traces and canonical envelopes", async () => {
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.toString();
+      expect(url).toBe("https://example.test/v1/imports/traces");
+      expect((init?.headers as Record<string, string>)["Content-Type"]).toBe("application/json");
+      const body = JSON.parse(init?.body as string);
+      expect(body).toHaveLength(2);
+      return new Response(
+        JSON.stringify({
+          accepted: 2,
+          failed: 0,
+          items: [
+            { index: 0, kind: "trace", trace_id: "tr_1", status: "accepted" },
+            { index: 1, kind: "canonical_envelope", trace_id: "tr_2", status: "accepted" },
+          ],
+        }),
+        { status: 202 },
+      );
+    }) as unknown as typeof fetch;
+
+    const client = new TraceClient({
+      apiKey: "sk_test",
+      project: "proj_1",
+      baseUrl: "https://example.test",
+      fetchImpl,
+    });
+
+    const result = await client.importTraces([
+      {
+        schema_version: "1.0",
+        trace_id: "tr_1",
+        project_id: "proj_1",
+        name: "native",
+        status: "success",
+        started_at: "2026-04-18T00:00:00Z",
+        steps: [],
+      },
+      {
+        name: "canonical",
+        events: [],
+      },
+    ]);
+
+    expect(result.accepted).toBe(2);
+    expect(result.failed).toBe(0);
+  });
 });

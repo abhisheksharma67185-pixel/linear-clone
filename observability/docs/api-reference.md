@@ -10,6 +10,8 @@ Complete reference for the Theta Observability ingest and control-plane API.
 - [Error Format](#error-format)
 - [Trace Endpoints](#trace-endpoints)
   - [POST /v1/traces -- Ingest a trace](#post-v1traces)
+  - [POST /v1/events -- Ingest a canonical event envelope](#post-v1events)
+  - [POST /v1/imports/traces -- Bulk import traces or envelopes](#post-v1importstraces)
   - [GET /v1/traces -- List traces](#get-v1traces)
   - [GET /v1/traces/:id -- Get trace detail](#get-v1tracesid)
   - [POST /v1/traces/:id/steps -- Append steps](#post-v1tracesidsteps)
@@ -92,7 +94,7 @@ Bearer tokens are used by the dashboard for org/project management endpoints. Th
 
 | Endpoint group | Auth method |
 |----------------|-------------|
-| Trace ingestion (`POST /v1/traces`, media, metrics) | API key |
+| Trace ingestion (`POST /v1/traces`, `POST /v1/events`, bulk import, media, metrics) | API key |
 | Trace reads (`GET /v1/traces`, search, clusters, incidents) | API key or Bearer |
 | Org/project management | Bearer |
 | Signup | None |
@@ -187,7 +189,83 @@ curl -X POST https://api.theta-observability.com/v1/traces \
 {
   "trace_id": "tr_01HWabc123",
   "ingest_status": "accepted",
-  "gcs_uri": "gs://theta-obs/p/proj_abc/tr/tr_01HWabc123/trace.json"
+  "gcs_uri": "gs://theta-obs/orgs/org_abc/projects/proj_abc/traces/tr_01HWabc123.json"
+}
+```
+
+---
+
+### POST /v1/events
+
+Ingest a provider-neutral canonical event envelope. Theta normalizes the envelope into the standard trace pipeline so search, incidents, clustering, and the dashboard work without custom code.
+
+**Auth:** API key
+
+**Request body:** See [Canonical Event Model](./canonical-event-model.md).
+
+```bash
+curl -X POST https://api.theta-observability.com/v1/events \
+  -H "x-api-key: tk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "schema_version": "1.0",
+    "name": "browser-session",
+    "source": "openclaw",
+    "kind": "browser_session",
+    "platform": "desktop",
+    "events": [
+      {
+        "type": "message",
+        "step_id": "browser_step",
+        "message": {
+          "role": "user",
+          "content": [{ "type": "text", "text": "buy me shoes from amazon" }]
+        }
+      }
+    ]
+  }'
+```
+
+**Response (202 Accepted):**
+
+```json
+{
+  "trace_id": "tr_01HWabc123",
+  "ingest_status": "accepted",
+  "gcs_uri": "gs://theta-obs/orgs/org_abc/projects/proj_abc/traces/tr_01HWabc123.json",
+  "normalized": true,
+  "source": "canonical_event_envelope"
+}
+```
+
+---
+
+### POST /v1/imports/traces
+
+Bulk import either Theta-native trace payloads or canonical event envelopes. Supports JSON arrays and NDJSON (`application/x-ndjson`).
+
+**Auth:** API key
+
+```bash
+curl -X POST https://api.theta-observability.com/v1/imports/traces \
+  -H "x-api-key: tk_live_..." \
+  -H "Content-Type: application/json" \
+  -d '[
+    { "schema_version": "1.0", "trace_id": "tr_native", "name": "native", "status": "success", "started_at": "2026-04-15T12:00:00Z", "steps": [] },
+    { "schema_version": "1.0", "name": "canonical", "events": [] }
+  ]'
+```
+
+**Response (202 Accepted or 207 Multi-Status):**
+
+```json
+{
+  "accepted": 2,
+  "failed": 0,
+  "items": [
+    { "index": 0, "kind": "trace", "trace_id": "tr_native", "status": "accepted" },
+    { "index": 1, "kind": "canonical_envelope", "trace_id": "tr_01HWbulk123", "status": "accepted" }
+  ]
 }
 ```
 
@@ -213,13 +291,17 @@ List traces with optional filters. Results are paginated via cursor.
 | `use_case` | string | Filter by use case |
 | `group` | string | Filter by group |
 | `tags` | string | Comma-separated tag filter |
+| `meta_key` | string | Metadata key to filter by. Supports dot-paths like `workflow.stage` |
+| `meta_value` | string | Metadata value paired with the preceding `meta_key` |
 | `since` | datetime | Start of time range (ISO 8601) |
 | `until` | datetime | End of time range (ISO 8601) |
 | `limit` | integer | Max results per page (default: 50) |
 | `cursor` | string | Pagination cursor from previous response |
 
+To filter on trace metadata, send repeated `meta_key` / `meta_value` pairs in order. For example, `meta_key=workflow.stage&meta_value=checkout` matches traces whose metadata contains `{ "workflow": { "stage": "checkout" } }`.
+
 ```bash
-curl "https://api.theta-observability.com/v1/traces?status=error&limit=10" \
+curl "https://api.theta-observability.com/v1/traces?status=error&meta_key=workflow.stage&meta_value=checkout&limit=10" \
   -H "x-api-key: tk_live_..."
 ```
 
@@ -236,6 +318,9 @@ curl "https://api.theta-observability.com/v1/traces?status=error&limit=10" \
       "platform": "web",
       "model": "gpt-4o",
       "user_id": "user_456",
+      "metadata": {
+        "workflow": { "stage": "checkout" }
+      },
       "started_at": "2026-04-15T12:00:00Z",
       "latency_ms": 3500,
       "total_tokens": 1020,

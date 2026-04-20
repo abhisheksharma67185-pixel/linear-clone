@@ -25,6 +25,8 @@ const (
 	PrefixWebhook     = "wh_"
 	PrefixAnnotation   = "ann_"
 	PrefixSavedFilter  = "sf_"
+	PrefixThread       = "th_"
+	PrefixMonitor      = "mon_"
 )
 
 func newULID() string {
@@ -48,6 +50,8 @@ func Cluster() string     { return withPrefix(PrefixCluster) }
 func Webhook() string     { return withPrefix(PrefixWebhook) }
 func Annotation() string   { return withPrefix(PrefixAnnotation) }
 func SavedFilter() string  { return withPrefix(PrefixSavedFilter) }
+func Thread() string       { return withPrefix(PrefixThread) }
+func Monitor() string      { return withPrefix(PrefixMonitor) }
 
 // RawSecret returns a high-entropy random string suitable to use as the
 // secret portion of an API key. The caller is responsible for prefixing with

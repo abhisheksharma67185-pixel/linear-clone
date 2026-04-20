@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/theagi/theta-observability/api-go/openapi"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/openapi"
 )
 
 // GET /v1/openapi.json — serves the embedded OpenAPI 3.1 spec as JSON.

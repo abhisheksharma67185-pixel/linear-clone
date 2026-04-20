@@ -1,4 +1,4 @@
-module github.com/theagi/theta-observability/api-go
+module github.com/RahulSulegoakar/theta-rl-labs/observability/api-go
 
 go 1.23
 

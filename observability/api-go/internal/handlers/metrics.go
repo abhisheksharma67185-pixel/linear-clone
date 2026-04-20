@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/theagi/theta-observability/api-go/internal/auth"
-	"github.com/theagi/theta-observability/api-go/internal/store"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/auth"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
 )
 
 // Metrics handles metric definitions and metric events.

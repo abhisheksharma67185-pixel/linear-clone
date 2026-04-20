@@ -47,7 +47,7 @@ export async function getProjectBySlug(
 export async function listProjectsForOrg(orgId: string): Promise<ProjectRow[]> {
   if (!env.DATABASE_URL) return [];
   const { rows } = await pool().query(
-    "SELECT id, org_id, name, slug, description, retention_days FROM projects WHERE org_id = $1 ORDER BY created_at ASC",
+    "SELECT id, org_id, name, slug, description, retention_days FROM projects WHERE org_id = $1 ORDER BY created_at DESC",
     [orgId]
   );
   return rows;

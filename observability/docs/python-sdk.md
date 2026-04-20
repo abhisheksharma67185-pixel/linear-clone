@@ -8,6 +8,7 @@ Complete reference for the `theta-observability` Python SDK.
 - [Configuration](#configuration)
 - [Core Concepts](#core-concepts)
 - [Basic Usage](#basic-usage)
+- [Generic Ingest](#generic-ingest)
 - [Zero-Config Mode](#zero-config-mode)
 - [Agent Wrapping](#agent-wrapping)
 - [Metrics](#metrics)
@@ -114,6 +115,7 @@ with client.trace(name="checkout-agent", run_type="prod") as t:
         s.log_message(role="user", text="Buy milk from the grocery store")
         s.log_message(role="assistant", text="I'll navigate to the grocery website and add milk to cart.")
         s.set_token_usage(input=150, output=45)
+        s.set_metadata_path("eval.bucket", "control")
 
     # Tool step
     with t.step(name="execute", type="tool") as s:
@@ -130,6 +132,7 @@ with client.trace(name="checkout-agent", run_type="prod") as t:
 
     # Set trace-level metadata
     t.set_metadata(customer_id="cust_123", task="grocery-shopping")
+    t.set_metadata_path("workflow.stage", "checkout")
     t.set_tags("checkout", "grocery")
     t.set_cost(0.0023)
 ```
@@ -167,6 +170,49 @@ with client.trace(name="research-agent") as t:
             child.log_message(role="assistant", text="Key applications include...")
             child.set_token_usage(input=2000, output=500)
 ```
+
+---
+
+## Generic Ingest
+
+Use the low-level interoperability APIs when your system already has its own event model and you want Theta to normalize it into the standard trace pipeline.
+
+```python
+client.ingest_events({
+    "name": "browser-session",
+    "source": "openclaw",
+    "kind": "browser_session",
+    "platform": "desktop",
+    "events": [
+        {
+            "type": "message",
+            "step_id": "browser_step",
+            "message": {
+                "role": "user",
+                "content": [{"type": "text", "text": "buy me shoes from amazon"}],
+            },
+        }
+    ],
+})
+
+client.import_traces([
+    {
+        "schema_version": "1.0",
+        "trace_id": "tr_native",
+        "project_id": "proj_abc",
+        "name": "native-trace",
+        "status": "success",
+        "started_at": "2026-04-18T00:00:00Z",
+        "steps": [],
+    },
+    {
+        "name": "canonical-import",
+        "events": [],
+    },
+])
+```
+
+`ingest_events()` targets `POST /v1/events`. `import_traces()` targets `POST /v1/imports/traces` and supports JSON arrays or NDJSON via `ndjson=True`.
 
 ---
 
@@ -298,6 +344,40 @@ client.create_metric(
 | `type` | `str` | `"automated"`, `"human"`, `"hybrid"`, etc. |
 | `evaluator_prompt` | `str` | Optional LLM prompt for automated evaluation |
 
+## Listing Traces
+
+Use `client.list_traces()` to query trace summaries with server-side filters, including metadata JSON paths.
+
+```python
+resp = client.list_traces(
+    project_id="proj_abc",
+    run_type=["prod"],
+    status=["success"],
+    metadata_filters=[
+        {"key": "workflow.stage", "value": "checkout"},
+        {"key": "e2e.suite", "value": "python"},
+    ],
+    limit=25,
+)
+
+for trace in resp.data:
+    print(trace["trace_id"], trace.get("metadata", {}))
+```
+
+`metadata_filters` is serialized as repeated `meta_key` / `meta_value` query params. Keys support dot-path lookup into trace metadata JSON.
+
+### Fetching full trace detail
+
+Use `client.get_trace()` when you need the complete persisted trace, including step messages, step attachments, sensor frames, and trace-level attachments.
+
+```python
+detail = client.get_trace("tr_abc123")
+
+if detail and detail.trace:
+    print(detail.meta.status)
+    print(len(detail.trace.steps))
+```
+
 ---
 
 ## Multimodal Attachments
@@ -339,6 +419,9 @@ with client.trace(name="multimodal-agent") as t:
             role="user",
             text="What is in this image?",
             images=["screenshot.png", another_pil_image],
+            audio=["recording.wav"],
+            video=["clip.mp4"],
+            attachments=["report.json"],
         )
         s.log_message(
             role="assistant",
@@ -586,6 +669,8 @@ class TraceClient:
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `trace(name, *, run_id, run_type, use_case, user_id, group, platform, model, tags, metadata)` | `Trace` | Create a new trace (use as context manager) |
+| `list_traces(..., metadata_filters=None, ...)` | `TraceListResponse` | List trace summaries with server-side filters |
+| `get_trace(trace_id)` | `TraceDetailResponse \| None` | Fetch a full persisted trace by ID |
 | `current_trace()` | `Trace \| None` | Return the active trace in the current context |
 | `observe(name, type, model)` | decorator | Wrap a function in a step |
 | `wrap_agent(name, func?)` | wrapper / decorator | Wrap an agent function for automatic tracing |
@@ -611,6 +696,7 @@ class Trace(AbstractContextManager["Trace"]):
 | `attach_sensor(source, modality, mime?)` | `str` | Upload and attach sensor data |
 | `annotate(label?, score?, comment?, user?)` | `None` | Add a trace-level annotation |
 | `set_metadata(**kwargs)` | `None` | Merge key-value pairs into trace metadata |
+| `set_metadata_path(path, value)` | `None` | Set a nested trace metadata value with dot-path syntax |
 | `set_tags(*tags)` | `None` | Add tags (deduplicated) |
 | `set_cost(cost_usd)` | `None` | Set the trace cost in USD |
 | `set_user(user_id)` | `None` | Set the end-user identifier |
@@ -630,6 +716,7 @@ class Step(AbstractContextManager["Step"]):
 | `set_token_usage(input, output, total?)` | `None` | Set token counts |
 | `set_status(status)` | `None` | Override step status (`success`, `error`, `running`) |
 | `set_metadata(**kwargs)` | `None` | Merge key-value pairs into step metadata |
+| `set_metadata_path(path, value)` | `None` | Set a nested step metadata value with dot-path syntax |
 | `set_model(model)` | `None` | Set or override the model identifier |
 | `annotate(label?, score?, comment?, user?)` | `None` | Add a step-level annotation |
 

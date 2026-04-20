@@ -29,6 +29,7 @@ export interface Attachment {
   fps?: number;
   bytes?: number;
   modality?: string; // for sensor frames: joint_state, camera, imu, ...
+  metadata?: Record<string, unknown>;
 }
 
 export interface MessageContent {
@@ -45,6 +46,7 @@ export interface Message {
   role: "system" | "user" | "assistant" | "tool";
   content: MessageContent[];
   name?: string;
+  tool_call_id?: string;
 }
 
 export interface ToolCall {
@@ -62,6 +64,28 @@ export interface TokenUsage {
   total?: number;
 }
 
+export interface ObservedEvent {
+  event_id?: string;
+  parent_event_id?: string;
+  step_id?: string;
+  parent_step_id?: string;
+  index?: number;
+  type: string;
+  name?: string;
+  role?: Message["role"];
+  status?: TraceStatus | "cancelled";
+  started_at?: string;
+  ended_at?: string;
+  latency_ms?: number;
+  model?: string;
+  message?: Message;
+  tool_call?: ToolCall;
+  attachment?: Attachment;
+  sensor_frame?: Attachment;
+  value?: unknown;
+  metadata?: Record<string, unknown>;
+}
+
 export interface Step {
   step_id: string;
   parent_step_id?: string;
@@ -77,6 +101,7 @@ export interface Step {
   cost_usd?: number;
   messages?: Message[];
   tool_calls?: ToolCall[];
+  events?: ObservedEvent[];
   attachments?: Attachment[];
   sensor_frames?: Attachment[];
   metadata?: Record<string, unknown>;
@@ -107,6 +132,8 @@ export interface Trace {
   cost_usd?: number;
   step_count?: number;
   has_media?: boolean;
+  attachments?: Attachment[];
+  events?: ObservedEvent[];
   steps?: Step[];
 }
 
@@ -230,6 +257,39 @@ export interface MetricEvent {
   score?: number;
   label?: string;
   evaluated_at: string;
+}
+
+export interface ConversationThread {
+  id: string;
+  project_id: string;
+  title: string;
+  external_id?: string;
+  user_id?: string;
+  session_id?: string;
+  metadata?: Record<string, unknown>;
+  trace_ids: string[];
+  trace_count: number;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MonitorConfig {
+  id: string;
+  project_id: string;
+  name: string;
+  description?: string;
+  signal_key: string;
+  operator: string;
+  warn_threshold?: number;
+  critical_threshold?: number;
+  window_minutes: number;
+  group_by?: string;
+  filters?: Record<string, unknown>;
+  active: boolean;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Usage {

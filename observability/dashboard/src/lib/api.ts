@@ -6,11 +6,13 @@ import type {
   AnnotationType,
   ApiKey,
   Cluster,
+  ConversationThread,
   Incident,
   ListTracesFilters,
   Member,
   Metric,
   MetricEvent,
+  MonitorConfig,
   Organization,
   Project,
   SavedFilter,
@@ -41,7 +43,14 @@ async function apiFetch<T>(path: string, opts: ApiOptions = {}): Promise<T> {
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`[api ${res.status}] ${path}: ${text}`);
   }
-  return (await res.json()) as T;
+  if (res.status === 204) {
+    return undefined as T;
+  }
+  const text = await res.text();
+  if (!text) {
+    return undefined as T;
+  }
+  return JSON.parse(text) as T;
 }
 
 function filtersToQuery(f: ListTracesFilters): string {
@@ -294,6 +303,117 @@ export async function triggerIncidentDetection(projectId: string): Promise<void>
     method: "POST",
     body: JSON.stringify({ project_id: projectId }),
   });
+}
+
+// ── Threads ──────────────────────────────────────────────────────────────
+
+export async function listConversationThreads(
+  projectId: string,
+  limit = 100
+): Promise<ConversationThread[]> {
+  try {
+    const body = await apiFetch<{ items?: ConversationThread[] } | ConversationThread[]>(
+      `/v1/projects/${projectId}/threads?limit=${limit}`
+    );
+    return Array.isArray(body) ? body : body.items ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function createConversationThread(
+  projectId: string,
+  data: {
+    title: string;
+    external_id?: string;
+    user_id?: string;
+    session_id?: string;
+    metadata?: Record<string, unknown>;
+    trace_ids?: string[];
+  }
+): Promise<ConversationThread> {
+  return apiFetch<ConversationThread>(`/v1/projects/${projectId}/threads`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateConversationThread(
+  threadId: string,
+  patch: Partial<
+    Pick<ConversationThread, "title" | "external_id" | "user_id" | "session_id" | "metadata" | "trace_ids">
+  >
+): Promise<ConversationThread> {
+  return apiFetch<ConversationThread>(`/v1/threads/${threadId}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function deleteConversationThread(threadId: string): Promise<void> {
+  await apiFetch(`/v1/threads/${threadId}`, { method: "DELETE" });
+}
+
+// ── Monitor Configs ──────────────────────────────────────────────────────
+
+export async function listMonitorConfigs(projectId: string): Promise<MonitorConfig[]> {
+  try {
+    const body = await apiFetch<{ items?: MonitorConfig[] } | MonitorConfig[]>(
+      `/v1/projects/${projectId}/monitors`
+    );
+    return Array.isArray(body) ? body : body.items ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function createMonitorConfig(
+  projectId: string,
+  data: {
+    name: string;
+    description?: string;
+    signal_key: string;
+    operator: string;
+    warn_threshold?: number;
+    critical_threshold?: number;
+    window_minutes?: number;
+    group_by?: string;
+    filters?: Record<string, unknown>;
+    active?: boolean;
+  }
+): Promise<MonitorConfig> {
+  return apiFetch<MonitorConfig>(`/v1/projects/${projectId}/monitors`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateMonitorConfig(
+  monitorId: string,
+  patch: Partial<
+    Pick<
+      MonitorConfig,
+      | "name"
+      | "description"
+      | "signal_key"
+      | "operator"
+      | "warn_threshold"
+      | "critical_threshold"
+      | "window_minutes"
+      | "group_by"
+      | "filters"
+      | "active"
+    >
+  >
+): Promise<MonitorConfig> {
+  return apiFetch<MonitorConfig>(`/v1/monitors/${monitorId}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function deleteMonitorConfig(monitorId: string): Promise<void> {
+  await apiFetch(`/v1/monitors/${monitorId}`, { method: "DELETE" });
 }
 
 // ── Billing ──────────────────────────────────────────────────────────────

@@ -388,35 +388,8 @@ export function TracesClient({
   }, [filtered, projectSlug]);
 
   return (
-    <div className="grid gap-5">
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard
-          label="Visible traces"
-          value={formatNumber(filtered.length)}
-          detail={`${formatNumber(initial.length)} loaded in memory`}
-          icon={Workflow}
-        />
-        <SummaryCard
-          label="Running now"
-          value={formatNumber(summary.runningCount)}
-          detail="Live executions in current slice"
-          icon={Activity}
-        />
-        <SummaryCard
-          label="Errors in view"
-          value={formatNumber(summary.errorCount)}
-          detail="Fast signal for triage"
-          icon={AlertTriangle}
-        />
-        <SummaryCard
-          label="Visible spend"
-          value={formatCost(summary.totalCost)}
-          detail={`Avg latency ${formatLatency(summary.avgLatency)}`}
-          icon={Wallet}
-        />
-      </div>
-
-      <div className="overflow-hidden rounded-xl border bg-card">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card">
         <FilterBar
           filters={filters}
           onChange={setFilters}

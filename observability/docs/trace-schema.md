@@ -2,6 +2,8 @@
 
 Documentation for the Theta Observability trace payload format. The canonical schema is defined in [`schema/trace.schema.json`](../schema/trace.schema.json) (JSON Schema draft 2020-12).
 
+For provider-neutral ingest, see the separate [Canonical Event Model](./canonical-event-model.md).
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -67,6 +69,7 @@ The schema is OTel-GenAI-aligned and versioned. The current version is `1.0`.
 | `token_usage` | `object` | No | Aggregated [token usage](#token-usage) |
 | `cost_usd` | `number` | No | Total cost in USD |
 | `steps` | `Step[]` | Yes | Array of [step objects](#steps) |
+| `events` | `ObservedEvent[]` | No | Generic event timeline preserved alongside normalized steps |
 | `annotations` | `Annotation[]` | No | Trace-level [annotations](#annotations) |
 
 ### ID Formats
@@ -101,6 +104,7 @@ A step is a single logical span inside a trace. Steps can be nested via `parent_
 | `cost_usd` | `number` | No | Cost in USD |
 | `messages` | `Message[]` | No | Chat [messages](#messages) |
 | `tool_calls` | `ToolCall[]` | No | [Tool calls](#tool-calls) |
+| `events` | `ObservedEvent[]` | No | Generic event timeline for this step |
 | `sensor_frames` | `SensorFrame[]` | No | [Sensor frames](#sensor-frames) |
 | `retrieval` | `object` | No | Retrieval context (see below) |
 | `metadata` | `object` | No | Free-form JSON |

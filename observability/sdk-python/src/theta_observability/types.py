@@ -66,6 +66,28 @@ class SensorFrame(_Base):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class ObservedEvent(_Base):
+    event_id: Optional[str] = None
+    parent_event_id: Optional[str] = None
+    step_id: Optional[str] = None
+    parent_step_id: Optional[str] = None
+    index: Optional[int] = None
+    type: str
+    name: Optional[str] = None
+    role: Optional[str] = None
+    status: Optional[str] = None
+    started_at: Optional[datetime] = None
+    ended_at: Optional[datetime] = None
+    latency_ms: Optional[int] = None
+    model: Optional[str] = None
+    message: Optional["Message"] = None
+    tool_call: Optional[ToolCall] = None
+    attachment: Optional[Attachment] = None
+    sensor_frame: Optional[SensorFrame] = None
+    value: Optional[Any] = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 class Annotation(_Base):
     label: Optional[str] = None
     score: Optional[float] = None
@@ -87,6 +109,8 @@ class Step(_Base):
     latency_ms: Optional[int] = None
     messages: list[Message] = Field(default_factory=list)
     tool_calls: list[ToolCall] = Field(default_factory=list)
+    events: list[ObservedEvent] = Field(default_factory=list)
+    attachments: list[Attachment] = Field(default_factory=list)
     sensor_frames: list[SensorFrame] = Field(default_factory=list)
     token_usage: Optional[TokenUsage] = None
     error_message: Optional[str] = None
@@ -116,7 +140,67 @@ class Trace(_Base):
     cost_usd: Optional[float] = None
     error_message: Optional[str] = None
     steps: list[Step] = Field(default_factory=list)
+    events: list[ObservedEvent] = Field(default_factory=list)
+    attachments: list[Attachment] = Field(default_factory=list)
     annotations: list[Annotation] = Field(default_factory=list)
+
+
+class CorrelationInfo(_Base):
+    session_id: Optional[str] = None
+    request_id: Optional[str] = None
+    parent_trace_id: Optional[str] = None
+    root_trace_id: Optional[str] = None
+    external_ids: dict[str, Any] = Field(default_factory=dict)
+
+
+class CanonicalEvent(_Base):
+    event_id: Optional[str] = None
+    parent_event_id: Optional[str] = None
+    step_id: Optional[str] = None
+    parent_step_id: Optional[str] = None
+    step_type: Optional[str] = None
+    index: Optional[int] = None
+    type: str
+    name: Optional[str] = None
+    role: Optional[str] = None
+    status: Optional[str] = None
+    model: Optional[str] = None
+    started_at: Optional[datetime] = None
+    ended_at: Optional[datetime] = None
+    latency_ms: Optional[int] = None
+    message: Optional[Message] = None
+    tool_call: Optional[ToolCall] = None
+    attachment: Optional[Attachment] = None
+    sensor_frame: Optional[SensorFrame] = None
+    value: Optional[Any] = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class CanonicalEnvelope(_Base):
+    schema_version: str = "1.0"
+    trace_id: Optional[str] = None
+    project_id: Optional[str] = None
+    name: Optional[str] = None
+    source: Optional[str] = None
+    kind: Optional[str] = None
+    run_id: Optional[str] = None
+    run_type: Optional[str] = None
+    use_case: Optional[str] = None
+    user_id: Optional[str] = None
+    session_id: Optional[str] = None
+    group: Optional[str] = None
+    platform: Optional[str] = None
+    model: Optional[str] = None
+    status: Optional[str] = None
+    tags: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    started_at: Optional[datetime] = None
+    ended_at: Optional[datetime] = None
+    latency_ms: Optional[int] = None
+    cost_usd: Optional[float] = None
+    correlation: Optional[CorrelationInfo] = None
+    events: list[CanonicalEvent] = Field(default_factory=list)
+    attachments: list[Attachment] = Field(default_factory=list)
 
 
 class TraceMetadataFilter(_Base):
@@ -151,6 +235,25 @@ class TraceListResponse(_Base):
     next_cursor: Optional[str] = None
 
 
+class TraceDetailResponse(_Base):
+    meta: TraceSummary
+    trace: Optional[Trace] = None
+
+
+class BulkImportItemResult(_Base):
+    index: int
+    kind: str
+    trace_id: Optional[str] = None
+    status: str
+    error: Optional[str] = None
+
+
+class BulkImportResponse(_Base):
+    accepted: int = 0
+    failed: int = 0
+    items: list[BulkImportItemResult] = Field(default_factory=list)
+
+
 # --- Wire types for API responses ---------------------------------------------
 
 
@@ -177,12 +280,19 @@ __all__ = [
     "ToolCall",
     "Message",
     "SensorFrame",
+    "ObservedEvent",
     "Annotation",
     "Step",
     "Trace",
+    "CorrelationInfo",
+    "CanonicalEvent",
+    "CanonicalEnvelope",
     "TraceMetadataFilter",
     "TraceSummary",
     "TraceListResponse",
+    "TraceDetailResponse",
+    "BulkImportItemResult",
+    "BulkImportResponse",
     "SignedUrlRequest",
     "SignedUrlResponse",
 ]

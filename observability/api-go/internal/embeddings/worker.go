@@ -8,8 +8,8 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/theagi/theta-observability/api-go/internal/models"
-	"github.com/theagi/theta-observability/api-go/internal/store"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
 )
 
 const (

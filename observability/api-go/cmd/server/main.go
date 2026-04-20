@@ -14,18 +14,18 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 
-	"github.com/theagi/theta-observability/api-go/internal/auth"
-	"github.com/theagi/theta-observability/api-go/internal/bq"
-	"github.com/theagi/theta-observability/api-go/internal/clusters"
-	"github.com/theagi/theta-observability/api-go/internal/config"
-	"github.com/theagi/theta-observability/api-go/internal/embeddings"
-	"github.com/theagi/theta-observability/api-go/internal/gcs"
-	"github.com/theagi/theta-observability/api-go/internal/handlers"
-	"github.com/theagi/theta-observability/api-go/internal/incidents"
-	"github.com/theagi/theta-observability/api-go/internal/ingest"
-	"github.com/theagi/theta-observability/api-go/internal/logger"
-	"github.com/theagi/theta-observability/api-go/internal/sse"
-	"github.com/theagi/theta-observability/api-go/internal/store"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/auth"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/bq"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/clusters"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/config"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/embeddings"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/gcs"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/handlers"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/incidents"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/ingest"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/logger"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/sse"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
 )
 
 const version = "0.1.0"
@@ -96,6 +96,9 @@ func main() {
 	searchH := &handlers.Search{Store: pg, Embedder: embedder, BQ: bqWriter, Log: log}
 	webhooksH := &handlers.Webhooks{Store: pg}
 	annotationsH := &handlers.Annotations{Store: pg}
+	threadsH := &handlers.Threads{Store: pg}
+	monitorsH := &handlers.Monitors{Store: pg}
+	exportsH := &handlers.Exports{Store: pg, BQ: bqWriter, GCS: gcsCli}
 
 	clusterDiscoverer := &clusters.Discoverer{
 		Store:        pg,
@@ -129,6 +132,8 @@ func main() {
 			r.Use(auth.APIKeyMiddleware(pg))
 		}
 		r.Post("/v1/traces", traceH.Create)
+		r.Post("/v1/events", traceH.CreateEvent)
+		r.Post("/v1/imports/traces", traceH.Import)
 		r.Post("/v1/traces/{id}/steps", stepH.Append)
 		r.Post("/v1/media/signed-url", mediaH.SignedURL)
 		r.Post("/v1/media/upload", mediaH.Upload)
@@ -161,6 +166,18 @@ func main() {
 		r.Get("/v1/projects", projectsH.List)
 		r.Post("/v1/projects", projectsH.Create)
 		r.Get("/v1/projects/{id}", projectsH.Get)
+		r.Get("/v1/projects/{id}/exports/otel", exportsH.ExportOTel)
+		r.Get("/v1/projects/{id}/threads", threadsH.List)
+		r.Post("/v1/projects/{id}/threads", threadsH.Create)
+		r.Get("/v1/threads/{thread_id}", threadsH.Get)
+		r.Patch("/v1/threads/{thread_id}", threadsH.Patch)
+		r.Delete("/v1/threads/{thread_id}", threadsH.Delete)
+
+		r.Get("/v1/projects/{id}/monitors", monitorsH.List)
+		r.Post("/v1/projects/{id}/monitors", monitorsH.Create)
+		r.Get("/v1/monitors/{monitor_id}", monitorsH.Get)
+		r.Patch("/v1/monitors/{monitor_id}", monitorsH.Patch)
+		r.Delete("/v1/monitors/{monitor_id}", monitorsH.Delete)
 
 		r.Get("/v1/metrics", metricsH.List)
 		r.Get("/v1/metrics/{id}/events", metricsH.ListEvents)

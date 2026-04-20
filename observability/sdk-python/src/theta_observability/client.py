@@ -5,6 +5,7 @@ from __future__ import annotations
 import atexit
 import functools
 import inspect
+import json
 import logging
 import os
 import threading
@@ -18,7 +19,15 @@ from .errors import ThetaAPIError, ThetaAuthError, ThetaConfigError
 from .agent import AgentResult, wrap_agent as _wrap_agent
 from .metrics import create_metric as _create_metric, record_metric as _record_metric
 from .trace import Trace, _active_trace
-from .types import SignedUrlResponse, StepType, Step as StepModel, TraceListResponse
+from .types import (
+    BulkImportResponse,
+    CanonicalEnvelope,
+    SignedUrlResponse,
+    StepType,
+    Step as StepModel,
+    TraceDetailResponse,
+    TraceListResponse,
+)
 
 logger = logging.getLogger("theta_observability")
 
@@ -227,6 +236,52 @@ class TraceClient:
             project_id=project_id,
         )
 
+    def ingest_events(self, envelope: Union[CanonicalEnvelope, dict[str, Any]]) -> dict[str, Any]:
+        """Send a provider-neutral canonical event envelope to Theta."""
+        if isinstance(envelope, CanonicalEnvelope):
+            payload = envelope.model_dump(mode="json", exclude_none=True)
+        else:
+            payload = dict(envelope)
+        payload.setdefault("schema_version", "1.0")
+        payload.setdefault("project_id", self.project)
+
+        resp = self._http.post("/v1/events", json=payload)
+        if resp.status_code in (401, 403):
+            raise ThetaAuthError(f"Auth rejected by Theta API: {resp.status_code} {resp.text[:200]}")
+        if resp.status_code >= 400:
+            raise ThetaAPIError(resp.status_code, resp.text, str(resp.url))
+        return resp.json()
+
+    def import_traces(
+        self,
+        items: list[Union[CanonicalEnvelope, dict[str, Any]]],
+        *,
+        ndjson: bool = False,
+    ) -> BulkImportResponse:
+        """Bulk import Theta-native traces or canonical envelopes."""
+        payloads: list[dict[str, Any]] = []
+        for item in items:
+            if isinstance(item, CanonicalEnvelope):
+                payloads.append(item.model_dump(mode="json", exclude_none=True))
+            else:
+                payloads.append(dict(item))
+
+        if ndjson:
+            content = "\n".join(json.dumps(item, default=str) for item in payloads)
+            resp = self._http.post(
+                "/v1/imports/traces",
+                content=content,
+                headers={"Content-Type": "application/x-ndjson"},
+            )
+        else:
+            resp = self._http.post("/v1/imports/traces", json=payloads)
+
+        if resp.status_code in (401, 403):
+            raise ThetaAuthError(f"Auth rejected by Theta API: {resp.status_code} {resp.text[:200]}")
+        if resp.status_code >= 400 and resp.status_code != 207:
+            raise ThetaAPIError(resp.status_code, resp.text, str(resp.url))
+        return BulkImportResponse(**resp.json())
+
     def list_traces(
         self,
         *,
@@ -298,6 +353,17 @@ class TraceClient:
             data=payload.get("items", []),
             next_cursor=payload.get("next_cursor"),
         )
+
+    def get_trace(self, trace_id: str) -> Optional[TraceDetailResponse]:
+        """Fetch a full trace detail payload, including steps and attachments."""
+        resp = self._http.get(f"/v1/traces/{trace_id}")
+        if resp.status_code == 404:
+            return None
+        if resp.status_code in (401, 403):
+            raise ThetaAuthError(f"Auth rejected by Theta API: {resp.status_code} {resp.text[:200]}")
+        if resp.status_code >= 400:
+            raise ThetaAPIError(resp.status_code, resp.text, str(resp.url))
+        return TraceDetailResponse(**resp.json())
 
     # -- lifecycle --
 

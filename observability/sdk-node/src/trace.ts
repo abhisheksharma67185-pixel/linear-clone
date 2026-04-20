@@ -9,6 +9,7 @@ import {
   type LogToolCallInput,
   type Message,
   type MessageContentPart,
+  type SensorFrame,
   type StepInput,
   type StepPayload,
   type TokenUsage,
@@ -87,6 +88,10 @@ export class Trace {
 
   async attachFile(source: AttachmentSource, meta?: Partial<Attachment>): Promise<Attachment> {
     return this.attach("file", source, meta);
+  }
+
+  async attachSensor(source: AttachmentSource, meta?: Partial<Attachment>): Promise<Attachment> {
+    return this.attach("sensor", source, meta);
   }
 
   async attach(
@@ -196,6 +201,7 @@ export class Step {
   private readonly messages: Message[] = [];
   private readonly toolCalls: NonNullable<StepPayload["tool_calls"]> = [];
   private readonly attachments: Attachment[] = [];
+  private readonly sensorFrames: SensorFrame[] = [];
   private tokenUsage: TokenUsage | undefined;
   private costUsd: number | undefined;
   private metadata: Record<string, unknown> | undefined;
@@ -213,28 +219,39 @@ export class Step {
     const parts: MessageContentPart[] = [];
     if (input.text !== undefined) parts.push({ type: "text", text: input.text });
 
-    // Images and attachments are uploaded lazily — we fire-and-forget and
-    // append to the message parts once resolved. The trace flush waits for
-    // the batch sender, so this is safe enough; advanced users can use
-    // `await step.attachImage(...)` + `logMessage` for deterministic order.
+    // Media uploads are lazy, but we preserve caller order by reserving
+    // each content slot up front and filling it when the upload resolves.
     const queued: Promise<void>[] = [];
-    for (const img of input.images ?? []) {
+    const queueUpload = (
+      type: Attachment["type"],
+      source: AttachmentSource,
+      failureLabel: string,
+    ): void => {
+      const slot = parts.length;
+      parts.push({ type, uri: "" });
       queued.push(
-        uploadAttachment(this.internals.uploadOpts, "image", img)
-          .then((a) => {
-            parts.push(a);
+        uploadAttachment(this.internals.uploadOpts, type, source)
+          .then((attachment) => {
+            parts[slot] = attachment;
           })
-          .catch((err) => this.debugWarn("image upload failed", err)),
+          .catch((err) => {
+            parts[slot] = { type, uri: "" };
+            this.debugWarn(failureLabel, err);
+          }),
       );
+    };
+
+    for (const img of input.images ?? []) {
+      queueUpload("image", img, "image upload failed");
+    }
+    for (const audio of input.audio ?? []) {
+      queueUpload("audio", audio, "audio upload failed");
+    }
+    for (const video of input.video ?? []) {
+      queueUpload("video", video, "video upload failed");
     }
     for (const att of input.attachments ?? []) {
-      queued.push(
-        uploadAttachment(this.internals.uploadOpts, "file", att)
-          .then((a) => {
-            parts.push(a);
-          })
-          .catch((err) => this.debugWarn("attachment upload failed", err)),
-      );
+      queueUpload("file", att, "attachment upload failed");
     }
 
     const message: Message = {
@@ -263,6 +280,61 @@ export class Step {
 
   async attachImage(source: AttachmentSource, meta?: Partial<Attachment>): Promise<Attachment> {
     return this.attach("image", source, meta);
+  }
+
+  async attachAudio(source: AttachmentSource, meta?: Partial<Attachment>): Promise<Attachment> {
+    return this.attach("audio", source, meta);
+  }
+
+  async attachVideo(source: AttachmentSource, meta?: Partial<Attachment>): Promise<Attachment> {
+    return this.attach("video", source, meta);
+  }
+
+  async attachFile(source: AttachmentSource, meta?: Partial<Attachment>): Promise<Attachment> {
+    return this.attach("file", source, meta);
+  }
+
+  async attachSensor(source: AttachmentSource, meta?: Partial<Attachment>): Promise<Attachment> {
+    return this.attach("sensor", source, meta);
+  }
+
+  async logSensorFrame(input: {
+    modality: string;
+    source: AttachmentSource;
+    mime?: string;
+    fps?: number;
+    durationMs?: number;
+    metadata?: Record<string, unknown>;
+  }): Promise<SensorFrame> {
+    try {
+      const frame = await uploadAttachment(this.internals.uploadOpts, "sensor", input.source, {
+        mime: input.mime,
+        modality: input.modality,
+        metadata: input.metadata,
+      });
+      const sensorFrame: SensorFrame = {
+        modality: input.modality,
+        uri: frame.uri,
+        mime: frame.mime,
+        fps: input.fps,
+        duration_ms: input.durationMs,
+        metadata: input.metadata,
+      };
+      this.sensorFrames.push(sensorFrame);
+      return sensorFrame;
+    } catch (err) {
+      this.debugWarn("sensor upload failed", err);
+      const sensorFrame: SensorFrame = {
+        modality: input.modality,
+        uri: "",
+        mime: input.mime,
+        fps: input.fps,
+        duration_ms: input.durationMs,
+        metadata: input.metadata,
+      };
+      this.sensorFrames.push(sensorFrame);
+      return sensorFrame;
+    }
   }
 
   async attach(
@@ -342,6 +414,7 @@ export class Step {
       messages: this.messages.length > 0 ? this.messages : undefined,
       tool_calls: this.toolCalls.length > 0 ? this.toolCalls : undefined,
       attachments: this.attachments.length > 0 ? this.attachments : undefined,
+      sensor_frames: this.sensorFrames.length > 0 ? this.sensorFrames : undefined,
       metadata: this.metadata,
     };
   }
@@ -376,7 +449,7 @@ function setMetadataPath(
   let current: Record<string, unknown> = next;
 
   for (let index = 0; index < parts.length; index += 1) {
-    const part = parts[index];
+    const part = parts[index]!;
     if (index === parts.length - 1) {
       current[part] = value;
       break;

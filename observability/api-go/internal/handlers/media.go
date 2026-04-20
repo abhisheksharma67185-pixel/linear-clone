@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/theagi/theta-observability/api-go/internal/auth"
-	"github.com/theagi/theta-observability/api-go/internal/gcs"
-	"github.com/theagi/theta-observability/api-go/internal/ids"
-	"github.com/theagi/theta-observability/api-go/internal/models"
-	"github.com/theagi/theta-observability/api-go/internal/store"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/auth"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/gcs"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/ids"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
 )
 
 type Media struct {
@@ -44,8 +44,7 @@ func (h *Media) SignedURL(w http.ResponseWriter, r *http.Request) {
 	if filename == "" {
 		filename = fmt.Sprintf("att_%s", ids.Step())
 	}
-	key := fmt.Sprintf("projects/%s/traces/%s/attachments/%s",
-		ac.ProjectID, traceID, filename)
+	key := gcs.AttachmentObjectKey(ac.OrgID, ac.ProjectID, traceID, filename)
 	url, exp, err := h.GCS.SignedPutURL(r.Context(), key, req.ContentType, 15*time.Minute)
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "sign_failed", err.Error())
@@ -80,7 +79,7 @@ func (h *Media) Upload(w http.ResponseWriter, r *http.Request) {
 	if filename == "" {
 		filename = fmt.Sprintf("att_%s", ids.Step())
 	}
-	key := fmt.Sprintf("projects/%s/traces/%s/attachments/%s", ac.ProjectID, traceID, filename)
+	key := gcs.AttachmentObjectKey(ac.OrgID, ac.ProjectID, traceID, filename)
 	body := http.MaxBytesReader(w, r.Body, 64<<20)
 	defer body.Close()
 	counter := &countingReader{r: body}

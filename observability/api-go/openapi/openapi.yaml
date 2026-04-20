@@ -63,6 +63,9 @@ components:
         steps:
           type: array
           items: { $ref: "#/components/schemas/Step" }
+        events:
+          type: array
+          items: { $ref: "#/components/schemas/ObservedEvent" }
     Step:
       type: object
       required: [step_id, type]
@@ -83,14 +86,102 @@ components:
         output_tokens: { type: integer }
         messages: { type: array, items: { type: object } }
         tool_calls: { type: array, items: { type: object } }
+        events: { type: array, items: { $ref: "#/components/schemas/ObservedEvent" } }
         sensor_frames: { type: array, items: { type: object } }
         metadata: { type: object }
+    ObservedEvent:
+      type: object
+      required: [type]
+      properties:
+        event_id: { type: string }
+        parent_event_id: { type: string }
+        step_id: { type: string }
+        parent_step_id: { type: string }
+        index: { type: integer }
+        type: { type: string }
+        name: { type: string }
+        role: { type: string }
+        status: { type: string }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: string, format: date-time }
+        latency_ms: { type: integer }
+        model: { type: string }
+        message: { type: object }
+        tool_call: { type: object }
+        attachment: { type: object }
+        sensor_frame: { type: object }
+        value: {}
+        metadata: { type: object }
+    CorrelationInfo:
+      type: object
+      properties:
+        session_id: { type: string }
+        request_id: { type: string }
+        parent_trace_id: { type: string }
+        root_trace_id: { type: string }
+        external_ids: { type: object }
+    CanonicalEnvelope:
+      type: object
+      properties:
+        schema_version: { type: string }
+        trace_id: { type: string }
+        project_id: { type: string }
+        name: { type: string }
+        source: { type: string }
+        kind: { type: string }
+        run_id: { type: string }
+        run_type: { type: string }
+        use_case: { type: string }
+        user_id: { type: string }
+        session_id: { type: string }
+        group: { type: string }
+        platform: { type: string }
+        model: { type: string }
+        status: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        metadata: { type: object }
+        started_at: { type: string, format: date-time }
+        ended_at: { type: string, format: date-time }
+        latency_ms: { type: integer }
+        cost_usd: { type: number }
+        correlation: { $ref: "#/components/schemas/CorrelationInfo" }
+        events:
+          type: array
+          items: { $ref: "#/components/schemas/ObservedEvent" }
+        attachments:
+          type: array
+          items: { type: object }
     IngestResponse:
       type: object
       properties:
         trace_id: { type: string }
         ingest_status: { type: string, enum: [accepted] }
         gcs_uri: { type: string }
+    CanonicalIngestResponse:
+      allOf:
+        - $ref: "#/components/schemas/IngestResponse"
+        - type: object
+          properties:
+            normalized: { type: boolean }
+            source: { type: string }
+    BulkImportItemResult:
+      type: object
+      properties:
+        index: { type: integer }
+        kind: { type: string }
+        trace_id: { type: string }
+        status: { type: string }
+        error: { type: string }
+    BulkImportResponse:
+      type: object
+      properties:
+        accepted: { type: integer }
+        failed: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/BulkImportItemResult" }
     TraceListItem:
       type: object
       properties:
@@ -366,6 +457,49 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/TraceListResponse" }
+  /v1/events:
+    post:
+      summary: Ingest a canonical event envelope
+      security: [{ apiKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CanonicalEnvelope" }
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CanonicalIngestResponse" }
+  /v1/imports/traces:
+    post:
+      summary: Bulk import traces or canonical envelopes
+      security: [{ apiKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                oneOf:
+                  - { $ref: "#/components/schemas/Trace" }
+                  - { $ref: "#/components/schemas/CanonicalEnvelope" }
+          application/x-ndjson:
+            schema:
+              type: string
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BulkImportResponse" }
+        "207":
+          description: Partial success
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BulkImportResponse" }
   /v1/traces/{id}:
     get:
       summary: Get trace meta + raw JSON

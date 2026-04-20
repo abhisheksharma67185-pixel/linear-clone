@@ -43,7 +43,7 @@ def web_agent_trace(client: TraceClient) -> None:
         metadata={"git_sha": "deadbeef", "env": "dev"},
         tags=["demo", "mobile"],
     ) as t:
-        t.set_user("somu@theagi.company")
+        t.set_user("somu@theta.company")
         t.set_metadata(platform="mobile", model="claude-opus-4.6")
 
         with t.step(name="plan", type="llm", model="claude-opus-4.6") as s:
@@ -92,7 +92,7 @@ def robotics_trace(client: TraceClient) -> None:
         metadata={"robot": "franka-panda", "scene": "kitchen"},
         tags=["robotics"],
     ) as t:
-        t.set_user("robotics@theagi.company")
+        t.set_user("robotics@theta.company")
         with t.step(name="perceive", type="llm", model="claude-opus-4.6") as s:
             s.log_message(role="user", text="Pick up the red cup.")
             s.set_token_usage(input=300, output=80)

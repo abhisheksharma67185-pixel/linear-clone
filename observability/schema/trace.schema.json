@@ -70,6 +70,15 @@
       "type": "array",
       "items": { "$ref": "#/$defs/step" }
     },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/observed_event" },
+      "description": "Optional generic event timeline preserved alongside normalized step semantics."
+    },
+    "attachments": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/content_part" }
+    },
     "annotations": {
       "type": "array",
       "items": { "$ref": "#/$defs/annotation" }
@@ -123,9 +132,17 @@
           "type": "array",
           "items": { "$ref": "#/$defs/message" }
         },
+        "attachments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/content_part" }
+        },
         "tool_calls": {
           "type": "array",
           "items": { "$ref": "#/$defs/tool_call" }
+        },
+        "events": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/observed_event" }
         },
         "sensor_frames": {
           "type": "array",
@@ -168,6 +185,33 @@
           }
         }
       ]
+    },
+
+    "observed_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "event_id": { "type": "string" },
+        "parent_event_id": { "type": "string" },
+        "step_id": { "type": "string" },
+        "parent_step_id": { "type": "string" },
+        "index": { "type": "integer", "minimum": 0 },
+        "type": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "status": { "type": "string" },
+        "started_at": { "type": "string", "format": "date-time" },
+        "ended_at": { "type": "string", "format": "date-time" },
+        "latency_ms": { "type": "integer", "minimum": 0 },
+        "model": { "type": "string" },
+        "message": { "$ref": "#/$defs/message" },
+        "tool_call": { "$ref": "#/$defs/tool_call" },
+        "attachment": { "$ref": "#/$defs/content_part" },
+        "sensor_frame": { "$ref": "#/$defs/sensor_frame" },
+        "value": {},
+        "metadata": { "type": "object", "additionalProperties": true }
+      }
     },
 
     "message": {

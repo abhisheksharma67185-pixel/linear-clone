@@ -48,8 +48,8 @@ export default function APIMediaPage() {
       <h3>Response</h3>
       <CodeBlock lang="json" title="200 OK">
         {`{
-  "url": "https://storage.googleapis.com/bucket/projects/.../screenshot.png?X-Goog-Signature=...",
-  "gs_uri": "gs://bucket/projects/proj_xyz/traces/trc_abc123/attachments/screenshot.png",
+  "url": "https://storage.googleapis.com/bucket/orgs/.../projects/.../screenshot.png?X-Goog-Signature=...",
+  "gs_uri": "gs://bucket/orgs/org_xyz/projects/proj_xyz/traces/trc_abc123/attachments/screenshot.png",
   "expires_at": "2025-01-15T10:45:00Z"
 }`}
       </CodeBlock>
@@ -107,7 +107,7 @@ curl -X PUT "SIGNED_URL_FROM_STEP_1" \\
       <CodeBlock lang="json" title="200 OK">
         {`{
   "url": "",
-  "gs_uri": "gs://bucket/projects/proj_xyz/traces/trc_abc123/attachments/screenshot.png",
+  "gs_uri": "gs://bucket/orgs/org_xyz/projects/proj_xyz/traces/trc_abc123/attachments/screenshot.png",
   "expires_at": "2025-01-15T11:30:00Z"
 }`}
       </CodeBlock>

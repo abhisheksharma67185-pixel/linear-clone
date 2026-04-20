@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/theagi/theta-observability/api-go/internal/auth"
-	"github.com/theagi/theta-observability/api-go/internal/ids"
-	"github.com/theagi/theta-observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/auth"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/ids"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
 )
 
 // CreateAPIKey generates a plaintext key, stores its argon2id hash plus a
@@ -27,8 +28,9 @@ func (s *Store) CreateAPIKey(ctx context.Context, projectID, name string) (*mode
 	fp := auth.FingerprintAPIKey(plaintext)
 	keyID := ids.Token()
 	now := time.Now().UTC()
-	// prefix = first 8 chars after tk_ for display
-	prefix := plaintext[:minInt(11, len(plaintext))]
+	// Use the full `tk_<ulid>` stem as the display prefix. Using only the
+	// timestamp-heavy beginning of the ULID can collide under concurrent key creation.
+	prefix := apiKeyPrefix(plaintext)
 
 	_, err = s.Pool.Exec(ctx, `
 		INSERT INTO api_keys (id, project_id, name, prefix, fingerprint, hash, created_at)
@@ -123,4 +125,15 @@ func minInt(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func apiKeyPrefix(plaintext string) string {
+	if plaintext == "" {
+		return ""
+	}
+	lastSep := strings.LastIndex(plaintext, "_")
+	if lastSep > 0 {
+		return plaintext[:lastSep]
+	}
+	return plaintext[:minInt(19, len(plaintext))]
 }

@@ -50,9 +50,12 @@ const navigation: NavSection[] = [
     heading: "API Reference",
     items: [
       { title: "Overview", href: "/docs/api" },
+      { title: "Generic Events", href: "/docs/api/events" },
       { title: "Traces", href: "/docs/api/traces" },
       { title: "Media", href: "/docs/api/media" },
       { title: "Metrics", href: "/docs/api/metrics" },
+      { title: "Threads", href: "/docs/api/threads" },
+      { title: "Monitors", href: "/docs/api/monitors" },
       { title: "Search", href: "/docs/api/search" },
       { title: "Incidents", href: "/docs/api/incidents" },
       { title: "Admin", href: "/docs/api/admin" },
@@ -63,6 +66,7 @@ const navigation: NavSection[] = [
     items: [
       { title: "Trace Schema", href: "/docs/concepts/schema" },
       { title: "Authentication", href: "/docs/concepts/auth" },
+      { title: "IDE MCP Server", href: "/docs/concepts/mcp" },
     ],
   },
   {

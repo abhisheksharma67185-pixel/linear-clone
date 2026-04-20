@@ -77,6 +77,37 @@ await client.trace({ name: "chat" }, async (t) => {
 
       <hr />
 
+      <h2>LangChain</h2>
+      <p>
+        Wrap a runnable-style LangChain object to turn <code>invoke</code> and
+        <code> stream</code> calls into Theta traces without changing your chain logic.
+      </p>
+      <CodeBlock lang="typescript">
+        {`import { TraceClient } from "@theta/observability";
+import { wrapLangChainRunnable } from "@theta/observability/integrations/langchain";
+
+const client = new TraceClient();
+const tracedChain = wrapLangChainRunnable(chain, {
+  client,
+  name: "support-chain",
+  runType: "prod",
+  metadata: { framework: "langchain" },
+});
+
+const result = await tracedChain.invoke({
+  question: "Why was the order flagged for review?",
+});`}
+      </CodeBlock>
+
+      <Callout type="info">
+        <p>
+          The wrapper captures the runnable input, output, errors, and streamed text
+          while preserving the original return values from LangChain.
+        </p>
+      </Callout>
+
+      <hr />
+
       <h2>Anthropic</h2>
       <p>
         Wrap your Anthropic client to trace every <code>messages.create</code> call.

@@ -8,6 +8,7 @@ Complete reference for the `@theta/observability` Node.js SDK.
 - [Configuration](#configuration)
 - [Core Concepts](#core-concepts)
 - [Basic Usage](#basic-usage)
+- [Generic Ingest](#generic-ingest)
 - [Zero-Config Mode](#zero-config-mode)
 - [Agent Wrapping](#agent-wrapping)
 - [Metrics](#metrics)
@@ -136,6 +137,9 @@ const client = new TraceClient({
 await client.trace(
   { name: "checkout-agent", runType: "prod" },
   async (t) => {
+    t.setMetadata({ sessionId: "sess_123" });
+    t.setMetadataPath("workflow.stage", "checkout");
+
     // LLM step
     await t.step(
       { name: "plan", type: "llm", model: "claude-sonnet-4-6" },
@@ -208,6 +212,49 @@ await client.trace({ name: "research-agent" }, async (t) => {
   });
 });
 ```
+
+---
+
+## Generic Ingest
+
+Use the low-level interoperability APIs when your system already emits its own spans, browser actions, or replay events and you want Theta to normalize them into the standard trace pipeline.
+
+```typescript
+await client.ingestEvents({
+  name: "browser-session",
+  source: "openclaw",
+  kind: "browser_session",
+  platform: "desktop",
+  events: [
+    {
+      type: "message",
+      step_id: "browser_step",
+      message: {
+        role: "user",
+        content: [{ type: "text", text: "buy me shoes from amazon" }],
+      },
+    },
+  ],
+});
+
+await client.importTraces([
+  {
+    schema_version: "1.0",
+    trace_id: "tr_native",
+    project_id: "proj_abc",
+    name: "native-trace",
+    status: "success",
+    started_at: "2026-04-18T00:00:00Z",
+    steps: [],
+  },
+  {
+    name: "canonical-import",
+    events: [],
+  },
+]);
+```
+
+`ingestEvents()` targets `POST /v1/events`. `importTraces()` targets `POST /v1/imports/traces` and accepts either JSON arrays or NDJSON via `{ ndjson: true }`.
 
 ---
 
@@ -350,6 +397,42 @@ interface CreateMetricOptions {
   type?: string;                     // "automated" | "human" | "hybrid" etc.
   evaluatorPrompt?: string;          // LLM prompt for automated evaluation
   metadata?: Record<string, unknown>;
+}
+```
+
+## Listing Traces
+
+Use `client.listTraces()` when you need server-side filtering instead of scanning trace summaries in memory.
+
+```typescript
+const { data, nextCursor } = await client.listTraces({
+  projectId: "proj_abc",
+  runType: ["prod"],
+  status: ["success"],
+  metadata: [
+    { key: "workflow.stage", value: "checkout" },
+    { key: "e2e.suite", value: "node" },
+  ],
+  limit: 25,
+});
+
+for (const trace of data) {
+  console.log(trace.traceId, trace.metadata?.workflow?.stage);
+}
+```
+
+`metadata` filters are serialized as repeated `meta_key` / `meta_value` query params. Keys support dot-path lookup against trace metadata JSON.
+
+### Fetching full trace detail
+
+Use `client.getTrace()` when you need the complete persisted trace, including step messages, step attachments, sensor frames, and trace-level attachments.
+
+```typescript
+const detail = await client.getTrace("tr_abc123");
+
+if (detail?.trace) {
+  console.log(detail.meta.status);
+  console.log(detail.trace.steps[0]?.messages?.length ?? 0);
 }
 ```
 
@@ -591,6 +674,8 @@ class TraceClient {
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `trace(input, fn)` | `Promise<T>` | Create a trace and run `fn` inside it |
+| `listTraces(filters?)` | `Promise<{ data: TraceSummary[]; nextCursor?: string }>` | List trace summaries with server-side filters |
+| `getTrace(traceId)` | `Promise<TraceDetailResponse \| null>` | Fetch a full persisted trace by ID |
 | `upload(type, source, overrides?)` | `Promise<Attachment>` | Upload media independently |
 | `wrapAgent(name, fn)` | `WrappedAgent<TInput, TOutput>` | Wrap an agent function |
 | `recordMetric(metricIdOrName, traceId, value)` | `Promise<void>` | Record a metric event (fail-soft) |
@@ -618,6 +703,8 @@ class Trace {
 | `attach(type, source, meta?)` | `Promise<Attachment>` | Attach any media type |
 | `setTokenUsage(usage)` | `void` | Set trace-level token usage |
 | `setCost(usd)` | `void` | Set trace cost in USD |
+| `setMetadata(meta)` | `void` | Merge key-value pairs into trace metadata |
+| `setMetadataPath(path, value)` | `void` | Set a nested trace metadata value with dot-path syntax |
 | `setStatus(status, errorMessage?)` | `void` | Override trace status |
 
 ### Step
@@ -636,10 +723,16 @@ class Step {
 | `logMessage(input)` | `void` | Append a chat message |
 | `logToolCall(input)` | `void` | Log a tool invocation |
 | `attachImage(source, meta?)` | `Promise<Attachment>` | Attach an image |
+| `attachAudio(source, meta?)` | `Promise<Attachment>` | Attach audio |
+| `attachVideo(source, meta?)` | `Promise<Attachment>` | Attach video |
+| `attachFile(source, meta?)` | `Promise<Attachment>` | Attach a generic file |
+| `attachSensor(source, meta?)` | `Promise<Attachment>` | Attach sensor data |
+| `logSensorFrame(input)` | `Promise<SensorFrame>` | Persist a robotics sensor frame |
 | `attach(type, source, meta?)` | `Promise<Attachment>` | Attach any media type |
 | `setTokenUsage(usage)` | `void` | Set token counts |
 | `setCost(usd)` | `void` | Set step cost in USD |
 | `setMetadata(meta)` | `void` | Merge key-value pairs into step metadata |
+| `setMetadataPath(path, value)` | `void` | Set a nested step metadata value with dot-path syntax |
 
 ### LogMessageInput
 
@@ -648,6 +741,8 @@ interface LogMessageInput {
   role: "system" | "user" | "assistant" | "tool";
   text?: string;
   images?: AttachmentSource[];       // Uploaded lazily
+  audio?: AttachmentSource[];        // Uploaded lazily
+  video?: AttachmentSource[];        // Uploaded lazily
   attachments?: AttachmentSource[];  // Uploaded lazily
   name?: string;
   toolCallId?: string;

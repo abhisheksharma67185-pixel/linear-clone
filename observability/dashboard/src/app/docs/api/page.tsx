@@ -7,10 +7,23 @@ export default function APIOverviewPage() {
       <h1>API Reference</h1>
       <p>
         The Theta Observability REST API lets you ingest traces, query data,
-        manage metrics, and trigger incident detection programmatically. All
-        endpoints live under a single base URL and follow consistent conventions
-        for authentication, errors, and pagination.
+        manage metrics, configure monitors, group conversation threads, and
+        trigger incident detection programmatically. All endpoints live under a
+        single base URL and follow consistent conventions for authentication,
+        errors, and pagination.
       </p>
+
+      <h2>Platform Surfaces</h2>
+      <p>
+        The API now exposes two layers: direct trace ingest for Theta-native
+        clients and generic observability surfaces for external systems.
+      </p>
+      <ul>
+        <li><code>POST /v1/traces</code> and <code>POST /v1/traces/:id/steps</code> for Theta-native ingest.</li>
+        <li><code>POST /v1/events</code> and <code>POST /v1/imports/traces</code> for canonical event or bulk import workflows.</li>
+        <li><code>GET /v1/projects/:id/exports/otel</code> for OTLP-style export.</li>
+        <li><code>/v1/projects/:id/threads</code> and <code>/v1/projects/:id/monitors</code> for correlation and threshold configuration.</li>
+      </ul>
 
       <h2>Base URL</h2>
       <CodeBlock lang="text">

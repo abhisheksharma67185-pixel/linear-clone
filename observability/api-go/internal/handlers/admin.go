@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"cloud.google.com/go/bigquery"
-	"github.com/theagi/theta-observability/api-go/internal/auth"
-	"github.com/theagi/theta-observability/api-go/internal/bq"
-	"github.com/theagi/theta-observability/api-go/internal/gcs"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/auth"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/bq"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/gcs"
 	"google.golang.org/api/iterator"
 )
 

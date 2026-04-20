@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/bigquery"
-	"github.com/theagi/theta-observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
 	"google.golang.org/api/iterator"
 )
 
@@ -128,25 +128,25 @@ func (w *Writer) ListTraces(ctx context.Context, f ListFilters) ([]models.TraceL
 	var last models.TraceListItem
 	for {
 		var row struct {
-			TraceID     string    `bigquery:"trace_id"`
-			ProjectID   string    `bigquery:"project_id"`
-			Name        string    `bigquery:"name"`
-			RunID       string    `bigquery:"run_id"`
-			RunType     string    `bigquery:"run_type"`
-			UseCase     string    `bigquery:"use_case"`
-			Group       string    `bigquery:"group"`
-			Status      string    `bigquery:"status"`
-			Platform    string    `bigquery:"platform"`
-			Model       string    `bigquery:"model"`
-			UserID      string    `bigquery:"user_id"`
-			Metadata    string    `bigquery:"metadata"`
-			StartedAt   time.Time `bigquery:"started_at"`
-			LatencyMS   int64     `bigquery:"latency_ms"`
-			TotalTokens int64     `bigquery:"total_tokens"`
-			CostUSD     *big.Rat  `bigquery:"cost_usd"`
-			StepCount   int64     `bigquery:"step_count"`
-			HasMedia    bool      `bigquery:"has_media"`
-			Tags        []string  `bigquery:"tags"`
+			TraceID     string               `bigquery:"trace_id"`
+			ProjectID   string               `bigquery:"project_id"`
+			Name        bigquery.NullString  `bigquery:"name"`
+			RunID       bigquery.NullString  `bigquery:"run_id"`
+			RunType     bigquery.NullString  `bigquery:"run_type"`
+			UseCase     bigquery.NullString  `bigquery:"use_case"`
+			Group       bigquery.NullString  `bigquery:"group"`
+			Status      bigquery.NullString  `bigquery:"status"`
+			Platform    bigquery.NullString  `bigquery:"platform"`
+			Model       bigquery.NullString  `bigquery:"model"`
+			UserID      bigquery.NullString  `bigquery:"user_id"`
+			Metadata    bigquery.NullString  `bigquery:"metadata"`
+			StartedAt   time.Time            `bigquery:"started_at"`
+			LatencyMS   int64                `bigquery:"latency_ms"`
+			TotalTokens int64                `bigquery:"total_tokens"`
+			CostUSD     *big.Rat             `bigquery:"cost_usd"`
+			StepCount   int64                `bigquery:"step_count"`
+			HasMedia    bool                 `bigquery:"has_media"`
+			Tags        []string             `bigquery:"tags"`
 		}
 		err := it.Next(&row)
 		if err == iterator.Done {
@@ -158,15 +158,15 @@ func (w *Writer) ListTraces(ctx context.Context, f ListFilters) ([]models.TraceL
 		item := models.TraceListItem{
 			TraceID:     row.TraceID,
 			ProjectID:   row.ProjectID,
-			Name:        row.Name,
-			RunID:       row.RunID,
-			RunType:     row.RunType,
-			UseCase:     row.UseCase,
-			Group:       row.Group,
-			Status:      row.Status,
-			Platform:    row.Platform,
-			Model:       row.Model,
-			UserID:      row.UserID,
+			Name:        row.Name.StringVal,
+			RunID:       row.RunID.StringVal,
+			RunType:     row.RunType.StringVal,
+			UseCase:     row.UseCase.StringVal,
+			Group:       row.Group.StringVal,
+			Status:      row.Status.StringVal,
+			Platform:    row.Platform.StringVal,
+			Model:       row.Model.StringVal,
+			UserID:      row.UserID.StringVal,
 			StartedAt:   row.StartedAt,
 			LatencyMS:   row.LatencyMS,
 			TotalTokens: row.TotalTokens,
@@ -175,7 +175,7 @@ func (w *Writer) ListTraces(ctx context.Context, f ListFilters) ([]models.TraceL
 			HasMedia:    row.HasMedia,
 			Tags:        row.Tags,
 		}
-		if metadata := normalizeRawJSON(row.Metadata); len(metadata) > 0 {
+		if metadata := normalizeRawJSON(row.Metadata.StringVal); len(metadata) > 0 {
 			item.Metadata = metadata
 		}
 		out = append(out, item)
@@ -204,26 +204,26 @@ func (w *Writer) GetTrace(ctx context.Context, traceID string) (*models.TraceLis
 		return nil, "", err
 	}
 	var row struct {
-		TraceID     string    `bigquery:"trace_id"`
-		ProjectID   string    `bigquery:"project_id"`
-		Name        string    `bigquery:"name"`
-		RunID       string    `bigquery:"run_id"`
-		RunType     string    `bigquery:"run_type"`
-		UseCase     string    `bigquery:"use_case"`
-		Group       string    `bigquery:"group"`
-		Status      string    `bigquery:"status"`
-		Platform    string    `bigquery:"platform"`
-		Model       string    `bigquery:"model"`
-		UserID      string    `bigquery:"user_id"`
-		Metadata    string    `bigquery:"metadata"`
-		StartedAt   time.Time `bigquery:"started_at"`
-		LatencyMS   int64     `bigquery:"latency_ms"`
-		TotalTokens int64     `bigquery:"total_tokens"`
-		CostUSD     *big.Rat  `bigquery:"cost_usd"`
-		StepCount   int64     `bigquery:"step_count"`
-		HasMedia    bool      `bigquery:"has_media"`
-		Tags        []string  `bigquery:"tags"`
-		GCSURI      string    `bigquery:"gcs_uri"`
+		TraceID     string               `bigquery:"trace_id"`
+		ProjectID   string               `bigquery:"project_id"`
+		Name        bigquery.NullString  `bigquery:"name"`
+		RunID       bigquery.NullString  `bigquery:"run_id"`
+		RunType     bigquery.NullString  `bigquery:"run_type"`
+		UseCase     bigquery.NullString  `bigquery:"use_case"`
+		Group       bigquery.NullString  `bigquery:"group"`
+		Status      bigquery.NullString  `bigquery:"status"`
+		Platform    bigquery.NullString  `bigquery:"platform"`
+		Model       bigquery.NullString  `bigquery:"model"`
+		UserID      bigquery.NullString  `bigquery:"user_id"`
+		Metadata    bigquery.NullString  `bigquery:"metadata"`
+		StartedAt   time.Time            `bigquery:"started_at"`
+		LatencyMS   int64                `bigquery:"latency_ms"`
+		TotalTokens int64                `bigquery:"total_tokens"`
+		CostUSD     *big.Rat             `bigquery:"cost_usd"`
+		StepCount   int64                `bigquery:"step_count"`
+		HasMedia    bool                 `bigquery:"has_media"`
+		Tags        []string             `bigquery:"tags"`
+		GCSURI      bigquery.NullString  `bigquery:"gcs_uri"`
 	}
 	if err := it.Next(&row); err != nil {
 		if err == iterator.Done {
@@ -232,17 +232,17 @@ func (w *Writer) GetTrace(ctx context.Context, traceID string) (*models.TraceLis
 		return nil, "", err
 	}
 	item := &models.TraceListItem{
-		TraceID: row.TraceID, ProjectID: row.ProjectID, Name: row.Name,
-		RunID: row.RunID, RunType: row.RunType, UseCase: row.UseCase, Group: row.Group,
-		Status: row.Status, Platform: row.Platform, Model: row.Model,
-		UserID: row.UserID, StartedAt: row.StartedAt, LatencyMS: row.LatencyMS,
+		TraceID: row.TraceID, ProjectID: row.ProjectID, Name: row.Name.StringVal,
+		RunID: row.RunID.StringVal, RunType: row.RunType.StringVal, UseCase: row.UseCase.StringVal, Group: row.Group.StringVal,
+		Status: row.Status.StringVal, Platform: row.Platform.StringVal, Model: row.Model.StringVal,
+		UserID: row.UserID.StringVal, StartedAt: row.StartedAt, LatencyMS: row.LatencyMS,
 		TotalTokens: row.TotalTokens, CostUSD: ratToFloat(row.CostUSD),
 		StepCount: row.StepCount, HasMedia: row.HasMedia, Tags: row.Tags,
 	}
-	if metadata := normalizeRawJSON(row.Metadata); len(metadata) > 0 {
+	if metadata := normalizeRawJSON(row.Metadata.StringVal); len(metadata) > 0 {
 		item.Metadata = metadata
 	}
-	return item, row.GCSURI, nil
+	return item, row.GCSURI.StringVal, nil
 }
 
 func encodeCursor(t time.Time, id string) string {

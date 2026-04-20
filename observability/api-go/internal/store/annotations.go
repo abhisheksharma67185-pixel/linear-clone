@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/theagi/theta-observability/api-go/internal/ids"
-	"github.com/theagi/theta-observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/ids"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
 )
 
 // AnnotationFilters holds optional filters for ListAnnotations.

@@ -9,12 +9,14 @@
     "sites/linear",
     "sites/jira",
     "sites/slack",
+    "sites/observability-website",
     "observability/dashboard",
     "observability/sdk-node"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "dev": "npm run dev --workspace=sites/shopify-admin",
+    "dev:obs-site": "npm run dev --workspace=sites/observability-website",
     "dev:obs": "npm run dev --workspace=observability/dashboard",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present"

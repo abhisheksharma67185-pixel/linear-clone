@@ -27,6 +27,11 @@
       "import": "./dist/integrations/openclaw.js",
       "require": "./dist/integrations/openclaw.cjs"
     },
+    "./langchain": {
+      "types": "./dist/integrations/langchain.d.ts",
+      "import": "./dist/integrations/langchain.js",
+      "require": "./dist/integrations/langchain.cjs"
+    },
     "./next": {
       "types": "./dist/integrations/next.d.ts",
       "import": "./dist/integrations/next.js",
@@ -59,7 +64,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/theagi/theta-rl-labs",
+    "url": "https://github.com/RahulSulegoakar/theta-rl-labs",
     "directory": "observability/sdk-node"
   },
   "dependencies": {

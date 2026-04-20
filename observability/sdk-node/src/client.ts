@@ -8,9 +8,13 @@ import type {
   Attachment,
   AttachmentSource,
   AttachmentType,
+  BulkImportResponse,
+  CanonicalEnvelope,
+  TraceDetailResponse,
   TraceInput,
   TraceListFilters,
   TraceListResponse,
+  TracePayload,
 } from "./types.js";
 import type { AgentContext, AgentFn, AgentResult, WrappedAgent } from "./agent.js";
 import type { CreateMetricOptions, MetricValue } from "./metrics.js";
@@ -149,6 +153,84 @@ export class TraceClient {
       return { type, uri: "", ...overrides };
     }
     return uploadAttachment(this.uploadOpts, type, source, overrides);
+  }
+
+  /**
+   * Send a provider-neutral canonical event envelope to Theta.
+   *
+   * Use this when you already have your own span/event model and want Theta to
+   * normalize it into the standard trace pipeline without adopting the high-level SDK.
+   */
+  async ingestEvents(
+    envelope: CanonicalEnvelope,
+  ): Promise<{ trace_id: string; ingest_status: string; gcs_uri?: string; normalized: boolean }> {
+    if (this.disabled) {
+      return {
+        trace_id: envelope.trace_id ?? "",
+        ingest_status: "disabled",
+        normalized: false,
+      };
+    }
+    const fetchFn = this.uploadOpts.fetchImpl ?? fetch;
+    const payload = {
+      ...envelope,
+      schema_version: envelope.schema_version ?? "1.0",
+      project_id: envelope.project_id ?? this.project,
+    };
+    const res = await fetchFn(`${this.baseUrl}/v1/events`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": this.apiKey,
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(this.uploadOpts.timeout),
+    });
+    if (!res.ok) {
+      throw new ThetaObservabilityError(
+        `ingestEvents failed: ${res.status} ${res.statusText}`,
+      );
+    }
+    return (await res.json()) as {
+      trace_id: string;
+      ingest_status: string;
+      gcs_uri?: string;
+      normalized: boolean;
+    };
+  }
+
+  /**
+   * Bulk import either Theta-native traces or canonical envelopes.
+   *
+   * `ndjson: true` is useful for external replay jobs that already emit one payload per line.
+   */
+  async importTraces(
+    items: Array<TracePayload | CanonicalEnvelope>,
+    opts: { ndjson?: boolean } = {},
+  ): Promise<BulkImportResponse> {
+    if (this.disabled) {
+      return { accepted: 0, failed: 0, items: [] };
+    }
+    const fetchFn = this.uploadOpts.fetchImpl ?? fetch;
+    const ndjson = opts.ndjson ?? false;
+    const body = ndjson
+      ? items.map((item) => JSON.stringify(item)).join("\n")
+      : JSON.stringify(items);
+    const res = await fetchFn(`${this.baseUrl}/v1/imports/traces`, {
+      method: "POST",
+      headers: {
+        "Content-Type": ndjson ? "application/x-ndjson" : "application/json",
+        "x-api-key": this.apiKey,
+      },
+      body,
+      signal: AbortSignal.timeout(this.uploadOpts.timeout),
+    });
+    if (!res.ok && res.status !== 207) {
+      throw new ThetaObservabilityError(
+        `importTraces failed: ${res.status} ${res.statusText}`,
+      );
+    }
+    return (await res.json()) as BulkImportResponse;
   }
 
   /** Flush queued traces immediately. */
@@ -394,6 +476,41 @@ export class TraceClient {
         console.warn(`[theta/observability] listTraces failed: ${String(err)}`);
       }
       return { data: [] };
+    }
+  }
+
+  /**
+   * Fetch a single trace, including its full step tree and attachments.
+   *
+   * Returns `null` when the trace is not found or the client is disabled.
+   */
+  async getTrace(traceId: string): Promise<TraceDetailResponse | null> {
+    if (this.disabled) return null;
+
+    try {
+      const fetchFn = this.uploadOpts.fetchImpl ?? fetch;
+      const res = await fetchFn(`${this.baseUrl}/v1/traces/${encodeURIComponent(traceId)}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        signal: AbortSignal.timeout(this.uploadOpts.timeout),
+      });
+      if (res.status === 404) {
+        return null;
+      }
+      if (!res.ok) {
+        throw new ThetaObservabilityError(
+          `getTrace responded ${res.status}: ${await res.text().catch(() => "")}`,
+        );
+      }
+      return (await res.json()) as TraceDetailResponse;
+    } catch (err) {
+      if (this.debug) {
+        // eslint-disable-next-line no-console
+        console.warn(`[theta/observability] getTrace failed: ${String(err)}`);
+      }
+      return null;
     }
   }
 

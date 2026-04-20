@@ -5,13 +5,7 @@ import { MessageSquare, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@/components/ui/select";
 import {
   listTraceAnnotationsAction,
   createAnnotationAction,
@@ -113,16 +107,13 @@ export function Annotations({
             />
             <Select
               value={annotationType}
-              onValueChange={(v) => setAnnotationType(v as AnnotationType)}
+              onChange={(event) =>
+                setAnnotationType(event.target.value as AnnotationType)
+              }
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="manual">Manual</SelectItem>
-                <SelectItem value="automated">Automated</SelectItem>
-                <SelectItem value="feedback">Feedback</SelectItem>
-              </SelectContent>
+              <option value="manual">Manual</option>
+              <option value="automated">Automated</option>
+              <option value="feedback">Feedback</option>
             </Select>
           </div>
           <textarea

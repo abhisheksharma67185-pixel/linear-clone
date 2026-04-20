@@ -6,6 +6,7 @@ export default defineConfig({
     "src/integrations/openai.ts",
     "src/integrations/anthropic.ts",
     "src/integrations/openclaw.ts",
+    "src/integrations/langchain.ts",
     "src/integrations/next.ts",
   ],
   format: ["esm", "cjs"],

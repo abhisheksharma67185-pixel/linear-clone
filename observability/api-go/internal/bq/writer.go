@@ -1,10 +1,13 @@
 package bq
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
+	"net/http"
 	"sync"
 	"time"
 
@@ -30,9 +33,12 @@ func (r Row) Save() (map[string]bigquery.Value, string, error) {
 // portability with the emulator; swap to managedwriter in prod for
 // throughput.
 type Writer struct {
-	client  *bigquery.Client
-	dataset string
-	log     *slog.Logger
+	client     *bigquery.Client
+	project    string
+	dataset    string
+	endpoint   string
+	httpClient *http.Client
+	log        *slog.Logger
 
 	mu         sync.Mutex
 	buffers    map[string][]bigquery.ValueSaver
@@ -55,14 +61,17 @@ func NewWriter(ctx context.Context, project, dataset, endpoint string, log *slog
 		return nil, fmt.Errorf("bigquery.NewClient: %w", err)
 	}
 	w := &Writer{
-		client:  cli,
-		dataset: dataset,
-		log:     log,
-		buffers: make(map[string][]bigquery.ValueSaver),
-		maxRows: 100,
-		maxAge:  500 * time.Millisecond,
-		stop:    make(chan struct{}),
-		done:    make(chan struct{}),
+		client:     cli,
+		project:    project,
+		dataset:    dataset,
+		endpoint:   endpoint,
+		httpClient: &http.Client{Timeout: 10 * time.Second},
+		log:        log,
+		buffers:    make(map[string][]bigquery.ValueSaver),
+		maxRows:    100,
+		maxAge:     500 * time.Millisecond,
+		stop:       make(chan struct{}),
+		done:       make(chan struct{}),
 	}
 	go w.loop(ctx)
 	return w, nil
@@ -129,12 +138,113 @@ func (w *Writer) flushTable(ctx context.Context, table string) {
 	if len(rows) == 0 {
 		return
 	}
-	ins := w.client.Dataset(w.dataset).Table(table).Inserter()
-	if err := ins.Put(ctx, rows); err != nil {
+	if err := w.putRows(ctx, table, rows); err != nil {
 		w.log.Error("bq insert failed", "table", table, "rows", len(rows), "err", err)
 		return
 	}
 	w.log.Debug("bq insert", "table", table, "rows", len(rows))
+}
+
+func (w *Writer) putRows(
+	ctx context.Context,
+	table string,
+	rows []bigquery.ValueSaver,
+) error {
+	if w.endpoint != "" {
+		return w.insertAll(ctx, table, rows)
+	}
+	ins := w.client.Dataset(w.dataset).Table(table).Inserter()
+	return ins.Put(ctx, rows)
+}
+
+func (w *Writer) insertAll(
+	ctx context.Context,
+	table string,
+	rows []bigquery.ValueSaver,
+) error {
+	type insertRow struct {
+		InsertID string         `json:"insertId,omitempty"`
+		JSON     map[string]any `json:"json"`
+	}
+	reqBody := struct {
+		Kind string      `json:"kind"`
+		Rows []insertRow `json:"rows"`
+	}{
+		Kind: "bigquery#tableDataInsertAllRequest",
+		Rows: make([]insertRow, 0, len(rows)),
+	}
+
+	for _, saver := range rows {
+		data, insertID, err := saver.Save()
+		if err != nil {
+			return err
+		}
+		reqBody.Rows = append(reqBody.Rows, insertRow{
+			InsertID: insertID,
+			JSON:     normalizeInsertRow(data),
+		})
+	}
+
+	body, err := json.Marshal(reqBody)
+	if err != nil {
+		return fmt.Errorf("marshal insertAll request: %w", err)
+	}
+
+	url := fmt.Sprintf(
+		"%s/bigquery/v2/projects/%s/datasets/%s/tables/%s/insertAll",
+		trimEndpoint(w.endpoint),
+		w.project,
+		w.dataset,
+		table,
+	)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("build insertAll request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := w.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("insertAll request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	if err != nil {
+		return fmt.Errorf("read insertAll response: %w", err)
+	}
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf("insertAll responded %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	var parsed struct {
+		InsertErrors []any `json:"insertErrors"`
+	}
+	if len(respBody) > 0 && json.Unmarshal(respBody, &parsed) == nil && len(parsed.InsertErrors) > 0 {
+		return fmt.Errorf("insertAll returned insertErrors: %s", string(respBody))
+	}
+
+	return nil
+}
+
+func normalizeInsertRow(data map[string]bigquery.Value) map[string]any {
+	out := make(map[string]any, len(data))
+	for key, value := range data {
+		switch typed := value.(type) {
+		case time.Time:
+			out[key] = typed.UTC().Format(time.RFC3339Nano)
+		default:
+			out[key] = typed
+		}
+	}
+	return out
+}
+
+func trimEndpoint(endpoint string) string {
+	for len(endpoint) > 0 && endpoint[len(endpoint)-1] == '/' {
+		endpoint = endpoint[:len(endpoint)-1]
+	}
+	return endpoint
 }
 
 // JSONField converts an arbitrary Go value to a JSON string for BQ JSON cols.

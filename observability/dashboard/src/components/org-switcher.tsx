@@ -67,7 +67,7 @@ export function OrgSwitcher({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={(e) => {
-            e.preventDefault();
+            e?.preventDefault();
             setCreateOrgOpen(true);
           }}
         >
@@ -126,7 +126,7 @@ export function ProjectSwitcher({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={(e) => {
-            e.preventDefault();
+            e?.preventDefault();
             setCreateProjectOpen(true);
           }}
         >

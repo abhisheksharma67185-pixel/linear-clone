@@ -21,13 +21,13 @@ export async function createAnnotationAction(
   }
 ) {
   const result = await api.createAnnotation(traceId, data);
-  revalidateTag(`trace:${traceId}`);
+  revalidateTag(`trace:${traceId}`, "max");
   return result;
 }
 
 export async function deleteAnnotationAction(annotationId: string, traceId: string) {
   await api.deleteAnnotation(annotationId);
-  revalidateTag(`trace:${traceId}`);
+  revalidateTag(`trace:${traceId}`, "max");
 }
 
 export async function listAnnotationLabelsAction(projectId: string) {

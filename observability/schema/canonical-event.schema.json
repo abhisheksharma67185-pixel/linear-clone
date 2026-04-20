@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://theta.observability/schema/canonical-event.schema.json",
+  "title": "Theta Canonical Event Envelope",
+  "description": "Provider-neutral ingest envelope for agent, workflow, browser, backend, and replay event streams.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "trace_id": { "type": "string" },
+    "project_id": { "type": "string" },
+    "name": { "type": "string" },
+    "source": { "type": "string" },
+    "kind": { "type": "string" },
+    "run_id": { "type": "string" },
+    "run_type": { "type": "string" },
+    "use_case": { "type": "string" },
+    "user_id": { "type": "string" },
+    "session_id": { "type": "string" },
+    "group": { "type": "string" },
+    "platform": { "type": "string" },
+    "model": { "type": "string" },
+    "status": { "type": "string" },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "started_at": { "type": "string", "format": "date-time" },
+    "ended_at": { "type": "string", "format": "date-time" },
+    "latency_ms": { "type": "integer", "minimum": 0 },
+    "cost_usd": { "type": "number", "minimum": 0 },
+    "correlation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "session_id": { "type": "string" },
+        "request_id": { "type": "string" },
+        "parent_trace_id": { "type": "string" },
+        "root_trace_id": { "type": "string" },
+        "external_ids": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "trace.schema.json#/$defs/observed_event" }
+    },
+    "attachments": {
+      "type": "array",
+      "items": { "$ref": "trace.schema.json#/$defs/content_part" }
+    }
+  }
+}

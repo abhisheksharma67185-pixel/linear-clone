@@ -79,6 +79,37 @@ oai = wrap_openai(OpenAI())`}
 
       <hr />
 
+      <h2>LangChain</h2>
+      <p>
+        Wrap any runnable that exposes <code>invoke</code>, <code>ainvoke</code>,
+        <code> stream</code>, or <code>astream</code> and Theta will record the
+        execution as a trace or child step.
+      </p>
+      <CodeBlock lang="python">
+        {`from theta_observability import TraceClient
+from theta_observability.integrations.langchain import wrap_langchain_runnable
+
+client = TraceClient()
+traced_chain = wrap_langchain_runnable(
+    chain,
+    client=client,
+    name="support-chain",
+    run_type="prod",
+    metadata={"framework": "langchain"},
+)
+
+result = traced_chain.invoke({"question": "Why did the run slow down?"})`}
+      </CodeBlock>
+
+      <Callout type="info">
+        <p>
+          The wrapper preserves the original LangChain return values while capturing
+          inputs, outputs, streamed content, and failures in Theta&apos;s trace model.
+        </p>
+      </Callout>
+
+      <hr />
+
       <h2>Anthropic</h2>
       <p>
         Wrap your Anthropic client to automatically trace every <code>messages.create</code> call.

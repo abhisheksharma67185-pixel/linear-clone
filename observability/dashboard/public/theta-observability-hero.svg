@@ -1,0 +1,148 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="176" y1="112" x2="1365" y2="1118" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#120E11"/>
+      <stop offset="0.52" stop-color="#171215"/>
+      <stop offset="1" stop-color="#0D0A0C"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="308" y1="228" x2="1238" y2="972" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E191B" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#141114" stop-opacity="0.98"/>
+    </linearGradient>
+    <linearGradient id="frame" x1="330" y1="248" x2="1230" y2="964" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8C6D4B" stop-opacity="0.65"/>
+      <stop offset="1" stop-color="#3A2A1A" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="792" y1="254" x2="792" y2="975" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E3B671"/>
+      <stop offset="1" stop-color="#8F5D2A"/>
+    </linearGradient>
+    <radialGradient id="orbA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(390 260) rotate(90) scale(310 320)">
+      <stop stop-color="#E0A85F" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#E0A85F" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orbB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1260 280) rotate(90) scale(360 360)">
+      <stop stop-color="#A25334" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#A25334" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blurLg" x="32" y="4" width="1527" height="1058" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="90"/>
+    </filter>
+    <filter id="shadow" x="214" y="150" width="1208" height="945" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="35" stdDeviation="38" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" stroke="#8E6A46" stroke-opacity="0.12"/>
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="1200" fill="url(#bg)"/>
+  <rect width="1600" height="1200" fill="url(#grid)"/>
+
+  <g filter="url(#blurLg)">
+    <circle cx="388" cy="262" r="248" fill="url(#orbA)"/>
+    <circle cx="1271" cy="278" r="260" fill="url(#orbB)"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="286" y="214" width="1028" height="790" rx="46" fill="url(#panel)"/>
+    <rect x="286.75" y="214.75" width="1026.5" height="788.5" rx="45.25" stroke="url(#frame)" stroke-width="1.5"/>
+    <rect x="286.75" y="214.75" width="1026.5" height="788.5" rx="45.25" stroke="white" stroke-opacity="0.04" stroke-width="1.5"/>
+  </g>
+
+  <rect x="330" y="254" width="940" height="54" rx="27" fill="#151113" fill-opacity="0.94"/>
+  <circle cx="368" cy="281" r="7" fill="#F97E6C" fill-opacity="0.88"/>
+  <circle cx="394" cy="281" r="7" fill="#F0C978" fill-opacity="0.88"/>
+  <circle cx="420" cy="281" r="7" fill="#74D997" fill-opacity="0.88"/>
+  <text x="466" y="287" fill="#E5D7C3" fill-opacity="0.72" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="16" letter-spacing="3.2">THETA / OBSERVABILITY SIGNAL VIEW</text>
+
+  <rect x="330" y="334" width="258" height="626" rx="28" fill="#131012" fill-opacity="0.94"/>
+  <rect x="330.75" y="334.75" width="256.5" height="624.5" rx="27.25" stroke="#87633F" stroke-opacity="0.28" stroke-width="1.5"/>
+  <text x="366" y="382" fill="#9F8B74" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="15" letter-spacing="2.8">LIVE TRACES</text>
+  <text x="366" y="410" fill="#E9D8BE" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="25" font-weight="600">15 runs active</text>
+
+  <rect x="356" y="444" width="206" height="94" rx="22" fill="#1B1719"/>
+  <rect x="356.75" y="444.75" width="204.5" height="92.5" rx="21.25" stroke="#E3B671" stroke-opacity="0.4" stroke-width="1.5"/>
+  <text x="388" y="478" fill="#8A745C" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13" letter-spacing="2.5">checkout-agent</text>
+  <text x="388" y="510" fill="#F5E7D1" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="24" font-weight="600">7.41s</text>
+  <text x="388" y="530" fill="#B8A48D" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="14">browser + llm + screenshots</text>
+  <rect x="504" y="469" width="34" height="34" rx="17" fill="#E3B671" fill-opacity="0.15"/>
+  <circle cx="521" cy="486" r="8.5" fill="#E3B671"/>
+
+  <g opacity="0.98">
+    <rect x="356" y="566" width="206" height="66" rx="18" fill="#171315"/>
+    <rect x="356" y="652" width="206" height="66" rx="18" fill="#171315"/>
+    <rect x="356" y="738" width="206" height="66" rx="18" fill="#171315"/>
+    <rect x="356" y="824" width="206" height="66" rx="18" fill="#171315"/>
+    <rect x="356" y="910" width="206" height="20" rx="10" fill="#171315"/>
+    <rect x="382" y="591" width="18" height="18" rx="9" fill="#D29957"/>
+    <rect x="382" y="677" width="18" height="18" rx="9" fill="#5FC5C8"/>
+    <rect x="382" y="763" width="18" height="18" rx="9" fill="#E8D567"/>
+    <rect x="382" y="849" width="18" height="18" rx="9" fill="#90D17B"/>
+    <text x="418" y="594" fill="#E5D5BE" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="16">plan</text>
+    <text x="418" y="680" fill="#E5D5BE" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="16">browser.click</text>
+    <text x="418" y="766" fill="#E5D5BE" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="16">screenshot</text>
+    <text x="418" y="852" fill="#E5D5BE" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="16">verify</text>
+    <text x="418" y="610" fill="#8D7B67" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13">820ms</text>
+    <text x="418" y="696" fill="#8D7B67" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13">140ms</text>
+    <text x="418" y="782" fill="#8D7B67" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13">80ms</text>
+    <text x="418" y="868" fill="#8D7B67" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13">1.2s</text>
+  </g>
+
+  <rect x="618" y="334" width="622" height="390" rx="30" fill="#100D10"/>
+  <rect x="618.75" y="334.75" width="620.5" height="388.5" rx="29.25" stroke="#87633F" stroke-opacity="0.34" stroke-width="1.5"/>
+  <text x="660" y="383" fill="#9F8B74" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="15" letter-spacing="2.8">MULTIMODAL TIMELINE</text>
+
+  <rect x="660" y="418" width="184" height="218" rx="26" fill="#161215"/>
+  <rect x="660.75" y="418.75" width="182.5" height="216.5" rx="25.25" stroke="white" stroke-opacity="0.06" stroke-width="1.5"/>
+  <rect x="688" y="448" width="128" height="18" rx="9" fill="#E3B671" fill-opacity="0.15"/>
+  <text x="706" y="461" fill="#E3B671" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="12" font-weight="600">assistant reasoning</text>
+  <text x="688" y="499" fill="#F2E1CB" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="19" font-weight="600">"Searching the page</text>
+  <text x="688" y="526" fill="#F2E1CB" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="19" font-weight="600">for the cheapest</text>
+  <text x="688" y="553" fill="#F2E1CB" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="19" font-weight="600">whole milk option."</text>
+  <rect x="688" y="582" width="92" height="12" rx="6" fill="#4A3B2B"/>
+  <rect x="688" y="603" width="66" height="12" rx="6" fill="#4A3B2B"/>
+
+  <rect x="870" y="418" width="332" height="218" rx="26" fill="#161215"/>
+  <rect x="870.75" y="418.75" width="330.5" height="216.5" rx="25.25" stroke="white" stroke-opacity="0.06" stroke-width="1.5"/>
+  <rect x="896" y="444" width="280" height="154" rx="22" fill="#231C17"/>
+  <rect x="896.75" y="444.75" width="278.5" height="152.5" rx="21.25" stroke="#E3B671" stroke-opacity="0.28" stroke-width="1.5"/>
+  <rect x="932" y="474" width="134" height="16" rx="8" fill="#F6ECD8"/>
+  <rect x="932" y="505" width="112" height="14" rx="7" fill="#E6D5BE" fill-opacity="0.6"/>
+  <rect x="1098" y="474" width="42" height="42" rx="21" fill="#E3B671" fill-opacity="0.18"/>
+  <path d="M1117 488L1126 493.5L1117 499V488Z" fill="#E3B671"/>
+  <rect x="926" y="545" width="220" height="26" rx="13" fill="#0E0C0E" fill-opacity="0.75"/>
+  <rect x="938" y="552" width="100" height="12" rx="6" fill="#8DD58A"/>
+  <rect x="1048" y="552" width="80" height="12" rx="6" fill="#D8A561"/>
+  <text x="896" y="621" fill="#9F8B74" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13">browser session replay / synced frames</text>
+
+  <rect x="618" y="752" width="622" height="208" rx="30" fill="#100D10"/>
+  <rect x="618.75" y="752.75" width="620.5" height="206.5" rx="29.25" stroke="#87633F" stroke-opacity="0.34" stroke-width="1.5"/>
+  <text x="660" y="800" fill="#9F8B74" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="15" letter-spacing="2.8">PIPELINE HEALTH</text>
+
+  <rect x="660" y="836" width="162" height="82" rx="22" fill="#171315"/>
+  <rect x="842" y="836" width="162" height="82" rx="22" fill="#171315"/>
+  <rect x="1024" y="836" width="178" height="82" rx="22" fill="#171315"/>
+  <text x="692" y="866" fill="#8D7B67" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13" letter-spacing="1.6">SUCCESS RATE</text>
+  <text x="874" y="866" fill="#8D7B67" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13" letter-spacing="1.6">P95 LATENCY</text>
+  <text x="1056" y="866" fill="#8D7B67" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13" letter-spacing="1.6">INCIDENTS</text>
+  <text x="692" y="905" fill="#F5E7D1" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="31" font-weight="600">98.7%</text>
+  <text x="874" y="905" fill="#F5E7D1" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="31" font-weight="600">3.8s</text>
+  <text x="1056" y="905" fill="#F5E7D1" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="31" font-weight="600">2 open</text>
+
+  <path d="M688 993H1204" stroke="#4A3C2D" stroke-opacity="0.7"/>
+  <path d="M688 991L733 950L796 970L852 906L910 924L968 874L1031 896L1096 828L1156 842L1202 802" stroke="url(#accent)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="1096" cy="828" r="10" fill="#E3B671"/>
+  <circle cx="1096" cy="828" r="18" fill="#E3B671" fill-opacity="0.15"/>
+
+  <rect x="1166" y="152" width="198" height="104" rx="28" fill="#1A1517" fill-opacity="0.94"/>
+  <rect x="1166.75" y="152.75" width="196.5" height="102.5" rx="27.25" stroke="#8C6D4B" stroke-opacity="0.32" stroke-width="1.5"/>
+  <text x="1202" y="193" fill="#8D7B67" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="12" letter-spacing="2.4">LLM STATUS</text>
+  <text x="1202" y="224" fill="#F5E7D1" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="25" font-weight="600">stable</text>
+  <text x="1202" y="244" fill="#B8A48D" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="13">claude / gpt / local models</text>
+
+  <rect x="220" y="888" width="158" height="100" rx="28" fill="#1A1517" fill-opacity="0.94"/>
+  <rect x="220.75" y="888.75" width="156.5" height="98.5" rx="27.25" stroke="#8C6D4B" stroke-opacity="0.32" stroke-width="1.5"/>
+  <text x="252" y="928" fill="#8D7B67" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="12" letter-spacing="2.4">MEDIA</text>
+  <text x="252" y="960" fill="#F5E7D1" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="27" font-weight="600">7 frames</text>
+</svg>

@@ -1,7 +1,6 @@
 import { CodeBlock } from "@/components/docs/code-block";
 import { ParamTable } from "@/components/docs/param-table";
 import { Callout } from "@/components/docs/callout";
-import Link from "next/link";
 
 export default function NodeTracesPage() {
   return (
@@ -200,9 +199,39 @@ s.setTokenUsage({ input: 500, output: 120, total: 620 });`}
       <CodeBlock lang="typescript">
         {`await t.step({ name: "call", type: "llm" }, async (s) => {
   s.setMetadata({ provider: "openai", temperature: 0.7 });
+  s.setMetadataPath("eval.bucket", "control");
   s.setCost(0.002);
 });`}
       </CodeBlock>
+
+      <h2>Metadata Paths and Server-side Filters</h2>
+      <p>
+        Use metadata helpers when you want traces to stay queryable as your JSON evolves.
+        Dot-paths let you attach nested values without building the object tree manually.
+      </p>
+      <CodeBlock lang="typescript">
+        {`await client.trace({ name: "checkout-agent" }, async (t) => {
+  t.setMetadata({ environment: "prod" });
+  t.setMetadataPath("workflow.stage", "checkout");
+  t.setMetadataPath("customer.segment", "vip");
+});
+
+const { data } = await client.listTraces({
+  runType: ["prod"],
+  metadata: [{ key: "workflow.stage", value: "checkout" }],
+  limit: 25,
+});
+
+console.log(data[0]?.metadata?.workflow?.stage);`}
+      </CodeBlock>
+
+      <Callout type="tip" title="Configurable dashboard filters">
+        <p>
+          The Traces page uses the same metadata keys exposed in trace summaries. When new
+          metadata keys appear, you can add filters for them in the UI and save them as
+          reusable project filters.
+        </p>
+      </Callout>
 
       <h2>Attachments</h2>
       <CodeBlock lang="typescript">

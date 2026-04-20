@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/theagi/theta-observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
 )
 
 // RecordUsage appends a metered usage event.

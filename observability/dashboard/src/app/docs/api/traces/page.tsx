@@ -72,7 +72,7 @@ export default function APITracesPage() {
         {`{
   "trace_id": "trc_abc123",
   "ingest_status": "accepted",
-  "gcs_uri": "gs://bucket/projects/proj_.../traces/trc_abc123/trace.json"
+  "gcs_uri": "gs://bucket/orgs/org_.../projects/proj_.../traces/trc_abc123.json"
 }`}
       </CodeBlock>
 
@@ -163,12 +163,23 @@ console.log(data); // { trace_id: "trc_abc123", ingest_status: "accepted", ... }
           { name: "use_case", type: "string", description: "Filter by use case label." },
           { name: "group", type: "string", description: "Filter by group label." },
           { name: "tags", type: "string", description: "Comma-separated list of tags to filter by." },
+          { name: "meta_key", type: "string", description: "Metadata key to filter by. Supports dot paths like 'workflow.stage'." },
+          { name: "meta_value", type: "string", description: "Metadata value paired with the preceding meta_key." },
           { name: "since", type: "string", description: "ISO 8601 datetime. Only return traces started after this time." },
           { name: "until", type: "string", description: "ISO 8601 datetime. Only return traces started before this time." },
           { name: "cursor", type: "string", description: "Pagination cursor from a previous response." },
           { name: "limit", type: "integer", description: "Maximum number of traces to return.", default: "50" },
         ]}
       />
+
+      <Callout type="info" title="Metadata filters">
+        <p>
+          Send repeated <code>meta_key</code> / <code>meta_value</code> pairs to filter on
+          JSON metadata. For example, <code>meta_key=workflow.stage</code> with{" "}
+          <code>meta_value=checkout</code> matches traces whose metadata contains{" "}
+          <code>{`{ "workflow": { "stage": "checkout" } }`}</code>.
+        </p>
+      </Callout>
 
       <h3>Response</h3>
       <CodeBlock lang="json" title="200 OK">
@@ -182,6 +193,9 @@ console.log(data); // { trace_id: "trc_abc123", ingest_status: "accepted", ... }
       "platform": "web",
       "model": "gpt-4o",
       "user_id": "usr_456",
+      "metadata": {
+        "workflow": { "stage": "checkout" }
+      },
       "started_at": "2025-01-15T10:30:00Z",
       "latency_ms": 2000,
       "total_tokens": 620,
@@ -197,7 +211,7 @@ console.log(data); // { trace_id: "trc_abc123", ingest_status: "accepted", ... }
 
       <h3>curl Example</h3>
       <CodeBlock lang="bash">
-        {`curl "https://api.theta-observability.com/v1/traces?project_id=proj_xyz&status=error&limit=10" \\
+        {`curl "https://api.theta-observability.com/v1/traces?project_id=proj_xyz&status=error&meta_key=workflow.stage&meta_value=checkout&limit=10" \\
   -H "x-api-key: tobs_live_abc123"`}
       </CodeBlock>
 

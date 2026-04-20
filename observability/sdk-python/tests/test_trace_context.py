@@ -164,3 +164,35 @@ def test_attach_image_bytes_uploads_and_returns_gs_uri(
     assert uri.startswith("gs://")
     uploads = [1 for m, p, body in rec.requests if p.startswith("/v1/media/upload")]
     assert len(uploads) >= 1
+
+
+def test_trace_and_step_attachments_are_serialized(
+    client_and_recorder: tuple[TraceClient, _Recorder],
+) -> None:
+    client, rec = client_and_recorder
+
+    with client.trace(name="multimodal") as t:
+        trace_uri = t.attach_image(b"\x89PNG\r\n\x1a\nfake", mime="image/png")
+        with t.step(name="respond", type="robotics") as s:
+            step_uri = s.attach_file(b'{"ok":true}', mime="application/json")
+            sensor_uri = s.attach_sensor(
+                b"JOINTv1\x00\x01",
+                modality="joint_state",
+                mime="application/octet-stream",
+            )
+            s.log_message(
+                role="user",
+                text="Inspect the uploaded payload.",
+                attachments=[b'{"source":"sdk"}'],
+            )
+
+    assert client.flush(timeout=3.0)
+    commits = [body for m, p, body in rec.requests if p == "/v1/traces"]
+
+    assert trace_uri.startswith("gs://")
+    assert step_uri.startswith("gs://")
+    assert sensor_uri.startswith("gs://")
+    assert commits[0]["attachments"][0]["type"] == "image"
+    assert commits[0]["steps"][0]["attachments"][0]["type"] == "file"
+    assert commits[0]["steps"][0]["attachments"][1]["type"] == "sensor"
+    assert commits[0]["steps"][0]["messages"][0]["content"][1]["type"] == "file"

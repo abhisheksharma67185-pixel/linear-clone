@@ -13,13 +13,13 @@ import (
 
 	"cloud.google.com/go/bigquery"
 	"github.com/go-chi/chi/v5"
-	"github.com/theagi/theta-observability/api-go/internal/auth"
-	"github.com/theagi/theta-observability/api-go/internal/bq"
-	"github.com/theagi/theta-observability/api-go/internal/gcs"
-	"github.com/theagi/theta-observability/api-go/internal/ingest"
-	"github.com/theagi/theta-observability/api-go/internal/models"
-	"github.com/theagi/theta-observability/api-go/internal/sse"
-	"github.com/theagi/theta-observability/api-go/internal/store"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/auth"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/bq"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/gcs"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/ingest"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/sse"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
 )
 
 type Traces struct {
@@ -114,6 +114,9 @@ func (h *Traces) List(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeErr(w, http.StatusInternalServerError, "query_failed", err.Error())
 		return
+	}
+	if items == nil {
+		items = []models.TraceListItem{}
 	}
 	writeJSON(w, http.StatusOK, models.TraceListResponse{Items: items, NextCursor: next})
 }

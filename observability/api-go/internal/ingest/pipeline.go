@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"cloud.google.com/go/bigquery"
-	"github.com/theagi/theta-observability/api-go/internal/bq"
-	"github.com/theagi/theta-observability/api-go/internal/embeddings"
-	"github.com/theagi/theta-observability/api-go/internal/gcs"
-	"github.com/theagi/theta-observability/api-go/internal/ids"
-	"github.com/theagi/theta-observability/api-go/internal/models"
-	"github.com/theagi/theta-observability/api-go/internal/sse"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/bq"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/embeddings"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/gcs"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/ids"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/sse"
 )
 
 // Pipeline performs: validate -> GCS put -> BQ enqueue -> SSE publish -> embed.
@@ -47,7 +47,7 @@ func (p *Pipeline) Ingest(ctx context.Context, orgID string, t *models.Trace) (*
 	}
 
 	// 1) GCS upload of raw JSON
-	objectKey := fmt.Sprintf("projects/%s/traces/%s.json", t.ProjectID, t.TraceID)
+	objectKey := gcs.TraceObjectKey(orgID, t.ProjectID, t.TraceID)
 	buf, err := json.Marshal(t)
 	if err != nil {
 		return nil, fmt.Errorf("marshal trace: %w", err)
@@ -107,6 +107,10 @@ func buildTraceRow(t *models.Trace, orgID, gcsURI string) bq.Row {
 		output = t.TokenUsage.Output
 		total = t.TokenUsage.Total
 	}
+	tags := t.Tags
+	if tags == nil {
+		tags = []string{}
+	}
 	ingestDate := t.StartedAt.UTC().Format("2006-01-02")
 	return bq.Row{
 		InsertID: t.TraceID,
@@ -132,7 +136,7 @@ func buildTraceRow(t *models.Trace, orgID, gcsURI string) bq.Row {
 			"output_tokens":  output,
 			"total_tokens":   total,
 			"cost_usd":       t.CostUSD,
-			"tags":           t.Tags,
+			"tags":           tags,
 			"metadata":       string(t.Metadata),
 			"step_count":     int64(len(t.Steps)),
 			"has_media":      t.HasMedia(),
@@ -146,29 +150,33 @@ func buildStepRow(t *models.Trace, s *models.Step) bq.Row {
 	ingestDate := t.StartedAt.UTC().Format("2006-01-02")
 	msgCount := len(s.Messages)
 	toolCount := len(s.ToolCalls)
+	modalities := s.ModalitySet()
+	if modalities == nil {
+		modalities = []string{}
+	}
 	return bq.Row{
 		InsertID: t.TraceID + ":" + s.StepID,
 		Data: map[string]bigquery.Value{
-			"trace_id":          t.TraceID,
-			"step_id":           s.StepID,
-			"parent_step_id":    s.ParentStepID,
-			"index":             s.Index,
-			"project_id":        t.ProjectID,
-			"ingest_date":       ingestDate,
-			"type":              s.Type,
-			"name":              s.Name,
-			"model":             s.Model,
-			"status":            s.Status,
-			"started_at":        s.StartedAt,
-			"ended_at":          s.EndedAt,
-			"latency_ms":        s.LatencyMS,
-			"input_tokens":      s.InputTokens,
-			"output_tokens":     s.OutputTokens,
-			"message_count":     int64(msgCount),
-			"tool_call_count":   int64(toolCount),
-			"attachment_count":  int64(s.AttachmentCount()),
-			"modalities":        s.ModalitySet(),
-			"metadata":          string(s.Metadata),
+			"trace_id":         t.TraceID,
+			"step_id":          s.StepID,
+			"parent_step_id":   s.ParentStepID,
+			"index":            s.Index,
+			"project_id":       t.ProjectID,
+			"ingest_date":      ingestDate,
+			"type":             s.Type,
+			"name":             s.Name,
+			"model":            s.Model,
+			"status":           s.Status,
+			"started_at":       s.StartedAt,
+			"ended_at":         s.EndedAt,
+			"latency_ms":       s.LatencyMS,
+			"input_tokens":     s.InputTokens,
+			"output_tokens":    s.OutputTokens,
+			"message_count":    int64(msgCount),
+			"tool_call_count":  int64(toolCount),
+			"attachment_count": int64(s.AttachmentCount()),
+			"modalities":       modalities,
+			"metadata":         string(s.Metadata),
 		},
 	}
 }

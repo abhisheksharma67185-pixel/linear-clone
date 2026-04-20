@@ -84,6 +84,29 @@ export const SensorFrameSchema = z.object({
 });
 export type SensorFrame = z.infer<typeof SensorFrameSchema>;
 
+export const ObservedEventSchema = z.object({
+  event_id: z.string().optional(),
+  parent_event_id: z.string().optional(),
+  step_id: z.string().optional(),
+  parent_step_id: z.string().optional(),
+  index: z.number().int().nonnegative().optional(),
+  type: z.string(),
+  name: z.string().optional(),
+  role: z.string().optional(),
+  status: z.string().optional(),
+  started_at: z.string().optional(),
+  ended_at: z.string().optional(),
+  latency_ms: z.number().int().nonnegative().optional(),
+  model: z.string().optional(),
+  message: MessageSchema.optional(),
+  tool_call: ToolCallSchema.optional(),
+  attachment: AttachmentSchema.optional(),
+  sensor_frame: SensorFrameSchema.optional(),
+  value: z.unknown().optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type ObservedEvent = z.infer<typeof ObservedEventSchema>;
+
 export const StepSchema = z.object({
   step_id: z.string(),
   parent_step_id: z.string().optional(),
@@ -100,6 +123,7 @@ export const StepSchema = z.object({
   cost_usd: z.number().nonnegative().optional(),
   messages: z.array(MessageSchema).optional(),
   tool_calls: z.array(ToolCallSchema).optional(),
+  events: z.array(ObservedEventSchema).optional(),
   attachments: z.array(AttachmentSchema).optional(),
   sensor_frames: z.array(SensorFrameSchema).optional(),
   metadata: z.record(z.unknown()).optional(),
@@ -128,9 +152,85 @@ export const TraceSchema = z.object({
   token_usage: TokenUsageSchema.optional(),
   cost_usd: z.number().nonnegative().optional(),
   steps: z.array(StepSchema),
+  events: z.array(ObservedEventSchema).optional(),
   attachments: z.array(AttachmentSchema).optional(),
 });
 export type TracePayload = z.infer<typeof TraceSchema>;
+
+export const CorrelationInfoSchema = z.object({
+  session_id: z.string().optional(),
+  request_id: z.string().optional(),
+  parent_trace_id: z.string().optional(),
+  root_trace_id: z.string().optional(),
+  external_ids: z.record(z.unknown()).optional(),
+});
+export type CorrelationInfo = z.infer<typeof CorrelationInfoSchema>;
+
+export const CanonicalEventSchema = z.object({
+  event_id: z.string().optional(),
+  parent_event_id: z.string().optional(),
+  step_id: z.string().optional(),
+  parent_step_id: z.string().optional(),
+  step_type: z.string().optional(),
+  index: z.number().int().nonnegative().optional(),
+  type: z.string(),
+  name: z.string().optional(),
+  role: z.string().optional(),
+  status: z.string().optional(),
+  model: z.string().optional(),
+  started_at: z.string().optional(),
+  ended_at: z.string().optional(),
+  latency_ms: z.number().int().nonnegative().optional(),
+  message: MessageSchema.optional(),
+  tool_call: ToolCallSchema.optional(),
+  attachment: AttachmentSchema.optional(),
+  sensor_frame: SensorFrameSchema.optional(),
+  value: z.unknown().optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type CanonicalEvent = z.infer<typeof CanonicalEventSchema>;
+
+export const CanonicalEnvelopeSchema = z.object({
+  schema_version: z.string().default(SCHEMA_VERSION),
+  trace_id: z.string().optional(),
+  project_id: z.string().optional(),
+  name: z.string().optional(),
+  source: z.string().optional(),
+  kind: z.string().optional(),
+  run_id: z.string().optional(),
+  run_type: z.string().optional(),
+  use_case: z.string().optional(),
+  user_id: z.string().optional(),
+  session_id: z.string().optional(),
+  group: z.string().optional(),
+  platform: z.string().optional(),
+  model: z.string().optional(),
+  status: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  metadata: z.record(z.unknown()).optional(),
+  started_at: z.string().optional(),
+  ended_at: z.string().optional(),
+  latency_ms: z.number().int().nonnegative().optional(),
+  cost_usd: z.number().nonnegative().optional(),
+  correlation: CorrelationInfoSchema.optional(),
+  events: z.array(CanonicalEventSchema).optional(),
+  attachments: z.array(AttachmentSchema).optional(),
+});
+export type CanonicalEnvelope = z.infer<typeof CanonicalEnvelopeSchema>;
+
+export interface BulkImportItemResult {
+  index: number;
+  kind: string;
+  trace_id?: string;
+  status: string;
+  error?: string;
+}
+
+export interface BulkImportResponse {
+  accepted: number;
+  failed: number;
+  items: BulkImportItemResult[];
+}
 
 /** User-facing input types (camelCase ergonomics). */
 
@@ -197,6 +297,11 @@ export interface TraceListResponse {
   nextCursor?: string;
 }
 
+export interface TraceDetailResponse {
+  meta: TraceSummary;
+  trace: TracePayload | null;
+}
+
 export interface StepInput {
   name: string;
   type: StepType;
@@ -208,6 +313,8 @@ export interface LogMessageInput {
   role: "system" | "user" | "assistant" | "tool";
   text?: string;
   images?: AttachmentSource[];
+  audio?: AttachmentSource[];
+  video?: AttachmentSource[];
   attachments?: AttachmentSource[];
   name?: string;
   toolCallId?: string;

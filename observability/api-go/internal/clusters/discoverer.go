@@ -7,8 +7,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/theagi/theta-observability/api-go/internal/models"
-	"github.com/theagi/theta-observability/api-go/internal/store"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/models"
+	"github.com/RahulSulegoakar/theta-rl-labs/observability/api-go/internal/store"
 )
 
 // Discoverer runs unsupervised k-means clustering over trace embeddings
