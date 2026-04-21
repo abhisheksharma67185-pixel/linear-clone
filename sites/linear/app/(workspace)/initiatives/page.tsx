@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react"
 import type { Member } from "@/app/lib/mock-data"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Popover,
@@ -29,20 +28,14 @@ import {
   UserIcon,
   HelpCircleIcon,
 } from "@hugeicons/core-free-icons"
+import {
+  CreateInitiativeDialog,
+  HEALTH_OPTIONS,
+  type InitiativeHealth,
+  type NewInitiative,
+} from "@/components/create-initiative-dialog"
 
-type Health = "on_track" | "at_risk" | "off_track" | "no_update"
-
-type Initiative = {
-  id: string
-  name: string
-  summary: string
-  ownerId: string | null
-  targetDate: string | null
-  totalProjects: number
-  completedProjects: number
-  activeProjects: number
-  health: Health
-}
+type Initiative = NewInitiative
 
 const INITIAL_INITIATIVES: Initiative[] = [
   {
@@ -99,6 +92,7 @@ export default function InitiativesPage() {
   }, [])
 
   return (
+    <>
     <div className="flex h-full min-h-0 flex-col">
       <header className="flex items-center justify-between border-b px-6 py-3">
         <h1 className="text-sm font-medium">Initiatives</h1>
@@ -131,13 +125,8 @@ export default function InitiativesPage() {
           <InitiativeTable
             initiatives={initiatives}
             members={members}
-            creating={creating}
-            onCancelCreate={() => setCreating(false)}
-            onCreate={(i) => {
-              setInitiatives([i, ...initiatives])
-              setCreating(false)
-            }}
             activeProps={activeProps}
+            onNew={() => setCreating(true)}
           />
         </TabsContent>
 
@@ -149,6 +138,13 @@ export default function InitiativesPage() {
         </TabsContent>
       </Tabs>
     </div>
+
+    <CreateInitiativeDialog
+      open={creating}
+      onOpenChange={setCreating}
+      onCreate={(i) => setInitiatives((prev) => [i, ...prev])}
+    />
+    </>
   )
 }
 
@@ -176,23 +172,36 @@ function EmptyTab({ label }: { label: string }) {
 function InitiativeTable({
   initiatives,
   members,
-  creating,
-  onCreate,
-  onCancelCreate,
   activeProps,
+  onNew,
 }: {
   initiatives: Initiative[]
   members: Member[]
-  creating: boolean
-  onCreate: (i: Initiative) => void
-  onCancelCreate: () => void
   activeProps: Set<string>
+  onNew: () => void
 }) {
   const showOwner = activeProps.has("owner")
   const showTarget = activeProps.has("target_date")
   const showProjects = activeProps.has("projects") || true
   const showHealth = activeProps.has("health")
   const showActive = activeProps.has("active_projects")
+
+  if (initiatives.length === 0) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 py-24 text-sm text-muted-foreground">
+        <div className="flex size-10 items-center justify-center rounded-md bg-orange-100 text-orange-500">
+          <HugeiconsIcon icon={Satellite01Icon} className="size-5" />
+        </div>
+        <p>No initiatives yet.</p>
+        <Button
+          onClick={onNew}
+          className="h-7 rounded-md bg-violet-600 px-3 text-xs font-medium text-white hover:bg-violet-700"
+        >
+          New initiative
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -204,10 +213,6 @@ function InitiativeTable({
         {showHealth && <span>Initiative Health</span>}
         {showActive && <span>Active Projects</span>}
       </div>
-
-      {creating && (
-        <NewInitiativeRow members={members} onCreate={onCreate} onCancel={onCancelCreate} />
-      )}
 
       {initiatives.map((init) => (
         <InitiativeRow
@@ -272,12 +277,7 @@ function InitiativeRow({
         </span>
       </div>
 
-      {activeProps.has("health") && (
-        <div className="flex items-center gap-2 text-xs">
-          <div className="size-4 rounded-full border border-dashed border-muted-foreground/60" />
-          <span className="text-muted-foreground">No updates</span>
-        </div>
-      )}
+      {activeProps.has("health") && <HealthCell health={initiative.health} />}
 
       {activeProps.has("active_projects") && (
         <div className="flex items-center gap-1.5 text-xs">
@@ -293,6 +293,17 @@ function InitiativeGlyph() {
   return (
     <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-orange-100 text-orange-500">
       <HugeiconsIcon icon={Satellite01Icon} className="size-4" />
+    </div>
+  )
+}
+
+function HealthCell({ health }: { health: InitiativeHealth }) {
+  const meta = HEALTH_OPTIONS.find((h) => h.value === health) ?? HEALTH_OPTIONS[0]
+  const isNoUpdate = health === "no_update"
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span className={`size-2.5 rounded-full border ${meta.dot}`} />
+      <span className={isNoUpdate ? "text-muted-foreground" : ""}>{meta.label}</span>
     </div>
   )
 }
@@ -317,258 +328,6 @@ function formatTargetDate(iso: string | null) {
           ? "rd"
           : "th"
   return `${month} ${day}${suffix(day)}, ${year}`
-}
-
-// ---------- New initiative inline form ----------
-
-function NewInitiativeRow({
-  members,
-  onCreate,
-  onCancel,
-}: {
-  members: Member[]
-  onCreate: (i: Initiative) => void
-  onCancel: () => void
-}) {
-  const [name, setName] = useState("")
-  const [summary, setSummary] = useState("")
-  const [ownerId, setOwnerId] = useState<string | null>(null)
-  const [targetDate, setTargetDate] = useState<string | null>(null)
-
-  const owner = members.find((m) => m.id === ownerId) ?? null
-
-  const handleCreate = () => {
-    if (!name.trim()) return
-    onCreate({
-      id: `init-${Date.now()}`,
-      name: name.trim(),
-      summary: summary.trim(),
-      ownerId,
-      targetDate,
-      totalProjects: 0,
-      completedProjects: 0,
-      activeProjects: 0,
-      health: "no_update",
-    })
-  }
-
-  return (
-    <div className="flex gap-4 border-b px-6 py-3">
-      <InitiativeGlyph />
-      <div className="flex flex-1 flex-col gap-1">
-        <input
-          autoFocus
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="New initiative"
-          className="w-full bg-transparent text-sm font-medium placeholder:text-muted-foreground/60 focus:outline-none"
-        />
-        <input
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          placeholder="Add a short summary..."
-          className="w-full bg-transparent text-xs placeholder:text-muted-foreground/60 focus:outline-none"
-        />
-        <div className="mt-2 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <TargetDatePicker value={targetDate} onChange={setTargetDate} />
-            <OwnerPicker
-              value={ownerId}
-              onChange={setOwnerId}
-              members={members}
-              owner={owner}
-            />
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              onClick={onCancel}
-              className="h-7 px-3 text-xs"
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={!name.trim()}
-              onClick={handleCreate}
-              className="h-7 rounded-md bg-violet-600 px-3 text-xs font-medium text-white hover:bg-violet-700 disabled:bg-violet-600/50"
-            >
-              Create
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ---------- Target date picker ----------
-
-function TargetDatePicker({
-  value,
-  onChange,
-}: {
-  value: string | null
-  onChange: (v: string | null) => void
-}) {
-  const [mode, setMode] = useState<"day" | "month" | "quarter" | "half" | "year">("day")
-  const [input, setInput] = useState("")
-  const selected = value ? new Date(value) : undefined
-
-  return (
-    <Popover>
-      <PopoverTrigger
-        render={
-          <button
-            type="button"
-            className="flex h-6 items-center gap-1 rounded-md border border-dashed px-2 text-xs text-muted-foreground hover:bg-muted/60"
-          />
-        }
-      >
-        <HugeiconsIcon icon={Calendar01Icon} className="size-3.5" />
-        <span>{value ? formatTargetDate(value) : "Target date"}</span>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-[320px] p-3">
-        <div className="mb-2 text-xs font-medium">Target date</div>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Try: May 2027, Q4, 20/05/2027"
-          className="mb-3 h-8 w-full rounded-md border px-2 text-xs placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-violet-500"
-        />
-        <div className="mb-3 flex flex-wrap gap-1">
-          {(["day", "month", "quarter", "half", "year"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMode(m)}
-              className={`rounded-full px-2.5 py-0.5 text-xs ${
-                mode === m
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted/50"
-              }`}
-            >
-              {m === "day"
-                ? "Day"
-                : m === "month"
-                  ? "Month"
-                  : m === "quarter"
-                    ? "Quarter"
-                    : m === "half"
-                      ? "Half-year"
-                      : "Year"}
-            </button>
-          ))}
-        </div>
-        <div className="border-t pt-2">
-          <Calendar
-            mode="single"
-            selected={selected}
-            onSelect={(d) => {
-              if (d) onChange(d.toISOString())
-            }}
-            className="p-0"
-          />
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-// ---------- Owner picker ----------
-
-function OwnerPicker({
-  value,
-  onChange,
-  members,
-  owner,
-}: {
-  value: string | null
-  onChange: (v: string | null) => void
-  members: Member[]
-  owner: Member | null
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <button
-            type="button"
-            className="flex h-6 items-center gap-1 rounded-md border border-dashed px-2 text-xs text-muted-foreground hover:bg-muted/60"
-          />
-        }
-      >
-        {owner ? (
-          <MemberAvatar member={owner} />
-        ) : (
-          <HugeiconsIcon icon={UserMultiple02Icon} className="size-3.5" />
-        )}
-        <span>{owner ? owner.name : "Owner"}</span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="max-h-96 w-64 overflow-auto">
-        <div className="flex items-center justify-between px-2 py-1.5 text-xs text-muted-foreground">
-          <span>Set owner...</span>
-          <span className="font-mono text-[10px]">
-            <span className="rounded border px-1">N</span>{" "}
-            <span>then</span> <span className="rounded border px-1">O</span>
-          </span>
-        </div>
-        <MenuRow
-          icon={
-            <div className="flex size-4 items-center justify-center rounded-full border border-dashed border-muted-foreground/60">
-              <HugeiconsIcon icon={UserIcon} className="size-2.5 text-muted-foreground" />
-            </div>
-          }
-          checked={value === null}
-          right={<span className="text-[10px] text-muted-foreground">0</span>}
-          onClick={() => onChange(null)}
-        >
-          No owner
-        </MenuRow>
-        {members.map((m, i) => (
-          <MenuRow
-            key={m.id}
-            icon={<MemberAvatar member={m} />}
-            checked={m.id === value}
-            right={
-              i < 10 ? (
-                <span className="text-[10px] text-muted-foreground">{i + 1}</span>
-              ) : undefined
-            }
-            onClick={() => onChange(m.id)}
-          >
-            <span className="truncate">{m.email}</span>
-          </MenuRow>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
-
-function MenuRow({
-  icon,
-  children,
-  checked,
-  right,
-  onClick,
-}: {
-  icon?: React.ReactNode
-  children: React.ReactNode
-  checked?: boolean
-  right?: React.ReactNode
-  onClick?: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs hover:bg-accent"
-    >
-      {icon && <span className="flex size-5 shrink-0 items-center justify-center">{icon}</span>}
-      <span className="flex-1 truncate">{children}</span>
-      {checked && <span className="text-[10px]">✓</span>}
-      {right}
-    </button>
-  )
 }
 
 // ---------- Filter & view-options dropdowns ----------

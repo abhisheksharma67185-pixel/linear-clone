@@ -207,7 +207,7 @@ function IssueList({ issues, members }: { issues: Issue[]; members: Member[] }) 
                 variant="secondary"
                 className={`text-[10px] ${statusStyle[issue.status]}`}
               >
-                {issue.status.replace("_", " ")}
+                {issue.status.charAt(0).toUpperCase() + issue.status.slice(1).replace("_", " ")}
               </Badge>
               {assignee && (
                 <Avatar className="size-6">

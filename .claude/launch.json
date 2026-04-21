@@ -1,0 +1,48 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "linear",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "cwd": "sites/linear",
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "jira",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "cwd": "sites/jira",
+      "port": 3000
+    },
+    {
+      "name": "slack",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "cwd": "sites/slack",
+      "port": 3000
+    },
+    {
+      "name": "shopify-admin",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "cwd": "sites/shopify-admin",
+      "port": 3000
+    },
+    {
+      "name": "observability-dashboard",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "cwd": "observability/dashboard",
+      "port": 3100
+    },
+    {
+      "name": "observability-website",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "cwd": "sites/observability-website",
+      "port": 3200
+    }
+  ]
+}
