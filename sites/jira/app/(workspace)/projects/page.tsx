@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { Suspense, useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -341,6 +341,14 @@ function FilterBar({
 }
 
 export default function SpacesPage() {
+  return (
+    <Suspense fallback={null}>
+      <SpacesPageInner />
+    </Suspense>
+  )
+}
+
+function SpacesPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [projects, setProjects] = useState<JiraProject[]>([])
