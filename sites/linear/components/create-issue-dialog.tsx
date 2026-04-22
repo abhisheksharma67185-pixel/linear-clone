@@ -22,33 +22,21 @@ import {
   Cancel01Icon,
   ArrowExpandDiagonal01Icon,
   ArrowRight01Icon,
-  LockedIcon,
-  Note01Icon,
   MoreHorizontalIcon,
   Hexagon01Icon,
   Tag01Icon,
   Attachment01Icon,
-  Message01Icon,
   UserIcon,
-  Bug01Icon,
-  Settings01Icon,
   Calendar01Icon,
   Refresh01Icon,
   Link01Icon,
   PlusSignSquareIcon,
   PlayCircleIcon,
-  HashtagIcon,
 } from "@hugeicons/core-free-icons"
 
 type Status = "backlog" | "todo" | "in_progress" | "done" | "cancelled"
 type Priority = "urgent" | "high" | "medium" | "low" | "none"
 
-type Template = {
-  id: string
-  name: string
-  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
-  color: string
-}
 
 const STATUS_OPTIONS: { value: Status; label: string; shortcut: string }[] = [
   { value: "backlog", label: "Backlog", shortcut: "1" },
@@ -66,12 +54,6 @@ const PRIORITY_OPTIONS: { value: Priority; label: string; shortcut: string }[] =
   { value: "low", label: "Low", shortcut: "4" },
 ]
 
-const TEMPLATES: Template[] = [
-  { id: "user-feedback", name: "User Feedback", icon: Message01Icon, color: "text-blue-500" },
-  { id: "user-story", name: "User Story", icon: UserIcon, color: "text-sky-500" },
-  { id: "tech-debt", name: "Tech Debt", icon: Settings01Icon, color: "text-gray-500" },
-  { id: "bug", name: "Bug", icon: Bug01Icon, color: "text-red-500" },
-]
 
 export function CreateIssueDialog({
   open,
@@ -173,8 +155,6 @@ export function CreateIssueDialog({
     }
   }
 
-  const otherTeams = teams.filter((t) => t.id !== teamId)
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -186,77 +166,13 @@ export function CreateIssueDialog({
         }
       >
         <header className="flex items-center justify-between px-3 py-2">
-          <div className="flex items-center gap-1.5 text-xs">
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 rounded-md border px-1.5 py-0.5 hover:bg-muted/60"
-                  />
-                }
-              >
-                <HugeiconsIcon icon={HashtagIcon} className="size-3 text-rose-500" />
-                <span className="font-medium">{team ? team.key : "TEAM"}</span>
-                <HugeiconsIcon icon={LockedIcon} className="size-3 text-muted-foreground" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-64">
-                <MenuHeader title="Set team..." shortcut="⌘⇧M" />
-                <MenuSection label="Your teams" />
-                {team && (
-                  <MenuRow
-                    icon={<HugeiconsIcon icon={HashtagIcon} className="size-3.5 text-rose-500" />}
-                    checked
-                    right={<span className="text-[10px] text-muted-foreground">{team.key}</span>}
-                    onClick={() => {}}
-                  >
-                    <span className="flex items-center gap-1">
-                      {team.name}
-                      <HugeiconsIcon icon={LockedIcon} className="size-3 text-muted-foreground" />
-                    </span>
-                  </MenuRow>
-                )}
-                <MenuSection label="Other teams" />
-                {otherTeams.map((t) => (
-                  <MenuRow
-                    key={t.id}
-                    icon={<HugeiconsIcon icon={HashtagIcon} className="size-3.5 text-muted-foreground" />}
-                    right={<span className="text-[10px] text-muted-foreground">{t.key}</span>}
-                    onClick={() => setTeamId(t.id)}
-                  >
-                    {t.name}
-                  </MenuRow>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <HugeiconsIcon icon={ArrowRight01Icon} className="size-3 text-muted-foreground" />
-
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-muted-foreground hover:bg-muted/60"
-                  />
-                }
-              >
-                <HugeiconsIcon icon={Note01Icon} className="size-3.5" />
-                <span>Template</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-60">
-                <MenuHeader title="Apply template..." shortcut="⌘⌥T" />
-                {TEMPLATES.map((t) => (
-                  <MenuRow
-                    key={t.id}
-                    icon={<HugeiconsIcon icon={t.icon} className={`size-4 ${t.color}`} />}
-                    onClick={() => {}}
-                  >
-                    {t.name}
-                  </MenuRow>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-pink-500/70 text-pink-500">
+              <HugeiconsIcon icon={UserIcon} className="size-2.5" />
+            </span>
+            <span className="font-medium text-foreground">{team ? team.key : "ABH"}</span>
+            <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" />
+            <span>New issue</span>
           </div>
 
           <div className="flex items-center gap-0.5">

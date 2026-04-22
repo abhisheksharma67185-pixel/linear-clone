@@ -1,3 +1,6 @@
+"use client"
+
+import { usePathname } from "next/navigation"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { AskLinear } from "@/components/ask-linear"
@@ -7,13 +10,16 @@ export default function WorkspaceLayout({
 }: {
   children: React.ReactNode
 }) {
+  const pathname = usePathname()
+  const isSettings = pathname.startsWith("/settings")
+
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="rounded-tl-2xl shadow-sm">
+      <SidebarInset>
         {children}
       </SidebarInset>
-      <AskLinear />
+      {!isSettings && <AskLinear />}
     </SidebarProvider>
   )
 }

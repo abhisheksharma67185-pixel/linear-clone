@@ -4,48 +4,16 @@ import { useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import type { Project, Issue, Member, Team } from "@/app/lib/mock-data"
-import { statusStyle, priorityStyle, projectStatusStyle } from "@/lib/status-styles"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  FilterIcon,
-  PanelRightIcon,
-  BarChartIcon,
-  ArrowLeft02Icon,
-  Calendar03Icon,
+  CubeIcon,
+  StarIcon,
+  PlusSignIcon,
+  ArrowRight01Icon,
 } from "@hugeicons/core-free-icons"
+import { Skeleton } from "@/components/ui/skeleton"
 
-type IssueStatus = Issue["status"]
-
-const STATUS_ORDER: IssueStatus[] = [
-  "in_progress",
-  "todo",
-  "backlog",
-  "done",
-  "cancelled",
-]
-
-const STATUS_LABEL: Record<IssueStatus, string> = {
-  in_progress: "In Progress",
-  todo: "Todo",
-  backlog: "Backlog",
-  done: "Done",
-  cancelled: "Cancelled",
-}
+type Tab = "overview" | "activity" | "issues"
 
 function isProject(r: unknown): r is Project {
   return !!r && typeof r === "object" && "leadId" in (r as Record<string, unknown>)
@@ -61,6 +29,7 @@ export default function ProjectDetailPage() {
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [tab, setTab] = useState<Tab>("overview")
 
   useEffect(() => {
     Promise.all([
@@ -69,11 +38,8 @@ export default function ProjectDetailPage() {
       fetch("/api/data/members").then((r) => r.json()),
       fetch("/api/data/teams").then((r) => r.json()),
     ]).then(([p, i, m, t]) => {
-      if (isProject(p)) {
-        setProject(p)
-      } else {
-        setNotFound(true)
-      }
+      if (isProject(p)) setProject(p)
+      else setNotFound(true)
       setIssues(i)
       setMembers(m)
       setTeams(t)
@@ -82,263 +48,447 @@ export default function ProjectDetailPage() {
   }, [key])
 
   const lead = useMemo(
-    () => (project ? members.find((m) => m.id === project.leadId) : null),
+    () => (project ? members.find((m) => m.id === project.leadId) ?? null : null),
     [project, members],
   )
   const team = useMemo(
-    () => (project ? teams.find((t) => t.id === project.teamId) : null),
+    () => (project ? teams.find((t) => t.id === project.teamId) ?? null : null),
     [project, teams],
   )
-
   const projectIssues = useMemo(
     () => (project ? issues.filter((i) => i.projectId === project.id) : []),
     [project, issues],
   )
-
-  const grouped = useMemo(() => {
-    const map = new Map<IssueStatus, Issue[]>()
-    for (const s of STATUS_ORDER) map.set(s, [])
-    for (const issue of projectIssues) map.get(issue.status)?.push(issue)
-    return map
-  }, [projectIssues])
-
-  const counts = useMemo(() => {
-    const total = projectIssues.length
-    const done = projectIssues.filter(
-      (i) => i.status === "done" || i.status === "cancelled",
-    ).length
-    const inProgress = projectIssues.filter((i) => i.status === "in_progress").length
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0
-    return { total, done, inProgress, pct }
+  const pct = useMemo(() => {
+    if (!projectIssues.length) return 0
+    const done = projectIssues.filter((i) => i.status === "done" || i.status === "cancelled").length
+    return Math.round((done / projectIssues.length) * 100)
   }, [projectIssues])
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-4 p-6">
-        <Skeleton className="h-7 w-64" />
-        <Skeleton className="h-4 w-80" />
-        <Skeleton className="h-2 w-full" />
-        <div className="space-y-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 rounded-md" />
-          ))}
-        </div>
+      <div className="flex flex-col gap-4 p-8">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-72" />
+        <Skeleton className="h-2 w-full max-w-md" />
       </div>
     )
   }
 
   if (notFound || !project) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 py-24 text-sm text-muted-foreground">
+      <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
         <p>Project not found.</p>
-        <Link href="/projects" className="text-xs underline">
-          Back to projects
-        </Link>
+        <Link href="/projects" className="text-xs underline">Back to projects</Link>
       </div>
     )
   }
 
   return (
-    <TooltipProvider>
-      <div className="flex h-full min-h-0 flex-col">
-        <header className="flex items-center justify-between gap-3 px-6 py-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 shrink-0"
-              asChild
-            >
-              <Link href="/projects" aria-label="Back to projects">
-                <HugeiconsIcon icon={ArrowLeft02Icon} className="size-4" />
-              </Link>
-            </Button>
-            <ProjectIcon name={project.name} />
-            <h1 className="truncate text-sm font-medium">{project.name}</h1>
-            <Badge
-              variant="secondary"
-              className={`shrink-0 text-[10px] ${projectStatusStyle[project.status]}`}
-            >
-              {project.status.replace("_", " ")}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-0.5 text-muted-foreground">
-            <Button variant="ghost" size="icon" className="size-7">
-              <HugeiconsIcon icon={FilterIcon} className="size-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="size-7">
-              <HugeiconsIcon icon={BarChartIcon} className="size-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="size-7">
-              <HugeiconsIcon icon={PanelRightIcon} className="size-4" />
-            </Button>
-          </div>
-        </header>
-
-        <div className="flex flex-col gap-3 border-b px-6 pb-4">
-          <p className="text-sm text-muted-foreground">{project.description}</p>
-
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-            {lead && (
-              <span className="flex items-center gap-1.5">
-                <Avatar className="size-5">
-                  <AvatarImage src={lead.avatar} alt={lead.name} />
-                  <AvatarFallback className="text-[9px]">
-                    {lead.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <span>Lead: {lead.name}</span>
-              </span>
-            )}
-            {team && (
-              <Link
-                href={`/projects/${team.key}/board`}
-                className="flex items-center gap-1.5 hover:text-foreground"
-              >
-                <span className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-[10px]">
-                  {team.key}
-                </span>
-                <span>{team.name}</span>
-              </Link>
-            )}
-            {project.targetDate && (
-              <span className="flex items-center gap-1.5">
-                <HugeiconsIcon icon={Calendar03Icon} className="size-3.5" />
-                <span>Target {formatDate(project.targetDate)}</span>
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>
-                {counts.done} of {counts.total} done · {counts.inProgress} in progress
-              </span>
-              <span className="tabular-nums">{counts.pct}%</span>
+    <div className="flex h-full min-h-0 flex-col">
+      {/* ── Header breadcrumb + actions ── */}
+      <header className="flex shrink-0 items-center justify-between border-b px-4 py-2.5">
+        <div className="flex items-center gap-1.5 text-sm">
+          <Link href="/projects" className="text-muted-foreground hover:text-foreground transition-colors">
+            Projects
+          </Link>
+          <HugeiconsIcon icon={ArrowRight01Icon} className="size-3 text-muted-foreground/50" />
+          <div className="flex items-center gap-1.5">
+            <div className="flex size-4 items-center justify-center rounded-sm bg-violet-500/20">
+              <HugeiconsIcon icon={CubeIcon} className="size-3 text-violet-400" />
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-emerald-500 transition-all"
-                style={{ width: `${counts.pct}%` }}
-              />
+            <span className="font-medium">{project.name}</span>
+          </div>
+          <button type="button" className="ml-1 text-muted-foreground/40 hover:text-yellow-400 transition-colors">
+            <HugeiconsIcon icon={StarIcon} className="size-3.5" />
+          </button>
+          <button type="button" className="flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground">
+            <svg viewBox="0 0 12 12" className="size-3" fill="currentColor">
+              <circle cx="2" cy="6" r="1" /><circle cx="6" cy="6" r="1" /><circle cx="10" cy="6" r="1" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Right actions */}
+        <div className="flex items-center gap-1 text-muted-foreground">
+          {/* Chat */}
+          <button type="button" className="flex size-7 items-center justify-center rounded hover:bg-accent hover:text-foreground">
+            <svg viewBox="0 0 16 16" className="size-4" fill="none">
+              <path d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v7A1.5 1.5 0 0112.5 12H9l-3 2v-2H3.5A1.5 1.5 0 012 10.5v-7z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+            </svg>
+          </button>
+          {/* Layout */}
+          <button type="button" className="flex size-7 items-center justify-center rounded hover:bg-accent hover:text-foreground">
+            <svg viewBox="0 0 16 16" className="size-4" fill="none">
+              <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+              <path d="M9 2v12" stroke="currentColor" strokeWidth="1.3" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      {/* ── Tabs ── */}
+      <div className="flex shrink-0 items-center gap-0 border-b px-4">
+        {(["overview", "activity", "issues"] as Tab[]).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className={`relative px-3 py-2.5 text-xs font-medium transition-colors ${
+              tab === t
+                ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === "issues" && projectIssues.length > 0 && (
+              <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                {projectIssues.length}
+              </span>
+            )}
+          </button>
+        ))}
+        {/* Layers icon */}
+        <button type="button" className="ml-1 flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground">
+          <svg viewBox="0 0 16 16" className="size-3.5" fill="none">
+            <path d="M8 2l6 3-6 3-6-3 6-3zM2 10l6 3 6-3M2 7l6 3 6-3" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      {/* ── Body ── */}
+      {tab === "overview" && (
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          {/* Left: main content */}
+          <div className="flex-1 overflow-auto px-12 py-8">
+            {/* Project icon */}
+            <div className="mb-4 flex size-10 items-center justify-center rounded-lg bg-muted">
+              <HugeiconsIcon icon={CubeIcon} className="size-6 text-muted-foreground" />
+            </div>
+
+            {/* Project name */}
+            <h1 className="mb-1 text-2xl font-semibold text-foreground">{project.name}</h1>
+            <p className="mb-6 text-sm text-muted-foreground/60">Add a short summary...</p>
+
+            {/* Inline properties row */}
+            <div className="mb-6 flex flex-wrap items-center gap-2">
+              {/* Status */}
+              <button type="button" className="flex items-center gap-1.5 rounded-full border border-border/50 px-3 py-1 text-xs text-muted-foreground hover:bg-accent transition-colors">
+                <svg viewBox="0 0 16 16" className="size-3.5 text-orange-400" fill="none">
+                  <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" strokeDasharray="1 2.5" strokeLinecap="round" />
+                </svg>
+                Backlog
+              </button>
+              {/* Priority */}
+              <button type="button" className="flex items-center gap-1.5 rounded-full border border-border/50 px-3 py-1 text-xs text-muted-foreground hover:bg-accent transition-colors">
+                <span className="flex items-center gap-[2px]">
+                  <span className="block size-[3px] rounded-full bg-muted-foreground/60" />
+                  <span className="block size-[3px] rounded-full bg-muted-foreground/60" />
+                  <span className="block size-[3px] rounded-full bg-muted-foreground/60" />
+                </span>
+                No priority
+              </button>
+              {/* Lead */}
+              {lead ? (
+                <button type="button" className="flex items-center gap-1.5 rounded-full border border-border/50 px-3 py-1 text-xs text-muted-foreground hover:bg-accent transition-colors">
+                  <div className="flex size-4 items-center justify-center rounded-full bg-violet-500 text-[8px] font-semibold text-white">
+                    {lead.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                  </div>
+                  {lead.name}
+                </button>
+              ) : (
+                <button type="button" className="flex items-center gap-1.5 rounded-full border border-border/50 px-3 py-1 text-xs text-muted-foreground hover:bg-accent transition-colors">
+                  <svg viewBox="0 0 16 16" className="size-3.5" fill="none">
+                    <circle cx="8" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.2" />
+                    <path d="M3 14c0-2.5 2.2-4 5-4s5 1.5 5 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                  </svg>
+                  No lead
+                </button>
+              )}
+              {/* Members */}
+              <button type="button" className="flex items-center gap-1.5 rounded-full border border-border/50 px-3 py-1 text-xs text-muted-foreground hover:bg-accent transition-colors">
+                <div className="flex size-4 items-center justify-center rounded-full bg-blue-500/20 text-[8px] font-semibold text-blue-400">TC</div>
+              </button>
+              {/* Target date */}
+              <button type="button" className="flex items-center gap-1.5 rounded-full border border-border/50 px-3 py-1 text-xs text-muted-foreground hover:bg-accent transition-colors">
+                <svg viewBox="0 0 16 16" className="size-3.5" fill="none">
+                  <rect x="2" y="2.5" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M5 1.5v2M11 1.5v2M2 6h12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+                {project.targetDate ? new Date(project.targetDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Target date"}
+              </button>
+              {/* Team */}
+              {team && (
+                <button type="button" className="flex items-center gap-1.5 rounded-full border border-border/50 px-3 py-1 text-xs text-muted-foreground hover:bg-accent transition-colors">
+                  <div className="flex size-4 items-center justify-center rounded-sm bg-pink-500/20 text-[8px] font-semibold text-pink-400">
+                    {team.name.charAt(0)}
+                  </div>
+                  {team.name}
+                </button>
+              )}
+              <button type="button" className="flex size-5 items-center justify-center rounded text-muted-foreground/40 hover:bg-accent hover:text-muted-foreground">
+                <svg viewBox="0 0 12 12" className="size-3" fill="currentColor">
+                  <circle cx="2" cy="6" r="1" /><circle cx="6" cy="6" r="1" /><circle cx="10" cy="6" r="1" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Resources */}
+            <div className="mb-6">
+              <p className="mb-2 text-xs font-medium text-muted-foreground">Resources</p>
+              <button type="button" className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
+                <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" />
+                Add document or link...
+              </button>
+            </div>
+
+            {/* Write first update */}
+            <div className="mb-6 flex items-center justify-center rounded-xl border border-border/50 bg-muted/10 py-8">
+              <button type="button" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <svg viewBox="0 0 16 16" className="size-4" fill="none">
+                  <path d="M12 2l2 2-8 8H4v-2l8-8z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Write first project update
+              </button>
+            </div>
+
+            {/* Description */}
+            <div className="mb-6">
+              <p className="mb-2 text-xs font-medium text-muted-foreground">Description</p>
+              <p className="text-sm text-muted-foreground/40">Add description...</p>
+            </div>
+
+            {/* Milestones */}
+            <button type="button" className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
+              <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" />
+              Milestone
+            </button>
+          </div>
+
+          {/* Right: Properties panel */}
+          <div className="w-64 shrink-0 overflow-auto border-l px-0 py-0">
+            {/* Properties section */}
+            <div className="border-b px-4 py-3">
+              <div className="mb-3 flex items-center justify-between">
+                <button type="button" className="flex items-center gap-1 text-xs font-medium text-foreground">
+                  Properties
+                  <svg viewBox="0 0 10 10" className="size-2.5 fill-current opacity-50">
+                    <path d="M5 7L1 3h8z" />
+                  </svg>
+                </button>
+                <button type="button" className="flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground">
+                  <HugeiconsIcon icon={PlusSignIcon} className="size-3" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-0">
+                {[
+                  {
+                    label: "Status",
+                    content: (
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <svg viewBox="0 0 16 16" className="size-3.5 text-orange-400" fill="none">
+                          <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" strokeDasharray="1 2.5" strokeLinecap="round" />
+                        </svg>
+                        Backlog
+                      </div>
+                    ),
+                  },
+                  {
+                    label: "Priority",
+                    content: (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-[2px]">
+                          <span className="block size-[3px] rounded-full bg-current" />
+                          <span className="block size-[3px] rounded-full bg-current" />
+                          <span className="block size-[3px] rounded-full bg-current" />
+                        </span>
+                        No priority
+                      </div>
+                    ),
+                  },
+                  {
+                    label: "Lead",
+                    content: lead ? (
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <span className="rounded bg-muted px-1 py-0.5 text-[9px] font-semibold">HV</span>
+                        <span className="truncate text-muted-foreground text-xs">{lead.name}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/50">No lead</span>
+                    ),
+                  },
+                  {
+                    label: "Members",
+                    content: (
+                      <div className="flex items-center gap-1">
+                        <div className="flex size-5 items-center justify-center rounded-full bg-blue-500/20 text-[8px] font-semibold text-blue-400">TC</div>
+                        <span className="text-xs text-muted-foreground">Theta Computer</span>
+                      </div>
+                    ),
+                  },
+                  {
+                    label: "Dates",
+                    content: (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <svg viewBox="0 0 16 16" className="size-3.5" fill="none">
+                          <rect x="2" y="2.5" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                          <path d="M5 1.5v2M11 1.5v2M2 6h12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                        </svg>
+                        Start
+                        <svg viewBox="0 0 12 12" className="size-2.5" fill="none">
+                          <path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <svg viewBox="0 0 16 16" className="size-3.5" fill="none">
+                          <rect x="2" y="2.5" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                          <path d="M5 1.5v2M11 1.5v2M2 6h12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                        </svg>
+                        Target
+                      </div>
+                    ),
+                  },
+                  {
+                    label: "Teams",
+                    content: team ? (
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex size-4 items-center justify-center rounded-sm bg-pink-500/20 text-[8px] font-semibold text-pink-400">
+                          {team.name.charAt(0)}
+                        </div>
+                        <span className="text-xs text-muted-foreground">{team.name}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/50">No team</span>
+                    ),
+                  },
+                  {
+                    label: "Slack",
+                    content: (
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        {/* Slack hash icon */}
+                        <svg viewBox="0 0 16 16" className="size-3.5" fill="none">
+                          <path d="M5 3v10M11 3v10M2 6h12M2 10h12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                        </svg>
+                        Slack channel
+                      </div>
+                    ),
+                  },
+                  {
+                    label: "Labels",
+                    content: (
+                      <button type="button" className="flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors">
+                        <HugeiconsIcon icon={PlusSignIcon} className="size-3" />
+                        Add label
+                      </button>
+                    ),
+                  },
+                ].map(({ label, content }) => (
+                  <div key={label} className="flex items-center justify-between py-1.5">
+                    <span className="w-20 shrink-0 text-xs text-muted-foreground/70">{label}</span>
+                    <div className="flex-1">{content}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Milestones section */}
+            <div className="border-b px-4 py-3">
+              <div className="mb-2 flex items-center justify-between">
+                <button type="button" className="flex items-center gap-1 text-xs font-medium text-foreground">
+                  Milestones
+                  <svg viewBox="0 0 10 10" className="size-2.5 fill-current opacity-50">
+                    <path d="M5 7L1 3h8z" />
+                  </svg>
+                </button>
+                <button type="button" className="flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground">
+                  <HugeiconsIcon icon={PlusSignIcon} className="size-3" />
+                </button>
+              </div>
+              <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
+                Add milestones to organize work within your project and break it into more granular stages.{" "}
+                <span className="underline cursor-pointer hover:text-muted-foreground">Learn more</span>
+              </p>
+            </div>
+
+            {/* Activity section */}
+            <div className="px-4 py-3">
+              <div className="mb-3 flex items-center justify-between">
+                <button type="button" className="flex items-center gap-1 text-xs font-medium text-foreground">
+                  Activity
+                  <svg viewBox="0 0 10 10" className="size-2.5 fill-current opacity-50">
+                    <path d="M5 7L1 3h8z" />
+                  </svg>
+                </button>
+                <button type="button" className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
+                  See all
+                </button>
+              </div>
+              <div className="flex flex-col gap-3">
+                {[
+                  { text: "Theta Computer added member", sub: "hvkvkvk@234234gmail.com · Apr 23", icon: "members" },
+                  { text: "Theta Computer set lead to hvkvkvk@234234gmail.com", sub: "· Apr 23", icon: "lead" },
+                  { text: "Theta Computer added themselves as a member", sub: "Apr 22", icon: "members" },
+                  { text: "Theta Computer created the project", sub: "Apr 22", icon: "project" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <div className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-blue-500/20">
+                      <svg viewBox="0 0 16 16" className="size-3.5 text-blue-400" fill="none">
+                        {item.icon === "members" ? (
+                          <>
+                            <circle cx="6" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.2" />
+                            <path d="M1 14c0-2.5 2-4 5-4s5 1.5 5 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                            <path d="M11 4v4M13 6h-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                          </>
+                        ) : item.icon === "lead" ? (
+                          <>
+                            <circle cx="8" cy="6" r="3" stroke="currentColor" strokeWidth="1.2" />
+                            <path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                          </>
+                        ) : (
+                          <><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.2" /><path d="M8 5v4M8 11v.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></>
+                        )}
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] text-foreground leading-relaxed">{item.text}</p>
+                      <p className="text-[10px] text-muted-foreground">{item.sub}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
+      )}
 
-        <div className="min-h-0 flex-1 overflow-auto">
+      {tab === "activity" && (
+        <div className="flex-1 overflow-auto px-12 py-8">
+          <p className="text-sm text-muted-foreground">No activity yet.</p>
+        </div>
+      )}
+
+      {tab === "issues" && (
+        <div className="flex-1 overflow-auto">
           {projectIssues.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 py-24 text-sm text-muted-foreground">
               <p>No issues in this project yet.</p>
             </div>
           ) : (
             <div className="flex flex-col">
-              {STATUS_ORDER.map((status) => {
-                const items = grouped.get(status) ?? []
-                if (items.length === 0) return null
-                return (
-                  <Collapsible key={status} defaultOpen>
-                    <CollapsibleTrigger className="sticky top-0 z-10 flex w-full items-center gap-2 border-b bg-muted/50 px-6 py-1.5 text-left text-xs font-medium backdrop-blur">
-                      <StatusDot status={status} />
-                      <span>{STATUS_LABEL[status]}</span>
-                      <span className="text-muted-foreground">{items.length}</span>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <ul className="divide-y">
-                        {items.map((issue) => (
-                          <IssueRow
-                            key={issue.id}
-                            issue={issue}
-                            members={members}
-                          />
-                        ))}
-                      </ul>
-                    </CollapsibleContent>
-                  </Collapsible>
-                )
-              })}
+              {projectIssues.map((issue) => (
+                <Link
+                  key={issue.id}
+                  href={`/issues/${issue.identifier}`}
+                  className="flex items-center gap-3 border-b px-6 py-2.5 text-sm transition-colors hover:bg-accent/40"
+                >
+                  <span className="font-mono text-xs text-muted-foreground w-16 shrink-0">{issue.identifier}</span>
+                  <span className="flex-1 truncate">{issue.title}</span>
+                  <span className="text-xs text-muted-foreground capitalize">{issue.status.replace("_", " ")}</span>
+                </Link>
+              ))}
             </div>
           )}
         </div>
-      </div>
-    </TooltipProvider>
-  )
-}
-
-function IssueRow({ issue, members }: { issue: Issue; members: Member[] }) {
-  const assignee = members.find((m) => m.id === issue.assigneeId)
-  return (
-    <li>
-      <Link
-        href={`/issues/${issue.identifier}`}
-        className="flex items-center gap-3 px-6 py-2 text-sm transition-colors hover:bg-accent/50"
-      >
-        <Badge
-          variant="secondary"
-          className={`min-w-14 justify-center text-[10px] shrink-0 ${priorityStyle[issue.priority]}`}
-        >
-          {issue.priority}
-        </Badge>
-        <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">
-          {issue.identifier}
-        </span>
-        <span className="flex-1 truncate">{issue.title}</span>
-        <Badge
-          variant="secondary"
-          className={`shrink-0 text-[10px] ${statusStyle[issue.status]}`}
-        >
-          {STATUS_LABEL[issue.status]}
-        </Badge>
-        {assignee ? (
-          <Tooltip>
-            <TooltipTrigger render={<span className="shrink-0" />}>
-              <Avatar className="size-6">
-                <AvatarImage src={assignee.avatar} alt={assignee.name} />
-                <AvatarFallback className="text-[10px]">
-                  {assignee.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-            </TooltipTrigger>
-            <TooltipContent>{assignee.name}</TooltipContent>
-          </Tooltip>
-        ) : (
-          <div className="size-6 shrink-0 rounded-full border border-dashed" />
-        )}
-      </Link>
-    </li>
-  )
-}
-
-function StatusDot({ status }: { status: IssueStatus }) {
-  const color: Record<IssueStatus, string> = {
-    in_progress: "bg-amber-500",
-    todo: "bg-muted-foreground/60",
-    backlog: "bg-muted-foreground/30",
-    done: "bg-emerald-500",
-    cancelled: "bg-zinc-500",
-  }
-  return <span className={`size-2 rounded-full ${color[status]}`} />
-}
-
-function ProjectIcon({ name }: { name: string }) {
-  const initials = name
-    .split(/\s+/)
-    .map((w) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase()
-  return (
-    <div className="flex size-5 shrink-0 items-center justify-center rounded bg-gradient-to-br from-sky-500 to-cyan-500 text-[9px] font-semibold text-white">
-      {initials}
+      )}
     </div>
   )
-}
-
-function formatDate(iso: string): string {
-  const d = new Date(iso)
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
 }

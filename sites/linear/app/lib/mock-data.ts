@@ -37,7 +37,7 @@ export interface Project {
   name: string;
   description: string;
   status: "planned" | "in_progress" | "completed" | "cancelled";
-  leadId: string;
+  leadId: string | null;
   teamId: string;
   targetDate: string | null;
   createdAt: string;
@@ -227,7 +227,7 @@ export const projects: Project[] = [
     name: "Payment API v2",
     description: "Payment gateway abstraction with Stripe v2 and PayPal integrations, idempotency, and retry logic.",
     status: "in_progress",
-    leadId: "usr-3",
+    leadId: null,
     teamId: "team-1",
     targetDate: "2026-06-15",
     createdAt: "2026-02-01T09:00:00.000Z",

@@ -1,20 +1,24 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import type { View, Member, Issue, Cycle, Label } from "@/app/lib/mock-data"
-import { filterIssuesForView } from "@/lib/view-filter"
+import { filterIssuesForView as _filterIssuesForView } from "@/lib/view-filter"
 import { CreateViewDialog } from "@/components/create-view-dialog"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { IconPickerPopover } from "@/components/icon-picker-popover"
+import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+  PlusSignIcon,
+  SlidersHorizontalIcon,
+  ArrowDown01Icon,
+} from "@hugeicons/core-free-icons"
+
+const WORKSPACE_NAME = "Theta Computers"
+const WORKSPACE_INITIALS = "TC"
 
 export default function ViewsPage() {
   const [views, setViews] = useState<View[]>([])
@@ -23,7 +27,7 @@ export default function ViewsPage() {
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [labels, setLabels] = useState<Label[]>([])
   const [loading, setLoading] = useState(true)
-
+  const [tab, setTab] = useState<"issues" | "projects">("issues")
   const [dialogOpen, setDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -43,124 +47,179 @@ export default function ViewsPage() {
     })
   }, [])
 
-  const countsByView = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const view of views) {
-      map.set(view.id, filterIssuesForView(view, issues, { labels, cycles }).length)
-    }
-    return map
-  }, [views, issues, labels, cycles])
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Header */}
+      <header className="flex items-center justify-between px-6 py-2.5">
+        <h1 className="text-sm font-medium">Views</h1>
+        <Button variant="ghost" size="icon" className="size-7" onClick={() => setDialogOpen(true)}>
+          <HugeiconsIcon icon={PlusSignIcon} className="size-4" />
+        </Button>
+      </header>
 
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-6 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-7 w-24" />
-            <Skeleton className="mt-2 h-4 w-48" />
-          </div>
-          <Skeleton className="h-9 w-24" />
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-lg" />
+      {/* Tabs + toolbar */}
+      <div className="flex items-center justify-between border-b px-4">
+        <div className="flex items-center gap-0.5">
+          {(["issues", "projects"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                tab === t
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              }`}
+            >
+              {t.charAt(0).toUpperCase() + t.slice(1)}
+            </button>
           ))}
         </div>
+        <ViewsDisplayPopover />
       </div>
-    )
-  }
 
-  return (
-    <TooltipProvider>
-      <div className="flex flex-col gap-6 p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">Views</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Saved filters and custom views.
-            </p>
+      {/* Table */}
+      <div className="flex-1 overflow-auto">
+        {loading ? (
+          <div className="flex flex-col gap-2 p-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 rounded" />
+            ))}
           </div>
+        ) : tab === "issues" ? (
+          <>
+            {/* Column header */}
+            <div className="flex items-center border-b px-5 py-2 text-[11px] text-muted-foreground">
+              <button type="button" className="flex flex-1 items-center gap-1 hover:text-foreground">
+                Name
+                <svg viewBox="0 0 10 10" className="size-2.5 fill-current opacity-60">
+                  <path d="M5 7L1 3h8z" />
+                </svg>
+              </button>
+              <span className="w-44">Owner</span>
+            </div>
 
-          <Button onClick={() => setDialogOpen(true)}>New View</Button>
-        </div>
+            {/* Personal views section header */}
+            <div className="group flex items-center gap-2 border-b bg-accent/20 px-5 py-2">
+              <Avatar className="size-5 shrink-0">
+                <AvatarFallback className="text-[9px] bg-violet-600 text-white">
+                  {WORKSPACE_INITIALS}
+                </AvatarFallback>
+              </Avatar>
+              <span className="flex-1 text-xs font-medium text-muted-foreground">
+                Personal views
+                <span className="ml-1.5 font-normal opacity-60">· Only visible to you</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setDialogOpen(true)}
+                className="flex size-5 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
+              >
+                <HugeiconsIcon icon={PlusSignIcon} className="size-3" />
+              </button>
+            </div>
 
-        <CreateViewDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          onCreated={(created) => setViews((prev) => [...prev, created])}
-        />
-
-        {views.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No views yet. Create one to get started.
-          </p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* User-created views */}
             {views.map((view) => {
               const owner = members.find((m) => m.id === view.ownerId)
-              const count = countsByView.get(view.id) ?? 0
               return (
-                <Link key={view.id} href={`/views/${view.id}`}>
-                  <div className="group flex h-full flex-col gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <ViewIcon name={view.name} />
-                        <span className="truncate text-sm font-medium">
-                          {view.name}
-                        </span>
-                      </div>
-                      <Badge
-                        variant="secondary"
-                        className="shrink-0 text-[10px] tabular-nums"
-                      >
-                        {count}
-                      </Badge>
+                <Link
+                  key={view.id}
+                  href={`/views/${view.id}`}
+                  className="flex items-center border-b px-5 py-2.5 transition-colors hover:bg-accent/40"
+                >
+                  <div className="flex flex-1 items-center gap-2">
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ViewIconPicker />
                     </div>
-                    {view.description && (
-                      <p className="line-clamp-2 text-xs text-muted-foreground">
-                        {view.description}
-                      </p>
+                    <span className="text-sm">{view.name}</span>
+                  </div>
+                  <div className="flex w-44 items-center gap-2">
+                    {owner ? (
+                      <>
+                        <Avatar className="size-5">
+                          <AvatarImage src={owner.avatar} />
+                          <AvatarFallback className="text-[9px]">{owner.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <span className="truncate text-xs text-muted-foreground">{owner.name}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Avatar className="size-5">
+                          <AvatarFallback className="text-[9px] bg-violet-600 text-white">
+                            {WORKSPACE_INITIALS}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="truncate text-xs text-muted-foreground">{WORKSPACE_NAME}</span>
+                      </>
                     )}
-                    <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-                      <code className="truncate rounded-sm bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-                        {view.filterQuery}
-                      </code>
-                      {owner && (
-                        <Tooltip>
-                          <TooltipTrigger render={<span className="shrink-0" />}>
-                            <Avatar className="size-5 ring-2 ring-card">
-                              <AvatarImage src={owner.avatar} alt={owner.name} />
-                              <AvatarFallback className="text-[9px]">
-                                {owner.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                          </TooltipTrigger>
-                          <TooltipContent>{owner.name}</TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
                   </div>
                 </Link>
               )
             })}
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 py-20 text-center">
+            <p className="text-sm text-muted-foreground">No project views yet</p>
           </div>
         )}
       </div>
-    </TooltipProvider>
+
+      <CreateViewDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+    </div>
   )
 }
 
-function ViewIcon({ name }: { name: string }) {
-  const initials = name
-    .split(/\s+/)
-    .map((w) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase()
+function ViewsDisplayPopover() {
+  const [grouping, setGrouping] = useState("No grouping")
+  const [ordering, setOrdering] = useState("Last updated")
+
   return (
-    <div className="flex size-6 shrink-0 items-center justify-center rounded bg-gradient-to-br from-violet-500 to-indigo-500 text-[10px] font-semibold text-white">
-      {initials}
-    </div>
+    <Popover>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            className="flex size-7 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground"
+          />
+        }
+      >
+        <HugeiconsIcon icon={SlidersHorizontalIcon} className="size-3.5" />
+      </PopoverTrigger>
+      <PopoverContent side="bottom" align="end" sideOffset={6} className="w-72 gap-0 p-0">
+        <div className="flex flex-col px-2.5 py-2">
+          {[
+            { label: "Grouping", value: grouping, options: ["No grouping", "Owner"], set: setGrouping },
+            { label: "Ordering", value: ordering, options: ["Last updated", "Name", "Created"], set: setOrdering },
+          ].map(({ label, value, options, set }) => (
+            <div key={label} className="flex items-center justify-between py-1.5">
+              <span className="text-xs text-muted-foreground">{label}</span>
+              <div className="relative">
+                <select
+                  value={value}
+                  onChange={(e) => set(e.target.value)}
+                  className="appearance-none rounded-full bg-muted px-3 py-1 pr-6 text-xs font-medium text-foreground focus:outline-none cursor-pointer"
+                >
+                  {options.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+                <HugeiconsIcon icon={ArrowDown01Icon} className="pointer-events-none absolute right-2 top-1/2 size-3 -translate-y-1/2 text-muted-foreground" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function ViewIconPicker() {
+  return (
+    <IconPickerPopover
+      trigger={
+        <svg viewBox="0 0 16 16" className="size-4 shrink-0 text-muted-foreground" fill="none">
+          <path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      }
+    />
   )
 }

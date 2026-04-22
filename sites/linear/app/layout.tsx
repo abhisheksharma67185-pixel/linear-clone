@@ -13,7 +13,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`antialiased ${inter.className}`}
+      className={`dark antialiased ${inter.className}`}
     >
       <body>
         <ThemeProvider>{children}</ThemeProvider>
