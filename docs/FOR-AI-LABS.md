@@ -230,10 +230,10 @@ thetabench eval --agent your_agent.py --url http://localhost:3000
 ```
 
 ### Vercel (for quick evaluation)
-Already deployed at `https://shopify-admin-sim.vercel.app`
+Already deployed at `https://theta-shopify-admin.vercel.app`
 
 ```bash
-thetabench eval --agent your_agent.py --url https://shopify-admin-sim.vercel.app
+thetabench eval --agent your_agent.py --url https://theta-shopify-admin.vercel.app
 ```
 
 ## Task Types
