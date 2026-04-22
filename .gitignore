@@ -18,3 +18,10 @@ __pycache__/
 .vercel
 coverage/
 *.log
+
+# Claude Code scratch
+.claude/worktrees/
+.claude/scheduled_tasks.lock
+
+# macOS Time Machine hard-link markers
+.!*
