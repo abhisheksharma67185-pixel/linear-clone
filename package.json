@@ -3,21 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "description": "ThetaBench — A scalable platform for training and evaluating autonomous web agents",
-  "workspaces": [
-    "packages/*",
-    "sites/shopify-admin",
-    "sites/linear",
-    "sites/jira",
-    "sites/slack"
-  ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
-    "dev": "npm run dev --workspace=sites/shopify-admin",
-    "lint": "npm run lint --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "build": "pnpm -r run build",
+    "dev": "pnpm --filter shopify-admin-sim dev",
+    "lint": "pnpm -r run lint",
+    "typecheck": "pnpm -r run typecheck"
   },
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "npm@11.12.1"
+  "packageManager": "pnpm@10.33.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "msw",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
 }

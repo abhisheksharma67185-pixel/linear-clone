@@ -1,21 +1,22 @@
 FROM node:20-alpine AS base
 WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@10.33.1 --activate
 
 # ── Install dependencies ──
 FROM base AS deps
-COPY package.json package-lock.json .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY packages/thetabench-core/package.json ./packages/thetabench-core/
 COPY sites/shopify-admin/package.json ./sites/shopify-admin/
-RUN npm ci --legacy-peer-deps
+RUN pnpm install --frozen-lockfile --filter shopify-admin-sim... --filter @thetabench/core...
 
 # ── Build ──
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/thetabench-core/node_modules ./packages/thetabench-core/node_modules
+COPY --from=deps /app/packages/thetabench-core ./packages/thetabench-core
 COPY --from=deps /app/sites/shopify-admin/node_modules ./sites/shopify-admin/node_modules
 COPY . .
-RUN cd packages/thetabench-core && npx vp pack
-RUN cd sites/shopify-admin && npx next build
+RUN pnpm --filter @thetabench/core run build
+RUN pnpm --filter shopify-admin-sim run build
 
 # ── Production runner ──
 FROM base AS runner
