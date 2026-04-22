@@ -146,6 +146,7 @@ Open http://localhost:3100 to see the trace in the dashboard.
 |----------|-------------|
 | [Python SDK Reference](./docs/python-sdk.md) | Complete guide to the `theta-observability` Python package |
 | [Node.js SDK Reference](./docs/node-sdk.md) | Complete guide to the `@theta/observability` npm package |
+| [System Overview](./docs/system-overview.md) | End-to-end overview of the product, architecture, SDKs, dashboard, storage, and deployment model |
 | [REST API Reference](./docs/api-reference.md) | Every endpoint, request/response format, and cURL examples |
 | [Trace Schema](./docs/trace-schema.md) | JSON schema documentation for the trace payload format |
 | [Self-Hosting Guide](./docs/self-hosting.md) | Deploy Theta Observability on your own infrastructure |
