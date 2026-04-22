@@ -51,6 +51,7 @@ export default function NewEpisodePage() {
   React.useEffect(() => {
     // If sites finish hydrating after initial render, pick the first one.
     if (hydrated && !siteId && sites.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSiteId(sites[0].id)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

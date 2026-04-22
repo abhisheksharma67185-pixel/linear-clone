@@ -331,7 +331,6 @@ function HealthCell({ health }: { health: InitiativeHealth }) {
 }
 
 function MemberAvatar({ member }: { member: Member }) {
-  // eslint-disable-next-line @next/next/no-img-element
   return (
     <img
       src={member.avatar}

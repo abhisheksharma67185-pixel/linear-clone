@@ -42,7 +42,7 @@ function ProjectsPageInner() {
   const [teams, setTeams] = useState<Team[]>([])
   const [issues, setIssues] = useState<Issue[]>([])
   const [loading, setLoading] = useState(true)
-  const [createOpen, setCreateOpen] = useState(false) // eslint-disable-line
+  const [createOpen, setCreateOpen] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
   const [panelTab, setPanelTab] = useState<"health" | "leads">("health")
   const [editingView, setEditingView] = useState(false)

@@ -97,6 +97,9 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
+  // SSR-mount detection: theme is server-unknowable, so we render an icon
+  // placeholder until hydration. Standard `useEffect`+`setState` pattern.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   React.useEffect(() => setMounted(true), [])
 
   return (
@@ -172,7 +175,10 @@ export function Sidebar() {
 export function MobileNav() {
   const [open, setOpen] = React.useState(false)
   const pathname = usePathname()
+  // Close the drawer when navigating to a new route. URL → UI sync is
+  // exactly what useEffect is for; the lint rule is over-cautious here.
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(false)
   }, [pathname])
 

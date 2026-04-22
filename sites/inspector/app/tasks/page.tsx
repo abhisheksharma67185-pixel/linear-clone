@@ -172,7 +172,10 @@ export default function TasksPage() {
 
   const [pageSize] = React.useState(50)
   const [pageIdx, setPageIdx] = React.useState(0)
+  // Reset to the first page whenever the underlying filter set changes.
+  // Cleanest expression as an effect; the lint rule is over-cautious here.
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPageIdx(0)
   }, [
     urlSite,
