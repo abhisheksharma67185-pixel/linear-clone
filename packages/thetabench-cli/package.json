@@ -24,7 +24,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
   },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
@@ -37,6 +39,7 @@
   "devDependencies": {
     "@types/node": "^20.14.0",
     "@vitest/coverage-v8": "^2.1.9",
+    "prettier": "^3.8.1",
     "tsdown": "^0.21.10",
     "typescript": "^5.6.3",
     "vitest": "^2.1.9"

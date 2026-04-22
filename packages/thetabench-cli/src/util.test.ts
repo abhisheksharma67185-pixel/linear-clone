@@ -145,8 +145,13 @@ describe("command wrapper", () => {
 });
 
 describe("reportErrorAndExit", () => {
-  let exitSpy: ReturnType<typeof vi.spyOn>;
-  let writeSpy: ReturnType<typeof vi.spyOn>;
+  // Vitest's MockInstance generic differs across versions; `any` keeps the
+  // tests resilient without changing what they assert. Same pattern used in
+  // the prior block.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let exitSpy: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let writeSpy: any;
 
   beforeEach(() => {
     exitSpy = vi
@@ -156,7 +161,7 @@ describe("reportErrorAndExit", () => {
   });
 
   function written(): string {
-    return writeSpy.mock.calls.map((c) => String(c[0])).join("");
+    return writeSpy.mock.calls.map((c: unknown[]) => String(c[0])).join("");
   }
 
   it("formats HttpError with status tag and URL", () => {

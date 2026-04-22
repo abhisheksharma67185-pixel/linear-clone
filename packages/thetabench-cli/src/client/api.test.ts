@@ -140,13 +140,13 @@ describe("typed API wrappers — URL/method/body construction", () => {
 
   it("submitLeaderboard → POST /api/sim/leaderboard with the entry payload", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ id: "x", rank: 1, message: "ok" }));
-    await submitLeaderboard(BASE, { agent_name: "a", model_name: "m", mode: "rest" });
+    await submitLeaderboard(BASE, { agentName: "a", modelName: "m", mode: "rest" });
     const init = fetchMock.mock.calls[0]![1] as RequestInit;
     expect(fetchMock.mock.calls[0]![0]).toBe(`${BASE}/api/sim/leaderboard`);
     expect(init.method).toBe("POST");
     expect(JSON.parse(init.body as string)).toEqual({
-      agent_name: "a",
-      model_name: "m",
+      agentName: "a",
+      modelName: "m",
       mode: "rest",
     });
   });

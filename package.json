@@ -8,12 +8,18 @@
     "dev": "pnpm --filter shopify-admin-sim dev",
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r run typecheck",
-    "test": "pnpm -r run test:run"
+    "test": "pnpm -r run test:run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "engines": {
     "node": ">=20"
   },
   "packageManager": "pnpm@10.33.1",
+  "devDependencies": {
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2"
+  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "msw",

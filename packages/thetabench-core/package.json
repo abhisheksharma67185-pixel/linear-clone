@@ -6,7 +6,9 @@
   "scripts": {
     "check": "vp check",
     "test": "vp test",
-    "test:run": "vp test --run"
+    "test:run": "vp test --run",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.0",
@@ -14,6 +16,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "prettier": "^3.8.1",
     "typescript": "^5",
     "vite-plus": "latest"
   }
