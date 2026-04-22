@@ -21,7 +21,9 @@ export function renderTable(
 
   const table = new Table({
     head,
-    colWidths: options.colWidths,
+    // cli-table3 reads `colWidths[i]` per cell during layout; passing
+    // `undefined` makes it crash. Omit the key entirely to let it autosize.
+    ...(options.colWidths ? { colWidths: options.colWidths } : {}),
     wordWrap: options.wordWrap ?? true,
     style: {
       head: [], // we already styled
