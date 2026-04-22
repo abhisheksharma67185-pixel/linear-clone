@@ -1,8 +1,8 @@
 // AUTH: Intentionally omitted — this route is designed for local benchmark/sim use only.
 import { NextRequest, NextResponse } from "next/server";
 import "../../../lib/init-sim";
-import { startEpisode } from "@simbench/core";
-import type { EpisodeConfig } from "@simbench/core";
+import { startEpisode } from "@thetabench/core";
+import type { EpisodeConfig } from "@thetabench/core";
 
 export async function POST(request: NextRequest) {
   let body;

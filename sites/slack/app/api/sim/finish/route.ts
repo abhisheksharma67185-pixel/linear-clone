@@ -4,7 +4,7 @@ import {
   finishEpisode,
   hasActiveEpisode,
   getActiveEpisode,
-} from "@simbench/core";
+} from "@thetabench/core";
 
 export async function POST(request: NextRequest) {
   if (!hasActiveEpisode()) {

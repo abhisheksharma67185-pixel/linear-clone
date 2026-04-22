@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as store from "../../lib/store";
 import "../../lib/init-sim";
-import { getActiveEpisode, hasActiveEpisode, logAction, getStepReward } from "@simbench/core";
+import { getActiveEpisode, hasActiveEpisode, logAction, getStepReward } from "@thetabench/core";
 
 // ---------------------------------------------------------------------------
 // Per-episode RL session state (isolated by episode, not module-level)
@@ -310,7 +310,7 @@ export async function GET() {
   return NextResponse.json({
     observation: getObservation(),
     info: {
-      description: "SimBench Shopify Admin RL Environment",
+      description: "ThetaBench Shopify Admin RL Environment",
       version: "3.0",
       episodeActive: hasActiveEpisode(),
     },

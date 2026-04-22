@@ -1,8 +1,8 @@
 {
-  "name": "simbench",
+  "name": "thetabench",
   "version": "0.1.0",
   "private": true,
-  "description": "SimBench — A scalable platform for training and evaluating autonomous web agents",
+  "description": "ThetaBench — A scalable platform for training and evaluating autonomous web agents",
   "workspaces": [
     "packages/*",
     "sites/shopify-admin",

@@ -1,10 +1,10 @@
-# SimBench: A Scalable Platform for Training and Evaluating Autonomous Web Agents on 100+ Deterministic Website Simulations
+# ThetaBench: A Scalable Platform for Training and Evaluating Autonomous Web Agents on 100+ Deterministic Website Simulations
 
 **Authors:** Rahul Sulegaokar et al.
 
 **Abstract**
 
-We introduce SimBench, a scalable platform for training and evaluating autonomous web agents across 100+ high-fidelity, deterministic simulations of popular real-world websites. While existing benchmarks like REAL (Garg et al., 2025), WebArena (Zhou et al., 2024), and BrowserGym (Chezelles et al., 2025) provide evaluation environments, they are fundamentally limited to outcome-only assessment -- offering binary pass/fail rewards computed only at task completion. SimBench addresses the critical gap between evaluation and training by introducing: (1) dense, shaped reward signals at every interaction step, (2) a 10-stage curriculum learning system with progressive difficulty and prerequisite tracking, (3) a dual-mode agent interface supporting both high-speed REST API interaction (1-5ms/step) for reinforcement learning training loops and realistic browser-based interaction via Playwright for faithful evaluation, (4) four task types including action, retrieval, combined, and impossible-task recognition, and (5) a modular site plugin architecture that enables any Next.js website clone to integrate with the shared simulation engine. Our initial release includes a comprehensive Shopify Admin simulation with 104 tasks across 8 domains, with plans to scale to 100+ website simulations across 15 categories. SimBench is publicly deployed on Vercel, requires zero infrastructure setup, and provides a Gymnasium-compatible Python SDK for seamless integration with any RL framework. We release the platform, task suite, SDK, and leaderboard to accelerate research in autonomous web agents.
+We introduce ThetaBench, a scalable platform for training and evaluating autonomous web agents across 100+ high-fidelity, deterministic simulations of popular real-world websites. While existing benchmarks like REAL (Garg et al., 2025), WebArena (Zhou et al., 2024), and BrowserGym (Chezelles et al., 2025) provide evaluation environments, they are fundamentally limited to outcome-only assessment -- offering binary pass/fail rewards computed only at task completion. ThetaBench addresses the critical gap between evaluation and training by introducing: (1) dense, shaped reward signals at every interaction step, (2) a 10-stage curriculum learning system with progressive difficulty and prerequisite tracking, (3) a dual-mode agent interface supporting both high-speed REST API interaction (1-5ms/step) for reinforcement learning training loops and realistic browser-based interaction via Playwright for faithful evaluation, (4) four task types including action, retrieval, combined, and impossible-task recognition, and (5) a modular site plugin architecture that enables any Next.js website clone to integrate with the shared simulation engine. Our initial release includes a comprehensive Shopify Admin simulation with 104 tasks across 8 domains, with plans to scale to 100+ website simulations across 15 categories. ThetaBench is publicly deployed on Vercel, requires zero infrastructure setup, and provides a Gymnasium-compatible Python SDK for seamless integration with any RL framework. We release the platform, task suite, SDK, and leaderboard to accelerate research in autonomous web agents.
 
 ---
 
@@ -16,7 +16,7 @@ A key bottleneck is the lack of environments designed for agent *training*, not 
 
 The problem is analogous to the state of robotic manipulation research before MuJoCo (Todorov et al., 2012) and OpenAI Gym (Brockman et al., 2016). Before these platforms, researchers could evaluate whether a robot arm grasped an object, but they couldn't efficiently train policies through millions of iterations. Gymnasium provided the standard interface (`reset`, `step`, `observe`, `reward`) that made RL training practical. **No equivalent exists for web agents.**
 
-We address this gap with SimBench, a platform that provides:
+We address this gap with ThetaBench, a platform that provides:
 
 1. **100+ deterministic website simulations (planned)** spanning e-commerce, communication, travel, productivity, social media, finance, healthcare, and developer tools -- each built with modern web frameworks (React, Next.js) and realistic mock data.
 
@@ -52,13 +52,13 @@ We identify five critical limitations across current web agent benchmarks:
 
 ### 2.2 Web Agents and Post-Training
 
-The emerging paradigm for improving web agents is post-training via reinforcement learning (Chen et al., 2025; DeepSeek-AI et al., 2025; Putta et al., 2024). Systems like AgentQ (Putta et al., 2024) use MCTS with self-critique, WebRL (Qi et al., 2025) uses self-evolving curriculum, and WebDreamer (Gu et al., 2025) simulates action outcomes for speculative planning. All require dense reward signals and high-throughput training environments -- exactly what SimBench provides.
+The emerging paradigm for improving web agents is post-training via reinforcement learning (Chen et al., 2025; DeepSeek-AI et al., 2025; Putta et al., 2024). Systems like AgentQ (Putta et al., 2024) use MCTS with self-critique, WebRL (Qi et al., 2025) uses self-evolving curriculum, and WebDreamer (Gu et al., 2025) simulates action outcomes for speculative planning. All require dense reward signals and high-throughput training environments -- exactly what ThetaBench provides.
 
 ### 2.3 Positioning
 
-SimBench occupies a unique position in the landscape:
+ThetaBench occupies a unique position in the landscape:
 
-| | MiniWoB++ | WebArena | REAL | **SimBench** |
+| | MiniWoB++ | WebArena | REAL | **ThetaBench** |
 |---|---|---|---|---|
 | Year | 2018 | 2024 | 2025 | 2025 |
 | Sites | 100 (toy) | 5 | 11 | **100+ (planned)** |
@@ -72,17 +72,17 @@ SimBench occupies a unique position in the landscape:
 
 ---
 
-## 3. SimBench Architecture
+## 3. ThetaBench Architecture
 
 ### 3.1 Simulation Engine
 
-SimBench's core contribution is a **site-agnostic simulation engine** that provides episode management, state snapshots, differential evaluation, reward computation, and curriculum tracking. Each website simulation plugs into this engine via a standard interface, inheriting all training and evaluation infrastructure automatically.
+ThetaBench's core contribution is a **site-agnostic simulation engine** that provides episode management, state snapshots, differential evaluation, reward computation, and curriculum tracking. Each website simulation plugs into this engine via a standard interface, inheriting all training and evaluation infrastructure automatically.
 
 The engine consists of six components:
 
 **Episode Manager** controls the lifecycle of agent-environment interactions. An episode begins with `POST /api/sim/config` specifying a task ID, seed, and mode. The engine resets the site's state, applies any task-specific setup actions, captures an initial snapshot, and returns an episode ID. During interaction, every agent action is logged with timestamps and rewards. Episodes end via `POST /api/sim/finish`, which captures the final snapshot, computes the state diff, runs all evaluation checks, and returns a scored result.
 
-**Snapshot Engine** captures deep-cloned copies of the entire site state at episode boundaries. State diffs are computed at field-level granularity, identifying exactly which entities were added, removed, or modified. Unlike REAL's approach using Redux middleware and IndexedDB with chunked Lambda uploads, SimBench uses a simple JSON deep-clone of the site's state singleton -- eliminating framework dependencies and external service requirements.
+**Snapshot Engine** captures deep-cloned copies of the entire site state at episode boundaries. State diffs are computed at field-level granularity, identifying exactly which entities were added, removed, or modified. Unlike REAL's approach using Redux middleware and IndexedDB with chunked Lambda uploads, ThetaBench uses a simple JSON deep-clone of the site's state singleton -- eliminating framework dependencies and external service requirements.
 
 **Evaluator Engine** supports six check types: `state_diff` (field value comparison), `state_exists` (entity presence), `state_absent` (entity absence), `state_count` (collection cardinality), `state_predicate` (custom function evaluation), and `retrieval` (LLM-judged text response). Partial credit is computed based on per-check weights, enabling nuanced scoring of partially-correct agent behavior.
 
@@ -94,7 +94,7 @@ The engine consists of six components:
 
 ### 3.2 Site Plugin Interface
 
-Any Next.js website simulation can join SimBench by implementing a standard interface:
+Any Next.js website simulation can join ThetaBench by implementing a standard interface:
 
 ```typescript
 interface SitePlugin {
@@ -119,11 +119,11 @@ This modular design means the simulation engine never needs to know about Shopif
 
 **Browser Mode (Realistic Evaluation).** Agents receive a Playwright `Page` object connected to the live Next.js application. Observations include screenshots, accessibility trees, full DOM, or Chrome DevTools Protocol access. Actions are standard browser primitives: `click(selector)`, `fill(selector, value)`, `scroll()`, `navigate(url)`. Both modes modify the same underlying state store, so the evaluation engine produces identical scores regardless of interaction mode.
 
-This dual-mode design addresses a fundamental tension in web agent research: RL training requires fast, API-level interaction, but realistic evaluation requires browser-level fidelity. SimBench provides both through a single platform.
+This dual-mode design addresses a fundamental tension in web agent research: RL training requires fast, API-level interaction, but realistic evaluation requires browser-level fidelity. ThetaBench provides both through a single platform.
 
 ### 3.4 Reward System
 
-SimBench provides four types of reward signals:
+ThetaBench provides four types of reward signals:
 
 1. **Step penalty** (-0.01 per step) encouraging efficiency
 2. **Action validity penalty** (-0.1 for invalid actions) discouraging random exploration
@@ -165,7 +165,7 @@ Tasks are organized into 10 progressive stages:
 
 ### 4.3 Configurable Environments
 
-Following REAL's approach, SimBench supports two-level configuration:
+Following REAL's approach, ThetaBench supports two-level configuration:
 
 **Universal parameters:**
 - `latency`: Simulated network delay (0-5000ms)
@@ -184,13 +184,13 @@ Following REAL's approach, SimBench supports two-level configuration:
 
 ## 5. Python SDK
 
-SimBench provides a Gymnasium-compatible Python SDK:
+ThetaBench provides a Gymnasium-compatible Python SDK:
 
 ```python
-import simbench
+import thetabench
 
 # Standard Gymnasium interface
-env = simbench.make("shopify-admin", task_id="products-001", mode="rest")
+env = thetabench.make("shopify-admin", task_id="products-001", mode="rest")
 obs, info = env.reset()
 
 done = False
@@ -203,14 +203,14 @@ result = env.finish()
 print(f"Score: {result['score']}, Steps: {result['steps']}")
 
 # Curriculum training
-runner = simbench.CurriculumRunner("http://localhost:3000", mastery_threshold=0.8)
+runner = thetabench.CurriculumRunner("http://localhost:3000", mastery_threshold=0.8)
 for stage_result in runner.run(my_agent):
     print(f"Stage {stage_result['stage']}: {stage_result['avg_score']:.0%}")
     if not stage_result['mastery_achieved']:
         break
 
 # Multi-site evaluation (planned)
-# suite = simbench.BenchmarkSuite(sites=["shopify-admin", "linear", "gmail"])
+# suite = thetabench.BenchmarkSuite(sites=["shopify-admin", "linear", "gmail"])
 # results = suite.evaluate(my_agent, mode="browser")
 # suite.submit_to_leaderboard(results, agent_name="MyAgent-v1")
 ```
@@ -223,7 +223,7 @@ The SDK handles connection management, observation formatting, action validation
 
 ### 6.1 Design Principles
 
-Each SimBench website simulation follows five design principles:
+Each ThetaBench website simulation follows five design principles:
 
 1. **High fidelity.** Simulations use the same component libraries as the real sites (e.g., Shopify Polaris, Material UI) with realistic layouts, data, and interactions.
 
@@ -256,7 +256,7 @@ Phase 2 adds 10 consumer-facing sites (Amazon, Gmail, Airbnb, LinkedIn, Uber, Go
 
 ### 7.1 Metrics
 
-SimBench reports multiple metrics per evaluation:
+ThetaBench reports multiple metrics per evaluation:
 
 - **Task Success Rate (TSR)**: Percentage of tasks with score = 1.0 (comparable to REAL Score)
 - **Partial Score**: Average weighted score across all eval checks (captures near-misses)
@@ -266,13 +266,13 @@ SimBench reports multiple metrics per evaluation:
 
 ### 7.2 Leaderboard
 
-SimBench hosts a public leaderboard with per-site and aggregate scores. Submissions include agent name, model, interaction mode (REST/browser), and per-task results. This enables direct comparison across agent architectures.
+ThetaBench hosts a public leaderboard with per-site and aggregate scores. Submissions include agent name, model, interaction mode (REST/browser), and per-task results. This enables direct comparison across agent architectures.
 
 ---
 
 ## 8. Discussion and Future Work
 
-**Training vs. evaluation.** SimBench's key contribution is bridging the gap between evaluation benchmarks and training environments. By providing dense rewards, curriculum learning, and a fast REST API mode, we enable the RL training loops that current benchmarks cannot support. We believe this will accelerate the development of agents that learn from experience rather than relying solely on pre-trained LLM capabilities.
+**Training vs. evaluation.** ThetaBench's key contribution is bridging the gap between evaluation benchmarks and training environments. By providing dense rewards, curriculum learning, and a fast REST API mode, we enable the RL training loops that current benchmarks cannot support. We believe this will accelerate the development of agents that learn from experience rather than relying solely on pre-trained LLM capabilities.
 
 **Scalability.** The site plugin architecture is designed for community contribution. We aim to release a site development kit (SDK) that streamlines the process of creating new simulations, including task template generators, evaluation harness scaffolds, and mock data synthesizers.
 
@@ -284,7 +284,7 @@ SimBench hosts a public leaderboard with per-site and aggregate scores. Submissi
 
 ## 9. Conclusion
 
-SimBench represents a fundamental shift from evaluation-only web agent benchmarks to a training-first platform. By targeting 100+ deterministic website simulations with dense reward signals, curriculum learning, dual-mode interaction, and a Gymnasium-compatible SDK, we give frontier AI labs the infrastructure to train web agents through reinforcement learning at scale. Our initial Shopify Admin simulation demonstrates the depth achievable with this approach -- 104 tasks across 8 domains and 10 curriculum stages in a single site. We release SimBench as an open platform and invite the research community to contribute new website simulations, tasks, and agent baselines.
+ThetaBench represents a fundamental shift from evaluation-only web agent benchmarks to a training-first platform. By targeting 100+ deterministic website simulations with dense reward signals, curriculum learning, dual-mode interaction, and a Gymnasium-compatible SDK, we give frontier AI labs the infrastructure to train web agents through reinforcement learning at scale. Our initial Shopify Admin simulation demonstrates the depth achievable with this approach -- 104 tasks across 8 domains and 10 curriculum stages in a single site. We release ThetaBench as an open platform and invite the research community to contribute new website simulations, tasks, and agent baselines.
 
 ---
 

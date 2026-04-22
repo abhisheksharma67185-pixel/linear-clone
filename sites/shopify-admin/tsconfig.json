@@ -20,8 +20,8 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@simbench/core": ["../../packages/simbench-core/src/index.ts"],
-      "@simbench/core/*": ["../../packages/simbench-core/src/*"]
+      "@thetabench/core": ["../../packages/thetabench-core/src/index.ts"],
+      "@thetabench/core/*": ["../../packages/thetabench-core/src/*"]
     }
   },
   "include": [

@@ -1,4 +1,4 @@
-# SimBench v2 Architecture — RL-Native Redesign
+# ThetaBench v2 Architecture — RL-Native Redesign
 
 > Designed after auditing the full codebase and the 2026 RL-for-GUI-agents landscape
 > (ComputerRL, OSGym, DigiRL/Digi-Q, DART-GUI, BrowserGym, Cua, WEBSERV, etc.)
@@ -7,9 +7,9 @@
 
 ## Executive Summary
 
-The current SimBench is a **monolithic Next.js app** that serves UI, RL API, simulation engine, and data store in one process with singleton episode state. This makes parallelism impossible, couples the RL hot path to React SSR overhead, and has zero connection to actual RL training.
+The current ThetaBench is a **monolithic Next.js app** that serves UI, RL API, simulation engine, and data store in one process with singleton episode state. This makes parallelism impossible, couples the RL hot path to React SSR overhead, and has zero connection to actual RL training.
 
-The redesign splits SimBench into **four independent layers** connected by well-defined interfaces:
+The redesign splits ThetaBench into **four independent layers** connected by well-defined interfaces:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -49,11 +49,11 @@ For RL training at scale (millions of steps), this is 100-1000x slower than nece
 
 ### Solution: Environment as a library, not a server
 
-Extract the simulation engine into a **pure TypeScript library** (`@simbench/simworld`) with zero HTTP/React dependencies. Then expose it to Python via two paths:
+Extract the simulation engine into a **pure TypeScript library** (`@thetabench/simworld`) with zero HTTP/React dependencies. Then expose it to Python via two paths:
 
 ```
                     ┌─────────────────────────────┐
-                    │     @simbench/simworld       │
+                    │     @thetabench/simworld       │
                     │  (pure TS lib, no HTTP)      │
                     │                              │
                     │  SimWorld class:             │
@@ -77,7 +77,7 @@ Extract the simulation engine into a **pure TypeScript library** (`@simbench/sim
 ### SimWorld API
 
 ```typescript
-// @simbench/simworld — the core environment, zero dependencies on HTTP/React
+// @thetabench/simworld — the core environment, zero dependencies on HTTP/React
 
 class SimWorld {
   private store: SiteStore;
@@ -359,7 +359,7 @@ class SetOfMarkAnnotation:
 
 ### Why this matters
 
-The observation pipeline is what separates "works on toy tasks" from "works on real GUI tasks." Every successful RL-for-GUI paper (ComputerRL, UI-TARS-2, ZeroGUI) has a carefully designed observation pipeline. The current SimBench has none.
+The observation pipeline is what separates "works on toy tasks" from "works on real GUI tasks." Every successful RL-for-GUI paper (ComputerRL, UI-TARS-2, ZeroGUI) has a carefully designed observation pipeline. The current ThetaBench has none.
 
 ---
 
@@ -411,7 +411,7 @@ One episode at a time. No way to collect rollouts in parallel. No trajectory sto
 ### VectorEnv API (Gymnasium-compatible)
 
 ```python
-class SimBenchVecEnv:
+class ThetaBenchVecEnv:
     """Vectorized environment for parallel rollout collection.
     
     Manages N SimWorld instances via a single Node.js worker process
@@ -633,7 +633,7 @@ class RolloutCollector:
     
     def __init__(
         self,
-        vec_env: SimBenchVecEnv,
+        vec_env: ThetaBenchVecEnv,
         policy: Policy,                    # the VLM being trained
         trajectory_store: TrajectoryStore,
         reward_pipeline: RewardPipeline,
@@ -689,7 +689,7 @@ class GRPOGroup:
 ## Layer 4: Training
 
 ### Problem with current design
-No training integration whatsoever. SimBench is environment-only.
+No training integration whatsoever. ThetaBench is environment-only.
 
 ### Solution: Native veRL integration with GRPO + pluggable reward pipeline
 
@@ -716,7 +716,7 @@ No training integration whatsoever. SimBench is environment-only.
 │  │                                              │               │
 │  │  ┌─────────────────┐ weight: 0.5            │               │
 │  │  │ Rule-based       │ State-diff eval checks │               │
-│  │  │ (from Evaluator) │ (current SimBench)     │               │
+│  │  │ (from Evaluator) │ (current ThetaBench)     │               │
 │  │  └─────────────────┘                         │               │
 │  │                                              │               │
 │  │  ┌─────────────────┐ weight: 0.3            │               │
@@ -775,7 +775,7 @@ class RewardPipeline:
 
 
 class RuleBasedReward(RewardComponent):
-    """Uses SimBench's existing eval checks (state_diff, state_exists, etc.)."""
+    """Uses ThetaBench's existing eval checks (state_diff, state_exists, etc.)."""
     
     def score(self, trajectory: Trajectory) -> float:
         return trajectory.eval_result.score
@@ -831,15 +831,15 @@ class ProgressReward(RewardComponent):
 ### GRPO Training Loop
 
 ```python
-class SimBenchTrainer:
-    """End-to-end GRPO training loop for GUI agents on SimBench.
+class ThetaBenchTrainer:
+    """End-to-end GRPO training loop for GUI agents on ThetaBench.
     
     Integrates with veRL for distributed training or runs standalone.
     """
     
     def __init__(self, config: TrainConfig):
         # Environment
-        self.vec_env = SimBenchVecEnv(
+        self.vec_env = ThetaBenchVecEnv(
             site_id=config.site_id,
             num_envs=config.num_envs,
             task_sampler=TaskSampler(config.site_id, config.curriculum_strategy),
@@ -990,9 +990,9 @@ theta-rl-labs/
 │       └── ui/
 │
 ├── sdk/                                   # LAYER 2-3: Python SDK
-│   ├── simbench/
-│   │   ├── env.py                         # SimBenchEnv (Gymnasium, single env)
-│   │   ├── vec_env.py                     # SimBenchVecEnv (vectorized, N envs)
+│   ├── thetabench/
+│   │   ├── env.py                         # ThetaBenchEnv (Gymnasium, single env)
+│   │   ├── vec_env.py                     # ThetaBenchVecEnv (vectorized, N envs)
 │   │   ├── backend/
 │   │   │   ├── ipc.py                     # SimWorldProcess (Node IPC, fast path)
 │   │   │   ├── http.py                    # HTTP backend (for browser mode)
@@ -1044,7 +1044,7 @@ theta-rl-labs/
 │   └── requirements.txt
 │
 ├── paper/
-│   └── simbench-paper.md
+│   └── thetabench-paper.md
 ├── README.md
 ├── FOR-AI-LABS.md
 ├── HOW-IT-WORKS.md
@@ -1059,7 +1059,7 @@ theta-rl-labs/
 
 | Dimension | v1 (Current) | v2 (Proposed) |
 |-----------|-------------|---------------|
-| **Environment** | Monolithic Next.js app | Pure TS library (`@simbench/simworld`) |
+| **Environment** | Monolithic Next.js app | Pure TS library (`@thetabench/simworld`) |
 | **State** | Module-level singletons | Per-instance (N envs per process) |
 | **Parallelism** | 1 episode/process | N episodes/process, M processes |
 | **Transport (REST)** | HTTP (5-50ms/step) | IPC/FFI (0.01-0.1ms/step) |
@@ -1069,7 +1069,7 @@ theta-rl-labs/
 | **Trajectory storage** | None (in-memory action log) | Persistent store (SQLite/Parquet) |
 | **Training** | None | Native GRPO/PPO with veRL integration |
 | **Curriculum** | Static 10-stage definition | Adaptive scheduler with mastery tracking |
-| **Vectorized env** | No | Yes (`SimBenchVecEnv`) |
+| **Vectorized env** | No | Yes (`ThetaBenchVecEnv`) |
 | **Site plugins** | Mixed with UI code | Pure logic, decoupled from UI |
 | **Scalability** | Single machine, single process | Multi-process, multi-machine ready |
 
@@ -1094,7 +1094,7 @@ The 500x speedup in REST mode comes from eliminating HTTP overhead and running p
 The redesign is **incremental** — each layer can be built and tested independently:
 
 ### Phase 1: Extract SimWorld library (1-2 weeks)
-- Extract `episode.ts`, `evaluator.ts`, `snapshot.ts`, `predicates.ts` into `@simbench/simworld`
+- Extract `episode.ts`, `evaluator.ts`, `snapshot.ts`, `predicates.ts` into `@thetabench/simworld`
 - Convert singleton state to per-instance state (`SimWorld` class)
 - Extract Shopify plugin code from `sim-adapter.ts` + `store.ts` into `sites/shopify-admin/plugin/`
 - Keep existing Next.js app working by having it instantiate SimWorld internally
@@ -1103,11 +1103,11 @@ The redesign is **incremental** — each layer can be built and tested independe
 ### Phase 2: IPC fast path (1 week)
 - Build `ipc-worker.ts` (Node.js process managing N SimWorld instances)
 - Build `SimWorldProcess` Python class (IPC client)
-- Update `SimBenchEnv` to use IPC backend for REST mode
+- Update `ThetaBenchEnv` to use IPC backend for REST mode
 - **Test**: Benchmark steps/sec, verify same results as HTTP path
 
 ### Phase 3: VectorEnv + Trajectory Store (1 week)
-- Build `SimBenchVecEnv` wrapping N `SimWorldProcess` backends
+- Build `ThetaBenchVecEnv` wrapping N `SimWorldProcess` backends
 - Build `TrajectoryStore` (SQLite for metadata, Parquet for observations)
 - Wire trajectory recording into `RolloutCollector`
 - **Test**: Collect 10K trajectories, verify storage/retrieval
@@ -1123,7 +1123,7 @@ The redesign is **incremental** — each layer can be built and tested independe
 - **Test**: Compare reward distributions on 1K episodes vs. v1 rewards
 
 ### Phase 6: GRPO Training Integration (2 weeks)
-- Build `SimBenchTrainer` with GRPO loop
+- Build `ThetaBenchTrainer` with GRPO loop
 - Build veRL integration wrapper
 - Train a small VLM (Qwen-2.5-VL-3B) on Shopify curriculum stages 1-3
 - **Test**: Training loss decreases, eval score improves over 1K iterations
@@ -1149,7 +1149,7 @@ The redesign is **incremental** — each layer can be built and tested independe
 
 ## What This Enables That v1 Cannot
 
-1. **Train a VLM on SimBench tasks end-to-end** — not just evaluate, but actually improve the model
+1. **Train a VLM on ThetaBench tasks end-to-end** — not just evaluate, but actually improve the model
 2. **GRPO with 64 parallel rollouts** — collect diverse trajectories for the same task simultaneously
 3. **100K+ steps/second** — fast enough for RL training (v1's HTTP bottleneck makes this impossible)
 4. **Offline RL from historical data** — train on collected trajectories without live env interaction

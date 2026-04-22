@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import "../../../lib/init-sim";
-import { evaluateEpisode, getActiveEpisode } from "@simbench/core";
+import { evaluateEpisode, getActiveEpisode } from "@thetabench/core";
 
 export async function POST() {
   const episode = getActiveEpisode();

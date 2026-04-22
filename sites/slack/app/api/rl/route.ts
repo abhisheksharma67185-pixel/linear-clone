@@ -7,7 +7,7 @@ import {
   hasActiveEpisode,
   logAction,
   getStepReward,
-} from "@simbench/core";
+} from "@thetabench/core";
 
 // ---------------------------------------------------------------------------
 // Per-episode RL session state
@@ -637,7 +637,7 @@ export async function GET() {
   return NextResponse.json({
     observation: getObservation(),
     info: {
-      description: "SimBench Slack RL Environment",
+      description: "ThetaBench Slack RL Environment",
       version: "1.0",
       episodeActive: hasActiveEpisode(),
     },

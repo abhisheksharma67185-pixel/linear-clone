@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// @simbench/core — Shared simulation engine for all SimBench sites
+// @thetabench/core — Shared simulation engine for all ThetaBench sites
 // ---------------------------------------------------------------------------
 
 // Core types

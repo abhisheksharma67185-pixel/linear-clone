@@ -19,7 +19,7 @@ const fontMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Theta HQ | Slack",
-  description: "Slack clone for SimBench — a deterministic Slack simulation",
+  description: "Slack clone for ThetaBench — a deterministic Slack simulation",
 };
 
 export default function RootLayout({

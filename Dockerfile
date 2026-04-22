@@ -4,17 +4,17 @@ WORKDIR /app
 # ── Install dependencies ──
 FROM base AS deps
 COPY package.json package-lock.json .npmrc ./
-COPY packages/simbench-core/package.json ./packages/simbench-core/
+COPY packages/thetabench-core/package.json ./packages/thetabench-core/
 COPY sites/shopify-admin/package.json ./sites/shopify-admin/
 RUN npm ci --legacy-peer-deps
 
 # ── Build ──
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/simbench-core/node_modules ./packages/simbench-core/node_modules
+COPY --from=deps /app/packages/thetabench-core/node_modules ./packages/thetabench-core/node_modules
 COPY --from=deps /app/sites/shopify-admin/node_modules ./sites/shopify-admin/node_modules
 COPY . .
-RUN cd packages/simbench-core && npx vp pack
+RUN cd packages/thetabench-core && npx vp pack
 RUN cd sites/shopify-admin && npx next build
 
 # ── Production runner ──

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import "../../../../lib/init-sim";
-import { getCurriculum } from "@simbench/core";
+import { getCurriculum } from "@thetabench/core";
 
 export async function GET() {
   const stages = getCurriculum();

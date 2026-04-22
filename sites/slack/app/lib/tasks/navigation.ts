@@ -1,4 +1,4 @@
-import type { TaskDefinition } from "@simbench/core";
+import type { TaskDefinition } from "@thetabench/core";
 
 const R2 = { completion: 2.0, partialPerCheck: false, stepPenalty: -0.01, invalidActionPenalty: -0.1 };
 

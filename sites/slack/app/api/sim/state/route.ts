@@ -4,7 +4,7 @@ import {
   captureSnapshot,
   computeDiff,
   getActiveEpisode,
-} from "@simbench/core";
+} from "@thetabench/core";
 import * as store from "../../../lib/store";
 
 const COLLECTIONS = [

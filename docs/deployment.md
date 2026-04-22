@@ -1,6 +1,6 @@
 # Deployment Guide
 
-SimBench can be deployed via Docker (recommended for training), Vercel (quick evaluation), or directly with Node.js (development).
+ThetaBench can be deployed via Docker (recommended for training), Vercel (quick evaluation), or directly with Node.js (development).
 
 ## Local Development
 
@@ -17,7 +17,7 @@ SimBench can be deployed via Docker (recommended for training), Vercel (quick ev
 npm install
 
 # Build the shared core engine
-cd packages/simbench-core
+cd packages/thetabench-core
 npm run build
 cd ../..
 
@@ -51,7 +51,7 @@ For live-reloading when editing the core engine:
 
 ```bash
 # Terminal: watch mode
-cd packages/simbench-core
+cd packages/thetabench-core
 npm run dev    # runs: vp pack --watch
 ```
 
@@ -62,26 +62,26 @@ npm run dev    # runs: vp pack --watch
 ### Build
 
 ```bash
-docker build -t simbench .
+docker build -t thetabench .
 ```
 
 The Dockerfile uses a multi-stage build:
 
 1. **deps** - Installs npm dependencies (`npm ci`)
-2. **builder** - Builds `@simbench/core` and the Next.js site (standalone output)
+2. **builder** - Builds `@thetabench/core` and the Next.js site (standalone output)
 3. **runner** - Minimal production image (Node 20 Alpine)
 
 ### Run
 
 ```bash
 # Basic
-docker run -p 3000:3000 simbench
+docker run -p 3000:3000 thetabench
 
 # With custom port
-docker run -p 8080:3000 simbench
+docker run -p 8080:3000 thetabench
 
 # Detached
-docker run -d --name simbench -p 3000:3000 simbench
+docker run -d --name thetabench -p 3000:3000 thetabench
 ```
 
 ### Health Check
@@ -135,7 +135,7 @@ Each site can be deployed to Vercel as a standard Next.js application.
 |---------|-------|
 | Framework | Next.js |
 | Root Directory | `sites/shopify-admin` |
-| Build Command | `cd ../.. && npm run build --workspace=packages/simbench-core && cd sites/shopify-admin && next build` |
+| Build Command | `cd ../.. && npm run build --workspace=packages/thetabench-core && cd sites/shopify-admin && next build` |
 | Output Directory | `.next` |
 | Install Command | `cd ../.. && npm install` |
 
@@ -143,7 +143,7 @@ Each site can be deployed to Vercel as a standard Next.js application.
 
 ```bash
 # Point your agent at the Vercel URL
-simbench eval --agent my_agent.py --url https://your-deployment.vercel.app
+thetabench eval --agent my_agent.py --url https://your-deployment.vercel.app
 ```
 
 ---
@@ -156,13 +156,13 @@ simbench eval --agent my_agent.py --url https://your-deployment.vercel.app
 | `NODE_ENV` | `development` | Environment (`production` in Docker) |
 | `HOSTNAME` | `0.0.0.0` | Bind address (set in Docker) |
 
-SimBench does not require any external services, databases, or API keys. Everything runs in-memory.
+ThetaBench does not require any external services, databases, or API keys. Everything runs in-memory.
 
 ---
 
 ## Environment Configuration
 
-SimBench supports per-episode environment configuration via the API:
+ThetaBench supports per-episode environment configuration via the API:
 
 ### Universal Config
 
@@ -194,11 +194,11 @@ Applied via `POST /api/sim/config` with `config_overrides`:
 Pass a `seed` when starting an episode for reproducible runs:
 
 ```python
-env = simbench.make("shopify-admin", task_id="prod-001", seed=42)
+env = thetabench.make("shopify-admin", task_id="prod-001", seed=42)
 obs1, _ = env.reset()
 
 # Later, same seed produces identical initial state
-env2 = simbench.make("shopify-admin", task_id="prod-001", seed=42)
+env2 = thetabench.make("shopify-admin", task_id="prod-001", seed=42)
 obs2, _ = env2.reset()
 
 assert obs1 == obs2  # Identical observations
@@ -223,7 +223,7 @@ Each server instance handles one active episode at a time. The in-memory state i
 ```bash
 # Run N instances on different ports
 for port in 3000 3001 3002 3003; do
-  docker run -d -p $port:3000 simbench
+  docker run -d -p $port:3000 thetabench
 done
 
 # Distribute tasks across instances
@@ -231,7 +231,7 @@ done
 
 **Option 2: Sequential batch evaluation**
 ```python
-runner = simbench.BatchRunner(base_url="http://localhost:3000")
+runner = thetabench.BatchRunner(base_url="http://localhost:3000")
 results = runner.run_all()  # Runs tasks sequentially
 ```
 
@@ -259,7 +259,7 @@ Returns site info, task count, and domain breakdown. Use for load balancer healt
 The container's built-in health check pings `/api/health` every 30 seconds:
 
 ```bash
-docker inspect --format='{{.State.Health.Status}}' simbench
+docker inspect --format='{{.State.Health.Status}}' thetabench
 # "healthy" or "unhealthy"
 ```
 
@@ -267,7 +267,7 @@ docker inspect --format='{{.State.Health.Status}}' simbench
 
 ```bash
 # Docker
-docker logs simbench
+docker logs thetabench
 
 # Development
 # Next.js logs to stdout

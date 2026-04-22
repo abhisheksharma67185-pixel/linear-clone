@@ -1,13 +1,13 @@
 # Architecture
 
-SimBench separates a **site-agnostic simulation engine** from **site-specific implementations**. The engine handles episodes, snapshots, evaluation, curriculum, and reward computation. Each site plugs into the engine by implementing a standard adapter interface, inheriting all infrastructure automatically.
+ThetaBench separates a **site-agnostic simulation engine** from **site-specific implementations**. The engine handles episodes, snapshots, evaluation, curriculum, and reward computation. Each site plugs into the engine by implementing a standard adapter interface, inheriting all infrastructure automatically.
 
 ## Monorepo Layout
 
 ```
-simbench/
+thetabench/
 ├── packages/
-│   └── simbench-core/           # Shared simulation engine (TypeScript)
+│   └── thetabench-core/           # Shared simulation engine (TypeScript)
 │       └── src/
 │           ├── types.ts         # Core interfaces (SitePlugin, StateDiff, Episode, etc.)
 │           ├── index.ts         # Public API exports
@@ -27,7 +27,7 @@ simbench/
 │   ├── jira/                    # Project management simulation (176 tasks)
 │   └── slack/                   # Messaging simulation (123 tasks, WIP)
 ├── sdk/                         # Python SDK
-│   └── simbench/
+│   └── thetabench/
 │       ├── env.py               # Gymnasium environment wrapper
 │       ├── client.py            # HTTP client
 │       ├── types.py             # Pydantic response models
@@ -41,7 +41,7 @@ simbench/
 ## Component Diagram
 
 ```
-                     Python SDK (simbench)
+                     Python SDK (thetabench)
                            │
                      HTTP requests
                            │
@@ -56,7 +56,7 @@ simbench/
 │         │                 │                  │               │
 │         ▼                 ▼                  ▼               │
 │  ┌─────────────────────────────────────────────────────┐     │
-│  │              @simbench/core                         │     │
+│  │              @thetabench/core                         │     │
 │  │                                                     │     │
 │  │  Episode Manager ─► Snapshot Engine ─► Evaluator    │     │
 │  │       │                                    │        │     │
@@ -233,7 +233,7 @@ Every step produces a reward signal:
 - **Partial credit**: Weighted average of eval checks that pass.
 - **Completion bonus** (`rewardProfile.completion`): Large positive reward on task success.
 
-This is SimBench's core differentiator from binary-reward benchmarks (WebArena, REAL).
+This is ThetaBench's core differentiator from binary-reward benchmarks (WebArena, REAL).
 
 ### Deterministic Timestamps
 

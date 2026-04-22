@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import "../../../lib/init-sim";
-import { getAllTasks, getTasksByCriteria, getTaskCount } from "@simbench/core";
-import type { TaskDomain, TaskDifficulty, TaskType } from "@simbench/core";
+import { getAllTasks, getTasksByCriteria, getTaskCount } from "@thetabench/core";
+import type { TaskDomain, TaskDifficulty, TaskType } from "@thetabench/core";
 
 const VALID_DOMAINS: TaskDomain[] = [
   "navigation", "products", "orders", "customers", "discounts",

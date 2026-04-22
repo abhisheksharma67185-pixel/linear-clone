@@ -1,5 +1,5 @@
 /**
- * Jira site adapter — wires @simbench/core engine to Jira's store.
+ * Jira site adapter — wires @thetabench/core engine to Jira's store.
  * This file is the bridge between the generic engine and Jira-specific data.
  *
  * Import this once at app startup to register the adapter + tasks + predicates.
@@ -13,7 +13,7 @@ import {
   type SiteAdapter,
   type GenericSnapshot,
   type EvalCheck,
-} from "@simbench/core";
+} from "@thetabench/core";
 
 import * as store from "./store";
 

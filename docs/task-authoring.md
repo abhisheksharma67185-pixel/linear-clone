@@ -1,6 +1,6 @@
 # Task Authoring Guide
 
-This guide explains how to write task definitions for SimBench. Tasks are TypeScript objects that live in `sites/<site>/app/lib/tasks/` organized by domain.
+This guide explains how to write task definitions for ThetaBench. Tasks are TypeScript objects that live in `sites/<site>/app/lib/tasks/` organized by domain.
 
 ## Task Definition Schema
 
@@ -334,7 +334,7 @@ sites/shopify-admin/app/lib/tasks/
 Each file exports an array of `TaskDefinition` objects. These are imported and registered in the site's `sim-adapter.ts`:
 
 ```typescript
-import { registerTasks } from "@simbench/core";
+import { registerTasks } from "@thetabench/core";
 import { productTasks } from "./tasks/products";
 import { orderTasks } from "./tasks/orders";
 // ...

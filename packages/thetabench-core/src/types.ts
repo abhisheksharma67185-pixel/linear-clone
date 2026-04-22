@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Core types for the SimBench simulation engine
+// Core types for the ThetaBench simulation engine
 // All site-agnostic — no Shopify/Linear/etc. specific types
 // ---------------------------------------------------------------------------
 

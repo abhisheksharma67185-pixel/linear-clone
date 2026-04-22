@@ -1,4 +1,4 @@
-# SimBench for AI Frontier Labs
+# ThetaBench for AI Frontier Labs
 
 ## The Problem You Have
 
@@ -16,7 +16,7 @@ You train models to interact with websites (computer use, browsing, form filling
 | Real websites | Change daily, no ground truth, can't train on production |
 | Build your own | 6-12 months of eng time, not your core competency |
 
-## What SimBench Gives You
+## What ThetaBench Gives You
 
 - **264 tasks** across 3 sites (Shopify Admin: 104 tasks, Linear: 80 tasks, Jira: 80 tasks) and 10 difficulty stages
 - **Deterministic evaluation** with ground-truth state-diff scoring
@@ -80,28 +80,28 @@ def agent_response(obs, info):
 
 ```bash
 # Single task
-simbench run --task prod-001 --agent your_agent.py
+thetabench run --task prod-001 --agent your_agent.py
 
 # Full Shopify benchmark (104 tasks)
-simbench eval --agent your_agent.py --output results.json
+thetabench eval --agent your_agent.py --output results.json
 
 # Full Linear benchmark (80 tasks)
-simbench eval --agent your_agent.py --url http://localhost:3001 --output linear-results.json
+thetabench eval --agent your_agent.py --url http://localhost:3001 --output linear-results.json
 
 # Full Jira benchmark (80 tasks)
-simbench eval --agent your_agent.py --url http://localhost:3002 --output jira-results.json
+thetabench eval --agent your_agent.py --url http://localhost:3002 --output jira-results.json
 
 # View platform info
-simbench info
+thetabench info
 ```
 
 ### Run Against the Linear Site
 
 ```python
-import simbench
+import thetabench
 
 # Linear runs on a separate port (default: 3001)
-env = simbench.make("linear", base_url="http://localhost:3001", task_id="issue-001")
+env = thetabench.make("linear", base_url="http://localhost:3001", task_id="issue-001")
 obs, info = env.reset()
 
 while True:
@@ -117,10 +117,10 @@ print(f"Score: {result['score']:.0%}")
 ### Run Against the Jira Site
 
 ```python
-import simbench
+import thetabench
 
 # Jira runs on a separate port (default: 3002)
-env = simbench.make("jira", base_url="http://localhost:3002", task_id="jira-001")
+env = thetabench.make("jira", base_url="http://localhost:3002", task_id="jira-001")
 obs, info = env.reset()
 
 while True:
@@ -136,9 +136,9 @@ print(f"Score: {result['score']:.0%}")
 ### Or Use the Python API Directly
 
 ```python
-import simbench
+import thetabench
 
-env = simbench.make("shopify-admin", task_id="prod-001")
+env = thetabench.make("shopify-admin", task_id="prod-001")
 obs, info = env.reset()
 
 while True:
@@ -154,9 +154,9 @@ print(f"Score: {result['score']:.0%}")
 ### Or Run in Your Training Loop
 
 ```python
-import simbench
+import thetabench
 
-runner = simbench.CurriculumRunner("http://localhost:3000")
+runner = thetabench.CurriculumRunner("http://localhost:3000")
 for stage_result in runner.run(agent_step_fn, agent_response_fn):
     print(f"Stage {stage_result['stage']}: {stage_result['avg_score']:.0%}")
     if not stage_result['mastery_achieved']:
@@ -195,17 +195,17 @@ This tells you **exactly where your model is weak** — then you train on more o
 ### 1. CI/CD Gate (every model release)
 ```yaml
 # In your CI pipeline
-- name: Run SimBench eval
+- name: Run ThetaBench eval
   run: |
-    simbench eval --agent agents/claude_web.py --output simbench.json
-    python check_threshold.py simbench.json --min-score 0.65
+    thetabench eval --agent agents/claude_web.py --output thetabench.json
+    python check_threshold.py thetabench.json --min-score 0.65
 ```
 Score must pass threshold to ship. Catches regressions automatically.
 
 ### 2. RL Training Loop (high volume)
 ```python
 # 100K+ episodes/day in REST mode (1-5ms/step)
-env = simbench.make("shopify-admin", task_id="prod-001", mode="rest")
+env = thetabench.make("shopify-admin", task_id="prod-001", mode="rest")
 for episode in range(100_000):
     obs, info = env.reset(seed=episode)
     # ... training loop with shaped rewards
@@ -213,7 +213,7 @@ for episode in range(100_000):
 
 ### 3. Research Benchmark (published results)
 ```
-"Claude 4.7 scores 71% on SimBench v0.1 (Shopify Admin),
+"Claude 4.7 scores 71% on ThetaBench v0.1 (Shopify Admin),
  up from 62% on Claude 4.6. Largest gains in order workflows
  (+18%) and retrieval tasks (+12%). See Table 3."
 ```
@@ -222,18 +222,18 @@ for episode in range(100_000):
 
 ### Docker (recommended for training)
 ```bash
-docker build -t simbench .
-docker run -p 3000:3000 simbench
+docker build -t thetabench .
+docker run -p 3000:3000 thetabench
 
 # Then point your agent at localhost
-simbench eval --agent your_agent.py --url http://localhost:3000
+thetabench eval --agent your_agent.py --url http://localhost:3000
 ```
 
 ### Vercel (for quick evaluation)
 Already deployed at `https://shopify-admin-sim.vercel.app`
 
 ```bash
-simbench eval --agent your_agent.py --url https://shopify-admin-sim.vercel.app
+thetabench eval --agent your_agent.py --url https://shopify-admin-sim.vercel.app
 ```
 
 ## Task Types

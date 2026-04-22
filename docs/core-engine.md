@@ -1,9 +1,9 @@
 # Core Engine Reference
 
-The `@simbench/core` package (`packages/simbench-core/`) is the shared simulation engine that all sites plug into. It is site-agnostic -- it knows nothing about products, orders, issues, or sprints. It operates on generic state snapshots and task definitions.
+The `@thetabench/core` package (`packages/thetabench-core/`) is the shared simulation engine that all sites plug into. It is site-agnostic -- it knows nothing about products, orders, issues, or sprints. It operates on generic state snapshots and task definitions.
 
-**Package:** `@simbench/core` v0.1.0
-**Source:** `packages/simbench-core/src/`
+**Package:** `@thetabench/core` v0.1.0
+**Source:** `packages/thetabench-core/src/`
 **Build:** `vp pack` (vite-plus)
 
 ## Exports
@@ -90,7 +90,7 @@ interface SiteAdapter {
 Register with:
 
 ```typescript
-import { registerSiteAdapter } from "@simbench/core";
+import { registerSiteAdapter } from "@thetabench/core";
 
 registerSiteAdapter({
   getState: () => ({ products: getProducts(), orders: getOrders(), ... }),

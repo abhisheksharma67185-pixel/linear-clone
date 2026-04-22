@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import "../../lib/init-sim";
-import { getTaskCount, getAllTasks, getCurriculum } from "@simbench/core";
+import { getTaskCount, getAllTasks, getCurriculum } from "@thetabench/core";
 
 export async function GET() {
   try {

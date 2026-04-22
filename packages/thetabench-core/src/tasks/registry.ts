@@ -10,7 +10,7 @@ const taskById = new Map<string, TaskDefinition>();
 export function registerTasks(tasks: TaskDefinition[]): void {
   for (const task of tasks) {
     if (taskById.has(task.id)) {
-      console.warn(`[simbench] Duplicate task ID "${task.id}" — skipping`);
+      console.warn(`[thetabench] Duplicate task ID "${task.id}" — skipping`);
       continue;
     }
     allTasks.push(task);

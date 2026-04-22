@@ -1,6 +1,6 @@
 # Site Plugin Guide
 
-This guide explains how to add a new simulated website to SimBench. Each site is a standalone Next.js application that plugs into the shared `@simbench/core` engine.
+This guide explains how to add a new simulated website to ThetaBench. Each site is a standalone Next.js application that plugs into the shared `@thetabench/core` engine.
 
 ## What You Build
 
@@ -27,7 +27,7 @@ Update `package.json`:
   "name": "my-site-sim",
   "version": "0.1.0",
   "dependencies": {
-    "@simbench/core": "workspace:*",
+    "@thetabench/core": "workspace:*",
     "next": "16.1.7",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
@@ -167,7 +167,7 @@ import {
   registerSiteAdapter,
   registerTasks,
   registerPredicate,
-} from "@simbench/core";
+} from "@thetabench/core";
 import * as store from "./store";
 import { ticketTasks } from "./tasks/tickets";
 import { navigationTasks } from "./tasks/navigation";
@@ -218,7 +218,7 @@ registerPredicate("all_tickets_resolved", (snapshot) => {
 ```typescript
 // app/lib/tasks/tickets.ts
 
-import type { TaskDefinition } from "@simbench/core";
+import type { TaskDefinition } from "@thetabench/core";
 
 export const ticketTasks: TaskDefinition[] = [
   {
@@ -345,15 +345,15 @@ import "./lib/sim-adapter";
 
 ```bash
 # Build core
-cd packages/simbench-core && npm run build && cd ../..
+cd packages/thetabench-core && npm run build && cd ../..
 
 # Start your site
 cd sites/my-site && npm run dev
 
 # Test from Python
 python -c "
-import simbench
-env = simbench.make('my-site', base_url='http://localhost:3000', task_id='ticket-001')
+import thetabench
+env = thetabench.make('my-site', base_url='http://localhost:3000', task_id='ticket-001')
 obs, info = env.reset()
 print(f'Goal: {info[\"task_goal\"]}')
 result = env.finish()

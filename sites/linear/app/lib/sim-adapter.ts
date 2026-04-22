@@ -1,5 +1,5 @@
 /**
- * Linear site adapter — wires @simbench/core engine to Linear's store.
+ * Linear site adapter — wires @thetabench/core engine to Linear's store.
  * This file is the bridge between the generic engine and Linear-specific data.
  *
  * Import this once at app startup to register the adapter + tasks + predicates.
@@ -13,7 +13,7 @@ import {
   type SiteAdapter,
   type GenericSnapshot,
   type EvalCheck,
-} from "@simbench/core";
+} from "@thetabench/core";
 
 import * as store from "./store";
 

@@ -4,8 +4,8 @@ import {
   getAllTasks,
   getTasksByCriteria,
   getTaskCount,
-} from "@simbench/core";
-import type { TaskDomain, TaskDifficulty, TaskType } from "@simbench/core";
+} from "@thetabench/core";
+import type { TaskDomain, TaskDifficulty, TaskType } from "@thetabench/core";
 
 const VALID_DOMAINS: TaskDomain[] = [
   "navigation",

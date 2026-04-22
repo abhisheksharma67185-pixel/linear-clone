@@ -1,6 +1,6 @@
-# SimBench Documentation
+# ThetaBench Documentation
 
-Welcome to the SimBench documentation. SimBench is a scalable platform for training and evaluating autonomous web agents on deterministic website simulations.
+Welcome to the ThetaBench documentation. ThetaBench is a scalable platform for training and evaluating autonomous web agents on deterministic website simulations.
 
 ## Documentation Index
 
@@ -9,11 +9,11 @@ Welcome to the SimBench documentation. SimBench is a scalable platform for train
 | [Getting Started](getting-started.md) | Installation, first run, and quick examples | Everyone |
 | [Architecture](architecture.md) | System design, monorepo structure, data flow | Contributors, maintainers |
 | [Core Engine Reference](core-engine.md) | TypeScript engine: episodes, snapshots, evaluation, curriculum | Contributors |
-| [Python SDK Reference](sdk-reference.md) | `SimBenchEnv`, `SimBenchClient`, `BatchRunner`, `CurriculumRunner`, CLI | Agent developers |
+| [Python SDK Reference](sdk-reference.md) | `ThetaBenchEnv`, `ThetaBenchClient`, `BatchRunner`, `CurriculumRunner`, CLI | Agent developers |
 | [REST API Reference](api-reference.md) | Every HTTP endpoint with request/response schemas | Agent developers |
 | [Evaluation & Scoring](evaluation.md) | Check types, LLM judge, reward shaping, scoring formula | Researchers |
 | [Task Authoring Guide](task-authoring.md) | How to write task definitions with eval checks | Task authors |
-| [Site Plugin Guide](site-plugin-guide.md) | How to add a new simulated website to SimBench | Site contributors |
+| [Site Plugin Guide](site-plugin-guide.md) | How to add a new simulated website to ThetaBench | Site contributors |
 | [Deployment Guide](deployment.md) | Docker, Vercel, local dev, environment config | DevOps, self-hosters |
 
 ## Quick Links
@@ -21,7 +21,7 @@ Welcome to the SimBench documentation. SimBench is a scalable platform for train
 - **15-minute integration guide**: [FOR-AI-LABS.md](../FOR-AI-LABS.md)
 - **How it works (overview)**: [HOW-IT-WORKS.md](../HOW-IT-WORKS.md)
 - **Product specification**: [PRODUCT-SPEC.md](../PRODUCT-SPEC.md)
-- **Research paper**: [paper/simbench-paper.md](../paper/simbench-paper.md)
+- **Research paper**: [paper/thetabench-paper.md](../paper/thetabench-paper.md)
 
 ## Current Stats
 

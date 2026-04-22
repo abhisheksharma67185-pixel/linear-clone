@@ -1,5 +1,5 @@
 /**
- * Slack site adapter — wires @simbench/core engine to the Slack store.
+ * Slack site adapter — wires @thetabench/core engine to the Slack store.
  * This file is the bridge between the generic engine and Slack-specific data.
  *
  * Import this once at app startup (via `init-sim.ts`) to register the
@@ -14,7 +14,7 @@ import {
   type SiteAdapter,
   type GenericSnapshot,
   type EvalCheck,
-} from "@simbench/core";
+} from "@thetabench/core";
 
 import * as store from "./store";
 

@@ -1,6 +1,6 @@
 # Getting Started
 
-This guide walks you through installing SimBench, running your first task, and integrating your own agent.
+This guide walks you through installing ThetaBench, running your first task, and integrating your own agent.
 
 ## Prerequisites
 
@@ -12,12 +12,12 @@ This guide walks you through installing SimBench, running your first task, and i
 
 ```bash
 # Clone and install
-git clone <repo-url> simbench
-cd simbench
+git clone <repo-url> thetabench
+cd thetabench
 npm install
 
 # Build the shared core engine
-cd packages/simbench-core
+cd packages/thetabench-core
 npm run build
 cd ../..
 
@@ -60,19 +60,19 @@ playwright install chromium
 curl http://localhost:3000/api/health
 
 # List available tasks
-simbench info --url http://localhost:3000
+thetabench info --url http://localhost:3000
 
 # List tasks
-simbench tasks --url http://localhost:3000
+thetabench tasks --url http://localhost:3000
 ```
 
 ## 4. Run Your First Task (No Agent)
 
 ```python
-import simbench
+import thetabench
 
 # Create environment pointing at a specific task
-env = simbench.make("shopify-admin", task_id="prod-001")
+env = thetabench.make("shopify-admin", task_id="prod-001")
 
 # Start the episode
 obs, info = env.reset()
@@ -120,10 +120,10 @@ Run it:
 
 ```bash
 # Single task
-simbench run --task prod-001 --agent my_agent.py
+thetabench run --task prod-001 --agent my_agent.py
 
 # Full evaluation (all 104 Shopify tasks)
-simbench eval --agent my_agent.py --output results.json
+thetabench eval --agent my_agent.py --output results.json
 ```
 
 ## 6. Write an LLM-Powered Agent
@@ -175,9 +175,9 @@ def agent_response(obs, info):
 Train progressively through 10 difficulty stages:
 
 ```python
-import simbench
+import thetabench
 
-runner = simbench.CurriculumRunner(
+runner = thetabench.CurriculumRunner(
     base_url="http://localhost:3000",
     mastery_threshold=0.8,  # 80% average to advance
 )
@@ -198,9 +198,9 @@ for stage_result in runner.run(agent_step, agent_response):
 For vision-language model agents that need screenshots:
 
 ```python
-import simbench
+import thetabench
 
-env = simbench.make(
+env = thetabench.make(
     "shopify-admin",
     task_id="prod-001",
     mode="browser",
@@ -230,9 +230,9 @@ env.close()
 ## 9. Context Manager (Auto-Cleanup)
 
 ```python
-import simbench
+import thetabench
 
-with simbench.make("shopify-admin", task_id="prod-001") as env:
+with thetabench.make("shopify-admin", task_id="prod-001") as env:
     obs, info = env.reset()
     # ... your agent loop ...
     result = env.finish()

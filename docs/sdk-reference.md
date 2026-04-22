@@ -1,9 +1,9 @@
 # Python SDK Reference
 
-The `simbench` Python package provides a Gymnasium-compatible interface for interacting with SimBench simulation servers.
+The `thetabench` Python package provides a Gymnasium-compatible interface for interacting with ThetaBench simulation servers.
 
-**Package:** `simbench` v0.1.0
-**Source:** `sdk/simbench/`
+**Package:** `thetabench` v0.1.0
+**Source:** `sdk/thetabench/`
 **Python:** >= 3.10
 **Dependencies:** `httpx>=0.27`, `gymnasium>=1.0`, `pydantic>=2.0`
 **Optional:** `playwright>=1.40` (for browser mode)
@@ -24,43 +24,43 @@ pip install -e '.[dev]'
 
 ---
 
-## `simbench.make()` -- Factory Function
+## `thetabench.make()` -- Factory Function
 
 ```python
-simbench.make(
+thetabench.make(
     site: str = "shopify-admin",
     task_id: str = "prod-001",
     base_url: str = "http://localhost:3000",
     mode: Literal["rest", "browser"] = "rest",
     **kwargs
-) -> SimBenchEnv
+) -> ThetaBenchEnv
 ```
 
-Creates a `SimBenchEnv` instance. If `site` is not `"shopify-admin"` and `base_url` is the default, the URL is auto-constructed as `http://localhost:3000/sites/{site}`.
+Creates a `ThetaBenchEnv` instance. If `site` is not `"shopify-admin"` and `base_url` is the default, the URL is auto-constructed as `http://localhost:3000/sites/{site}`.
 
 ```python
 # Shopify Admin
-env = simbench.make("shopify-admin", task_id="prod-001")
+env = thetabench.make("shopify-admin", task_id="prod-001")
 
 # Linear
-env = simbench.make("linear", base_url="http://localhost:3001", task_id="issue-001")
+env = thetabench.make("linear", base_url="http://localhost:3001", task_id="issue-001")
 
 # Browser mode
-env = simbench.make("shopify-admin", task_id="prod-001", mode="browser", headless=False)
+env = thetabench.make("shopify-admin", task_id="prod-001", mode="browser", headless=False)
 ```
 
 ---
 
-## `SimBenchEnv` -- Gymnasium Environment
+## `ThetaBenchEnv` -- Gymnasium Environment
 
 ```python
-class SimBenchEnv(gym.Env):
+class ThetaBenchEnv(gym.Env):
 ```
 
 ### Constructor
 
 ```python
-SimBenchEnv(
+ThetaBenchEnv(
     base_url: str = "http://localhost:3000",
     task_id: str = "prod-001",
     mode: Literal["rest", "browser"] = "rest",
@@ -136,7 +136,7 @@ Closes HTTP client and browser (if open).
 ### Context Manager
 
 ```python
-with simbench.make("shopify-admin", task_id="prod-001") as env:
+with thetabench.make("shopify-admin", task_id="prod-001") as env:
     obs, info = env.reset()
     # ... agent loop ...
     result = env.finish()
@@ -168,14 +168,14 @@ with simbench.make("shopify-admin", task_id="prod-001") as env:
 
 ---
 
-## `SimBenchClient` -- Low-Level HTTP Client
+## `ThetaBenchClient` -- Low-Level HTTP Client
 
 ```python
-class SimBenchClient:
+class ThetaBenchClient:
     def __init__(self, base_url="http://localhost:3000", timeout=30.0)
 ```
 
-Thin wrapper around the SimBench HTTP API using `httpx`. All methods raise `SimBenchError` on failure.
+Thin wrapper around the ThetaBench HTTP API using `httpx`. All methods raise `ThetaBenchError` on failure.
 
 ### Episode Lifecycle
 
@@ -234,7 +234,7 @@ client.get_action_space() -> dict
 ### Error Handling
 
 ```python
-class SimBenchError(Exception):
+class ThetaBenchError(Exception):
     status_code: int    # HTTP status
     detail: str         # Server error message
     url: str            # Request URL
@@ -272,7 +272,7 @@ Runs filtered tasks. Returns:
         "model": "claude-4.7",
         "mode": "rest",
         "site": "shopify-admin",
-        "simbench_version": "0.1.0",
+        "thetabench_version": "0.1.0",
         "server_url": "http://localhost:3000",
         "timestamp": "2026-04-15T10:00:00Z"
     },
@@ -350,50 +350,50 @@ Run a single task. Returns the finish result with an extra `cumulative_reward` f
 
 ---
 
-## `simbench` CLI
+## `thetabench` CLI
 
 ```bash
-simbench [--url URL] <command> [options]
+thetabench [--url URL] <command> [options]
 ```
 
 ### Commands
 
-#### `simbench info`
+#### `thetabench info`
 
 Show platform info (version, site, task count, domain breakdown).
 
 ```bash
-simbench info --url http://localhost:3000
+thetabench info --url http://localhost:3000
 ```
 
-#### `simbench tasks`
+#### `thetabench tasks`
 
 List available tasks with optional filters.
 
 ```bash
-simbench tasks
-simbench tasks --domain products
-simbench tasks --type retrieval --difficulty hard
-simbench tasks --stage 3
+thetabench tasks
+thetabench tasks --domain products
+thetabench tasks --type retrieval --difficulty hard
+thetabench tasks --stage 3
 ```
 
-#### `simbench run`
+#### `thetabench run`
 
 Run a single task.
 
 ```bash
-simbench run --task prod-001
-simbench run --task prod-001 --agent my_agent.py
+thetabench run --task prod-001
+thetabench run --task prod-001 --agent my_agent.py
 ```
 
-#### `simbench eval`
+#### `thetabench eval`
 
 Batch evaluation with standardized output.
 
 ```bash
-simbench eval --agent my_agent.py
-simbench eval --agent my_agent.py --domain products --output products.json
-simbench eval --agent my_agent.py --difficulty hard --output hard.json
+thetabench eval --agent my_agent.py
+thetabench eval --agent my_agent.py --domain products --output products.json
+thetabench eval --agent my_agent.py --difficulty hard --output hard.json
 ```
 
 ### Agent File Format
@@ -414,7 +414,7 @@ def agent_response(obs: dict, info: dict) -> Optional[str]:
 
 ## Pydantic Response Models
 
-**Source:** `sdk/simbench/types.py`
+**Source:** `sdk/thetabench/types.py`
 
 | Model | Fields |
 |-------|--------|

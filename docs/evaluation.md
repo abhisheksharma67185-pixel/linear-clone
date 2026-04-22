@@ -1,10 +1,10 @@
 # Evaluation & Scoring
 
-SimBench provides deterministic, ground-truth evaluation for all tasks. This document explains how tasks are scored, the different check types, the LLM judge, and the reward system.
+ThetaBench provides deterministic, ground-truth evaluation for all tasks. This document explains how tasks are scored, the different check types, the LLM judge, and the reward system.
 
 ## Evaluation Overview
 
-When an episode finishes, SimBench:
+When an episode finishes, ThetaBench:
 
 1. **Captures** a final snapshot of the site's state
 2. **Diffs** it against the initial snapshot (field-level)
@@ -176,7 +176,7 @@ All phrases are 2+ words to avoid false positives. Matching is case-insensitive.
 
 ## Reward System
 
-SimBench provides dense, per-step rewards (unlike binary-reward benchmarks).
+ThetaBench provides dense, per-step rewards (unlike binary-reward benchmarks).
 
 ### Reward Components
 
@@ -216,7 +216,7 @@ Each task defines its own reward profile:
 
 ## Metrics
 
-SimBench reports multiple metrics per evaluation:
+ThetaBench reports multiple metrics per evaluation:
 
 | Metric | Description |
 |--------|-------------|

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import "../../../../lib/init-sim";
-import { getTaskById } from "@simbench/core";
+import { getTaskById } from "@thetabench/core";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

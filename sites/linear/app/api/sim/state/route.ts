@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import "../../../lib/init-sim";
-import { captureSnapshot, computeDiff, getActiveEpisode } from "@simbench/core";
+import { captureSnapshot, computeDiff, getActiveEpisode } from "@thetabench/core";
 import * as store from "../../../lib/store";
 
 const getState = () => ({

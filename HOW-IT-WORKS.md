@@ -1,12 +1,12 @@
-# SimBench — How It Works
+# ThetaBench — How It Works
 
 ## Overview
 
-SimBench is a **benchmark environment** for training and evaluating autonomous web agents. Clients bring their own AI model/agent. SimBench provides the simulated websites, tasks, and scoring.
+ThetaBench is a **benchmark environment** for training and evaluating autonomous web agents. Clients bring their own AI model/agent. ThetaBench provides the simulated websites, tasks, and scoring.
 
 ```
 +------------------+         +------------------------+
-|  Client's Agent  |  HTTP   |  SimBench (your infra) |
+|  Client's Agent  |  HTTP   |  ThetaBench (your infra) |
 |  (their model)   | <-----> |  e.g. shopify-admin    |
 |                  |         |  running on Vercel      |
 +------------------+         +------------------------+
@@ -17,20 +17,20 @@ SimBench is a **benchmark environment** for training and evaluating autonomous w
 ```python
 pip install ./sdk
 
-import simbench
+import thetabench
 
 # Client brings their own agent (GPT-4, Claude, Gemini, custom model)
 from their_lab import WebAgent
 
 agent = WebAgent(model="their-model-v3")
-env = simbench.make("shopify-admin", task_id="prod-001")
+env = thetabench.make("shopify-admin", task_id="prod-001")
 
-obs, info = env.reset()           # SimBench sets up the task
+obs, info = env.reset()           # ThetaBench sets up the task
 print(info["task_goal"])          # "Update the price of Classic Cotton T-Shirt to $34.99"
 
 while True:
     action = agent.decide(obs)    # THEIR model picks the action
-    obs, reward, done, trunc, info = env.step(action)  # SimBench executes + scores
+    obs, reward, done, trunc, info = env.step(action)  # ThetaBench executes + scores
     if done or trunc:
         break
 
@@ -38,7 +38,7 @@ result = env.finish()
 print(result["score"])            # 0.0 - 1.0
 ```
 
-That's it. The client writes ~15 lines of glue code. SimBench handles everything else: mock UI, state management, evaluation, scoring.
+That's it. The client writes ~15 lines of glue code. ThetaBench handles everything else: mock UI, state management, evaluation, scoring.
 
 ## Two Modes
 
@@ -50,7 +50,7 @@ That's it. The client writes ~15 lines of glue code. SimBench handles everything
 ### REST Mode
 
 ```python
-env = simbench.make("shopify-admin", task_id="prod-001", mode="rest")
+env = thetabench.make("shopify-admin", task_id="prod-001", mode="rest")
 obs, info = env.reset()
 obs, reward, done, trunc, info = env.step({
     "action": "update_product",
@@ -62,10 +62,10 @@ obs, reward, done, trunc, info = env.step({
 ### Browser Mode
 
 ```python
-pip install 'simbench[browser]'
+pip install 'thetabench[browser]'
 playwright install chromium
 
-env = simbench.make("shopify-admin", task_id="prod-001", mode="browser")
+env = thetabench.make("shopify-admin", task_id="prod-001", mode="browser")
 obs, info = env.reset()
 # obs contains: screenshot (bytes), accessibility_tree, url, state
 obs, reward, done, trunc, info = env.step({
@@ -74,14 +74,14 @@ obs, reward, done, trunc, info = env.step({
 })
 ```
 
-## What Clients Bring vs What SimBench Provides
+## What Clients Bring vs What ThetaBench Provides
 
 ### Client provides:
 - Their AI model / agent
-- Glue code to connect agent decisions to SimBench actions
+- Glue code to connect agent decisions to ThetaBench actions
 - Their own compute (GPU clusters for training)
 
-### SimBench provides:
+### ThetaBench provides:
 - Simulated websites (Shopify Admin, Linear, Jira, and more)
 - 264 tasks across 3 sites and 10 difficulty stages
 - Deterministic evaluation with ground-truth scoring
@@ -103,13 +103,13 @@ obs, reward, done, trunc, info = env.step({
 Client Code
     |
     v
-simbench (Python SDK)
+thetabench (Python SDK)
     |
     v
 HTTP API (/api/sim/*, /api/rl/*)
     |
     v
-@simbench/core (TypeScript engine)
+@thetabench/core (TypeScript engine)
     |
     +-- Episode Manager (start, log, evaluate, finish)
     +-- Snapshot Engine (capture state, compute diffs)
@@ -161,22 +161,22 @@ Site Plugin (e.g. Shopify Admin, Linear, Jira)
                            +--- linear (project management)
                            +--- jira (project management)
                            +--- gmail-sim (email)
-SimBench Platform ---------+--- github-sim (code hosting)
+ThetaBench Platform ---------+--- github-sim (code hosting)
                            +--- slack-sim (messaging)
                            +--- salesforce-sim (CRM)
                            +--- ... (100+ planned)
 
                    +--------------------------------------+
-Client runs:       | simbench eval --suite all-sites      |
+Client runs:       | thetabench eval --suite all-sites      |
                    |   --agent gpt4o_web_agent            |
                    |   --output results.json              |
                    +--------------------------------------+
 
-Result: "GPT-4o scores 73% on SimBench (856/1000+ tasks across 10 sites)"
+Result: "GPT-4o scores 73% on ThetaBench (856/1000+ tasks across 10 sites)"
 ```
 
 Each new site follows the same pattern:
-1. Implement `SitePlugin` interface from `@simbench/core`
+1. Implement `SitePlugin` interface from `@thetabench/core`
 2. Define task definitions with eval checks
 3. Register tasks and predicates
 4. The SDK, API, curriculum, and scoring all work automatically
@@ -188,21 +188,21 @@ Each new site follows the same pattern:
 | Item | Details |
 |------|---------|
 | **Deterministic seeding** | `seed` param guarantees identical timestamps and state across runs. |
-| **Docker self-hosting** | `docker build -t simbench . && docker run -p 3000:3000 simbench` with healthcheck. |
-| **Batch evaluation CLI** | `simbench eval --agent my_agent.py --output results.json` runs all tasks per site. |
+| **Docker self-hosting** | `docker build -t thetabench . && docker run -p 3000:3000 thetabench` with healthcheck. |
+| **Batch evaluation CLI** | `thetabench eval --agent my_agent.py --output results.json` runs all tasks per site. |
 | **Standardized results format** | JSON output with per-domain and per-stage breakdowns. |
 | **Input validation** | All API routes validate JSON, enums, numeric types. Leaderboard validates submissions. |
 | **RL episode isolation** | Per-episode state prevents concurrent agent interference. |
 | **Evaluation with initial state** | Eval errors show before/after values for debugging. |
 | **LLM judge improvements** | Multi-word impossibility phrases, tiered retrieval thresholds. |
-| **SDK context manager** | `with SimBenchEnv(...) as env:` for automatic Playwright cleanup. |
+| **SDK context manager** | `with ThetaBenchEnv(...) as env:` for automatic Playwright cleanup. |
 
 ### Remaining (before labs take it seriously)
 
 | Item | Why | Status |
 |------|-----|--------|
 | **Baseline results** | "Here's how GPT-4o / Claude / Gemini score." Rule-based agent baseline done (14.7%). LLM baselines require API keys. | Rule-based done |
-| **Published PyPI package** | `pip install simbench` from PyPI, not `pip install ./sdk`. Requires PyPI credentials. | Not started |
+| **Published PyPI package** | `pip install thetabench` from PyPI, not `pip install ./sdk`. Requires PyPI credentials. | Not started |
 | **5+ sites** | 1 site = demo, 5+ = benchmark. Labs need diversity to prove generalization. | 3 done (Shopify Admin, Linear, Jira) |
 | **Paper on arXiv** | Draft exists, needs baseline numbers to publish. | Draft done |
 | **Leaderboard signing** | HMAC-signed submissions to prevent spoofing. Requires secret key setup. | Not started |

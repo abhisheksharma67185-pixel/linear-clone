@@ -1,6 +1,6 @@
 # REST API Reference
 
-All SimBench sites expose the same API structure. Replace `localhost:3000` with your server URL.
+All ThetaBench sites expose the same API structure. Replace `localhost:3000` with your server URL.
 
 ## Simulation Endpoints (`/api/sim/*`)
 
@@ -334,7 +334,7 @@ GET /api/rl
     "discounts": [...]
   },
   "info": {
-    "description": "SimBench RL endpoint",
+    "description": "ThetaBench RL endpoint",
     "version": "0.1.0",
     "episodeActive": true
   }

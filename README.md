@@ -1,18 +1,18 @@
-# SimBench
+# ThetaBench
 
 A scalable platform for training and evaluating autonomous web agents on 264 deterministic website simulation tasks across 3 sites.
 
 ## Repository Structure
 
 ```
-simbench/
+thetabench/
 ├── packages/
-│   └── simbench-core/       # Shared simulation engine (site-agnostic)
+│   └── thetabench-core/       # Shared simulation engine (site-agnostic)
 ├── sites/
 │   ├── shopify-admin/       # Shopify Admin simulation (104 tasks)
 │   ├── linear/              # Linear simulation (project management, 80 tasks)
 │   └── jira/                # Jira simulation (project management, 80 tasks)
-├── sdk/                     # Python SDK (pip install simbench)
+├── sdk/                     # Python SDK (pip install thetabench)
 ├── observability/           # Theta Observability — external SaaS for AI interaction traces
 │   ├── api-go/              # Go ingest API (chi + GCS + BigQuery + Postgres)
 │   ├── sdk-python/          # theta-observability (pip)
@@ -45,15 +45,15 @@ cd sdk
 pip install -e .
 
 # For browser mode (Playwright)
-pip install 'simbench[browser]' && playwright install chromium
+pip install 'thetabench[browser]' && playwright install chromium
 ```
 
 ### Try it
 
 ```python
-import simbench
+import thetabench
 
-env = simbench.make("shopify-admin", task_id="prod-001")
+env = thetabench.make("shopify-admin", task_id="prod-001")
 obs, info = env.reset()
 print(f"Task: {info['task_goal']}")
 ```
@@ -71,9 +71,9 @@ print(f"Task: {info['task_goal']}")
 
 ## Architecture
 
-SimBench separates the **simulation engine** (site-agnostic) from **site implementations** (site-specific). Each site is a standalone Next.js app that plugs into the shared engine via the `SitePlugin` interface.
+ThetaBench separates the **simulation engine** (site-agnostic) from **site implementations** (site-specific). Each site is a standalone Next.js app that plugs into the shared engine via the `SitePlugin` interface.
 
-See [paper/simbench-paper.md](paper/simbench-paper.md) for the full research paper.
+See [paper/thetabench-paper.md](paper/thetabench-paper.md) for the full research paper.
 
 ## Sites
 
