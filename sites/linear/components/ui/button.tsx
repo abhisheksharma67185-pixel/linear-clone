@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -40,18 +41,36 @@ const buttonVariants = cva(
   }
 )
 
+type ButtonProps = ButtonPrimitive.Props &
+  VariantProps<typeof buttonVariants> & {
+    /** Render the button as the child element (e.g. <Link/>), Radix-style. */
+    asChild?: boolean
+  }
+
 function Button({
   className,
   variant = "default",
   size = "default",
+  asChild,
+  children,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonProps) {
+  // base-ui's Button uses the `render` prop instead of Radix's `asChild`.
+  // When asChild is true and children is a single React element, forward
+  // the element via `render` so consumers can keep using <Button asChild>
+  // <Link>...</Link></Button> ergonomics.
+  const renderProp =
+    asChild && React.isValidElement(children) ? (children as React.ReactElement) : undefined
+
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      {...(renderProp ? { render: renderProp } : {})}
       {...props}
-    />
+    >
+      {asChild && renderProp ? undefined : children}
+    </ButtonPrimitive>
   )
 }
 

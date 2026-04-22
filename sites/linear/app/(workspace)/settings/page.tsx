@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useMemo, useState, useCallback } from "react"
+import { Suspense, useEffect, useMemo, useState, useCallback, type Dispatch, type SetStateAction } from "react"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
 import type { Label as LabelType, Member } from "@/app/lib/mock-data"
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
 import {
   ArrowLeft01Icon,
   Settings02Icon,
@@ -63,7 +63,20 @@ type SectionKey = string
 interface NavItem {
   key: SectionKey
   label: string
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>> | null
+  icon: IconSvgElement | null
+}
+
+/**
+ * base-ui Select's onValueChange is `(value: string | null, eventDetails) => void`.
+ * Most consumers pipe into a `Dispatch<SetStateAction<string>>`. This helper
+ * drops the `null` case so the setter always gets a real string.
+ */
+function onSelectChange(
+  setter: Dispatch<SetStateAction<string>>,
+): (value: string | null) => void {
+  return (value) => {
+    if (value !== null) setter(value)
+  }
 }
 
 interface NavGroup {
@@ -312,7 +325,7 @@ function PreferencesSection() {
       {/* General */}
       <SettingsCard title="General">
         <SettingsRow label="Default home view">
-          <Select value={homeView} onValueChange={setHomeView}>
+          <Select value={homeView} onValueChange={onSelectChange(setHomeView)}>
             <SelectTrigger className="w-44 h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="active">Active issues</SelectItem>
@@ -323,7 +336,7 @@ function PreferencesSection() {
         </SettingsRow>
         <Separator />
         <SettingsRow label="Display names">
-          <Select value={displayNames} onValueChange={setDisplayNames}>
+          <Select value={displayNames} onValueChange={onSelectChange(setDisplayNames)}>
             <SelectTrigger className="w-44 h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="fullname">Full name</SelectItem>
@@ -333,7 +346,7 @@ function PreferencesSection() {
         </SettingsRow>
         <Separator />
         <SettingsRow label="First day of week">
-          <Select value={firstDay} onValueChange={setFirstDay}>
+          <Select value={firstDay} onValueChange={onSelectChange(setFirstDay)}>
             <SelectTrigger className="w-44 h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="monday">Monday</SelectItem>
@@ -348,7 +361,7 @@ function PreferencesSection() {
         </SettingsRow>
         <Separator />
         <SettingsRow label="Send comment on...">
-          <Select value={sendOn} onValueChange={setSendOn}>
+          <Select value={sendOn} onValueChange={onSelectChange(setSendOn)}>
             <SelectTrigger className="w-44 h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="enter">Enter</SelectItem>
@@ -365,7 +378,7 @@ function PreferencesSection() {
         </SettingsRow>
         <Separator />
         <SettingsRow label="Font size">
-          <Select value={fontSize} onValueChange={setFontSize}>
+          <Select value={fontSize} onValueChange={onSelectChange(setFontSize)}>
             <SelectTrigger className="w-44 h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="default">Default</SelectItem>
@@ -380,7 +393,7 @@ function PreferencesSection() {
         </SettingsRow>
         <Separator />
         <SettingsRow label="Interface theme">
-          <Select value={theme} onValueChange={setTheme}>
+          <Select value={theme} onValueChange={onSelectChange(setTheme)}>
             <SelectTrigger className="w-44 h-8 text-xs">
               <span className={`mr-1.5 inline-block size-2.5 rounded-full shrink-0 ${themeColor}`} />
               <SelectValue />
@@ -419,7 +432,7 @@ function PreferencesSection() {
         </SettingsRow>
         <Separator />
         <SettingsRow label="Git attachment format">
-          <Select value={gitFormat} onValueChange={setGitFormat}>
+          <Select value={gitFormat} onValueChange={onSelectChange(setGitFormat)}>
             <SelectTrigger className="w-44 h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="title">Title</SelectItem>
@@ -1005,7 +1018,7 @@ function WorkspaceSection() {
               <div className="text-sm font-medium">First month of the fiscal year</div>
               <div className="text-xs text-muted-foreground">Used when grouping projects and issues quarterly, half-yearly, and yearly</div>
             </div>
-            <Select value={fiscalYear} onValueChange={setFiscalYear}>
+            <Select value={fiscalYear} onValueChange={onSelectChange(setFiscalYear)}>
               <SelectTrigger className="h-8 w-32 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {["January","February","March","April","May","June","July","August","September","October","November","December"].map((m) => (
@@ -1368,7 +1381,7 @@ function AdminSecuritySection() {
               <div className="text-sm font-medium">API key creation</div>
               <div className="text-xs text-muted-foreground">Who can create API keys to interact with the Linear API on their behalf</div>
             </div>
-            <Select value={apiKeyPerm} onValueChange={setApiKeyPerm}>
+            <Select value={apiKeyPerm} onValueChange={onSelectChange(setApiKeyPerm)}>
               <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-members">All members</SelectItem>
@@ -1381,7 +1394,7 @@ function AdminSecuritySection() {
               <div className="text-sm font-medium">Modify agent guidance</div>
               <div className="text-xs text-muted-foreground">Who can modify workspace-level agent guidance prompts</div>
             </div>
-            <Select value={agentGuidancePerm} onValueChange={setAgentGuidancePerm}>
+            <Select value={agentGuidancePerm} onValueChange={onSelectChange(setAgentGuidancePerm)}>
               <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="only-admins">Only admins</SelectItem>
@@ -1530,7 +1543,7 @@ function ApiSection() {
               <div className="text-sm font-medium">API key creation</div>
               <div className="text-xs text-muted-foreground">Who can create API keys to interact with the Linear API on their behalf</div>
             </div>
-            <Select value={apiKeyPerm} onValueChange={setApiKeyPerm}>
+            <Select value={apiKeyPerm} onValueChange={onSelectChange(setApiKeyPerm)}>
               <SelectTrigger className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-members">All members</SelectItem>
@@ -1643,7 +1656,7 @@ function ExportCard() {
       </div>
       <div className="flex items-center justify-between px-4 py-3">
         <span className="text-sm font-medium">Include private teams</span>
-        <Select value={privateTeams} onValueChange={setPrivateTeams}>
+        <Select value={privateTeams} onValueChange={onSelectChange(setPrivateTeams)}>
           <SelectTrigger className="h-8 w-28 text-xs"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="none">None</SelectItem>
@@ -2277,7 +2290,7 @@ function PulseSection() {
               <div className="text-sm font-medium">Default workspace schedule</div>
               <div className="text-xs text-muted-foreground">Applies to all members who haven't set their own preference</div>
             </div>
-            <Select value={wsSchedule} onValueChange={setWsSchedule}>
+            <Select value={wsSchedule} onValueChange={onSelectChange(setWsSchedule)}>
               <SelectTrigger className="h-8 w-28 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="daily">Daily</SelectItem>
@@ -2291,7 +2304,7 @@ function PulseSection() {
               <div className="text-sm font-medium">Your personal schedule</div>
               <div className="text-xs text-muted-foreground">Only applies to you, overriding the workspace default</div>
             </div>
-            <Select value={mySchedule} onValueChange={setMySchedule}>
+            <Select value={mySchedule} onValueChange={onSelectChange(setMySchedule)}>
               <SelectTrigger className="h-8 w-28 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="daily">Daily</SelectItem>
@@ -2365,7 +2378,7 @@ function CustomerRequestsSection() {
         </p>
         <div className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
           <span className="text-sm text-muted-foreground">Default team for customer requests</span>
-          <Select value={defaultTeam} onValueChange={setDefaultTeam}>
+          <Select value={defaultTeam} onValueChange={onSelectChange(setDefaultTeam)}>
             <SelectTrigger className="h-8 w-36 text-xs"><SelectValue placeholder="Select a team" /></SelectTrigger>
             <SelectContent>
               {teams.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
@@ -2415,7 +2428,7 @@ function CustomerRequestsSection() {
               <div className="text-sm font-medium">Revenue formatting</div>
               <div className="text-xs text-muted-foreground">Data imports must be in annual figures, but can be displayed as monthly or annual</div>
             </div>
-            <Select value={revenueFormat} onValueChange={setRevenueFormat}>
+            <Select value={revenueFormat} onValueChange={onSelectChange(setRevenueFormat)}>
               <SelectTrigger className="h-8 w-28 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="annual">Annual</SelectItem>
@@ -2428,7 +2441,7 @@ function CustomerRequestsSection() {
               <div className="text-sm font-medium">Revenue currency</div>
               <div className="text-xs text-muted-foreground">The currency used when displaying customer revenue</div>
             </div>
-            <Select value={currency} onValueChange={setCurrency}>
+            <Select value={currency} onValueChange={onSelectChange(setCurrency)}>
               <SelectTrigger className="h-8 w-28 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="usd">USD ($)</SelectItem>
@@ -3042,7 +3055,7 @@ function CreateTeamPage({ teams }: { teams: { id: string; name: string; key: str
         <div className="rounded-lg border">
           <div className="flex items-center justify-between px-4 py-3">
             <span className="text-sm font-medium">Copy from team</span>
-            <Select value={copyFrom} onValueChange={setCopyFrom}>
+            <Select value={copyFrom} onValueChange={onSelectChange(setCopyFrom)}>
               <SelectTrigger className="h-8 w-40 text-xs rounded-full border-muted">
                 <SelectValue />
               </SelectTrigger>
@@ -3070,7 +3083,7 @@ function CreateTeamPage({ teams }: { teams: { id: string; name: string; key: str
         <div className="rounded-lg border">
           <div className="flex items-center justify-between px-4 py-3">
             <span className="text-sm font-medium">Timezone</span>
-            <Select value={timezone} onValueChange={setTimezone}>
+            <Select value={timezone} onValueChange={onSelectChange(setTimezone)}>
               <SelectTrigger className="h-8 w-72 text-xs rounded-full border-muted">
                 <SelectValue />
               </SelectTrigger>

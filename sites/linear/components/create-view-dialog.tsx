@@ -87,7 +87,8 @@ export function CreateViewDialog({
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreated: (view: View) => void
+  /** Optional callback fired when a view is successfully created. */
+  onCreated?: (view: View) => void
 }) {
   const [teams, setTeams] = useState<Team[]>([])
   const [members, setMembers] = useState<Member[]>([])
@@ -174,7 +175,7 @@ export function CreateViewDialog({
     setCreating(false)
     if (res.ok) {
       const created = (await res.json()) as View
-      onCreated(created)
+      onCreated?.(created)
       resetForm()
       onOpenChange(false)
     }
