@@ -15,7 +15,9 @@ export const DEFAULT_PROXY_MAP: Record<string, string> = {
   zendesk: "http://localhost:3004",
 }
 
-export async function resolveSiteBaseUrl(siteId: string): Promise<string | null> {
+export async function resolveSiteBaseUrl(
+  siteId: string
+): Promise<string | null> {
   const h = await headers()
   const override = h.get("x-inspector-site-url")
   if (override) {

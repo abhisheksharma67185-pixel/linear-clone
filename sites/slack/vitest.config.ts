@@ -1,5 +1,5 @@
-import { defineConfig } from "vitest/config";
-import path from "node:path";
+import { defineConfig } from "vitest/config"
+import path from "node:path"
 
 export default defineConfig({
   resolve: {
@@ -7,7 +7,7 @@ export default defineConfig({
       "@/": `${path.resolve(__dirname, ".")}/`,
       "@thetabench/core": path.resolve(
         __dirname,
-        "../../packages/thetabench-core/src/index.ts",
+        "../../packages/thetabench-core/src/index.ts"
       ),
     },
   },
@@ -16,4 +16,4 @@ export default defineConfig({
     include: ["__tests__/**/*.test.ts"],
     globals: false,
   },
-});
+})

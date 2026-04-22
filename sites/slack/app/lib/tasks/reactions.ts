@@ -1,7 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
-const R2 = { completion: 2.0, partialPerCheck: false, stepPenalty: -0.01, invalidActionPenalty: -0.1 };
-const R5 = { completion: 5.0, partialPerCheck: true, stepPenalty: -0.01, invalidActionPenalty: -0.1 };
+const R2 = {
+  completion: 2.0,
+  partialPerCheck: false,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+}
+const R5 = {
+  completion: 5.0,
+  partialPerCheck: true,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+}
 
 export const reactionTasks: TaskDefinition[] = [
   {
@@ -150,4 +160,4 @@ export const reactionTasks: TaskDefinition[] = [
     rewardProfile: R5,
     tags: ["react", "count"],
   },
-];
+]

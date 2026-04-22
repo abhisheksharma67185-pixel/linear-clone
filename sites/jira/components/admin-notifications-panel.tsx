@@ -64,7 +64,8 @@ export function AdminNotificationsPanel({
   useEffect(() => {
     if (!moreOpen) return
     const handler = (e: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false)
+      if (moreRef.current && !moreRef.current.contains(e.target as Node))
+        setMoreOpen(false)
     }
     document.addEventListener("mousedown", handler)
     return () => document.removeEventListener("mousedown", handler)
@@ -91,14 +92,16 @@ export function AdminNotificationsPanel({
   return (
     <div
       ref={panelRef}
-      className="absolute right-12 top-12 z-50 flex w-[420px] flex-col rounded-lg border bg-background shadow-lg"
+      className="absolute top-12 right-12 z-50 flex w-[420px] flex-col rounded-lg border bg-background shadow-lg"
       style={{ maxHeight: "calc(100vh - 80px)" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-3">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold">Notifications</h2>
-          <span className="rounded border px-1.5 py-0.5 text-[10px] font-bold">BETA</span>
+          <span className="rounded border px-1.5 py-0.5 text-[10px] font-bold">
+            BETA
+          </span>
         </div>
         <div className="flex items-center gap-3">
           <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
@@ -110,14 +113,16 @@ export function AdminNotificationsPanel({
               onClick={() => setShowUnreadOnly(!showUnreadOnly)}
               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${showUnreadOnly ? "bg-blue-600" : "bg-muted-foreground/30"}`}
             >
-              <span className={`inline-block size-3.5 rounded-full bg-white transition-transform ${showUnreadOnly ? "translate-x-[18px]" : "translate-x-[3px]"}`} />
+              <span
+                className={`inline-block size-3.5 rounded-full bg-white transition-transform ${showUnreadOnly ? "translate-x-[18px]" : "translate-x-[3px]"}`}
+              />
             </button>
           </label>
           <div className="relative" ref={moreRef}>
             <button
               type="button"
               onClick={() => setMoreOpen(!moreOpen)}
-              className="rounded p-1 text-muted-foreground hover:bg-accent transition-colors"
+              className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent"
             >
               <svg className="size-5" viewBox="0 0 24 24" fill="currentColor">
                 <circle cx="12" cy="5" r="1.5" />
@@ -126,9 +131,21 @@ export function AdminNotificationsPanel({
               </svg>
             </button>
             {moreOpen && (
-              <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-lg border bg-popover shadow-lg py-1">
-                <button type="button" onClick={() => setMoreOpen(false)} className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors">About this feature</button>
-                <button type="button" onClick={() => setMoreOpen(false)} className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors">Give feedback</button>
+              <div className="absolute top-full right-0 z-50 mt-1 w-44 rounded-lg border bg-popover py-1 shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => setMoreOpen(false)}
+                  className="w-full px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent"
+                >
+                  About this feature
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMoreOpen(false)}
+                  className="w-full px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent"
+                >
+                  Give feedback
+                </button>
               </div>
             )}
           </div>
@@ -136,10 +153,15 @@ export function AdminNotificationsPanel({
       </div>
 
       {/* Notification list */}
-      <div className="flex-1 overflow-y-auto px-5" style={{ maxHeight: "500px" }}>
+      <div
+        className="flex-1 overflow-y-auto px-5"
+        style={{ maxHeight: "500px" }}
+      >
         {/* Date header */}
         <div className="flex items-center justify-between py-2">
-          <span className="text-sm font-medium text-muted-foreground">{dateStr}</span>
+          <span className="text-sm font-medium text-muted-foreground">
+            {dateStr}
+          </span>
           <button
             onClick={markAllAsRead}
             className="text-sm text-blue-600 hover:underline"
@@ -169,7 +191,13 @@ export function AdminNotificationsPanel({
                       />
                     </svg>
                   ) : (
-                    <svg className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      className="size-5 text-muted-foreground"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <circle cx="12" cy="12" r="3" />
                       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4" />
                     </svg>
@@ -177,11 +205,15 @@ export function AdminNotificationsPanel({
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-medium leading-tight">{notification.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{notification.time}</p>
+                      <p className="text-sm leading-tight font-medium">
+                        {notification.title}
+                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {notification.time}
+                      </p>
                     </div>
                     {!notification.read && (
                       <span className="mt-1 size-2 shrink-0 rounded-full bg-blue-600" />
@@ -191,11 +223,19 @@ export function AdminNotificationsPanel({
                   {notification.content && (
                     <div className="mt-2 rounded-md border bg-muted/30 p-3">
                       <div className="flex items-start gap-2">
-                        <svg className="mt-0.5 size-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <circle cx="12" cy="12" r="3" />
                           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4" />
                         </svg>
-                        <p className="text-xs leading-relaxed">{notification.content}</p>
+                        <p className="text-xs leading-relaxed">
+                          {notification.content}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -229,8 +269,14 @@ export function AdminNotificationsPanel({
               </g>
               <g transform="translate(40, 22) rotate(-4)">
                 <path d="M0 0L50 6L46 42L0 48Z" fill="#2684FF" rx="3" />
-                <path d="M16 28c-1-1.6-2.8-1.4-3.4.4l-5 12c-.3.6 0 1.2.6 1.2h7.4c.3 0 .6-.2.7-.5 1.2-3 .6-8.6-0.3-13.1z" fill="rgba(255,255,255,0.6)" />
-                <path d="M22 16c-3.6 6.4-3.8 14-.4 20.4l4.2 8c.2.3.5.5.8.5h7.4c.6 0 .9-.7.6-1.2L23.4 16c-.3-.6-1-.6-1.4 0z" fill="rgba(255,255,255,0.8)" />
+                <path
+                  d="M16 28c-1-1.6-2.8-1.4-3.4.4l-5 12c-.3.6 0 1.2.6 1.2h7.4c.3 0 .6-.2.7-.5 1.2-3 .6-8.6-0.3-13.1z"
+                  fill="rgba(255,255,255,0.6)"
+                />
+                <path
+                  d="M22 16c-3.6 6.4-3.8 14-.4 20.4l4.2 8c.2.3.5.5.8.5h7.4c.6 0 .9-.7.6-1.2L23.4 16c-.3-.6-1-.6-1.4 0z"
+                  fill="rgba(255,255,255,0.8)"
+                />
               </g>
             </svg>
             <p className="text-sm text-muted-foreground">

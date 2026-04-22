@@ -25,9 +25,35 @@ import {
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 
-const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-const MONTHS_LONG = ["January","February","March","April","May","June","July","August","September","October","November","December"]
-const DAYS_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+const MONTHS_SHORT = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+]
+const MONTHS_LONG = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+]
+const DAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 function fmtDate(d: Date) {
   return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`
@@ -51,7 +77,11 @@ function addYears(d: Date, n: number) {
 }
 
 function isSameDay(a: Date, b: Date) {
-  return a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear()
+  return (
+    a.getDate() === b.getDate() &&
+    a.getMonth() === b.getMonth() &&
+    a.getFullYear() === b.getFullYear()
+  )
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -156,9 +186,17 @@ const filterDefs: FilterDef[] = [
     chipLabel: "Tag",
     placeholder: "Choose a tag",
     icon: (
-      <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <line x1="4" y1="9" x2="20" y2="9" /><line x1="4" y1="15" x2="20" y2="15" />
-        <line x1="10" y1="3" x2="8" y2="21" /><line x1="16" y1="3" x2="14" y2="21" />
+      <svg
+        className="size-3.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <line x1="4" y1="9" x2="20" y2="9" />
+        <line x1="4" y1="15" x2="20" y2="15" />
+        <line x1="10" y1="3" x2="8" y2="21" />
+        <line x1="16" y1="3" x2="14" y2="21" />
       </svg>
     ),
   },
@@ -168,8 +206,15 @@ const filterDefs: FilterDef[] = [
     chipLabel: "Status",
     placeholder: "Choose a status",
     icon: (
-      <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" />
+      <svg
+        className="size-3.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M3 9h18" />
       </svg>
     ),
   },
@@ -179,8 +224,15 @@ const filterDefs: FilterDef[] = [
     chipLabel: "Owner",
     placeholder: "Choose an owner",
     icon: (
-      <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="8" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
+      <svg
+        className="size-3.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <circle cx="12" cy="8" r="4" />
+        <path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
       </svg>
     ),
   },
@@ -190,7 +242,13 @@ const filterDefs: FilterDef[] = [
     chipLabel: "Team",
     placeholder: "Choose a team",
     icon: (
-      <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="size-3.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -204,8 +262,15 @@ const filterDefs: FilterDef[] = [
     chipLabel: "Following",
     placeholder: "",
     icon: (
-      <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+      <svg
+        className="size-3.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
       </svg>
     ),
   },
@@ -215,7 +280,13 @@ const filterDefs: FilterDef[] = [
     chipLabel: "Starred",
     placeholder: "",
     icon: (
-      <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="size-3.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
       </svg>
     ),
@@ -226,7 +297,13 @@ const filterDefs: FilterDef[] = [
     chipLabel: "Metric",
     placeholder: "Choose a metric",
     icon: (
-      <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="size-3.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
       </svg>
     ),
@@ -237,7 +314,13 @@ const filterDefs: FilterDef[] = [
     chipLabel: "Reporting line",
     placeholder: "",
     icon: (
-      <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="size-3.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <line x1="19" y1="8" x2="19" y2="14" />
@@ -276,20 +359,26 @@ function CalendarPanel({
   const grid = calGrid(month.getFullYear(), month.getMonth())
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-center text-[13px] font-semibold text-[#172b4d]">{label}</p>
+      <p className="text-center text-[13px] font-semibold text-[#172b4d]">
+        {label}
+      </p>
       {/* Navigation */}
       <div className="flex items-center justify-between">
         <div className="flex gap-0.5">
           <button
             onClick={() => onNavigate(addYears(month, -1))}
-            className="rounded p-1 text-[#626f86] hover:bg-[#f4f5f7] text-xs"
+            className="rounded p-1 text-xs text-[#626f86] hover:bg-[#f4f5f7]"
             title="Previous year"
-          >{"<<"}</button>
+          >
+            {"<<"}
+          </button>
           <button
             onClick={() => onNavigate(addMonths(month, -1))}
-            className="rounded p-1 text-[#626f86] hover:bg-[#f4f5f7] text-xs"
+            className="rounded p-1 text-xs text-[#626f86] hover:bg-[#f4f5f7]"
             title="Previous month"
-          >{"<"}</button>
+          >
+            {"<"}
+          </button>
         </div>
         <span className="text-[13px] font-semibold text-[#172b4d]">
           {MONTHS_LONG[month.getMonth()]} {month.getFullYear()}
@@ -297,20 +386,29 @@ function CalendarPanel({
         <div className="flex gap-0.5">
           <button
             onClick={() => onNavigate(addMonths(month, 1))}
-            className="rounded p-1 text-[#626f86] hover:bg-[#f4f5f7] text-xs"
+            className="rounded p-1 text-xs text-[#626f86] hover:bg-[#f4f5f7]"
             title="Next month"
-          >{">"}</button>
+          >
+            {">"}
+          </button>
           <button
             onClick={() => onNavigate(addYears(month, 1))}
-            className="rounded p-1 text-[#626f86] hover:bg-[#f4f5f7] text-xs"
+            className="rounded p-1 text-xs text-[#626f86] hover:bg-[#f4f5f7]"
             title="Next year"
-          >{">>"}</button>
+          >
+            {">>"}
+          </button>
         </div>
       </div>
       {/* Day headers */}
       <div className="grid grid-cols-7 gap-0.5">
         {DAYS_SHORT.map((d) => (
-          <div key={d} className="text-center text-[11px] font-medium text-[#626f86] py-0.5">{d}</div>
+          <div
+            key={d}
+            className="py-0.5 text-center text-[11px] font-medium text-[#626f86]"
+          >
+            {d}
+          </div>
         ))}
       </div>
       {/* Day grid */}
@@ -325,7 +423,7 @@ function CalendarPanel({
               onClick={() => onSelect(thisDate)}
               className={`flex h-7 w-7 items-center justify-center rounded-full text-[12px] transition-colors ${
                 isSelected
-                  ? "bg-[#0052cc] text-white font-semibold"
+                  ? "bg-[#0052cc] font-semibold text-white"
                   : "text-[#172b4d] hover:bg-[#f4f5f7]"
               }`}
             >
@@ -356,7 +454,8 @@ export default function ArchivedGoalsPage() {
     { id: "owner", label: "Owner", enabled: true },
     { id: "following", label: "Following", enabled: true },
   ])
-  const isColEnabled = (id: string) => columns.find((c) => c.id === id)?.enabled ?? false
+  const isColEnabled = (id: string) =>
+    columns.find((c) => c.id === id)?.enabled ?? false
 
   // Filter values
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
@@ -374,7 +473,7 @@ export default function ArchivedGoalsPage() {
 
   // Timeline controls
   const [rangeStart, setRangeStart] = useState(new Date(2025, 11, 16)) // Dec 16 2025
-  const [rangeEnd, setRangeEnd] = useState(new Date(2027, 5, 16))      // Jun 16 2027
+  const [rangeEnd, setRangeEnd] = useState(new Date(2027, 5, 16)) // Jun 16 2027
   const [leftCalMonth, setLeftCalMonth] = useState(new Date(2025, 11, 1))
   const [rightCalMonth, setRightCalMonth] = useState(new Date(2027, 5, 1))
   const [datePickerOpen, setDatePickerOpen] = useState(false)
@@ -390,13 +489,19 @@ export default function ArchivedGoalsPage() {
   useEffect(() => {
     if (!openFilter) return
     const mouseHandler = (e: MouseEvent) => {
-      if (filterBarRef.current && !filterBarRef.current.contains(e.target as Node)) {
+      if (
+        filterBarRef.current &&
+        !filterBarRef.current.contains(e.target as Node)
+      ) {
         setOpenFilter(null)
         setFilterSearch("")
       }
     }
     const keyHandler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setOpenFilter(null); setFilterSearch("") }
+      if (e.key === "Escape") {
+        setOpenFilter(null)
+        setFilterSearch("")
+      }
     }
     document.addEventListener("mousedown", mouseHandler)
     document.addEventListener("keydown", keyHandler)
@@ -410,7 +515,10 @@ export default function ArchivedGoalsPage() {
   useEffect(() => {
     if (!datePickerOpen && !viewByOpen && !sortOpen) return
     const handler = (e: MouseEvent) => {
-      if (controlsRef.current && !controlsRef.current.contains(e.target as Node)) {
+      if (
+        controlsRef.current &&
+        !controlsRef.current.contains(e.target as Node)
+      ) {
         setDatePickerOpen(false)
         setViewByOpen(false)
         setSortOpen(false)
@@ -447,28 +555,69 @@ export default function ArchivedGoalsPage() {
   const anyFilterActive = filterDefs.some((f) => isFilterActive(f.id))
 
   const handleFilterBtn = (id: string) => {
-    if (id === "following") { setFollowingFilter((v) => !v); return }
-    if (id === "starred") { setStarredFilter((v) => !v); return }
+    if (id === "following") {
+      setFollowingFilter((v) => !v)
+      return
+    }
+    if (id === "starred") {
+      setStarredFilter((v) => !v)
+      return
+    }
     if (id === "reporting") {
-      if (!reportingFilter) { setReportingFilter(true); setOpenFilter("reporting"); setFilterSearch(""); return }
-      if (openFilter === "reporting") { setOpenFilter(null); setFilterSearch("") }
-      else { setOpenFilter("reporting"); setFilterSearch("") }
+      if (!reportingFilter) {
+        setReportingFilter(true)
+        setOpenFilter("reporting")
+        setFilterSearch("")
+        return
+      }
+      if (openFilter === "reporting") {
+        setOpenFilter(null)
+        setFilterSearch("")
+      } else {
+        setOpenFilter("reporting")
+        setFilterSearch("")
+      }
       return
     }
     if (id === "tag") {
-      if (!tagChipActive) { setTagChipActive(true); setOpenFilter("tag"); setFilterSearch(""); return }
-      if (openFilter === "tag") { setOpenFilter(null); setFilterSearch("") }
-      else { setOpenFilter("tag"); setFilterSearch("") }
+      if (!tagChipActive) {
+        setTagChipActive(true)
+        setOpenFilter("tag")
+        setFilterSearch("")
+        return
+      }
+      if (openFilter === "tag") {
+        setOpenFilter(null)
+        setFilterSearch("")
+      } else {
+        setOpenFilter("tag")
+        setFilterSearch("")
+      }
       return
     }
     if (id === "metric") {
-      if (!metricChipActive) { setMetricChipActive(true); setOpenFilter("metric"); setFilterSearch(""); return }
-      if (openFilter === "metric") { setOpenFilter(null); setFilterSearch("") }
-      else { setOpenFilter("metric"); setFilterSearch("") }
+      if (!metricChipActive) {
+        setMetricChipActive(true)
+        setOpenFilter("metric")
+        setFilterSearch("")
+        return
+      }
+      if (openFilter === "metric") {
+        setOpenFilter(null)
+        setFilterSearch("")
+      } else {
+        setOpenFilter("metric")
+        setFilterSearch("")
+      }
       return
     }
-    if (openFilter === id) { setOpenFilter(null); setFilterSearch("") }
-    else { setOpenFilter(id); setFilterSearch("") }
+    if (openFilter === id) {
+      setOpenFilter(null)
+      setFilterSearch("")
+    } else {
+      setOpenFilter(id)
+      setFilterSearch("")
+    }
   }
 
   const clearFilter = (id: string) => {
@@ -480,20 +629,34 @@ export default function ArchivedGoalsPage() {
     else if (id === "reporting") setReportingFilter(false)
     else if (id === "tag") setTagChipActive(false)
     else if (id === "metric") setMetricChipActive(false)
-    if (openFilter === id) { setOpenFilter(null); setFilterSearch("") }
+    if (openFilter === id) {
+      setOpenFilter(null)
+      setFilterSearch("")
+    }
   }
 
   const clearFilters = () => {
-    setStatusFilter(null); setOwnerFilter(null); setTeamFilter(null)
-    setFollowingFilter(false); setStarredFilter(false); setReportingFilter(false)
-    setTagChipActive(false); setMetricChipActive(false)
-    setSearch(""); setOpenFilter(null)
+    setStatusFilter(null)
+    setOwnerFilter(null)
+    setTeamFilter(null)
+    setFollowingFilter(false)
+    setStarredFilter(false)
+    setReportingFilter(false)
+    setTagChipActive(false)
+    setMetricChipActive(false)
+    setSearch("")
+    setOpenFilter(null)
   }
 
   // ── Filtered / sorted goals ───────────────────────────────────────────────
 
   const filteredGoals = goals
-    .filter((g) => !search || g.name.toLowerCase().includes(search.toLowerCase()) || g.owner.name.toLowerCase().includes(search.toLowerCase()))
+    .filter(
+      (g) =>
+        !search ||
+        g.name.toLowerCase().includes(search.toLowerCase()) ||
+        g.owner.name.toLowerCase().includes(search.toLowerCase())
+    )
     .filter((g) => !statusFilter || g.status === statusFilter)
     .filter((g) => !ownerFilter || g.owner.name === ownerFilter)
     .filter((g) => !teamFilter)
@@ -506,8 +669,10 @@ export default function ArchivedGoalsPage() {
       const dir = sortAsc ? 1 : -1
       if (sortBy === "name") return a.name.localeCompare(b.name) * dir
       if (sortBy === "status") return a.status.localeCompare(b.status) * dir
-      if (sortBy === "target date") return a.targetDate.localeCompare(b.targetDate) * dir
-      if (sortBy === "following") return ((a.following === b.following) ? 0 : (a.following ? -1 : 1)) * dir
+      if (sortBy === "target date")
+        return a.targetDate.localeCompare(b.targetDate) * dir
+      if (sortBy === "following")
+        return (a.following === b.following ? 0 : a.following ? -1 : 1) * dir
       return 0
     })
 
@@ -520,7 +685,10 @@ export default function ArchivedGoalsPage() {
 
   const handleRestore = (id: string) => {
     const goal = goals.find((g) => g.id === id)
-    if (goal) { setGoals((prev) => prev.filter((g) => g.id !== id)); showToast(`"${goal.name}" has been restored`) }
+    if (goal) {
+      setGoals((prev) => prev.filter((g) => g.id !== id))
+      showToast(`"${goal.name}" has been restored`)
+    }
   }
 
   const handleDelete = (id: string) => {
@@ -531,7 +699,9 @@ export default function ArchivedGoalsPage() {
   }
 
   const toggleFollow = (id: string) => {
-    setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, following: !g.following } : g)))
+    setGoals((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, following: !g.following } : g))
+    )
   }
 
   // ── Filter dropdown content ───────────────────────────────────────────────
@@ -550,10 +720,17 @@ export default function ArchivedGoalsPage() {
           value={filterSearch}
           onChange={(e) => setFilterSearch(e.target.value)}
           placeholder={def.placeholder}
-          className="flex-1 bg-transparent text-[13px] text-[#172b4d] dark:text-foreground outline-none placeholder:text-[#626f86]"
+          className="flex-1 bg-transparent text-[13px] text-[#172b4d] outline-none placeholder:text-[#626f86] dark:text-foreground"
         />
-        <svg className="size-4 shrink-0 text-[#626f86]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        <svg
+          className="size-4 shrink-0 text-[#626f86]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
       </div>
     )
@@ -571,49 +748,135 @@ export default function ArchivedGoalsPage() {
       return (
         <div
           data-testid="reporting-popover"
-          className="absolute left-0 top-full z-50 mt-1 w-72 rounded-[3px] border border-[#dfe1e6] bg-white dark:bg-popover shadow-[0_4px_16px_rgba(9,30,66,0.18)] p-5 text-center"
+          className="absolute top-full left-0 z-50 mt-1 w-72 rounded-[3px] border border-[#dfe1e6] bg-white p-5 text-center shadow-[0_4px_16px_rgba(9,30,66,0.18)] dark:bg-popover"
         >
-          <div data-testid="reporting-org-chart" className="mb-4 flex flex-col items-center">
+          <div
+            data-testid="reporting-org-chart"
+            className="mb-4 flex flex-col items-center"
+          >
             <div className="mb-2">
-              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+              <svg
+                width="44"
+                height="44"
+                viewBox="0 0 44 44"
+                fill="none"
+                aria-hidden="true"
+              >
                 <circle cx="22" cy="22" r="22" fill="#f4bfb6" />
                 <circle cx="22" cy="19" r="9" fill="#f4a98f" />
                 <ellipse cx="22" cy="12" rx="9" ry="6" fill="#e05c3a" />
-                <path d="M8 44c0-7.732 6.268-14 14-14s14 6.268 14 14" fill="#e8734a" />
+                <path
+                  d="M8 44c0-7.732 6.268-14 14-14s14 6.268 14 14"
+                  fill="#e8734a"
+                />
               </svg>
             </div>
-            <svg width="120" height="28" viewBox="0 0 120 28" fill="none" aria-hidden="true">
-              <line x1="60" y1="0" x2="60" y2="10" stroke="#c1c7d0" strokeWidth="2" />
-              <line x1="20" y1="10" x2="100" y2="10" stroke="#c1c7d0" strokeWidth="2" />
-              <line x1="20" y1="10" x2="20" y2="28" stroke="#c1c7d0" strokeWidth="2" />
-              <line x1="60" y1="10" x2="60" y2="28" stroke="#c1c7d0" strokeWidth="2" />
-              <line x1="100" y1="10" x2="100" y2="28" stroke="#c1c7d0" strokeWidth="2" />
+            <svg
+              width="120"
+              height="28"
+              viewBox="0 0 120 28"
+              fill="none"
+              aria-hidden="true"
+            >
+              <line
+                x1="60"
+                y1="0"
+                x2="60"
+                y2="10"
+                stroke="#c1c7d0"
+                strokeWidth="2"
+              />
+              <line
+                x1="20"
+                y1="10"
+                x2="100"
+                y2="10"
+                stroke="#c1c7d0"
+                strokeWidth="2"
+              />
+              <line
+                x1="20"
+                y1="10"
+                x2="20"
+                y2="28"
+                stroke="#c1c7d0"
+                strokeWidth="2"
+              />
+              <line
+                x1="60"
+                y1="10"
+                x2="60"
+                y2="28"
+                stroke="#c1c7d0"
+                strokeWidth="2"
+              />
+              <line
+                x1="100"
+                y1="10"
+                x2="100"
+                y2="28"
+                stroke="#c1c7d0"
+                strokeWidth="2"
+              />
             </svg>
             <div className="flex items-center gap-2">
-              <svg width="38" height="38" viewBox="0 0 38 38" fill="none" aria-hidden="true">
+              <svg
+                width="38"
+                height="38"
+                viewBox="0 0 38 38"
+                fill="none"
+                aria-hidden="true"
+              >
                 <circle cx="19" cy="19" r="19" fill="#5d4037" />
                 <circle cx="19" cy="16" r="7" fill="#8d6e63" />
                 <ellipse cx="19" cy="11" rx="7" ry="4.5" fill="#3e2723" />
-                <path d="M6 38c0-7.18 5.82-13 13-13s13 5.82 13 13" fill="#6d4c41" />
+                <path
+                  d="M6 38c0-7.18 5.82-13 13-13s13 5.82 13 13"
+                  fill="#6d4c41"
+                />
               </svg>
-              <svg width="38" height="38" viewBox="0 0 38 38" fill="none" aria-hidden="true">
+              <svg
+                width="38"
+                height="38"
+                viewBox="0 0 38 38"
+                fill="none"
+                aria-hidden="true"
+              >
                 <circle cx="19" cy="19" r="19" fill="#f4d9b0" />
                 <circle cx="19" cy="16" r="7" fill="#e8b88a" />
                 <ellipse cx="19" cy="11" rx="7" ry="5" fill="#6d4c41" />
-                <path d="M6 38c0-7.18 5.82-13 13-13s13 5.82 13 13" fill="#9e6b3e" />
+                <path
+                  d="M6 38c0-7.18 5.82-13 13-13s13 5.82 13 13"
+                  fill="#9e6b3e"
+                />
               </svg>
-              <svg width="38" height="38" viewBox="0 0 38 38" fill="none" aria-hidden="true">
+              <svg
+                width="38"
+                height="38"
+                viewBox="0 0 38 38"
+                fill="none"
+                aria-hidden="true"
+              >
                 <circle cx="19" cy="19" r="19" fill="#e8d5f5" />
                 <circle cx="19" cy="16" r="7" fill="#f5cba7" />
                 <ellipse cx="19" cy="11" rx="7.5" ry="5" fill="#7c3aed" />
-                <path d="M6 38c0-7.18 5.82-13 13-13s13 5.82 13 13" fill="#8b5cf6" />
+                <path
+                  d="M6 38c0-7.18 5.82-13 13-13s13 5.82 13 13"
+                  fill="#8b5cf6"
+                />
               </svg>
             </div>
           </div>
-          <p data-testid="reporting-popover-heading" className="mb-2 text-[14px] font-semibold text-[#172b4d] dark:text-foreground leading-snug">
+          <p
+            data-testid="reporting-popover-heading"
+            className="mb-2 text-[14px] leading-snug font-semibold text-[#172b4d] dark:text-foreground"
+          >
             Stay across the projects your reports work on
           </p>
-          <p data-testid="reporting-popover-body" className="mb-4 text-[13px] text-[#626f86] leading-snug">
+          <p
+            data-testid="reporting-popover-body"
+            className="mb-4 text-[13px] leading-snug text-[#626f86]"
+          >
             Connect your identity provider to get started
           </p>
           <a
@@ -622,10 +885,17 @@ export default function ArchivedGoalsPage() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Show me how to connect an identity provider"
-            className="inline-flex items-center gap-1.5 rounded-[3px] border border-[#dfe1e6] px-4 py-1.5 text-[13px] font-medium text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7] transition-colors focus:outline-none focus:ring-2 focus:ring-[#0052cc] focus:ring-offset-1"
+            className="inline-flex items-center gap-1.5 rounded-[3px] border border-[#dfe1e6] px-4 py-1.5 text-[13px] font-medium text-[#172b4d] transition-colors hover:bg-[#f4f5f7] focus:ring-2 focus:ring-[#0052cc] focus:ring-offset-1 focus:outline-none dark:text-foreground"
           >
             Show me how
-            <svg aria-hidden="true" className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              aria-hidden="true"
+              className="size-3.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
               <polyline points="15 3 21 3 21 9" />
               <line x1="10" y1="14" x2="21" y2="3" />
@@ -636,29 +906,53 @@ export default function ArchivedGoalsPage() {
     }
 
     if (id === "status") {
-      const opts = STATUS_OPTIONS.filter((o) => !lc || o.value.toLowerCase().includes(lc))
+      const opts = STATUS_OPTIONS.filter(
+        (o) => !lc || o.value.toLowerCase().includes(lc)
+      )
       return (
         <div className={panelClass}>
           {searchInput}
           <div className="max-h-64 overflow-y-auto py-1">
             {opts.length === 0 ? (
-              <div className="px-3 py-2 text-[13px] text-[#626f86]">No options</div>
+              <div className="px-3 py-2 text-[13px] text-[#626f86]">
+                No options
+              </div>
             ) : (
               opts.map((opt, i) => (
                 <button
                   key={opt.value}
-                  onClick={() => { setStatusFilter(opt.value); setOpenFilter(null); setFilterSearch("") }}
+                  onClick={() => {
+                    setStatusFilter(opt.value)
+                    setOpenFilter(null)
+                    setFilterSearch("")
+                  }}
                   className={`flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                    statusFilter === opt.value ? "bg-[#e9f2ff]" : i === 0 ? "bg-[#f4f5f7] hover:bg-[#ebecf0]" : "hover:bg-[#f4f5f7]"
+                    statusFilter === opt.value
+                      ? "bg-[#e9f2ff]"
+                      : i === 0
+                        ? "bg-[#f4f5f7] hover:bg-[#ebecf0]"
+                        : "hover:bg-[#f4f5f7]"
                   }`}
                 >
                   {opt.badgeClass ? (
-                    <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${opt.badgeClass}`}>{opt.value}</span>
+                    <span
+                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${opt.badgeClass}`}
+                    >
+                      {opt.value}
+                    </span>
                   ) : (
-                    <span className="text-[13px] font-bold uppercase text-[#172b4d] dark:text-foreground">{opt.value}</span>
+                    <span className="text-[13px] font-bold text-[#172b4d] uppercase dark:text-foreground">
+                      {opt.value}
+                    </span>
                   )}
                   {statusFilter === opt.value && (
-                    <svg className="ml-auto size-3.5 text-[#0052cc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <svg
+                      className="ml-auto size-3.5 text-[#0052cc]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   )}
@@ -671,24 +965,44 @@ export default function ArchivedGoalsPage() {
     }
 
     if (id === "owner") {
-      const opts = OWNER_OPTIONS.filter((o) => !lc || o.name.toLowerCase().includes(lc))
+      const opts = OWNER_OPTIONS.filter(
+        (o) => !lc || o.name.toLowerCase().includes(lc)
+      )
       return (
         <div className={panelClass}>
           {searchInput}
           <div className="max-h-64 overflow-y-auto py-1">
             {opts.length === 0 ? (
-              <div className="px-3 py-2 text-[13px] text-[#626f86]">No options</div>
+              <div className="px-3 py-2 text-[13px] text-[#626f86]">
+                No options
+              </div>
             ) : (
               opts.map((opt) => (
                 <button
                   key={opt.name}
-                  onClick={() => { setOwnerFilter(opt.name); setOpenFilter(null); setFilterSearch("") }}
+                  onClick={() => {
+                    setOwnerFilter(opt.name)
+                    setOpenFilter(null)
+                    setFilterSearch("")
+                  }}
                   className={`flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors ${ownerFilter === opt.name ? "bg-[#e9f2ff]" : "hover:bg-[#f4f5f7]"}`}
                 >
-                  <span className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${opt.color}`}>{opt.initials}</span>
-                  <span className="text-[13px] text-[#172b4d] dark:text-foreground">{opt.name}</span>
+                  <span
+                    className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${opt.color}`}
+                  >
+                    {opt.initials}
+                  </span>
+                  <span className="text-[13px] text-[#172b4d] dark:text-foreground">
+                    {opt.name}
+                  </span>
                   {ownerFilter === opt.name && (
-                    <svg className="ml-auto size-3.5 text-[#0052cc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <svg
+                      className="ml-auto size-3.5 text-[#0052cc]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   )}
@@ -701,7 +1015,9 @@ export default function ArchivedGoalsPage() {
     }
 
     if (id === "team") {
-      const opts = TEAM_OPTIONS.filter((o) => !lc || o.name.toLowerCase().includes(lc))
+      const opts = TEAM_OPTIONS.filter(
+        (o) => !lc || o.name.toLowerCase().includes(lc)
+      )
       return (
         <div className={panelClass}>
           {searchInput}
@@ -709,16 +1025,32 @@ export default function ArchivedGoalsPage() {
             {opts.map((opt) => (
               <button
                 key={opt.id}
-                onClick={() => { setTeamFilter(opt.name); setOpenFilter(null); setFilterSearch("") }}
+                onClick={() => {
+                  setTeamFilter(opt.name)
+                  setOpenFilter(null)
+                  setFilterSearch("")
+                }}
                 className={`flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors ${teamFilter === opt.name ? "bg-[#e9f2ff]" : "hover:bg-[#f4f5f7]"}`}
               >
-                <span className={`flex size-6 shrink-0 items-center justify-center rounded ${opt.color}`}>
-                  <svg className="size-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                <span
+                  className={`flex size-6 shrink-0 items-center justify-center rounded ${opt.color}`}
+                >
+                  <svg
+                    className="size-3.5 text-white"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                   </svg>
                 </span>
-                <span className="text-[13px] text-[#172b4d] dark:text-foreground">{opt.name}</span>
+                <span className="text-[13px] text-[#172b4d] dark:text-foreground">
+                  {opt.name}
+                </span>
               </button>
             ))}
           </div>
@@ -731,17 +1063,25 @@ export default function ArchivedGoalsPage() {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  const currentSortLabel = SORT_OPTIONS.find((o) => o.id === sortBy)?.label ?? sortBy
-  const filteredSortOptions = SORT_OPTIONS.filter((o) =>
-    !sortSearch || o.label.toLowerCase().includes(sortSearch.toLowerCase())
+  const currentSortLabel =
+    SORT_OPTIONS.find((o) => o.id === sortBy)?.label ?? sortBy
+  const filteredSortOptions = SORT_OPTIONS.filter(
+    (o) =>
+      !sortSearch || o.label.toLowerCase().includes(sortSearch.toLowerCase())
   )
 
   return (
     <div className="p-6">
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg border bg-background px-5 py-3 text-sm font-medium shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
-          <svg className="size-4 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 animate-in items-center gap-2 rounded-lg border bg-background px-5 py-3 text-sm font-medium shadow-lg fade-in slide-in-from-bottom-2">
+          <svg
+            className="size-4 shrink-0 text-green-500"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <polyline points="20 6 9 17 4 12" />
           </svg>
           {toast}
@@ -750,31 +1090,43 @@ export default function ArchivedGoalsPage() {
 
       {/* Title + Create goal */}
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-[#172b4d] dark:text-foreground">Archived</h1>
+        <h1 className="text-2xl font-semibold text-[#172b4d] dark:text-foreground">
+          Archived
+        </h1>
         <button
           onClick={() => router.push("/goals")}
-          className="rounded-[3px] border border-[#dfe1e6] px-3 py-1.5 text-[13px] font-medium text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7] transition-colors"
+          className="rounded-[3px] border border-[#dfe1e6] px-3 py-1.5 text-[13px] font-medium text-[#172b4d] transition-colors hover:bg-[#f4f5f7] dark:text-foreground"
         >
           Create goal
         </button>
       </div>
 
       {/* Search */}
-      <div className="mb-4 relative">
-        <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#626f86]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+      <div className="relative mb-4">
+        <svg
+          className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#626f86]"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <input
           type="text"
           placeholder="Search goals"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-[3px] border border-[#dfe1e6] bg-background py-2 pl-9 pr-3 text-[13px] text-[#172b4d] dark:text-foreground outline-none placeholder:text-[#626f86] focus:border-[#4c9aff] focus:ring-2 focus:ring-[#4c9aff]/20 transition-shadow"
+          className="w-full rounded-[3px] border border-[#dfe1e6] bg-background py-2 pr-3 pl-9 text-[13px] text-[#172b4d] transition-shadow outline-none placeholder:text-[#626f86] focus:border-[#4c9aff] focus:ring-2 focus:ring-[#4c9aff]/20 dark:text-foreground"
         />
       </div>
 
       {/* Filter row */}
-      <div ref={filterBarRef} className="mb-4 flex flex-wrap items-center gap-2">
+      <div
+        ref={filterBarRef}
+        className="mb-4 flex flex-wrap items-center gap-2"
+      >
         {filterDefs.map((f) => {
           const chipShown = isChipShown(f.id)
           const filterVal = getFilterValue(f.id)
@@ -784,23 +1136,41 @@ export default function ArchivedGoalsPage() {
               <div key={f.id} className="relative">
                 <div className="flex items-center gap-1">
                   <button
-                    data-testid={f.id === "reporting" ? "reporting-filter-chip" : `${f.id}-filter-chip`}
+                    data-testid={
+                      f.id === "reporting"
+                        ? "reporting-filter-chip"
+                        : `${f.id}-filter-chip`
+                    }
                     onClick={() => handleFilterBtn(f.id)}
                     className="flex items-center gap-1 rounded-l-[3px] border border-[#0052cc] bg-[#e9f2ff] px-2.5 py-1.5 text-[13px] font-medium text-[#0052cc] transition-colors hover:bg-[#cce0ff]"
                   >
                     {f.icon}
                     <span className="ml-0.5">
-                      {f.chipLabel}{f.id === "reporting" ? " for" : " is"}{filterVal ? ` ${filterVal}` : ""}
+                      {f.chipLabel}
+                      {f.id === "reporting" ? " for" : " is"}
+                      {filterVal ? ` ${filterVal}` : ""}
                     </span>
                   </button>
                   <button
-                    data-testid={f.id === "reporting" ? "reporting-filter-x" : `${f.id}-filter-x`}
+                    data-testid={
+                      f.id === "reporting"
+                        ? "reporting-filter-x"
+                        : `${f.id}-filter-x`
+                    }
                     onClick={() => clearFilter(f.id)}
                     aria-label={`Remove ${f.chipLabel} filter`}
-                    className="flex items-center justify-center rounded-r-[3px] border border-l-0 border-[#0052cc] bg-[#0052cc] px-1.5 py-1.5 text-white hover:bg-[#0747a6] transition-colors"
+                    className="flex items-center justify-center rounded-r-[3px] border border-l-0 border-[#0052cc] bg-[#0052cc] px-1.5 py-1.5 text-white transition-colors hover:bg-[#0747a6]"
                   >
-                    <svg aria-hidden="true" className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    <svg
+                      aria-hidden="true"
+                      className="size-3"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   </button>
                 </div>
@@ -833,7 +1203,7 @@ export default function ArchivedGoalsPage() {
         {!anyChipActive && (
           <button
             onClick={clearFilters}
-            className="px-1 py-1.5 text-[13px] text-[#626f86] hover:text-[#172b4d] transition-colors"
+            className="px-1 py-1.5 text-[13px] text-[#626f86] transition-colors hover:text-[#172b4d]"
           >
             Reset
           </button>
@@ -853,23 +1223,52 @@ export default function ArchivedGoalsPage() {
               {/* Date range button */}
               <div className="relative">
                 <button
-                  onClick={() => { setDatePickerOpen((v) => !v); setViewByOpen(false); setSortOpen(false) }}
-                  className={`rounded-[3px] border px-3 py-1.5 text-[13px] text-[#172b4d] dark:text-foreground transition-colors ${
-                    datePickerOpen ? "border-[#0052cc] bg-[#e9f2ff] text-[#0052cc]" : "border-[#dfe1e6] hover:bg-[#f4f5f7]"
+                  onClick={() => {
+                    setDatePickerOpen((v) => !v)
+                    setViewByOpen(false)
+                    setSortOpen(false)
+                  }}
+                  className={`rounded-[3px] border px-3 py-1.5 text-[13px] text-[#172b4d] transition-colors dark:text-foreground ${
+                    datePickerOpen
+                      ? "border-[#0052cc] bg-[#e9f2ff] text-[#0052cc]"
+                      : "border-[#dfe1e6] hover:bg-[#f4f5f7]"
                   }`}
                 >
                   {fmtDate(rangeStart)} - {fmtDate(rangeEnd)}
                 </button>
                 {datePickerOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-1 rounded-[3px] border border-[#dfe1e6] bg-white dark:bg-popover shadow-[0_4px_16px_rgba(9,30,66,0.18)] p-5">
+                  <div className="absolute top-full right-0 z-50 mt-1 rounded-[3px] border border-[#dfe1e6] bg-white p-5 shadow-[0_4px_16px_rgba(9,30,66,0.18)] dark:bg-popover">
                     <div className="flex gap-10">
-                      <CalendarPanel label="Start" month={leftCalMonth} selected={rangeStart} onNavigate={setLeftCalMonth}
-                        onSelect={(d) => { setRangeStart(d); setLeftCalMonth(new Date(d.getFullYear(), d.getMonth(), 1)) }} />
-                      <CalendarPanel label="End" month={rightCalMonth} selected={rangeEnd} onNavigate={setRightCalMonth}
-                        onSelect={(d) => { setRangeEnd(d); setRightCalMonth(new Date(d.getFullYear(), d.getMonth(), 1)) }} />
+                      <CalendarPanel
+                        label="Start"
+                        month={leftCalMonth}
+                        selected={rangeStart}
+                        onNavigate={setLeftCalMonth}
+                        onSelect={(d) => {
+                          setRangeStart(d)
+                          setLeftCalMonth(
+                            new Date(d.getFullYear(), d.getMonth(), 1)
+                          )
+                        }}
+                      />
+                      <CalendarPanel
+                        label="End"
+                        month={rightCalMonth}
+                        selected={rangeEnd}
+                        onNavigate={setRightCalMonth}
+                        onSelect={(d) => {
+                          setRangeEnd(d)
+                          setRightCalMonth(
+                            new Date(d.getFullYear(), d.getMonth(), 1)
+                          )
+                        }}
+                      />
                     </div>
                     <div className="mt-4">
-                      <button onClick={() => setDatePickerOpen(false)} className="w-full rounded-[3px] bg-[#0052cc] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#0747a6] transition-colors">
+                      <button
+                        onClick={() => setDatePickerOpen(false)}
+                        className="w-full rounded-[3px] bg-[#0052cc] px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#0747a6]"
+                      >
                         {fmtDate(rangeStart)} - {fmtDate(rangeEnd)}
                       </button>
                     </div>
@@ -880,21 +1279,51 @@ export default function ArchivedGoalsPage() {
               {/* View by dropdown */}
               <div className="relative">
                 <button
-                  onClick={() => { setViewByOpen((v) => !v); setDatePickerOpen(false); setSortOpen(false) }}
+                  onClick={() => {
+                    setViewByOpen((v) => !v)
+                    setDatePickerOpen(false)
+                    setSortOpen(false)
+                  }}
                   className={`flex items-center gap-1 rounded-[3px] border px-3 py-1.5 text-[13px] transition-colors ${
-                    viewByOpen ? "border-[#0052cc] bg-[#e9f2ff] text-[#0052cc]" : "border-[#dfe1e6] text-[#626f86] hover:bg-[#f4f5f7]"
+                    viewByOpen
+                      ? "border-[#0052cc] bg-[#e9f2ff] text-[#0052cc]"
+                      : "border-[#dfe1e6] text-[#626f86] hover:bg-[#f4f5f7]"
                   }`}
                 >
                   View by {viewBy}
-                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
+                  <svg
+                    className="size-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
                 </button>
                 {viewByOpen && (
-                  <div className="absolute left-0 top-full z-50 mt-1 w-36 rounded-[3px] border border-[#dfe1e6] bg-white dark:bg-popover shadow-[0_4px_16px_rgba(9,30,66,0.18)] py-1">
+                  <div className="absolute top-full left-0 z-50 mt-1 w-36 rounded-[3px] border border-[#dfe1e6] bg-white py-1 shadow-[0_4px_16px_rgba(9,30,66,0.18)] dark:bg-popover">
                     {["Months", "Quarters", "Years"].map((opt) => (
-                      <button key={opt} onClick={() => { setViewBy(opt); setViewByOpen(false) }}
-                        className={`flex w-full items-center justify-between px-3 py-2 text-[13px] text-left transition-colors ${viewBy === opt ? "bg-[#e9f2ff] text-[#0052cc]" : "text-[#172b4d] hover:bg-[#f4f5f7]"}`}>
+                      <button
+                        key={opt}
+                        onClick={() => {
+                          setViewBy(opt)
+                          setViewByOpen(false)
+                        }}
+                        className={`flex w-full items-center justify-between px-3 py-2 text-left text-[13px] transition-colors ${viewBy === opt ? "bg-[#e9f2ff] text-[#0052cc]" : "text-[#172b4d] hover:bg-[#f4f5f7]"}`}
+                      >
                         {opt}
-                        {viewBy === opt && <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>}
+                        {viewBy === opt && (
+                          <svg
+                            className="size-3.5"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -905,17 +1334,41 @@ export default function ArchivedGoalsPage() {
 
           {/* View toggle: list | timeline (always shown) */}
           <div className="flex rounded-[3px] border border-[#dfe1e6]">
-            <button onClick={() => setViewMode("list")} title="Display as list"
-              className={`px-2 py-1.5 rounded-l-[3px] border-r border-[#dfe1e6] transition-colors ${viewMode === "list" ? "bg-[#e9f2ff]" : "text-[#626f86] hover:bg-[#f4f5f7]"}`}>
-              <svg className={`size-4 ${viewMode === "list" ? "text-[#0052cc]" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="9" y1="6" x2="21" y2="6" /><line x1="9" y1="12" x2="21" y2="12" /><line x1="9" y1="18" x2="21" y2="18" />
-                <circle cx="5" cy="6" r="1" fill="currentColor" /><circle cx="5" cy="12" r="1" fill="currentColor" /><circle cx="5" cy="18" r="1" fill="currentColor" />
+            <button
+              onClick={() => setViewMode("list")}
+              title="Display as list"
+              className={`rounded-l-[3px] border-r border-[#dfe1e6] px-2 py-1.5 transition-colors ${viewMode === "list" ? "bg-[#e9f2ff]" : "text-[#626f86] hover:bg-[#f4f5f7]"}`}
+            >
+              <svg
+                className={`size-4 ${viewMode === "list" ? "text-[#0052cc]" : ""}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <line x1="9" y1="6" x2="21" y2="6" />
+                <line x1="9" y1="12" x2="21" y2="12" />
+                <line x1="9" y1="18" x2="21" y2="18" />
+                <circle cx="5" cy="6" r="1" fill="currentColor" />
+                <circle cx="5" cy="12" r="1" fill="currentColor" />
+                <circle cx="5" cy="18" r="1" fill="currentColor" />
               </svg>
             </button>
-            <button onClick={() => setViewMode("timeline")} title="Display as timeline"
-              className={`px-2 py-1.5 rounded-r-[3px] transition-colors ${viewMode === "timeline" ? "bg-[#e9f2ff]" : "text-[#626f86] hover:bg-[#f4f5f7]"}`}>
-              <svg className={`size-4 ${viewMode === "timeline" ? "text-[#0052cc]" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="3" y1="6" x2="21" y2="6" /><line x1="7" y1="12" x2="21" y2="12" /><line x1="11" y1="18" x2="21" y2="18" />
+            <button
+              onClick={() => setViewMode("timeline")}
+              title="Display as timeline"
+              className={`rounded-r-[3px] px-2 py-1.5 transition-colors ${viewMode === "timeline" ? "bg-[#e9f2ff]" : "text-[#626f86] hover:bg-[#f4f5f7]"}`}
+            >
+              <svg
+                className={`size-4 ${viewMode === "timeline" ? "text-[#0052cc]" : ""}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="7" y1="12" x2="21" y2="12" />
+                <line x1="11" y1="18" x2="21" y2="18" />
               </svg>
             </button>
           </div>
@@ -923,18 +1376,33 @@ export default function ArchivedGoalsPage() {
           {/* ── List view: single-button sort with DropdownMenu ── */}
           {viewMode === "list" && (
             <DropdownMenu>
-              <DropdownMenuTrigger render={
-                <button className="flex items-center gap-1.5 rounded-[3px] border border-[#dfe1e6] px-3 py-1.5 text-[13px] text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7] transition-colors">
-                  Sort by {currentSortLabel}
-                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-              } />
+              <DropdownMenuTrigger
+                render={
+                  <button className="flex items-center gap-1.5 rounded-[3px] border border-[#dfe1e6] px-3 py-1.5 text-[13px] text-[#172b4d] transition-colors hover:bg-[#f4f5f7] dark:text-foreground">
+                    Sort by {currentSortLabel}
+                    <svg
+                      className="size-3.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+                }
+              />
               <DropdownMenuContent align="end" className="w-44">
                 {SORT_OPTIONS.map((opt) => (
-                  <DropdownMenuItem key={opt.id} onClick={() => setSortBy(opt.id)}
-                    className={sortBy === opt.id ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20" : ""}>
+                  <DropdownMenuItem
+                    key={opt.id}
+                    onClick={() => setSortBy(opt.id)}
+                    className={
+                      sortBy === opt.id
+                        ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20"
+                        : ""
+                    }
+                  >
                     {opt.label}
                   </DropdownMenuItem>
                 ))}
@@ -946,82 +1414,141 @@ export default function ArchivedGoalsPage() {
           {viewMode === "timeline" && (
             <div className="relative flex items-center">
               <button
-                onClick={() => { setSortOpen((v) => !v); setDatePickerOpen(false); setViewByOpen(false) }}
+                onClick={() => {
+                  setSortOpen((v) => !v)
+                  setDatePickerOpen(false)
+                  setViewByOpen(false)
+                }}
                 className={`rounded-l-[3px] border px-3 py-1.5 text-[13px] transition-colors ${
-                  sortOpen ? "border-[#0052cc] bg-[#e9f2ff] text-[#0052cc]" : "border-[#dfe1e6] text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7]"
+                  sortOpen
+                    ? "border-[#0052cc] bg-[#e9f2ff] text-[#0052cc]"
+                    : "border-[#dfe1e6] text-[#172b4d] hover:bg-[#f4f5f7] dark:text-foreground"
                 }`}
               >
                 Sort by {currentSortLabel}
               </button>
-              <button onClick={() => setSortAsc((v) => !v)}
-                className="rounded-r-[3px] border border-l-0 border-[#dfe1e6] px-2 py-1.5 text-[#626f86] hover:bg-[#f4f5f7] transition-colors"
-                title={sortAsc ? "Ascending" : "Descending"}>
+              <button
+                onClick={() => setSortAsc((v) => !v)}
+                className="rounded-r-[3px] border border-l-0 border-[#dfe1e6] px-2 py-1.5 text-[#626f86] transition-colors hover:bg-[#f4f5f7]"
+                title={sortAsc ? "Ascending" : "Descending"}
+              >
                 {sortAsc ? (
-                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15" /></svg>
+                  <svg
+                    className="size-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <polyline points="18 15 12 9 6 15" />
+                  </svg>
                 ) : (
-                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+                  <svg
+                    className="size-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
                 )}
               </button>
 
-            {/* Sort dropdown */}
-            {sortOpen && (
-              <div className="absolute right-0 top-full z-50 mt-1 w-52 rounded-[3px] border border-[#dfe1e6] bg-white dark:bg-popover shadow-[0_4px_16px_rgba(9,30,66,0.18)]">
-                <div className="flex items-center gap-2 border-b border-[#dfe1e6] px-3 py-2">
-                  <input
-                    autoFocus
-                    type="text"
-                    value={sortSearch}
-                    onChange={(e) => setSortSearch(e.target.value)}
-                    placeholder="Select..."
-                    className="flex-1 bg-transparent text-[13px] text-[#172b4d] dark:text-foreground outline-none placeholder:text-[#626f86]"
-                  />
-                  <svg className="size-4 shrink-0 text-[#626f86]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  </svg>
-                </div>
-                <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-[#626f86]">
-                  Sort by
-                </div>
-                <div className="pb-1">
-                  {filteredSortOptions.map((opt) => (
-                    <button
-                      key={opt.id}
-                      onClick={() => { setSortBy(opt.id); setSortOpen(false); setSortSearch("") }}
-                      className={`flex w-full items-center px-3 py-2 text-[13px] text-left transition-colors ${
-                        sortBy === opt.id ? "bg-[#e9f2ff] text-[#0052cc]" : "text-[#172b4d] hover:bg-[#f4f5f7]"
-                      }`}
+              {/* Sort dropdown */}
+              {sortOpen && (
+                <div className="absolute top-full right-0 z-50 mt-1 w-52 rounded-[3px] border border-[#dfe1e6] bg-white shadow-[0_4px_16px_rgba(9,30,66,0.18)] dark:bg-popover">
+                  <div className="flex items-center gap-2 border-b border-[#dfe1e6] px-3 py-2">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={sortSearch}
+                      onChange={(e) => setSortSearch(e.target.value)}
+                      placeholder="Select..."
+                      className="flex-1 bg-transparent text-[13px] text-[#172b4d] outline-none placeholder:text-[#626f86] dark:text-foreground"
+                    />
+                    <svg
+                      className="size-4 shrink-0 text-[#626f86]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
                     >
-                      {opt.label}
-                    </button>
-                  ))}
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </div>
+                  <div className="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wide text-[#626f86] uppercase">
+                    Sort by
+                  </div>
+                  <div className="pb-1">
+                    {filteredSortOptions.map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => {
+                          setSortBy(opt.id)
+                          setSortOpen(false)
+                          setSortSearch("")
+                        }}
+                        className={`flex w-full items-center px-3 py-2 text-left text-[13px] transition-colors ${
+                          sortBy === opt.id
+                            ? "bg-[#e9f2ff] text-[#0052cc]"
+                            : "text-[#172b4d] hover:bg-[#f4f5f7]"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
           )}
 
           {/* ── List view: Columns popover ── */}
           {viewMode === "list" && (
             <Popover>
-              <PopoverTrigger render={
-                <button className="flex items-center gap-1.5 rounded-[3px] border border-[#dfe1e6] px-2.5 py-1.5 text-[13px] text-[#626f86] hover:bg-[#f4f5f7] transition-colors">
-                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="1" />
-                    <line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" />
-                  </svg>
-                  Columns
-                </button>
-              } />
+              <PopoverTrigger
+                render={
+                  <button className="flex items-center gap-1.5 rounded-[3px] border border-[#dfe1e6] px-2.5 py-1.5 text-[13px] text-[#626f86] transition-colors hover:bg-[#f4f5f7]">
+                    <svg
+                      className="size-3.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="1" />
+                      <line x1="9" y1="3" x2="9" y2="21" />
+                      <line x1="15" y1="3" x2="15" y2="21" />
+                    </svg>
+                    Columns
+                  </button>
+                }
+              />
               <PopoverContent align="end" className="w-56 p-2">
-                <div className="text-xs font-medium text-muted-foreground px-2 py-1">Columns</div>
+                <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                  Columns
+                </div>
                 {columns.map((col) => (
-                  <div key={col.id} className="flex items-center justify-between px-2 py-1.5 text-sm">
+                  <div
+                    key={col.id}
+                    className="flex items-center justify-between px-2 py-1.5 text-sm"
+                  >
                     <span>{col.label}</span>
                     <button
-                      onClick={() => setColumns((prev) => prev.map((c) => c.id === col.id ? { ...c, enabled: !c.enabled } : c))}
+                      onClick={() =>
+                        setColumns((prev) =>
+                          prev.map((c) =>
+                            c.id === col.id ? { ...c, enabled: !c.enabled } : c
+                          )
+                        )
+                      }
                       className={`relative inline-flex h-5 w-9 items-center rounded-full border transition-colors ${col.enabled ? "bg-[#0052cc]" : "bg-muted"}`}
                     >
-                      <span className={`size-4 rounded-full bg-white shadow-sm transition-transform ${col.enabled ? "translate-x-4" : "translate-x-0.5"}`} />
+                      <span
+                        className={`size-4 rounded-full bg-white shadow-sm transition-transform ${col.enabled ? "translate-x-4" : "translate-x-0.5"}`}
+                      />
                     </button>
                   </div>
                 ))}
@@ -1031,46 +1558,72 @@ export default function ArchivedGoalsPage() {
 
           {/* More menu — Copy link + Export CSV */}
           <DropdownMenu>
-            <DropdownMenuTrigger render={
-              <button className="rounded-[3px] border border-[#dfe1e6] px-1.5 py-1.5 text-[#626f86] hover:bg-[#f4f5f7] transition-colors">
-                <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
-                </svg>
-              </button>
-            } />
+            <DropdownMenuTrigger
+              render={
+                <button className="rounded-[3px] border border-[#dfe1e6] px-1.5 py-1.5 text-[#626f86] transition-colors hover:bg-[#f4f5f7]">
+                  <svg
+                    className="size-4"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                  >
+                    <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                  </svg>
+                </button>
+              }
+            />
             <DropdownMenuContent align="end" className="w-36">
-              <DropdownMenuItem onClick={() => {
-                navigator.clipboard.writeText(window.location.href)
-                showToast("Link copied to clipboard")
-              }}>Copy link</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {
-                const headers = ["Name", "Status", "Progress", "Target date", "Owner", "Archived date"]
-                const rows = filteredGoals.map((g) => [
-                  `"${g.name.replace(/"/g, '""')}"`,
-                  g.status,
-                  `${g.progress}%`,
-                  g.targetDate,
-                  `"${g.owner.name}"`,
-                  g.archivedDate,
-                ])
-                const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n")
-                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
-                const url = URL.createObjectURL(blob)
-                const a = document.createElement("a")
-                a.href = url
-                a.download = "archived-goals.csv"
-                a.click()
-                URL.revokeObjectURL(url)
-                showToast("Exported archived-goals.csv")
-              }}>Export CSV</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href)
+                  showToast("Link copied to clipboard")
+                }}
+              >
+                Copy link
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  const headers = [
+                    "Name",
+                    "Status",
+                    "Progress",
+                    "Target date",
+                    "Owner",
+                    "Archived date",
+                  ]
+                  const rows = filteredGoals.map((g) => [
+                    `"${g.name.replace(/"/g, '""')}"`,
+                    g.status,
+                    `${g.progress}%`,
+                    g.targetDate,
+                    `"${g.owner.name}"`,
+                    g.archivedDate,
+                  ])
+                  const csv = [
+                    headers.join(","),
+                    ...rows.map((r) => r.join(",")),
+                  ].join("\n")
+                  const blob = new Blob([csv], {
+                    type: "text/csv;charset=utf-8;",
+                  })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement("a")
+                  a.href = url
+                  a.download = "archived-goals.csv"
+                  a.click()
+                  URL.revokeObjectURL(url)
+                  showToast("Exported archived-goals.csv")
+                }}
+              >
+                Export CSV
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-[#dfe1e6] overflow-hidden">
-        <div className="grid grid-cols-[1fr_110px_120px_110px_80px_80px_auto] gap-4 border-b border-[#dfe1e6] bg-[#fafbfc] dark:bg-muted/20 px-4 py-2.5 text-xs font-medium text-[#626f86]">
+      <div className="overflow-hidden rounded-lg border border-[#dfe1e6]">
+        <div className="grid grid-cols-[1fr_110px_120px_110px_80px_80px_auto] gap-4 border-b border-[#dfe1e6] bg-[#fafbfc] px-4 py-2.5 text-xs font-medium text-[#626f86] dark:bg-muted/20">
           <span>Name</span>
           <span>Status</span>
           <span>Progress</span>
@@ -1085,94 +1638,215 @@ export default function ArchivedGoalsPage() {
             <div
               key={goal.id}
               onClick={() => router.push(`/goals/${goal.id}`)}
-              className="grid grid-cols-[1fr_110px_120px_110px_80px_80px_auto] gap-4 border-b border-[#dfe1e6] last:border-b-0 px-4 py-3 items-center hover:bg-[#f4f5f7] dark:hover:bg-muted/30 transition-colors group cursor-pointer"
+              className="group grid cursor-pointer grid-cols-[1fr_110px_120px_110px_80px_80px_auto] items-center gap-4 border-b border-[#dfe1e6] px-4 py-3 transition-colors last:border-b-0 hover:bg-[#f4f5f7] dark:hover:bg-muted/30"
             >
-              <div className="flex items-center gap-2 min-w-0">
-                <svg className="size-4 text-[#626f86]/50 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" />
+              <div className="flex min-w-0 items-center gap-2">
+                <svg
+                  className="size-4 shrink-0 text-[#626f86]/50"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="3" />
                 </svg>
-                <span className="text-[13px] truncate text-[#172b4d] dark:text-foreground hover:text-[#0052cc]">{goal.name}</span>
+                <span className="truncate text-[13px] text-[#172b4d] hover:text-[#0052cc] dark:text-foreground">
+                  {goal.name}
+                </span>
               </div>
-              <div className="flex items-center gap-1 flex-wrap">
-                <span className="shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300">ARCHIVED</span>
-                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${statusColors[goal.status] ?? "bg-gray-200 text-gray-600"}`}>{goal.status}</span>
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="shrink-0 rounded bg-gray-200 px-1.5 py-0.5 text-[9px] font-bold text-gray-600 uppercase dark:bg-gray-700 dark:text-gray-300">
+                  ARCHIVED
+                </span>
+                <span
+                  className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${statusColors[goal.status] ?? "bg-gray-200 text-gray-600"}`}
+                >
+                  {goal.status}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-1.5 w-16 rounded-full bg-[#dfe1e6]">
-                  <div className="h-full rounded-full bg-[#0052cc]" style={{ width: `${goal.progress}%` }} />
+                  <div
+                    className="h-full rounded-full bg-[#0052cc]"
+                    style={{ width: `${goal.progress}%` }}
+                  />
                 </div>
-                <span className="text-[12px] text-[#626f86]">{goal.progress}%</span>
+                <span className="text-[12px] text-[#626f86]">
+                  {goal.progress}%
+                </span>
               </div>
               <div className="flex items-center gap-1.5 text-[12px] text-[#626f86]">
-                <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" />
-                  <line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                <svg
+                  className="size-3.5 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
                 {goal.targetDate}
               </div>
               <div onClick={(e) => e.stopPropagation()}>
-                <span className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${goal.owner.color}`}>
+                <span
+                  className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${goal.owner.color}`}
+                >
                   {goal.owner.initials}
                 </span>
               </div>
               <div onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => toggleFollow(goal.id)}
-                  className="text-[12px] text-[#626f86] hover:text-[#0052cc] transition-colors"
+                  className="text-[12px] text-[#626f86] transition-colors hover:text-[#0052cc]"
                   title={goal.following ? "Unfollow" : "Follow"}
                 >
                   {goal.following ? "Following" : "—"}
                 </button>
               </div>
-              <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+              >
                 <button
                   onClick={() => handleRestore(goal.id)}
-                  className="rounded-[3px] border border-[#dfe1e6] px-2 py-1 text-[12px] text-[#626f86] hover:bg-[#f4f5f7] hover:text-[#172b4d] transition-colors"
-                >Restore</button>
+                  className="rounded-[3px] border border-[#dfe1e6] px-2 py-1 text-[12px] text-[#626f86] transition-colors hover:bg-[#f4f5f7] hover:text-[#172b4d]"
+                >
+                  Restore
+                </button>
                 <button
                   onClick={() => setDeleteConfirmId(goal.id)}
-                  className="rounded-[3px] border border-red-200 px-2 py-1 text-[12px] text-red-600 hover:bg-red-50 transition-colors"
-                >Delete</button>
+                  className="rounded-[3px] border border-red-200 px-2 py-1 text-[12px] text-red-600 transition-colors hover:bg-red-50"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="mb-6">
-              <svg className="size-24 text-[#c1c7d0]" viewBox="0 0 120 120" fill="none">
-                <circle cx="50" cy="50" r="34" stroke="currentColor" strokeWidth="4" strokeDasharray="6 4" />
-                <circle cx="50" cy="50" r="22" stroke="currentColor" strokeWidth="3" />
-                <line x1="76" y1="76" x2="100" y2="100" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
-                <line x1="38" y1="38" x2="62" y2="62" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
-                <line x1="62" y1="38" x2="38" y2="62" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
-                <text x="18" y="20" fontSize="12" fill="currentColor" opacity="0.5">?</text>
-                <text x="72" y="24" fontSize="12" fill="currentColor" opacity="0.5">?</text>
-                <text x="5" y="72" fontSize="12" fill="currentColor" opacity="0.5">?</text>
+              <svg
+                className="size-24 text-[#c1c7d0]"
+                viewBox="0 0 120 120"
+                fill="none"
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="34"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  strokeDasharray="6 4"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="22"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                />
+                <line
+                  x1="76"
+                  y1="76"
+                  x2="100"
+                  y2="100"
+                  stroke="currentColor"
+                  strokeWidth="7"
+                  strokeLinecap="round"
+                />
+                <line
+                  x1="38"
+                  y1="38"
+                  x2="62"
+                  y2="62"
+                  stroke="currentColor"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                />
+                <line
+                  x1="62"
+                  y1="38"
+                  x2="38"
+                  y2="62"
+                  stroke="currentColor"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                />
+                <text
+                  x="18"
+                  y="20"
+                  fontSize="12"
+                  fill="currentColor"
+                  opacity="0.5"
+                >
+                  ?
+                </text>
+                <text
+                  x="72"
+                  y="24"
+                  fontSize="12"
+                  fill="currentColor"
+                  opacity="0.5"
+                >
+                  ?
+                </text>
+                <text
+                  x="5"
+                  y="72"
+                  fontSize="12"
+                  fill="currentColor"
+                  opacity="0.5"
+                >
+                  ?
+                </text>
               </svg>
             </div>
-            <p className="text-[13px] text-[#626f86] max-w-md">
-              We couldn&apos;t find any goals matching your search. Try changing your search criteria or{" "}
-              <button onClick={clearFilters} className="text-[#0052cc] hover:underline">clear all filters</button>.
+            <p className="max-w-md text-[13px] text-[#626f86]">
+              We couldn&apos;t find any goals matching your search. Try changing
+              your search criteria or{" "}
+              <button
+                onClick={clearFilters}
+                className="text-[#0052cc] hover:underline"
+              >
+                clear all filters
+              </button>
+              .
             </p>
           </div>
         )}
       </div>
 
       {/* Delete confirmation dialog */}
-      <Dialog open={deleteConfirmId !== null} onOpenChange={(open) => { if (!open) setDeleteConfirmId(null) }}>
+      <Dialog
+        open={deleteConfirmId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteConfirmId(null)
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete goal permanently?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. The goal and all its associated data will be permanently removed.
+              This action cannot be undone. The goal and all its associated data
+              will be permanently removed.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
+              Cancel
+            </Button>
             <Button
               className="bg-red-600 text-white hover:bg-red-700"
-              onClick={() => deleteConfirmId !== null && handleDelete(deleteConfirmId)}
-            >Delete permanently</Button>
+              onClick={() =>
+                deleteConfirmId !== null && handleDelete(deleteConfirmId)
+              }
+            >
+              Delete permanently
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

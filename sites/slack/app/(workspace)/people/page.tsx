@@ -1,42 +1,42 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { UserAvatar } from "@/components/user-avatar";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { UserAvatar } from "@/components/user-avatar"
+import { Input } from "@/components/ui/input"
+import { Search } from "lucide-react"
 
 type User = {
-  id: string;
-  cessId: string;
-  name: string;
-  displayName: string;
-  email: string;
-  avatar: string;
-  title: string;
-  timezone: string;
-  status: { emoji: string; text: string; expiresAt: string | null };
-  presence: "active" | "away" | "offline" | "dnd";
-  role: string;
-};
+  id: string
+  cessId: string
+  name: string
+  displayName: string
+  email: string
+  avatar: string
+  title: string
+  timezone: string
+  status: { emoji: string; text: string; expiresAt: string | null }
+  presence: "active" | "away" | "offline" | "dnd"
+  role: string
+}
 
 export default function PeoplePage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [query, setQuery] = useState("");
+  const [users, setUsers] = useState<User[]>([])
+  const [query, setQuery] = useState("")
 
   useEffect(() => {
     fetch("/api/data/users")
       .then((r) => r.json())
-      .then(setUsers);
-  }, []);
+      .then(setUsers)
+  }, [])
 
   const filtered = users.filter((u) =>
     `${u.name} ${u.displayName} ${u.email} ${u.title}`
       .toLowerCase()
-      .includes(query.toLowerCase()),
-  );
+      .includes(query.toLowerCase())
+  )
 
   return (
     <>
@@ -46,7 +46,7 @@ export default function PeoplePage() {
       />
       <div className="border-b border-border p-4">
         <div className="relative max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search people"
             value={query}
@@ -88,5 +88,5 @@ export default function PeoplePage() {
         </div>
       </ScrollArea>
     </>
-  );
+  )
 }

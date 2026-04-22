@@ -27,7 +27,12 @@ export function useHealth(site: SiteConnection | undefined) {
 
 export function useTasks(
   site: SiteConnection | undefined,
-  params?: { domain?: string; difficulty?: string; type?: string; stage?: string },
+  params?: {
+    domain?: string
+    difficulty?: string
+    type?: string
+    stage?: string
+  }
 ) {
   return useQuery({
     queryKey: site ? [...qk.tasks(site.id), params] : ["tasks", "none"],
@@ -37,7 +42,10 @@ export function useTasks(
   })
 }
 
-export function useRLObservation(site: SiteConnection | undefined, enabled = true) {
+export function useRLObservation(
+  site: SiteConnection | undefined,
+  enabled = true
+) {
   return useQuery({
     queryKey: site ? qk.rlObs(site.id) : ["rl-observation", "none"],
     enabled: !!site && enabled,
@@ -51,14 +59,13 @@ export function useSimState(site: SiteConnection | undefined, enabled = true) {
     queryKey: site ? qk.state(site.id) : ["state", "none"],
     enabled: !!site && enabled,
     staleTime: 0,
-    queryFn: () =>
-      api.get<Record<string, unknown>>(site!, "/api/sim/state"),
+    queryFn: () => api.get<Record<string, unknown>>(site!, "/api/sim/state"),
   })
 }
 
 export function useEpisodeMeta(
   site: SiteConnection | undefined,
-  enabled = true,
+  enabled = true
 ) {
   return useQuery({
     queryKey: site ? qk.episode(site.id) : ["episode", "none"],

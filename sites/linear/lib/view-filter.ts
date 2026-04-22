@@ -37,7 +37,7 @@ export interface FilterContext {
 export function issueMatches(
   issue: Issue,
   clauses: Clause[],
-  ctx: FilterContext,
+  ctx: FilterContext
 ): boolean {
   const labelsByName = new Map(ctx.labels.map((l) => [l.name, l.id]))
   const activeCycleId = (teamId: string) =>
@@ -72,10 +72,10 @@ export function issueMatches(
 export function filterIssuesForView(
   view: View,
   issues: Issue[],
-  ctx: Omit<FilterContext, "viewTeamId">,
+  ctx: Omit<FilterContext, "viewTeamId">
 ): Issue[] {
   const clauses = parseFilter(view.filterQuery)
   return issues.filter((issue) =>
-    issueMatches(issue, clauses, { ...ctx, viewTeamId: view.teamId }),
+    issueMatches(issue, clauses, { ...ctx, viewTeamId: view.teamId })
   )
 }

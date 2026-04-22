@@ -74,7 +74,7 @@ export default function InboxPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-6 text-muted-foreground"
+                    className="text-muted-foreground size-6"
                   />
                 }
               >
@@ -88,22 +88,28 @@ export default function InboxPage() {
                 <DropdownMenuItem>
                   <HugeiconsIcon icon={InboxCheckIcon} className="size-4" />
                   <span className="flex-1">Delete all read</span>
-                  <span className="font-mono text-[10px] text-muted-foreground">⇧⌫</span>
+                  <span className="text-muted-foreground font-mono text-[10px]">
+                    ⇧⌫
+                  </span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="flex items-center gap-0.5 text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-0.5">
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<Button variant="ghost" size="icon" className="size-7" />}
+                render={
+                  <Button variant="ghost" size="icon" className="size-7" />
+                }
               >
                 <HugeiconsIcon icon={FilterIcon} className="size-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 p-0">
-                <div className="flex items-center justify-between border-b px-2 py-1.5 text-xs text-muted-foreground">
+                <div className="text-muted-foreground flex items-center justify-between border-b px-2 py-1.5 text-xs">
                   <span>Add Filter...</span>
-                  <span className="rounded border px-1 font-mono text-[10px]">F</span>
+                  <span className="rounded border px-1 font-mono text-[10px]">
+                    F
+                  </span>
                 </div>
                 <div className="p-1">
                   {[
@@ -118,13 +124,16 @@ export default function InboxPage() {
                     <button
                       key={f.label}
                       type="button"
-                      className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-accent"
+                      className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs"
                     >
-                      <HugeiconsIcon icon={f.icon} className="size-3.5 text-muted-foreground" />
+                      <HugeiconsIcon
+                        icon={f.icon}
+                        className="text-muted-foreground size-3.5"
+                      />
                       <span className="flex-1 text-left">{f.label}</span>
                       <HugeiconsIcon
                         icon={ArrowRight01Icon}
-                        className="size-3 text-muted-foreground"
+                        className="text-muted-foreground size-3"
                       />
                     </button>
                   ))}
@@ -149,15 +158,19 @@ export default function InboxPage() {
                     active ? "bg-accent" : "hover:bg-accent/50"
                   }`}
                 >
-                  <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground text-background">
+                  <div className="bg-foreground text-background mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full">
                     <HugeiconsIcon icon={Layers01Icon} className="size-3.5" />
                   </div>
                   <div className="flex min-w-0 flex-1 items-start gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{n.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">{n.preview}</p>
+                      <p className="text-muted-foreground truncate text-xs">
+                        {n.preview}
+                      </p>
                     </div>
-                    <span className="shrink-0 text-[10px] text-muted-foreground">{n.ago}</span>
+                    <span className="text-muted-foreground shrink-0 text-[10px]">
+                      {n.ago}
+                    </span>
                   </div>
                 </button>
               </li>
@@ -167,7 +180,7 @@ export default function InboxPage() {
       </aside>
 
       <section className="relative flex flex-1 flex-col">
-        <div className="flex items-center justify-end gap-0.5 border-b px-4 py-2 text-muted-foreground">
+        <div className="text-muted-foreground flex items-center justify-end gap-0.5 border-b px-4 py-2">
           <Button variant="ghost" size="icon" className="size-7">
             <HugeiconsIcon icon={Clock01Icon} className="size-4" />
           </Button>
@@ -187,7 +200,7 @@ function EmptyInbox() {
     <div className="flex flex-1 flex-col items-center justify-center gap-3">
       <svg
         viewBox="0 0 96 72"
-        className="h-16 w-20 text-muted-foreground/50"
+        className="text-muted-foreground/50 h-16 w-20"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.5"
@@ -195,7 +208,7 @@ function EmptyInbox() {
         <path d="M4 24 L24 24 L30 36 L66 36 L72 24 L92 24 L92 60 C92 63 90 65 87 65 L9 65 C6 65 4 63 4 60 Z" />
         <path d="M4 24 L16 6 L80 6 L92 24" />
       </svg>
-      <p className="text-xs text-muted-foreground">No unread notifications</p>
+      <p className="text-muted-foreground text-xs">No unread notifications</p>
     </div>
   )
 }
@@ -204,18 +217,23 @@ function WelcomeContent() {
   return (
     <div className="flex-1 overflow-auto">
       <div className="mx-auto max-w-2xl px-12 py-10">
-        <div className="mb-6 flex size-10 items-center justify-center rounded-full bg-foreground text-background">
+        <div className="bg-foreground text-background mb-6 flex size-10 items-center justify-center rounded-full">
           <HugeiconsIcon icon={Layers01Icon} className="size-5" />
         </div>
-        <h1 className="mb-3 text-3xl font-semibold tracking-tight">Welcome to Linear</h1>
-        <p className="mb-8 text-sm text-muted-foreground">
+        <h1 className="mb-3 text-3xl font-semibold tracking-tight">
+          Welcome to Linear
+        </h1>
+        <p className="text-muted-foreground mb-8 text-sm">
           Watch an introductory video and access a list of resources below.
         </p>
 
-        <div className="mb-10 overflow-hidden rounded-lg border bg-muted/30">
+        <div className="bg-muted/30 mb-10 overflow-hidden rounded-lg border">
           <div className="flex aspect-video items-center justify-center">
-            <div className="flex size-16 items-center justify-center rounded-full bg-foreground">
-              <HugeiconsIcon icon={PlayIcon} className="size-6 translate-x-0.5 text-background" />
+            <div className="bg-foreground flex size-16 items-center justify-center rounded-full">
+              <HugeiconsIcon
+                icon={PlayIcon}
+                className="text-background size-6 translate-x-0.5"
+              />
             </div>
           </div>
         </div>
@@ -230,7 +248,9 @@ function WelcomeContent() {
                   <button className="text-sm text-violet-600 hover:underline">
                     {r.title}
                   </button>
-                  <p className="text-xs text-muted-foreground">{r.description}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {r.description}
+                  </p>
                 </div>
               </li>
             ))}

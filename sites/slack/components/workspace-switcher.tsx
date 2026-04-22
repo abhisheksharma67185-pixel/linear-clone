@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { ChevronDown, Plus, Settings } from "lucide-react";
+import { ChevronDown, Plus, Settings } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,21 +8,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
 export function WorkspaceSwitcher({ name }: { name: string }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-[15px] font-bold text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-      >
+      <DropdownMenuTrigger className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-[15px] font-bold text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
         <span className="min-w-0 flex-1 truncate">{name}</span>
         <ChevronDown className="size-4 shrink-0 opacity-80" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        className="w-72"
-      >
+      <DropdownMenuContent align="start" className="w-72">
         <DropdownMenuLabel className="text-xs text-muted-foreground">
           Workspaces
         </DropdownMenuLabel>
@@ -48,5 +43,5 @@ export function WorkspaceSwitcher({ name }: { name: string }) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

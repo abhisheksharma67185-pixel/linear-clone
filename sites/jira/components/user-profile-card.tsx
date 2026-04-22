@@ -37,13 +37,20 @@ export function UserProfileCard({
   return (
     <Popover>
       <PopoverTrigger className="rounded-full">
-        <Avatar className={`${avatarSize} cursor-pointer hover:ring-2 hover:ring-ring/30 transition-all ${avatarClassName ?? ""}`}>
+        <Avatar
+          className={`${avatarSize} cursor-pointer transition-all hover:ring-2 hover:ring-ring/30 ${avatarClassName ?? ""}`}
+        >
           <AvatarFallback className="bg-blue-600 text-[9px] font-semibold text-white">
             {displayInitials}
           </AvatarFallback>
         </Avatar>
       </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" sideOffset={8} className="w-[260px] p-0">
+      <PopoverContent
+        side="bottom"
+        align="start"
+        sideOffset={8}
+        className="w-[260px] p-0"
+      >
         <div className="p-4">
           <div className="flex items-center gap-3">
             <Avatar className="size-10">
@@ -52,9 +59,13 @@ export function UserProfileCard({
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{name}</p>
+              <p className="truncate text-sm font-medium text-foreground">
+                {name}
+              </p>
               {email && (
-                <p className="text-xs text-muted-foreground truncate">{email}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {email}
+                </p>
               )}
             </div>
           </div>
@@ -62,9 +73,15 @@ export function UserProfileCard({
         <div className="border-t p-1">
           <Link
             href="/home/profile"
-            className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+            className="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-foreground transition-colors hover:bg-accent"
           >
-            <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="size-4 text-muted-foreground"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="8" r="4" />
               <path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
             </svg>

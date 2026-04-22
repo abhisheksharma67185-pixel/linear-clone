@@ -95,9 +95,7 @@ export default function IssueDetailPage() {
         creatorId,
         cycleId: cycleId === "__none__" ? null : cycleId,
         projectId: projectId === "__none__" ? null : projectId,
-        labelIds: labelIds
-          ? labelIds.split(",").map((s) => s.trim())
-          : [],
+        labelIds: labelIds ? labelIds.split(",").map((s) => s.trim()) : [],
         estimate: estimate ? Number(estimate) : null,
         dueDate: dueDate || null,
       }),
@@ -118,7 +116,7 @@ export default function IssueDetailPage() {
           <Skeleton className="mt-2 h-4 w-32" />
         </div>
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 flex flex-col gap-4">
+          <div className="flex flex-col gap-4 lg:col-span-2">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-40 w-full" />
           </div>
@@ -133,8 +131,12 @@ export default function IssueDetailPage() {
       <div className="flex items-center justify-center p-12">
         <Card className="max-w-sm text-center">
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Issue not found.</p>
-            <Button variant="outline" className="mt-4" onClick={() => router.push("/my-issues")}>
+            <p className="text-muted-foreground text-sm">Issue not found.</p>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => router.push("/my-issues")}
+            >
               Back to My Issues
             </Button>
           </CardContent>
@@ -146,13 +148,13 @@ export default function IssueDetailPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <div>
-        <h1 className="text-xl font-semibold font-mono">{issue.identifier}</h1>
-        <p className="text-sm text-muted-foreground mt-1">Issue detail</p>
+        <h1 className="font-mono text-xl font-semibold">{issue.identifier}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">Issue detail</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left column - main content */}
-        <div className="lg:col-span-2 flex flex-col gap-4">
+        <div className="flex flex-col gap-4 lg:col-span-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="issue-title">Title</Label>
             <Input
@@ -197,7 +199,10 @@ export default function IssueDetailPage() {
 
             <div className="flex flex-col gap-1.5">
               <Label>Priority</Label>
-              <Select value={priority} onValueChange={(v) => v && setPriority(v)}>
+              <Select
+                value={priority}
+                onValueChange={(v) => v && setPriority(v)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -213,7 +218,10 @@ export default function IssueDetailPage() {
 
             <div className="flex flex-col gap-1.5">
               <Label>Assignee</Label>
-              <Select value={assigneeId} onValueChange={(v) => v && setAssigneeId(v)}>
+              <Select
+                value={assigneeId}
+                onValueChange={(v) => v && setAssigneeId(v)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -230,7 +238,10 @@ export default function IssueDetailPage() {
 
             <div className="flex flex-col gap-1.5">
               <Label>Creator</Label>
-              <Select value={creatorId} onValueChange={(v) => v && setCreatorId(v)}>
+              <Select
+                value={creatorId}
+                onValueChange={(v) => v && setCreatorId(v)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -263,7 +274,10 @@ export default function IssueDetailPage() {
 
             <div className="flex flex-col gap-1.5">
               <Label>Project</Label>
-              <Select value={projectId} onValueChange={(v) => v && setProjectId(v)}>
+              <Select
+                value={projectId}
+                onValueChange={(v) => v && setProjectId(v)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -321,12 +335,16 @@ export default function IssueDetailPage() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete issue?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently delete {issue.identifier}. This action cannot be undone.
+                      This will permanently delete {issue.identifier}. This
+                      action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction variant="destructive" onClick={handleDelete}>
+                    <AlertDialogAction
+                      variant="destructive"
+                      onClick={handleDelete}
+                    >
                       Delete
                     </AlertDialogAction>
                   </AlertDialogFooter>

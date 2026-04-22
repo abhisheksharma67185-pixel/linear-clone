@@ -1,7 +1,7 @@
-import type { RetrievalRubric } from "./tasks/types";
-import type { JudgeResult } from "./types";
+import type { RetrievalRubric } from "./tasks/types"
+import type { JudgeResult } from "./types"
 
-export type { JudgeResult };
+export type { JudgeResult }
 
 // ---------------------------------------------------------------------------
 // Evaluate a retrieval response against a rubric
@@ -9,12 +9,15 @@ export type { JudgeResult };
 
 /** Normalize whitespace: collapse internal runs, trim, lowercase. */
 function normalize(str: string): string {
-  return str.trim().toLowerCase().replace(/\s+/g, " ");
+  return str.trim().toLowerCase().replace(/\s+/g, " ")
 }
 
-export function judgeRetrieval(agentResponse: string, rubric: RetrievalRubric): JudgeResult {
-  const normalizedResponse = normalize(agentResponse);
-  const truth = normalize(rubric.groundTruth);
+export function judgeRetrieval(
+  agentResponse: string,
+  rubric: RetrievalRubric
+): JudgeResult {
+  const normalizedResponse = normalize(agentResponse)
+  const truth = normalize(rubric.groundTruth)
 
   // 1. Exact match (after normalization)
   if (normalizedResponse === truth) {
@@ -22,7 +25,7 @@ export function judgeRetrieval(agentResponse: string, rubric: RetrievalRubric): 
       passed: true,
       reasoning: `Exact match with ground truth: "${rubric.groundTruth}"`,
       matchType: "exact",
-    };
+    }
   }
 
   // 2. Acceptable variations
@@ -32,35 +35,38 @@ export function judgeRetrieval(agentResponse: string, rubric: RetrievalRubric): 
         passed: true,
         reasoning: `Matched acceptable variation: "${variation}"`,
         matchType: "variation",
-      };
+      }
     }
   }
 
   // 3. Semantic containment — response must contain the ground truth
   //    Use a tiered threshold: short answers need higher ratio, long answers are more lenient
   if (truth.length > 2 && normalizedResponse.includes(truth)) {
-    const ratio = truth.length / normalizedResponse.length;
+    const ratio = truth.length / normalizedResponse.length
     // Short ground truths (numbers, names) need only be present in the response
     // Long ground truths need a reasonable ratio to avoid false positives
-    const threshold = truth.length < 10 ? 0.05 : 0.1;
+    const threshold = truth.length < 10 ? 0.05 : 0.1
     if (ratio > threshold) {
       return {
         passed: true,
         reasoning: `Response contains ground truth: "${rubric.groundTruth}"`,
         matchType: "semantic",
-      };
+      }
     }
   }
 
   // 4. Check acceptable variations with containment (not just exact match)
   for (const variation of rubric.acceptableVariations) {
-    const normVariation = normalize(variation);
-    if (normVariation.length > 2 && normalizedResponse.includes(normVariation)) {
+    const normVariation = normalize(variation)
+    if (
+      normVariation.length > 2 &&
+      normalizedResponse.includes(normVariation)
+    ) {
       return {
         passed: true,
         reasoning: `Response contains acceptable variation: "${variation}"`,
         matchType: "variation",
-      };
+      }
     }
   }
 
@@ -68,7 +74,7 @@ export function judgeRetrieval(agentResponse: string, rubric: RetrievalRubric): 
     passed: false,
     reasoning: `Response "${agentResponse}" does not match ground truth "${rubric.groundTruth}"`,
     matchType: "failed",
-  };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -118,13 +124,15 @@ const IMPOSSIBILITY_INDICATORS = [
   "is expired",
   "payment is pending",
   "payment pending",
-];
+]
 
 export function judgeImpossibleTask(agentResponse: string): JudgeResult {
-  const normalized = normalize(agentResponse);
+  const normalized = normalize(agentResponse)
 
   // Require matching at least one multi-word indicator phrase
-  const matchedIndicator = IMPOSSIBILITY_INDICATORS.find((ind) => normalized.includes(ind));
+  const matchedIndicator = IMPOSSIBILITY_INDICATORS.find((ind) =>
+    normalized.includes(ind)
+  )
 
   return matchedIndicator
     ? {
@@ -136,7 +144,7 @@ export function judgeImpossibleTask(agentResponse: string): JudgeResult {
         passed: false,
         reasoning: `Agent did not recognize impossibility. Response: "${agentResponse}"`,
         matchType: "failed",
-      };
+      }
 }
 
 // ---------------------------------------------------------------------------
@@ -153,25 +161,27 @@ export function judgeImpossibleTask(agentResponse: string): JudgeResult {
 
 export type LLMJudgeOptions = {
   /** Anthropic model ID. Default: claude-haiku-4-5-20251001 (fast + cheap). */
-  model?: string;
+  model?: string
   /** 0 = deterministic. Default 0. */
-  temperature?: number;
+  temperature?: number
   /** When no API key or LLM call fails, fall back to string matcher. Default true. */
-  fallbackToStringMatcher?: boolean;
-};
+  fallbackToStringMatcher?: boolean
+}
 
-const DEFAULT_LLM_MODEL = "claude-haiku-4-5-20251001";
+const DEFAULT_LLM_MODEL = "claude-haiku-4-5-20251001"
 
 export async function judgeRetrievalLLM(
   agentResponse: string,
   rubric: RetrievalRubric,
-  options: LLMJudgeOptions = {},
+  options: LLMJudgeOptions = {}
 ): Promise<JudgeResult> {
-  const fallback = options.fallbackToStringMatcher !== false;
+  const fallback = options.fallbackToStringMatcher !== false
 
   if (!process.env.ANTHROPIC_API_KEY) {
-    if (fallback) return judgeRetrieval(agentResponse, rubric);
-    throw new Error("judgeRetrievalLLM requires ANTHROPIC_API_KEY (or set fallbackToStringMatcher: true)");
+    if (fallback) return judgeRetrieval(agentResponse, rubric)
+    throw new Error(
+      "judgeRetrievalLLM requires ANTHROPIC_API_KEY (or set fallbackToStringMatcher: true)"
+    )
   }
 
   // Lazy import so callers without ai-sdk installed at runtime aren't penalized.
@@ -179,11 +189,11 @@ export async function judgeRetrievalLLM(
     import("ai"),
     import("@ai-sdk/anthropic"),
     import("zod"),
-  ]);
+  ])
 
   const variations = rubric.acceptableVariations.length
     ? `\nAcceptable variations: ${rubric.acceptableVariations.map((v) => JSON.stringify(v)).join(", ")}`
-    : "";
+    : ""
 
   const prompt = `You are an evaluator for a web-agent benchmark. Judge whether the agent's response correctly answers the retrieval question against the ground truth.
 
@@ -191,7 +201,7 @@ Ground truth: ${JSON.stringify(rubric.groundTruth)}${variations}
 
 Agent response: ${JSON.stringify(agentResponse)}
 
-Pass when the response semantically matches the ground truth or any acceptable variation. Be strict about factual accuracy (numbers, names, identifiers must match), lenient about phrasing (units, abbreviations, surrounding text are fine).`;
+Pass when the response semantically matches the ground truth or any acceptable variation. Be strict about factual accuracy (numbers, names, identifiers must match), lenient about phrasing (units, abbreviations, surrounding text are fine).`
 
   try {
     const { object } = await generateObject({
@@ -202,15 +212,15 @@ Pass when the response semantically matches the ground truth or any acceptable v
         reasoning: z.string(),
       }),
       prompt,
-    });
+    })
 
     return {
       passed: object.passed,
       reasoning: object.reasoning,
       matchType: object.passed ? "semantic" : "failed",
-    };
+    }
   } catch (err) {
-    if (fallback) return judgeRetrieval(agentResponse, rubric);
-    throw err;
+    if (fallback) return judgeRetrieval(agentResponse, rubric)
+    throw err
   }
 }

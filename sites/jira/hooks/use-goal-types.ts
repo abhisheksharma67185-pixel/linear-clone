@@ -26,7 +26,9 @@ export function useGoalTypes() {
     setLoading(false)
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   const createType = async (data: {
     name: string
@@ -48,7 +50,10 @@ export function useGoalTypes() {
     return created as GoalTypeItem
   }
 
-  const updateType = async (id: string, data: { name?: string; description?: string; enabled?: boolean }) => {
+  const updateType = async (
+    id: string,
+    data: { name?: string; description?: string; enabled?: boolean }
+  ) => {
     const res = await fetch(`/api/data/goal-types/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -72,5 +77,13 @@ export function useGoalTypes() {
     await updateType(id, { enabled: !type.enabled })
   }
 
-  return { types, loading, createType, updateType, deleteType, toggleType, reload: load }
+  return {
+    types,
+    loading,
+    createType,
+    updateType,
+    deleteType,
+    toggleType,
+    reload: load,
+  }
 }

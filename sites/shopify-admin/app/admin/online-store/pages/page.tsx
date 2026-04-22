@@ -72,7 +72,9 @@ export default function PagesPage() {
             </Text>
           </Box>
           <Box paddingBlockStart="200">
-            <Button onClick={() => router.push("/admin/online-store/preferences")}>Manage access</Button>
+            <Button onClick={() => router.push("/admin/online-store/preferences")}>
+              Manage access
+            </Button>
           </Box>
         </Banner>
 

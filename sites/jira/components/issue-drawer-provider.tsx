@@ -17,7 +17,11 @@ export function useIssueDrawer() {
   return useContext(IssueDrawerContext)
 }
 
-export function IssueDrawerProvider({ children }: { children: React.ReactNode }) {
+export function IssueDrawerProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const [drawerKey, setDrawerKey] = useState<string | null>(null)
 
   const openIssue = useCallback((key: string) => setDrawerKey(key), [])

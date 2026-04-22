@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
 
 const actionSpace = {
   version: "1.0",
@@ -35,7 +35,11 @@ const actionSpace = {
       description: "Edit an existing message",
       params: { messageId: "string", text: "string" },
       reward: 0.5,
-      example: { action: "edit_message", messageId: "msg-200", text: "Updated text" },
+      example: {
+        action: "edit_message",
+        messageId: "msg-200",
+        text: "Updated text",
+      },
     },
     {
       name: "delete_message",
@@ -73,7 +77,11 @@ const actionSpace = {
       description: "Remove an emoji reaction from a message",
       params: { messageId: "string", emoji: "string" },
       reward: 0.3,
-      example: { action: "remove_reaction", messageId: "msg-44", emoji: ":+1:" },
+      example: {
+        action: "remove_reaction",
+        messageId: "msg-44",
+        emoji: ":+1:",
+      },
     },
     {
       name: "save_message",
@@ -101,7 +109,11 @@ const actionSpace = {
       description: "Unpin a message from a channel",
       params: { channelId: "string", messageId: "string" },
       reward: 0.3,
-      example: { action: "unpin_message", channelId: "ch-1", messageId: "msg-3" },
+      example: {
+        action: "unpin_message",
+        channelId: "ch-1",
+        messageId: "msg-3",
+      },
     },
     {
       name: "create_channel",
@@ -153,7 +165,11 @@ const actionSpace = {
       description: "Remove a user from a channel",
       params: { channelId: "string", userId: "string" },
       reward: 0.3,
-      example: { action: "remove_from_channel", channelId: "ch-5", userId: "usr-10" },
+      example: {
+        action: "remove_from_channel",
+        channelId: "ch-5",
+        userId: "usr-10",
+      },
     },
     {
       name: "join_channel",
@@ -293,8 +309,7 @@ const actionSpace = {
       name: "create_list",
       description: "Create a Slack list attached to a channel",
       params: {
-        fields:
-          "{ channelId?, name, fields: { id, name, type }[] }",
+        fields: "{ channelId?, name, fields: { id, name, type }[] }",
       },
       reward: 0.5,
       example: {
@@ -345,8 +360,7 @@ const actionSpace = {
       name: "schedule_message",
       description: "Schedule a message for later delivery",
       params: {
-        fields:
-          "{ channelId?|dmId?, text, scheduledFor: string }",
+        fields: "{ channelId?|dmId?, text, scheduledFor: string }",
       },
       reward: 0.4,
       example: {
@@ -389,8 +403,8 @@ const actionSpace = {
     unknownAction: -0.1,
   },
   episodeEnd: "Task goal achieved or max steps reached",
-};
+}
 
 export async function GET() {
-  return NextResponse.json(actionSpace);
+  return NextResponse.json(actionSpace)
 }

@@ -1,17 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R = {
   completion: 5.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const RH = {
   completion: 8.0,
   partialPerCheck: false,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.1,
-};
+}
 
 export const searchTasks: TaskDefinition[] = [
   {
@@ -28,7 +28,8 @@ export const searchTasks: TaskDefinition[] = [
       // Ravi: PLT-101, PLT-105, PLT-114, PLT-201, PLT-211 = 5
       groundTruth: "5",
       acceptableVariations: ["five", "5 issues"],
-      rubric: "Ravi Kumar (usr-3) is assigned to PLT-101, PLT-105, PLT-114, PLT-201, PLT-211 = 5 issues.",
+      rubric:
+        "Ravi Kumar (usr-3) is assigned to PLT-101, PLT-105, PLT-114, PLT-201, PLT-211 = 5 issues.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -46,7 +47,8 @@ export const searchTasks: TaskDefinition[] = [
     goal: "List all issues in the active Platform cycle (Sprint 13). What are their identifiers?",
     retrievalRubric: {
       question: "What issues are in Sprint 13?",
-      groundTruth: "PLT-102, PLT-103, PLT-104, PLT-107, PLT-112, PLT-114, PLT-118, PLT-202, PLT-204, PLT-205, PLT-211",
+      groundTruth:
+        "PLT-102, PLT-103, PLT-104, PLT-107, PLT-112, PLT-114, PLT-118, PLT-202, PLT-204, PLT-205, PLT-211",
       acceptableVariations: ["11 issues", "11"],
       rubric: "Sprint 13 (cycle-6) contains 11 issues in Platform team.",
     },
@@ -68,7 +70,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many issues are in the Auth Service project?",
       groundTruth: "23",
       acceptableVariations: ["23", "23 issues", "twenty-three"],
-      rubric: "Project proj-1 (Auth Service) has 23 issues: PLT-101 through PLT-123.",
+      rubric:
+        "Project proj-1 (Auth Service) has 23 issues: PLT-101 through PLT-123.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -88,7 +91,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many issues have the backend label?",
       groundTruth: "39",
       acceptableVariations: ["39", "39 issues"],
-      rubric: "39 issues have label-2 (backend) — mostly Platform project and Payment API v2 issues.",
+      rubric:
+        "39 issues have label-2 (backend) — mostly Platform project and Payment API v2 issues.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -108,7 +112,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "Which issues have urgent priority?",
       groundTruth: "PLT-114",
       acceptableVariations: ["1 issue", "PLT-114", "Permission model redesign"],
-      rubric: "One issue has urgent priority: PLT-114 (Permission model redesign).",
+      rubric:
+        "One issue has urgent priority: PLT-114 (Permission model redesign).",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -128,7 +133,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many issues are unestimated?",
       groundTruth: "130",
       acceptableVariations: ["130", "130 issues"],
-      rubric: "130 issues have null estimate — mostly the 45 triage backlog (PLT-301..345) and 85 legacy (LEG-001..085).",
+      rubric:
+        "130 issues have null estimate — mostly the 45 triage backlog (PLT-301..345) and 85 legacy (LEG-001..085).",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -169,7 +175,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many done issues?",
       groundTruth: "13",
       acceptableVariations: ["13", "13 done", "thirteen"],
-      rubric: "13 issues are marked done — mostly project issues from completed cycles.",
+      rubric:
+        "13 issues are marked done — mostly project issues from completed cycles.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -196,4 +203,4 @@ export const searchTasks: TaskDefinition[] = [
     rewardProfile: R,
     tags: ["retrieval", "counting"],
   },
-];
+]

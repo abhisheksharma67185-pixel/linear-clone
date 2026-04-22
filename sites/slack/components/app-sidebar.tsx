@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   AtSign,
   Bell,
@@ -22,12 +22,12 @@ import {
   Video,
   Workflow,
   SquarePen,
-} from "lucide-react";
+} from "lucide-react"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@/components/ui/collapsible"
 import {
   Sidebar,
   SidebarContent,
@@ -39,51 +39,51 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/sidebar"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { WorkspaceSwitcher } from "./workspace-switcher";
-import { ChannelListItem } from "./channel-list-item";
-import { DmListItem } from "./dm-list-item";
-import { UserAvatar } from "./user-avatar";
+} from "@/components/ui/tooltip"
+import { Button } from "@/components/ui/button"
+import { WorkspaceSwitcher } from "./workspace-switcher"
+import { ChannelListItem } from "./channel-list-item"
+import { DmListItem } from "./dm-list-item"
+import { UserAvatar } from "./user-avatar"
 
 type User = {
-  id: string;
-  name: string;
-  displayName: string;
-  avatar: string;
-  presence: "active" | "away" | "offline" | "dnd";
-  status: { emoji: string; text: string; expiresAt: string | null };
-};
+  id: string
+  name: string
+  displayName: string
+  avatar: string
+  presence: "active" | "away" | "offline" | "dnd"
+  status: { emoji: string; text: string; expiresAt: string | null }
+}
 
 type Channel = {
-  id: string;
-  name: string;
-  type: "public" | "private";
-  isArchived: boolean;
-  isShared: boolean;
-};
+  id: string
+  name: string
+  type: "public" | "private"
+  isArchived: boolean
+  isShared: boolean
+}
 
 type DirectMessage = {
-  id: string;
-  participantIds: string[];
-  isGroup: boolean;
-};
+  id: string
+  participantIds: string[]
+  isGroup: boolean
+}
 
 type ReadState = {
-  channelId: string | null;
-  dmId: string | null;
-  unreadCount: number;
-  unreadMentions: number;
-};
+  channelId: string | null
+  dmId: string | null
+  unreadCount: number
+  unreadMentions: number
+}
 
-type Workspace = { name: string };
+type Workspace = { name: string }
 
-const CURRENT_USER_ID = "usr-1";
+const CURRENT_USER_ID = "usr-1"
 
 const nav = [
   { href: "/activity", label: "Activity", icon: Bell },
@@ -92,7 +92,7 @@ const nav = [
   { href: "/mentions", label: "Mentions", icon: AtSign },
   { href: "/later", label: "Later", icon: Bookmark },
   { href: "/drafts", label: "Drafts & sent", icon: Send },
-];
+]
 
 const moreItems = [
   { href: "/people", label: "People", icon: Users },
@@ -104,16 +104,16 @@ const moreItems = [
   { href: "/connect", label: "Slack Connect", icon: Grid3x3 },
   { href: "/apps", label: "Apps", icon: Grid3x3 },
   { href: "/user-groups", label: "User groups", icon: Users },
-];
+]
 
 export function AppSidebar() {
-  const pathname = usePathname();
-  const [workspace, setWorkspace] = useState<Workspace>({ name: "Theta HQ" });
-  const [users, setUsers] = useState<User[]>([]);
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [dms, setDms] = useState<DirectMessage[]>([]);
-  const [readStates, setReadStates] = useState<ReadState[]>([]);
-  const currentUser = users.find((u) => u.id === CURRENT_USER_ID);
+  const pathname = usePathname()
+  const [workspace, setWorkspace] = useState<Workspace>({ name: "Theta HQ" })
+  const [users, setUsers] = useState<User[]>([])
+  const [channels, setChannels] = useState<Channel[]>([])
+  const [dms, setDms] = useState<DirectMessage[]>([])
+  const [readStates, setReadStates] = useState<ReadState[]>([])
+  const currentUser = users.find((u) => u.id === CURRENT_USER_ID)
 
   useEffect(() => {
     Promise.all([
@@ -121,25 +121,29 @@ export function AppSidebar() {
       fetch("/api/data/users").then((r) => r.json()),
       fetch("/api/data/channels").then((r) => r.json()),
       fetch("/api/data/dms").then((r) => r.json()),
-      fetch(`/api/data/read-states?userId=${CURRENT_USER_ID}`).then((r) => r.json()),
+      fetch(`/api/data/read-states?userId=${CURRENT_USER_ID}`).then((r) =>
+        r.json()
+      ),
     ])
       .then(([ws, usrs, chs, ds, rs]) => {
-        setWorkspace(ws);
-        setUsers(usrs);
-        setChannels(chs);
-        setDms(ds);
-        setReadStates(rs);
+        setWorkspace(ws)
+        setUsers(usrs)
+        setChannels(chs)
+        setDms(ds)
+        setReadStates(rs)
       })
-      .catch(() => {});
-  }, [pathname]);
+      .catch(() => {})
+  }, [pathname])
 
-  const visibleChannels = channels.filter((c) => !c.isArchived);
+  const visibleChannels = channels.filter((c) => !c.isArchived)
   const channelsByUnread = [...visibleChannels].sort(
-    (a, b) => (unread(a.id, readStates) > 0 ? -1 : 0) - (unread(b.id, readStates) > 0 ? -1 : 0),
-  );
-  const sortedDms = [...dms].sort((a, b) =>
-    unreadDm(b.id, readStates) - unreadDm(a.id, readStates),
-  );
+    (a, b) =>
+      (unread(a.id, readStates) > 0 ? -1 : 0) -
+      (unread(b.id, readStates) > 0 ? -1 : 0)
+  )
+  const sortedDms = [...dms].sort(
+    (a, b) => unreadDm(b.id, readStates) - unreadDm(a.id, readStates)
+  )
 
   return (
     <Sidebar collapsible="offcanvas" className="border-r-0">
@@ -232,7 +236,7 @@ export function AppSidebar() {
 
         <Collapsible defaultOpen className="group/channels">
           <SidebarGroup className="py-0">
-            <CollapsibleTrigger className="flex w-full items-center gap-1 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/70 hover:text-sidebar-foreground">
+            <CollapsibleTrigger className="flex w-full items-center gap-1 px-3 py-1 text-xs font-semibold tracking-wide text-sidebar-foreground/70 uppercase hover:text-sidebar-foreground">
               <ChevronRight className="size-3 transition-transform group-data-[state=open]/channels:rotate-90" />
               Channels
             </CollapsibleTrigger>
@@ -248,7 +252,10 @@ export function AppSidebar() {
                     />
                   ))}
                   <SidebarMenuItem>
-                    <SidebarMenuButton size="sm" className="text-sidebar-foreground/70">
+                    <SidebarMenuButton
+                      size="sm"
+                      className="text-sidebar-foreground/70"
+                    >
                       <span className="flex size-4 items-center justify-center rounded bg-sidebar-accent">
                         <Plus className="size-3" />
                       </span>
@@ -263,7 +270,7 @@ export function AppSidebar() {
 
         <Collapsible defaultOpen className="group/dms">
           <SidebarGroup className="py-0">
-            <CollapsibleTrigger className="flex w-full items-center gap-1 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/70 hover:text-sidebar-foreground">
+            <CollapsibleTrigger className="flex w-full items-center gap-1 px-3 py-1 text-xs font-semibold tracking-wide text-sidebar-foreground/70 uppercase hover:text-sidebar-foreground">
               <ChevronRight className="size-3 transition-transform group-data-[state=open]/dms:rotate-90" />
               Direct messages
             </CollapsibleTrigger>
@@ -280,7 +287,10 @@ export function AppSidebar() {
                     />
                   ))}
                   <SidebarMenuItem>
-                    <SidebarMenuButton size="sm" className="text-sidebar-foreground/70">
+                    <SidebarMenuButton
+                      size="sm"
+                      className="text-sidebar-foreground/70"
+                    >
                       <span className="flex size-4 items-center justify-center rounded bg-sidebar-accent">
                         <Plus className="size-3" />
                       </span>
@@ -295,7 +305,7 @@ export function AppSidebar() {
 
         <Collapsible className="group/apps">
           <SidebarGroup className="py-0">
-            <CollapsibleTrigger className="flex w-full items-center gap-1 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/70 hover:text-sidebar-foreground">
+            <CollapsibleTrigger className="flex w-full items-center gap-1 px-3 py-1 text-xs font-semibold tracking-wide text-sidebar-foreground/70 uppercase hover:text-sidebar-foreground">
               <ChevronRight className="size-3 transition-transform group-data-[state=open]/apps:rotate-90" />
               Apps
             </CollapsibleTrigger>
@@ -350,15 +360,17 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }
 
 function unread(channelId: string, readStates: ReadState[]) {
-  return readStates.find((rs) => rs.channelId === channelId)?.unreadCount ?? 0;
+  return readStates.find((rs) => rs.channelId === channelId)?.unreadCount ?? 0
 }
 function unreadMentions(channelId: string, readStates: ReadState[]) {
-  return readStates.find((rs) => rs.channelId === channelId)?.unreadMentions ?? 0;
+  return (
+    readStates.find((rs) => rs.channelId === channelId)?.unreadMentions ?? 0
+  )
 }
 function unreadDm(dmId: string, readStates: ReadState[]) {
-  return readStates.find((rs) => rs.dmId === dmId)?.unreadCount ?? 0;
+  return readStates.find((rs) => rs.dmId === dmId)?.unreadCount ?? 0
 }

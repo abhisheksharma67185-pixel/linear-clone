@@ -44,10 +44,10 @@ function HealthCell({ site }: { site: SiteConnection }) {
   const status = isLoading
     ? "loading"
     : isError
-    ? "error"
-    : data?.status === "ok"
-    ? "ok"
-    : "warn"
+      ? "error"
+      : data?.status === "ok"
+        ? "ok"
+        : "warn"
 
   return (
     <div className="flex items-center gap-3">
@@ -69,7 +69,9 @@ function HealthCell({ site }: { site: SiteConnection }) {
         aria-label="Re-check health"
         disabled={isFetching}
       >
-        <IconRefresh className={isFetching ? "animate-spin size-3" : "size-3"} />
+        <IconRefresh
+          className={isFetching ? "size-3 animate-spin" : "size-3"}
+        />
       </Button>
     </div>
   )
@@ -121,8 +123,8 @@ function AddSiteForm() {
           <IconPlus className="size-4" /> Add a site
         </CardTitle>
         <CardDescription>
-          Sites are stored locally in your browser. URLs should be the site&apos;s
-          base URL (no trailing path).
+          Sites are stored locally in your browser. URLs should be the
+          site&apos;s base URL (no trailing path).
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -151,7 +153,7 @@ function AddSiteForm() {
           <Button type="submit">Add site</Button>
         </form>
         {error && (
-          <p className="text-destructive text-xs mt-2" role="alert">
+          <p className="mt-2 text-xs text-destructive" role="alert">
             {error}
           </p>
         )}
@@ -214,7 +216,7 @@ function EditableRow({ site }: { site: SiteConnection }) {
             className="h-8 font-mono text-xs"
           />
         ) : (
-          <span className="font-mono text-xs truncate inline-block max-w-full">
+          <span className="inline-block max-w-full truncate font-mono text-xs">
             {site.url}
           </span>
         )}
@@ -263,7 +265,7 @@ function EditableRow({ site }: { site: SiteConnection }) {
                 onClick={() => {
                   if (
                     confirm(
-                      `Remove "${site.name}"? Local history is preserved.`,
+                      `Remove "${site.name}"? Local history is preserved.`
                     )
                   ) {
                     removeSite(site.id)
@@ -323,8 +325,8 @@ export default function SitesPage() {
               <Alert>
                 <AlertTitle>No sites</AlertTitle>
                 <AlertDescription>
-                  Click <Badge variant="outline">Reset to defaults</Badge> or add
-                  one above.
+                  Click <Badge variant="outline">Reset to defaults</Badge> or
+                  add one above.
                 </AlertDescription>
               </Alert>
             ) : (

@@ -12,14 +12,12 @@ function Sheet(props: React.ComponentProps<typeof DialogPrimitive.Root>) {
 }
 
 function SheetTrigger(
-  props: React.ComponentProps<typeof DialogPrimitive.Trigger>,
+  props: React.ComponentProps<typeof DialogPrimitive.Trigger>
 ) {
   return <DialogPrimitive.Trigger {...props} />
 }
 
-function SheetClose(
-  props: React.ComponentProps<typeof DialogPrimitive.Close>,
-) {
+function SheetClose(props: React.ComponentProps<typeof DialogPrimitive.Close>) {
   return <DialogPrimitive.Close {...props} />
 }
 
@@ -46,23 +44,19 @@ function SheetContent({
 
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Backdrop
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-200 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0"
-      />
+      <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-200 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0" />
       <DialogPrimitive.Popup
         data-slot="sheet-content"
         className={cn(
-          "bg-background fixed z-50 flex flex-col gap-4 p-6 shadow-lg outline-none transition-transform duration-200",
+          "fixed z-50 flex flex-col gap-4 bg-background p-6 shadow-lg transition-transform duration-200 outline-none",
           sideClasses[side],
-          className,
+          className
         )}
         {...props}
       >
         {children}
         {showCloseButton && (
-          <DialogPrimitive.Close
-            className="ring-offset-background focus:ring-ring data-[active=true]:bg-accent absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
-          >
+          <DialogPrimitive.Close className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden data-[active=true]:bg-accent">
             <IconX className="size-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
@@ -102,7 +96,7 @@ function SheetDescription({
   return (
     <DialogPrimitive.Description
       data-slot="sheet-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
   )

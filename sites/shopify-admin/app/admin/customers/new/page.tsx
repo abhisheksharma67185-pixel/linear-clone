@@ -108,105 +108,105 @@ export default function NewCustomerPage() {
                 <Text as="h2" variant="headingSm">
                   Customer overview
                 </Text>
-              <FormLayout>
-                <FormLayout.Group>
+                <FormLayout>
+                  <FormLayout.Group>
+                    <TextField
+                      label="First name"
+                      value={firstName}
+                      onChange={setFirstName}
+                      autoComplete="off"
+                    />
+                    <TextField
+                      label="Last name"
+                      value={lastName}
+                      onChange={setLastName}
+                      autoComplete="off"
+                    />
+                  </FormLayout.Group>
                   <TextField
-                    label="First name"
-                    value={firstName}
-                    onChange={setFirstName}
+                    label="Email"
+                    value={email}
+                    onChange={setEmail}
+                    type="email"
                     autoComplete="off"
                   />
+                  <TextField label="Phone" value={phone} onChange={setPhone} autoComplete="off" />
+                </FormLayout>
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingSm">
+                  Address
+                </Text>
+                <FormLayout>
                   <TextField
-                    label="Last name"
-                    value={lastName}
-                    onChange={setLastName}
+                    label="Address"
+                    value={address1}
+                    onChange={setAddress1}
                     autoComplete="off"
                   />
-                </FormLayout.Group>
+                  <FormLayout.Group>
+                    <TextField label="City" value={city} onChange={setCity} autoComplete="off" />
+                    <TextField
+                      label="State/Province"
+                      value={province}
+                      onChange={setProvince}
+                      autoComplete="off"
+                    />
+                  </FormLayout.Group>
+                  <FormLayout.Group>
+                    <TextField
+                      label="Country"
+                      value={country}
+                      onChange={setCountry}
+                      autoComplete="off"
+                    />
+                    <TextField
+                      label="ZIP/Postal code"
+                      value={zip}
+                      onChange={setZip}
+                      autoComplete="off"
+                    />
+                  </FormLayout.Group>
+                </FormLayout>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+
+          <Layout.Section variant="oneThird">
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingSm">
+                  Notes
+                </Text>
                 <TextField
-                  label="Email"
-                  value={email}
-                  onChange={setEmail}
-                  type="email"
+                  label="Notes"
+                  labelHidden
+                  value={notes}
+                  onChange={setNotes}
+                  multiline={4}
                   autoComplete="off"
                 />
-                <TextField label="Phone" value={phone} onChange={setPhone} autoComplete="off" />
-              </FormLayout>
-            </BlockStack>
-          </Card>
+              </BlockStack>
+            </Card>
 
-          <Card>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">
-                Address
-              </Text>
-              <FormLayout>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingSm">
+                  Tags
+                </Text>
                 <TextField
-                  label="Address"
-                  value={address1}
-                  onChange={setAddress1}
+                  label="Tags"
+                  labelHidden
+                  value={tags}
+                  onChange={setTags}
+                  helpText="Comma-separated"
                   autoComplete="off"
                 />
-                <FormLayout.Group>
-                  <TextField label="City" value={city} onChange={setCity} autoComplete="off" />
-                  <TextField
-                    label="State/Province"
-                    value={province}
-                    onChange={setProvince}
-                    autoComplete="off"
-                  />
-                </FormLayout.Group>
-                <FormLayout.Group>
-                  <TextField
-                    label="Country"
-                    value={country}
-                    onChange={setCountry}
-                    autoComplete="off"
-                  />
-                  <TextField
-                    label="ZIP/Postal code"
-                    value={zip}
-                    onChange={setZip}
-                    autoComplete="off"
-                  />
-                </FormLayout.Group>
-              </FormLayout>
-            </BlockStack>
-          </Card>
-        </Layout.Section>
-
-        <Layout.Section variant="oneThird">
-          <Card>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">
-                Notes
-              </Text>
-              <TextField
-                label="Notes"
-                labelHidden
-                value={notes}
-                onChange={setNotes}
-                multiline={4}
-                autoComplete="off"
-              />
-            </BlockStack>
-          </Card>
-
-          <Card>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">
-                Tags
-              </Text>
-              <TextField
-                label="Tags"
-                labelHidden
-                value={tags}
-                onChange={setTags}
-                helpText="Comma-separated"
-                autoComplete="off"
-              />
-            </BlockStack>
-          </Card>
+              </BlockStack>
+            </Card>
           </Layout.Section>
         </Layout>
       </Form>

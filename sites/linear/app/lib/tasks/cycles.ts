@@ -1,23 +1,23 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R5 = {
   completion: 5.0,
   partialPerCheck: true,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const R8 = {
   completion: 8.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 const R10 = {
   completion: 10.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 
 // Cycle reference (new CESS data):
 //   cycle-1  Sprint 8        Platform   completed
@@ -250,16 +250,86 @@ export const cycleTasks: TaskDefinition[] = [
     title: "Close Sprint 13 and move incomplete",
     goal: "Complete Sprint 13 (cycle-6). Before that, move the in_progress issues from cycle-6 (PLT-102, PLT-103, PLT-107, PLT-112, PLT-118, PLT-202, PLT-204, PLT-205, PLT-211) out to no cycle so Sprint 13 only contains done work. Then complete Sprint 13.",
     evalChecks: [
-      { type: "state_predicate", predicate: "cycle_has_state", id: "cycle-6", expected: "completed", weight: 0.3, description: "Sprint 13 completed" },
-      { type: "state_predicate", predicate: "issue_in_cycle", id: "iss-2",  expected: null, weight: 0.08, description: "PLT-102 moved out" },
-      { type: "state_predicate", predicate: "issue_in_cycle", id: "iss-3",  expected: null, weight: 0.08, description: "PLT-103 moved out" },
-      { type: "state_predicate", predicate: "issue_in_cycle", id: "iss-7",  expected: null, weight: 0.08, description: "PLT-107 moved out" },
-      { type: "state_predicate", predicate: "issue_in_cycle", id: "iss-12", expected: null, weight: 0.08, description: "PLT-112 moved out" },
-      { type: "state_predicate", predicate: "issue_in_cycle", id: "iss-18", expected: null, weight: 0.08, description: "PLT-118 moved out" },
-      { type: "state_predicate", predicate: "issue_in_cycle", id: "iss-40", expected: null, weight: 0.08, description: "PLT-202 moved out" },
-      { type: "state_predicate", predicate: "issue_in_cycle", id: "iss-42", expected: null, weight: 0.08, description: "PLT-204 moved out" },
-      { type: "state_predicate", predicate: "issue_in_cycle", id: "iss-43", expected: null, weight: 0.07, description: "PLT-205 moved out" },
-      { type: "state_predicate", predicate: "issue_in_cycle", id: "iss-49", expected: null, weight: 0.07, description: "PLT-211 moved out" },
+      {
+        type: "state_predicate",
+        predicate: "cycle_has_state",
+        id: "cycle-6",
+        expected: "completed",
+        weight: 0.3,
+        description: "Sprint 13 completed",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_cycle",
+        id: "iss-2",
+        expected: null,
+        weight: 0.08,
+        description: "PLT-102 moved out",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_cycle",
+        id: "iss-3",
+        expected: null,
+        weight: 0.08,
+        description: "PLT-103 moved out",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_cycle",
+        id: "iss-7",
+        expected: null,
+        weight: 0.08,
+        description: "PLT-107 moved out",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_cycle",
+        id: "iss-12",
+        expected: null,
+        weight: 0.08,
+        description: "PLT-112 moved out",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_cycle",
+        id: "iss-18",
+        expected: null,
+        weight: 0.08,
+        description: "PLT-118 moved out",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_cycle",
+        id: "iss-40",
+        expected: null,
+        weight: 0.08,
+        description: "PLT-202 moved out",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_cycle",
+        id: "iss-42",
+        expected: null,
+        weight: 0.08,
+        description: "PLT-204 moved out",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_cycle",
+        id: "iss-43",
+        expected: null,
+        weight: 0.07,
+        description: "PLT-205 moved out",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_cycle",
+        id: "iss-49",
+        expected: null,
+        weight: 0.07,
+        description: "PLT-211 moved out",
+      },
     ],
     maxSteps: 30,
     rewardProfile: R10,
@@ -343,4 +413,4 @@ export const cycleTasks: TaskDefinition[] = [
     rewardProfile: R10,
     tags: ["cycle", "create", "bulk", "estimation"],
   },
-];
+]

@@ -1,22 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import * as store from "../../../lib/store";
+import { NextRequest, NextResponse } from "next/server"
+import * as store from "../../../lib/store"
 
 export async function GET(request: NextRequest) {
-  const url = new URL(request.url);
-  const channelId = url.searchParams.get("channelId") ?? undefined;
-  return NextResponse.json(store.getLists(channelId));
+  const url = new URL(request.url)
+  const channelId = url.searchParams.get("channelId") ?? undefined
+  return NextResponse.json(store.getLists(channelId))
 }
 
 export async function POST(request: NextRequest) {
-  let body;
+  let body
   try {
-    body = await request.json();
+    body = await request.json()
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   }
-  const result = store.createList(body);
+  const result = store.createList(body)
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+    return NextResponse.json({ error: result.error }, { status: 400 })
   }
-  return NextResponse.json(result.data, { status: 201 });
+  return NextResponse.json(result.data, { status: 201 })
 }

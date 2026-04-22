@@ -35,15 +35,45 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const shopifyLogo = (
     <a
       href="/admin"
-      style={{ display: "flex", alignItems: "center", gap: "7px", textDecoration: "none", paddingLeft: "16px" }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "7px",
+        textDecoration: "none",
+        paddingLeft: "16px",
+      }}
       aria-label="Shopify"
     >
-      <svg width="22" height="26" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M18.7 5.6L17.9 5.5C17.8 4.9 17.4 0.8 13.1 0.6C12.7 0.6 12.4 0.7 12.1 0.9C11.8 0.5 11.4 0.3 10.8 0.3C8.9 0.4 8 2.5 7.7 3.7L6.2 3.9C5.7 4 5.3 4.4 5.2 4.9L4 19.3C3.9 19.8 4.3 20.3 4.8 20.4L17.9 22.9C18.4 23 18.9 22.6 19 22.1L20.4 6.7C20.5 6.2 20.1 5.7 19.6 5.6L18.7 5.6Z" fill="#95BF47"/>
-        <path d="M13.1 1.1C16.8 1.3 17.2 5.1 17.3 5.4L14.1 4.9C14.1 4.9 13.7 2.6 11.8 2.3C11.5 2.2 11.3 2.2 11 2.3L10.8 0.7C11.1 0.6 11.3 0.5 11.6 0.5C12.1 0.6 12.6 0.8 13.1 1.1Z" fill="#5E8E3E"/>
-        <path d="M14.2 5.1L11.1 4.6C11.1 4.6 11.4 2.6 12.2 2.3C13.8 2.9 14.2 5.1 14.2 5.1Z" fill="white"/>
+      <svg
+        width="22"
+        height="26"
+        viewBox="0 0 22 26"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M18.7 5.6L17.9 5.5C17.8 4.9 17.4 0.8 13.1 0.6C12.7 0.6 12.4 0.7 12.1 0.9C11.8 0.5 11.4 0.3 10.8 0.3C8.9 0.4 8 2.5 7.7 3.7L6.2 3.9C5.7 4 5.3 4.4 5.2 4.9L4 19.3C3.9 19.8 4.3 20.3 4.8 20.4L17.9 22.9C18.4 23 18.9 22.6 19 22.1L20.4 6.7C20.5 6.2 20.1 5.7 19.6 5.6L18.7 5.6Z"
+          fill="#95BF47"
+        />
+        <path
+          d="M13.1 1.1C16.8 1.3 17.2 5.1 17.3 5.4L14.1 4.9C14.1 4.9 13.7 2.6 11.8 2.3C11.5 2.2 11.3 2.2 11 2.3L10.8 0.7C11.1 0.6 11.3 0.5 11.6 0.5C12.1 0.6 12.6 0.8 13.1 1.1Z"
+          fill="#5E8E3E"
+        />
+        <path
+          d="M14.2 5.1L11.1 4.6C11.1 4.6 11.4 2.6 12.2 2.3C13.8 2.9 14.2 5.1 14.2 5.1Z"
+          fill="white"
+        />
       </svg>
-      <span style={{ color: "white", fontSize: "17px", fontWeight: 700, letterSpacing: "-0.02em", fontFamily: "inherit" }}>
+      <span
+        style={{
+          color: "white",
+          fontSize: "17px",
+          fontWeight: 700,
+          letterSpacing: "-0.02em",
+          fontFamily: "inherit",
+        }}
+      >
         shopify
       </span>
     </a>
@@ -167,11 +197,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       contextControl={shopifyLogo}
       secondaryMenu={
         <div style={{ display: "flex", alignItems: "center", gap: "2px", paddingRight: "4px" }}>
-          <Popover
-            active={appsOpen}
-            activator={appsActivator}
-            onClose={() => setAppsOpen(false)}
-          >
+          <Popover active={appsOpen} activator={appsActivator} onClose={() => setAppsOpen(false)}>
             <ActionList
               actionRole="menuitem"
               sections={[
@@ -179,7 +205,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   items: [
                     {
                       content: "Installed apps",
-                      onAction: () => { router.push("/admin/apps"); setAppsOpen(false); },
+                      onAction: () => {
+                        router.push("/admin/apps");
+                        setAppsOpen(false);
+                      },
                     },
                   ],
                 },
@@ -187,7 +216,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   items: [
                     {
                       content: "App store",
-                      onAction: () => { router.push("/admin/apps/add"); setAppsOpen(false); },
+                      onAction: () => {
+                        router.push("/admin/apps/add");
+                        setAppsOpen(false);
+                      },
                     },
                   ],
                 },
@@ -195,11 +227,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             />
           </Popover>
 
-          <Popover
-            active={bellOpen}
-            activator={bellActivator}
-            onClose={() => setBellOpen(false)}
-          >
+          <Popover active={bellOpen} activator={bellActivator} onClose={() => setBellOpen(false)}>
             <div style={{ padding: "20px 24px", minWidth: "220px", textAlign: "center" }}>
               <Text as="p" tone="subdued">
                 No new notifications

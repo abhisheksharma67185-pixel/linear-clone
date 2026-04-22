@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Page,
-  Card,
-  IndexTable,
-  Text,
-  Badge,
-  useIndexResourceState,
-} from "@shopify/polaris";
+import { Page, Card, IndexTable, Text, Badge, useIndexResourceState } from "@shopify/polaris";
 
 const blogPosts = [
   {
@@ -49,15 +42,17 @@ export default function BlogPostsPage() {
         <Text as="span">{post.author}</Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{post.date}</Text>
+        <Text as="span" tone="subdued">
+          {post.date}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Badge tone={post.status === "Published" ? "success" : undefined}>
-          {post.status}
-        </Badge>
+        <Badge tone={post.status === "Published" ? "success" : undefined}>{post.status}</Badge>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{post.visibility}</Text>
+        <Text as="span" tone="subdued">
+          {post.visibility}
+        </Text>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));

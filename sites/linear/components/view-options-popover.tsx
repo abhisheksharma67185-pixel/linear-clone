@@ -3,7 +3,11 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Select,
   SelectContent,
@@ -12,7 +16,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Settings02Icon, Menu01Icon, Grid02Icon } from "@hugeicons/core-free-icons"
+import {
+  Settings02Icon,
+  Menu01Icon,
+  Grid02Icon,
+} from "@hugeicons/core-free-icons"
 
 const DISPLAY_PROPERTIES = [
   "ID",
@@ -70,7 +78,11 @@ export function ViewOptionsPopover() {
     <Popover>
       <PopoverTrigger
         render={
-          <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground size-7"
+          />
         }
       >
         <HugeiconsIcon icon={Settings02Icon} className="size-4" />
@@ -81,7 +93,9 @@ export function ViewOptionsPopover() {
             type="button"
             onClick={() => setLayout("list")}
             className={`flex items-center justify-center gap-1.5 rounded py-1 text-xs font-medium transition-colors ${
-              layout === "list" ? "bg-muted" : "text-muted-foreground hover:bg-muted/50"
+              layout === "list"
+                ? "bg-muted"
+                : "text-muted-foreground hover:bg-muted/50"
             }`}
           >
             <HugeiconsIcon icon={Menu01Icon} className="size-3.5" />
@@ -91,7 +105,9 @@ export function ViewOptionsPopover() {
             type="button"
             onClick={() => setLayout("board")}
             className={`flex items-center justify-center gap-1.5 rounded py-1 text-xs font-medium transition-colors ${
-              layout === "board" ? "bg-muted" : "text-muted-foreground hover:bg-muted/50"
+              layout === "board"
+                ? "bg-muted"
+                : "text-muted-foreground hover:bg-muted/50"
             }`}
           >
             <HugeiconsIcon icon={Grid02Icon} className="size-3.5" />
@@ -124,7 +140,7 @@ export function ViewOptionsPopover() {
           />
         </Row>
         <Row label="Ordering">
-          <span className="text-xs text-muted-foreground">
+          <span className="text-muted-foreground text-xs">
             {ordering === "importance" ? "Importance" : ordering}
           </span>
         </Row>
@@ -171,7 +187,9 @@ export function ViewOptionsPopover() {
         </Row>
 
         <div className="mt-3">
-          <div className="mb-2 text-xs text-muted-foreground">Display properties</div>
+          <div className="text-muted-foreground mb-2 text-xs">
+            Display properties
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {DISPLAY_PROPERTIES.map((p) => {
               const active = activeProps.has(p)
@@ -197,7 +215,13 @@ export function ViewOptionsPopover() {
   )
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
   return (
     <div className="flex items-center justify-between py-1.5 text-xs">
       <span>{label}</span>

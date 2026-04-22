@@ -72,7 +72,8 @@ function serializeFilters(f: ViewFilters): string {
   if (f.status) clauses.push(`status = ${f.status}`)
   if (f.priority) clauses.push(`priority = ${f.priority}`)
   if (f.assignee === "none") clauses.push(`assignee is EMPTY`)
-  else if (f.assignee === "currentUser") clauses.push(`assignee = currentUser()`)
+  else if (f.assignee === "currentUser")
+    clauses.push(`assignee = currentUser()`)
   else if (f.assignee) clauses.push(`assignee = ${f.assignee}`)
   if (f.labelName) clauses.push(`label = "${f.labelName}"`)
   if (f.teamId) clauses.push(`team = ${f.teamId}`)
@@ -108,18 +109,28 @@ export function CreateViewDialog({
       Promise.all([
         fetch("/api/data/teams").then((r) => r.json()),
         fetch("/api/data/members").then((r) => r.json()),
-        fetch("/api/data/labels").then((r) => r.json()).catch(() => []),
-        fetch("/api/data/cycles").then((r) => r.json()).catch(() => []),
+        fetch("/api/data/labels")
+          .then((r) => r.json())
+          .catch(() => []),
+        fetch("/api/data/cycles")
+          .then((r) => r.json())
+          .catch(() => []),
         fetch("/api/data/issues").then((r) => r.json()),
       ]).then(
-        ([t, m, l, c, i]: [Team[], Member[], IssueLabel[], Cycle[], Issue[]]) => {
+        ([t, m, l, c, i]: [
+          Team[],
+          Member[],
+          IssueLabel[],
+          Cycle[],
+          Issue[],
+        ]) => {
           setTeams(t)
           setMembers(m)
           setLabels(Array.isArray(l) ? l : [])
           setCycles(c)
           setIssues(i)
           setLoaded(true)
-        },
+        }
       )
     }
   }, [open, loaded])
@@ -181,8 +192,12 @@ export function CreateViewDialog({
     }
   }
 
-  const statusLabel = STATUS_OPTIONS.find((s) => s.value === filters.status)?.label
-  const priorityLabel = PRIORITY_OPTIONS.find((p) => p.value === filters.priority)?.label
+  const statusLabel = STATUS_OPTIONS.find(
+    (s) => s.value === filters.status
+  )?.label
+  const priorityLabel = PRIORITY_OPTIONS.find(
+    (p) => p.value === filters.priority
+  )?.label
 
   const hasAnyFilter = serializeFilters(filters).length > 0
 
@@ -199,7 +214,10 @@ export function CreateViewDialog({
         <header className="flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-1.5 text-xs">
             <div className="flex items-center gap-1 rounded-md border px-1.5 py-0.5">
-              <HugeiconsIcon icon={FilterIcon} className="size-3 text-violet-500" />
+              <HugeiconsIcon
+                icon={FilterIcon}
+                className="size-3 text-violet-500"
+              />
               <span className="font-medium">View</span>
             </div>
           </div>
@@ -207,15 +225,22 @@ export function CreateViewDialog({
             <Button
               variant="ghost"
               size="icon"
-              className="size-6 text-muted-foreground"
+              className="text-muted-foreground size-6"
               onClick={() => setFullscreen((v) => !v)}
               aria-label="Toggle fullscreen"
             >
-              <HugeiconsIcon icon={ArrowExpandDiagonal01Icon} className="size-3.5" />
+              <HugeiconsIcon
+                icon={ArrowExpandDiagonal01Icon}
+                className="size-3.5"
+              />
             </Button>
             <DialogClose
               render={
-                <Button variant="ghost" size="icon" className="size-6 text-muted-foreground" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground size-6"
+                />
               }
             >
               <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" />
@@ -229,19 +254,19 @@ export function CreateViewDialog({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="View name"
-            className="w-full bg-transparent text-lg font-semibold placeholder:text-muted-foreground/50 focus:outline-none"
+            className="placeholder:text-muted-foreground/50 w-full bg-transparent text-lg font-semibold focus:outline-none"
           />
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add a short description..."
-            className={`w-full flex-1 resize-none bg-transparent text-sm placeholder:text-muted-foreground/50 focus:outline-none ${
+            className={`placeholder:text-muted-foreground/50 w-full flex-1 resize-none bg-transparent text-sm focus:outline-none ${
               fullscreen ? "min-h-[200px]" : "min-h-[40px]"
             }`}
           />
         </div>
 
-        <div className="flex items-center gap-2 border-t border-b border-dashed px-4 py-2 text-[11px] text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-2 border-t border-b border-dashed px-4 py-2 text-[11px]">
           <HugeiconsIcon icon={FilterIcon} className="size-3" />
           <span>Filters</span>
           <span className="ml-auto tabular-nums">
@@ -251,11 +276,15 @@ export function CreateViewDialog({
 
         <div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
           <DropdownMenu>
-            <DropdownMenuTrigger render={<PillButton active={filters.status !== null} />}>
+            <DropdownMenuTrigger
+              render={<PillButton active={filters.status !== null} />}
+            >
               <StatusDot status={filters.status} />
               <span>{filters.status ? statusLabel : "Status"}</span>
               {filters.status && (
-                <ClearPart onClick={() => setFilters((f) => ({ ...f, status: null }))} />
+                <ClearPart
+                  onClick={() => setFilters((f) => ({ ...f, status: null }))}
+                />
               )}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
@@ -281,11 +310,15 @@ export function CreateViewDialog({
           </DropdownMenu>
 
           <DropdownMenu>
-            <DropdownMenuTrigger render={<PillButton active={filters.priority !== null} />}>
+            <DropdownMenuTrigger
+              render={<PillButton active={filters.priority !== null} />}
+            >
               <PriorityDot priority={filters.priority} />
               <span>{filters.priority ? priorityLabel : "Priority"}</span>
               {filters.priority && (
-                <ClearPart onClick={() => setFilters((f) => ({ ...f, priority: null }))} />
+                <ClearPart
+                  onClick={() => setFilters((f) => ({ ...f, priority: null }))}
+                />
               )}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
@@ -302,7 +335,9 @@ export function CreateViewDialog({
                   key={p.value}
                   icon={<PriorityDot priority={p.value} />}
                   checked={filters.priority === p.value}
-                  onClick={() => setFilters((f) => ({ ...f, priority: p.value }))}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, priority: p.value }))
+                  }
                 >
                   {p.label}
                 </MenuRow>
@@ -311,15 +346,26 @@ export function CreateViewDialog({
           </DropdownMenu>
 
           <DropdownMenu>
-            <DropdownMenuTrigger render={<PillButton active={filters.assignee !== null} />}>
+            <DropdownMenuTrigger
+              render={<PillButton active={filters.assignee !== null} />}
+            >
               {filters.assignee === "none" ? (
-                <div className="size-4 rounded-full border border-dashed border-muted-foreground/60" />
+                <div className="border-muted-foreground/60 size-4 rounded-full border border-dashed" />
               ) : filters.assignee === "currentUser" ? (
-                <HugeiconsIcon icon={UserIcon} className="size-3.5 text-violet-500" />
+                <HugeiconsIcon
+                  icon={UserIcon}
+                  className="size-3.5 text-violet-500"
+                />
               ) : assigneeMember ? (
-                <Avatar src={assigneeMember.avatar} name={assigneeMember.name} />
+                <Avatar
+                  src={assigneeMember.avatar}
+                  name={assigneeMember.name}
+                />
               ) : (
-                <HugeiconsIcon icon={UserIcon} className="size-3.5 text-muted-foreground" />
+                <HugeiconsIcon
+                  icon={UserIcon}
+                  className="text-muted-foreground size-3.5"
+                />
               )}
               <span>
                 {filters.assignee === "none"
@@ -331,14 +377,19 @@ export function CreateViewDialog({
                       : "Assignee"}
               </span>
               {filters.assignee && (
-                <ClearPart onClick={() => setFilters((f) => ({ ...f, assignee: null }))} />
+                <ClearPart
+                  onClick={() => setFilters((f) => ({ ...f, assignee: null }))}
+                />
               )}
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="max-h-80 w-64 overflow-auto">
+            <DropdownMenuContent
+              align="start"
+              className="max-h-80 w-64 overflow-auto"
+            >
               <MenuHeader title="Filter by assignee..." />
               <MenuRow
                 icon={
-                  <div className="size-4 rounded-full border border-dashed border-muted-foreground/60" />
+                  <div className="border-muted-foreground/60 size-4 rounded-full border border-dashed" />
                 }
                 checked={filters.assignee === "none"}
                 onClick={() => setFilters((f) => ({ ...f, assignee: "none" }))}
@@ -346,9 +397,16 @@ export function CreateViewDialog({
                 Unassigned
               </MenuRow>
               <MenuRow
-                icon={<HugeiconsIcon icon={UserIcon} className="size-3.5 text-violet-500" />}
+                icon={
+                  <HugeiconsIcon
+                    icon={UserIcon}
+                    className="size-3.5 text-violet-500"
+                  />
+                }
                 checked={filters.assignee === "currentUser"}
-                onClick={() => setFilters((f) => ({ ...f, assignee: "currentUser" }))}
+                onClick={() =>
+                  setFilters((f) => ({ ...f, assignee: "currentUser" }))
+                }
               >
                 Current user
               </MenuRow>
@@ -367,14 +425,24 @@ export function CreateViewDialog({
           </DropdownMenu>
 
           <DropdownMenu>
-            <DropdownMenuTrigger render={<PillButton active={filters.labelName !== null} />}>
-              <HugeiconsIcon icon={Tag01Icon} className="size-3.5 text-muted-foreground" />
+            <DropdownMenuTrigger
+              render={<PillButton active={filters.labelName !== null} />}
+            >
+              <HugeiconsIcon
+                icon={Tag01Icon}
+                className="text-muted-foreground size-3.5"
+              />
               <span>{filters.labelName ?? "Label"}</span>
               {filters.labelName && (
-                <ClearPart onClick={() => setFilters((f) => ({ ...f, labelName: null }))} />
+                <ClearPart
+                  onClick={() => setFilters((f) => ({ ...f, labelName: null }))}
+                />
               )}
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="max-h-80 w-64 overflow-auto">
+            <DropdownMenuContent
+              align="start"
+              className="max-h-80 w-64 overflow-auto"
+            >
               <MenuHeader title="Filter by label..." />
               {labels.map((l) => (
                 <MenuRow
@@ -386,7 +454,9 @@ export function CreateViewDialog({
                     />
                   }
                   checked={filters.labelName === l.name}
-                  onClick={() => setFilters((f) => ({ ...f, labelName: l.name }))}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, labelName: l.name }))
+                  }
                 >
                   {l.name}
                 </MenuRow>
@@ -395,11 +465,18 @@ export function CreateViewDialog({
           </DropdownMenu>
 
           <DropdownMenu>
-            <DropdownMenuTrigger render={<PillButton active={filters.teamId !== null} />}>
-              <HugeiconsIcon icon={HashtagIcon} className="size-3.5 text-rose-500" />
+            <DropdownMenuTrigger
+              render={<PillButton active={filters.teamId !== null} />}
+            >
+              <HugeiconsIcon
+                icon={HashtagIcon}
+                className="size-3.5 text-rose-500"
+              />
               <span>{team ? team.key : "Team"}</span>
               {filters.teamId && (
-                <ClearPart onClick={() => setFilters((f) => ({ ...f, teamId: null }))} />
+                <ClearPart
+                  onClick={() => setFilters((f) => ({ ...f, teamId: null }))}
+                />
               )}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64">
@@ -407,9 +484,18 @@ export function CreateViewDialog({
               {teams.map((t) => (
                 <MenuRow
                   key={t.id}
-                  icon={<HugeiconsIcon icon={HashtagIcon} className="size-3.5 text-rose-500" />}
+                  icon={
+                    <HugeiconsIcon
+                      icon={HashtagIcon}
+                      className="size-3.5 text-rose-500"
+                    />
+                  }
                   checked={filters.teamId === t.id}
-                  right={<span className="text-[10px] text-muted-foreground">{t.key}</span>}
+                  right={
+                    <span className="text-muted-foreground text-[10px]">
+                      {t.key}
+                    </span>
+                  }
                   onClick={() => setFilters((f) => ({ ...f, teamId: t.id }))}
                 >
                   {t.name}
@@ -421,22 +507,34 @@ export function CreateViewDialog({
           <PillButton
             active={filters.cycle === "active"}
             onClick={() =>
-              setFilters((f) => ({ ...f, cycle: f.cycle === "active" ? null : "active" }))
+              setFilters((f) => ({
+                ...f,
+                cycle: f.cycle === "active" ? null : "active",
+              }))
             }
           >
-            <HugeiconsIcon icon={PlayCircleIcon} className="size-3.5 text-amber-500" />
+            <HugeiconsIcon
+              icon={PlayCircleIcon}
+              className="size-3.5 text-amber-500"
+            />
             <span>Active cycle</span>
             {filters.cycle === "active" && (
-              <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-3 text-emerald-500" />
+              <HugeiconsIcon
+                icon={CheckmarkCircle02Icon}
+                className="size-3 text-emerald-500"
+              />
             )}
           </PillButton>
         </div>
 
         <footer className="flex items-center justify-between border-t px-3 py-2">
-          <span className="text-xs text-muted-foreground">
+          <span className="text-muted-foreground text-xs">
             {hasAnyFilter ? (
               <>
-                <span className="tabular-nums text-foreground">{previewCount}</span> issue
+                <span className="text-foreground tabular-nums">
+                  {previewCount}
+                </span>{" "}
+                issue
                 {previewCount === 1 ? "" : "s"} match this view
               </>
             ) : (
@@ -465,10 +563,10 @@ function PillButton({
   return (
     <button
       type="button"
-      className={`flex h-6 items-center gap-1 rounded-md border px-1.5 text-xs hover:bg-muted/60 ${
+      className={`hover:bg-muted/60 flex h-6 items-center gap-1 rounded-md border px-1.5 text-xs ${
         active
-          ? "border-violet-500/40 bg-violet-500/10 text-foreground"
-          : "border-dashed text-muted-foreground"
+          ? "text-foreground border-violet-500/40 bg-violet-500/10"
+          : "text-muted-foreground border-dashed"
       } ${className ?? ""}`}
       {...props}
     >
@@ -487,7 +585,7 @@ function ClearPart({ onClick }: { onClick: () => void }) {
         e.preventDefault()
         onClick()
       }}
-      className="flex size-3.5 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+      className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-3.5 items-center justify-center rounded-sm"
       aria-label="Clear filter"
     >
       <HugeiconsIcon icon={CancelCircleIcon} className="size-3" />
@@ -497,13 +595,13 @@ function ClearPart({ onClick }: { onClick: () => void }) {
 
 function MenuHeader({ title }: { title: string }) {
   return (
-    <div className="px-2 py-1.5 text-xs text-muted-foreground">{title}</div>
+    <div className="text-muted-foreground px-2 py-1.5 text-xs">{title}</div>
   )
 }
 
 function MenuSection({ label }: { label: string }) {
   return (
-    <div className="mt-1 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="text-muted-foreground mt-1 px-2 py-1 text-[10px] font-medium tracking-wide uppercase">
       {label}
     </div>
   )
@@ -526,9 +624,13 @@ function MenuRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs hover:bg-accent"
+      className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs"
     >
-      {icon && <span className="flex size-4 shrink-0 items-center justify-center">{icon}</span>}
+      {icon && (
+        <span className="flex size-4 shrink-0 items-center justify-center">
+          {icon}
+        </span>
+      )}
       <span className="flex-1 truncate">{children}</span>
       {right}
       {checked && <span className="text-[10px]">✓</span>}
@@ -543,7 +645,9 @@ function Avatar({ src, name }: { src: string; name: string }) {
 
 function StatusDot({ status }: { status: Status | null }) {
   if (!status) {
-    return <span className="size-2.5 rounded-full border border-dashed border-muted-foreground/60" />
+    return (
+      <span className="border-muted-foreground/60 size-2.5 rounded-full border border-dashed" />
+    )
   }
   const color: Record<Status, string> = {
     in_progress: "bg-amber-500",
@@ -558,10 +662,34 @@ function StatusDot({ status }: { status: Status | null }) {
 function PriorityDot({ priority }: { priority: Priority | null }) {
   if (!priority) {
     return (
-      <svg viewBox="0 0 16 16" className="size-3.5 text-muted-foreground">
-        <line x1="3" y1="8" x2="5" y2="8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        <line x1="7" y1="8" x2="9" y2="8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        <line x1="11" y1="8" x2="13" y2="8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <svg viewBox="0 0 16 16" className="text-muted-foreground size-3.5">
+        <line
+          x1="3"
+          y1="8"
+          x2="5"
+          y2="8"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+        <line
+          x1="7"
+          y1="8"
+          x2="9"
+          y2="8"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+        <line
+          x1="11"
+          y1="8"
+          x2="13"
+          y2="8"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
       </svg>
     )
   }
@@ -574,7 +702,9 @@ function PriorityDot({ priority }: { priority: Priority | null }) {
     low: "bg-sky-500",
   }
   if (priority === "none") {
-    return <span className="size-2.5 rounded-full border border-muted-foreground/60" />
+    return (
+      <span className="border-muted-foreground/60 size-2.5 rounded-full border" />
+    )
   }
   return <span className={`size-2.5 rounded-full ${color[priority]}`} />
 }

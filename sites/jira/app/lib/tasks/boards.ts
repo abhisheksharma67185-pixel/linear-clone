@@ -1,17 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R5 = {
   completion: 5.0,
   partialPerCheck: true,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const R8 = {
   completion: 8.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 
 // Note: PLAT uses workflow Open → In Development → Code Review → QA → Staging → Done
 // FAPP uses workflow Backlog → Ready → In Progress → In Review → QA → Done
@@ -100,15 +100,78 @@ export const boardTasks: TaskDefinition[] = [
     title: "Progress PLAT In Development issues to Code Review",
     goal: "On the PLAT Board, transition all 'In Development' issues in Sprint 13 to 'Code Review'. In Development in Sprint 13: PLAT-11 (iss-2), PLAT-16 (iss-7), PLAT-19 (iss-10), PLAT-30 (iss-21), PLAT-35 (iss-26), PLAT-51 (iss-32), PLAT-57 (iss-38), PLAT-71 (iss-47), PLAT-76 (iss-52).",
     evalChecks: [
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-2",  expected: "Code Review", weight: 0.12, description: "PLAT-11 in Code Review" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-7",  expected: "Code Review", weight: 0.11, description: "PLAT-16 in Code Review" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-10", expected: "Code Review", weight: 0.11, description: "PLAT-19 in Code Review" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-21", expected: "Code Review", weight: 0.11, description: "PLAT-30 in Code Review" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-26", expected: "Code Review", weight: 0.11, description: "PLAT-35 in Code Review" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-32", expected: "Code Review", weight: 0.11, description: "PLAT-51 in Code Review" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-38", expected: "Code Review", weight: 0.11, description: "PLAT-57 in Code Review" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-47", expected: "Code Review", weight: 0.11, description: "PLAT-71 in Code Review" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-52", expected: "Code Review", weight: 0.11, description: "PLAT-76 in Code Review" },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-2",
+        expected: "Code Review",
+        weight: 0.12,
+        description: "PLAT-11 in Code Review",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-7",
+        expected: "Code Review",
+        weight: 0.11,
+        description: "PLAT-16 in Code Review",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-10",
+        expected: "Code Review",
+        weight: 0.11,
+        description: "PLAT-19 in Code Review",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-21",
+        expected: "Code Review",
+        weight: 0.11,
+        description: "PLAT-30 in Code Review",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-26",
+        expected: "Code Review",
+        weight: 0.11,
+        description: "PLAT-35 in Code Review",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-32",
+        expected: "Code Review",
+        weight: 0.11,
+        description: "PLAT-51 in Code Review",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-38",
+        expected: "Code Review",
+        weight: 0.11,
+        description: "PLAT-57 in Code Review",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-47",
+        expected: "Code Review",
+        weight: 0.11,
+        description: "PLAT-71 in Code Review",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-52",
+        expected: "Code Review",
+        weight: 0.11,
+        description: "PLAT-76 in Code Review",
+      },
     ],
     maxSteps: 25,
     rewardProfile: R8,
@@ -145,4 +208,4 @@ export const boardTasks: TaskDefinition[] = [
     rewardProfile: R8,
     tags: ["board", "transition", "bulk"],
   },
-];
+]

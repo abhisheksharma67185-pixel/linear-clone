@@ -28,7 +28,7 @@ interface SitesState {
   pushHistory: (entry: EpisodeHistoryEntry) => void
   updateHistory: (
     episodeId: string,
-    patch: Partial<EpisodeHistoryEntry>,
+    patch: Partial<EpisodeHistoryEntry>
   ) => void
   clearHistory: () => void
   setHydrated: (value: boolean) => void
@@ -39,7 +39,8 @@ function slugify(input: string): string {
     input
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || `site-${Math.random().toString(36).slice(2, 7)}`
+      .replace(/^-+|-+$/g, "") ||
+    `site-${Math.random().toString(36).slice(2, 7)}`
   )
 }
 
@@ -59,7 +60,10 @@ export const useSitesStore = create<SitesState>()(
           // If ID collides, append a short suffix to avoid accidental overwrite.
           const suffixed = `${id}-${Math.random().toString(36).slice(2, 5)}`
           set((s) => ({
-            sites: [...s.sites, { id: suffixed, name: site.name, url: site.url }],
+            sites: [
+              ...s.sites,
+              { id: suffixed, name: site.name, url: site.url },
+            ],
           }))
           return
         }
@@ -70,7 +74,7 @@ export const useSitesStore = create<SitesState>()(
       updateSite: (id, patch) =>
         set((s) => ({
           sites: s.sites.map((site) =>
-            site.id === id ? { ...site, ...patch, id: site.id } : site,
+            site.id === id ? { ...site, ...patch, id: site.id } : site
           ),
         })),
       removeSite: (id) =>
@@ -78,15 +82,15 @@ export const useSitesStore = create<SitesState>()(
       resetDefaults: () => set({ sites: DEFAULT_SITES }),
       pushHistory: (entry) =>
         set((s) => ({
-          history: [entry, ...s.history.filter((h) => h.episodeId !== entry.episodeId)].slice(
-            0,
-            MAX_HISTORY,
-          ),
+          history: [
+            entry,
+            ...s.history.filter((h) => h.episodeId !== entry.episodeId),
+          ].slice(0, MAX_HISTORY),
         })),
       updateHistory: (episodeId, patch) =>
         set((s) => ({
           history: s.history.map((h) =>
-            h.episodeId === episodeId ? { ...h, ...patch } : h,
+            h.episodeId === episodeId ? { ...h, ...patch } : h
           ),
         })),
       clearHistory: () => set({ history: [] }),
@@ -100,8 +104,8 @@ export const useSitesStore = create<SitesState>()(
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true)
       },
-    },
-  ),
+    }
+  )
 )
 
 export function useSiteById(id: SiteId): SiteConnection | undefined {

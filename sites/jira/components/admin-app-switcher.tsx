@@ -8,7 +8,13 @@ const mainApps = [
     name: "Home",
     href: "/home",
     icon: (
-      <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="size-6"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
         <polyline points="9 22 9 12 15 12 15 22" />
       </svg>
@@ -31,7 +37,13 @@ const mainApps = [
     href: "/goals",
     icon: (
       <div className="flex size-6 items-center justify-center rounded-full bg-purple-600">
-        <svg className="size-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+        <svg
+          className="size-3.5 text-white"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+        >
           <circle cx="12" cy="12" r="10" />
           <circle cx="12" cy="12" r="6" />
           <circle cx="12" cy="12" r="2" />
@@ -44,7 +56,13 @@ const mainApps = [
     href: "/project-directory",
     icon: (
       <div className="flex size-6 items-center justify-center rounded bg-green-600">
-        <svg className="size-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg
+          className="size-3.5 text-white"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
           <polygon points="12 2 2 7 12 12 22 7 12 2" />
           <polyline points="2 17 12 22 22 17" />
           <polyline points="2 12 12 17 22 12" />
@@ -57,7 +75,13 @@ const mainApps = [
     href: "/teams",
     icon: (
       <div className="flex size-6 items-center justify-center rounded bg-blue-500">
-        <svg className="size-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg
+          className="size-3.5 text-white"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
           <circle cx="9" cy="7" r="4" />
           <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -71,7 +95,13 @@ const mainApps = [
     href: "/admin",
     icon: (
       <div className="flex size-6 items-center justify-center">
-        <svg className="size-5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-5 text-muted-foreground"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <circle cx="12" cy="12" r="3" />
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09" />
         </svg>
@@ -86,7 +116,13 @@ const recommendedApps = [
     description: "Collaborative IT service management",
     icon: (
       <div className="flex size-8 items-center justify-center rounded bg-gradient-to-br from-blue-500 to-purple-600">
-        <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-4 text-white"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>
       </div>
@@ -97,7 +133,13 @@ const recommendedApps = [
     description: "Prioritize, collaborate, and deliver new i...",
     icon: (
       <div className="flex size-8 items-center justify-center rounded bg-gradient-to-br from-purple-500 to-pink-500">
-        <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-4 text-white"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
         </svg>
       </div>
@@ -108,7 +150,13 @@ const recommendedApps = [
     description: "Document collaboration",
     icon: (
       <div className="flex size-8 items-center justify-center rounded bg-gradient-to-br from-blue-500 to-teal-400">
-        <svg className="size-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-4 text-white"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
           <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
         </svg>
@@ -117,14 +165,21 @@ const recommendedApps = [
   },
 ]
 
-function RecommendedAppRow({ app, onClose }: { app: { name: string; description: string; icon: React.ReactNode }; onClose: () => void }) {
+function RecommendedAppRow({
+  app,
+  onClose,
+}: {
+  app: { name: string; description: string; icon: React.ReactNode }
+  onClose: () => void
+}) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!menuOpen) return
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        setMenuOpen(false)
     }
     document.addEventListener("mousedown", handler)
     return () => document.removeEventListener("mousedown", handler)
@@ -133,14 +188,19 @@ function RecommendedAppRow({ app, onClose }: { app: { name: string; description:
   return (
     <div className="flex items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-accent">
       {app.icon}
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{app.name}</p>
-        <p className="truncate text-xs text-muted-foreground">{app.description}</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {app.description}
+        </p>
       </div>
       <div className="relative" ref={menuRef}>
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen) }}
+          onClick={(e) => {
+            e.stopPropagation()
+            setMenuOpen(!menuOpen)
+          }}
           className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground"
         >
           <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
@@ -150,9 +210,27 @@ function RecommendedAppRow({ app, onClose }: { app: { name: string; description:
           </svg>
         </button>
         {menuOpen && (
-          <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-lg border bg-popover shadow-lg py-1">
-            <button type="button" onClick={() => { setMenuOpen(false); onClose() }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors">Not interested</button>
-            <button type="button" onClick={() => { setMenuOpen(false); onClose() }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors">Why am I seeing this?</button>
+          <div className="absolute top-full right-0 z-50 mt-1 w-44 rounded-lg border bg-popover py-1 shadow-lg">
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false)
+                onClose()
+              }}
+              className="w-full px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent"
+            >
+              Not interested
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false)
+                onClose()
+              }}
+              className="w-full px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent"
+            >
+              Why am I seeing this?
+            </button>
           </div>
         )}
       </div>
@@ -191,7 +269,7 @@ export function AdminAppSwitcher({
   return (
     <div
       ref={ref}
-      className="absolute left-10 top-12 z-50 w-72 rounded-lg border bg-background py-2 shadow-lg"
+      className="absolute top-12 left-10 z-50 w-72 rounded-lg border bg-background py-2 shadow-lg"
     >
       {/* Main apps */}
       <div className="flex flex-col">
@@ -213,7 +291,9 @@ export function AdminAppSwitcher({
 
       {/* Recommended */}
       <div className="px-4 py-2">
-        <p className="mb-2 text-xs font-medium text-muted-foreground">Recommended for your team</p>
+        <p className="mb-2 text-xs font-medium text-muted-foreground">
+          Recommended for your team
+        </p>
       </div>
       <div className="flex flex-col">
         {recommendedApps.map((app) => (
@@ -221,9 +301,19 @@ export function AdminAppSwitcher({
         ))}
 
         {/* More Atlassian apps */}
-        <Link href="/home/apps" onClick={onClose} className="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-accent">
+        <Link
+          href="/home/apps"
+          onClick={onClose}
+          className="flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-accent"
+        >
           <div className="flex size-8 items-center justify-center rounded border">
-            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <rect x="3" y="3" width="7" height="7" />
               <rect x="14" y="3" width="7" height="7" />
               <rect x="14" y="14" width="7" height="7" />

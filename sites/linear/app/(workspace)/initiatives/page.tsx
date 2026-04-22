@@ -78,10 +78,11 @@ const DISPLAY_PROPERTIES = [
 
 export default function InitiativesPage() {
   const [members, setMembers] = useState<Member[]>([])
-  const [initiatives, setInitiatives] = useState<Initiative[]>(INITIAL_INITIATIVES)
+  const [initiatives, setInitiatives] =
+    useState<Initiative[]>(INITIAL_INITIATIVES)
   const [creating, setCreating] = useState(false)
   const [activeProps, setActiveProps] = useState<Set<string>>(
-    () => new Set(DISPLAY_PROPERTIES.filter((p) => p.default).map((p) => p.key)),
+    () => new Set(DISPLAY_PROPERTIES.filter((p) => p.default).map((p) => p.key))
   )
 
   useEffect(() => {
@@ -93,66 +94,78 @@ export default function InitiativesPage() {
 
   return (
     <>
-    <div className="flex h-full min-h-0 flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-3">
-        <h1 className="text-sm font-medium">Initiatives</h1>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-7 text-muted-foreground"
-          onClick={() => setCreating(true)}
-          aria-label="New initiative"
+      <div className="flex h-full min-h-0 flex-col">
+        <header className="flex items-center justify-between border-b px-6 py-3">
+          <h1 className="text-sm font-medium">Initiatives</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground size-7"
+            onClick={() => setCreating(true)}
+            aria-label="New initiative"
+          >
+            <HugeiconsIcon icon={Add01Icon} className="size-4" />
+          </Button>
+        </header>
+
+        <Tabs
+          defaultValue="active"
+          className="flex min-h-0 flex-1 flex-col gap-0"
         >
-          <HugeiconsIcon icon={Add01Icon} className="size-4" />
-        </Button>
-      </header>
+          <div className="flex items-center justify-between px-4 pr-6">
+            <TabsList className="h-10 gap-1 bg-transparent p-0">
+              <TabPill value="active">Active</TabPill>
+              <TabPill value="planned">Planned</TabPill>
+              <TabPill value="completed">Completed</TabPill>
+            </TabsList>
 
-      <Tabs defaultValue="active" className="flex min-h-0 flex-1 flex-col gap-0">
-        <div className="flex items-center justify-between px-4 pr-6">
-          <TabsList className="h-10 gap-1 bg-transparent p-0">
-            <TabPill value="active">Active</TabPill>
-            <TabPill value="planned">Planned</TabPill>
-            <TabPill value="completed">Completed</TabPill>
-          </TabsList>
-
-          <div className="flex items-center gap-0.5 text-muted-foreground">
-            <FilterDropdown />
-            <ViewOptions activeProps={activeProps} setActiveProps={setActiveProps} />
+            <div className="text-muted-foreground flex items-center gap-0.5">
+              <FilterDropdown />
+              <ViewOptions
+                activeProps={activeProps}
+                setActiveProps={setActiveProps}
+              />
+            </div>
           </div>
-        </div>
 
-        <TabsContent value="active" className="m-0 flex-1 overflow-auto">
-          <InitiativeTable
-            initiatives={initiatives}
-            members={members}
-            activeProps={activeProps}
-            onNew={() => setCreating(true)}
-          />
-        </TabsContent>
+          <TabsContent value="active" className="m-0 flex-1 overflow-auto">
+            <InitiativeTable
+              initiatives={initiatives}
+              members={members}
+              activeProps={activeProps}
+              onNew={() => setCreating(true)}
+            />
+          </TabsContent>
 
-        <TabsContent value="planned" className="m-0 flex-1 overflow-auto">
-          <EmptyTab label="No planned initiatives" />
-        </TabsContent>
-        <TabsContent value="completed" className="m-0 flex-1 overflow-auto">
-          <EmptyTab label="No completed initiatives" />
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="planned" className="m-0 flex-1 overflow-auto">
+            <EmptyTab label="No planned initiatives" />
+          </TabsContent>
+          <TabsContent value="completed" className="m-0 flex-1 overflow-auto">
+            <EmptyTab label="No completed initiatives" />
+          </TabsContent>
+        </Tabs>
+      </div>
 
-    <CreateInitiativeDialog
-      open={creating}
-      onOpenChange={setCreating}
-      onCreate={(i) => setInitiatives((prev) => [i, ...prev])}
-    />
+      <CreateInitiativeDialog
+        open={creating}
+        onOpenChange={setCreating}
+        onCreate={(i) => setInitiatives((prev) => [i, ...prev])}
+      />
     </>
   )
 }
 
-function TabPill({ value, children }: { value: string; children: React.ReactNode }) {
+function TabPill({
+  value,
+  children,
+}: {
+  value: string
+  children: React.ReactNode
+}) {
   return (
     <TabsTrigger
       value={value}
-      className="rounded-full border-0 bg-transparent px-3 py-1 text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-accent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+      className="text-muted-foreground data-[state=active]:bg-accent data-[state=active]:text-foreground rounded-full border-0 bg-transparent px-3 py-1 text-xs font-medium shadow-none data-[state=active]:shadow-none"
     >
       {children}
     </TabsTrigger>
@@ -161,7 +174,7 @@ function TabPill({ value, children }: { value: string; children: React.ReactNode
 
 function EmptyTab({ label }: { label: string }) {
   return (
-    <div className="flex h-full items-center justify-center py-24 text-xs text-muted-foreground">
+    <div className="text-muted-foreground flex h-full items-center justify-center py-24 text-xs">
       {label}
     </div>
   )
@@ -188,7 +201,7 @@ function InitiativeTable({
 
   if (initiatives.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 py-24 text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-3 py-24 text-sm">
         <div className="flex size-10 items-center justify-center rounded-md bg-orange-100 text-orange-500">
           <HugeiconsIcon icon={Satellite01Icon} className="size-5" />
         </div>
@@ -205,7 +218,7 @@ function InitiativeTable({
 
   return (
     <div>
-      <div className="grid grid-cols-[1fr_160px_160px_120px_160px_120px] items-center gap-4 border-b px-6 py-2 text-[11px] text-muted-foreground">
+      <div className="text-muted-foreground grid grid-cols-[1fr_160px_160px_120px_160px_120px] items-center gap-4 border-b px-6 py-2 text-[11px]">
         <span>Name</span>
         {showOwner && <span>Owner</span>}
         {showTarget && <span>Target</span>}
@@ -237,7 +250,7 @@ function InitiativeRow({
 }) {
   const owner = members.find((m) => m.id === initiative.ownerId) ?? null
   return (
-    <div className="grid grid-cols-[1fr_160px_160px_120px_160px_120px] items-center gap-4 border-b px-6 py-2.5 text-sm hover:bg-accent/40">
+    <div className="hover:bg-accent/40 grid grid-cols-[1fr_160px_160px_120px_160px_120px] items-center gap-4 border-b px-6 py-2.5 text-sm">
       <div className="flex items-center gap-3">
         <InitiativeGlyph />
         <span className="truncate">{initiative.name}</span>
@@ -252,7 +265,7 @@ function InitiativeRow({
             </>
           ) : (
             <>
-              <div className="flex size-5 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <div className="bg-muted text-muted-foreground flex size-5 items-center justify-center rounded-full">
                 <HugeiconsIcon icon={UserIcon} className="size-3" />
               </div>
               <span className="text-muted-foreground">Unassigned</span>
@@ -263,13 +276,19 @@ function InitiativeRow({
 
       {activeProps.has("target_date") && (
         <div className="flex items-center gap-2 text-xs">
-          <HugeiconsIcon icon={CalendarBlock01Icon} className="size-4 text-rose-500" />
+          <HugeiconsIcon
+            icon={CalendarBlock01Icon}
+            className="size-4 text-rose-500"
+          />
           <span>{formatTargetDate(initiative.targetDate)}</span>
         </div>
       )}
 
       <div className="flex items-center gap-1.5 text-xs">
-        <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-4 text-indigo-500" />
+        <HugeiconsIcon
+          icon={CheckmarkCircle02Icon}
+          className="size-4 text-indigo-500"
+        />
         <span>
           {initiative.totalProjects === 0
             ? "0"
@@ -298,19 +317,28 @@ function InitiativeGlyph() {
 }
 
 function HealthCell({ health }: { health: InitiativeHealth }) {
-  const meta = HEALTH_OPTIONS.find((h) => h.value === health) ?? HEALTH_OPTIONS[0]
+  const meta =
+    HEALTH_OPTIONS.find((h) => h.value === health) ?? HEALTH_OPTIONS[0]
   const isNoUpdate = health === "no_update"
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className={`size-2.5 rounded-full border ${meta.dot}`} />
-      <span className={isNoUpdate ? "text-muted-foreground" : ""}>{meta.label}</span>
+      <span className={isNoUpdate ? "text-muted-foreground" : ""}>
+        {meta.label}
+      </span>
     </div>
   )
 }
 
 function MemberAvatar({ member }: { member: Member }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={member.avatar} alt={member.name} className="size-5 rounded-full" />
+  return (
+    <img
+      src={member.avatar}
+      alt={member.name}
+      className="size-5 rounded-full"
+    />
+  )
 }
 
 function formatTargetDate(iso: string | null) {
@@ -333,7 +361,10 @@ function formatTargetDate(iso: string | null) {
 // ---------- Filter & view-options dropdowns ----------
 
 function FilterDropdown() {
-  const items: { icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]; label: string }[] = [
+  const items: {
+    icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
+    label: string
+  }[] = [
     { icon: FilterIcon, label: "Advanced filter" },
     { icon: UserIcon, label: "Owner" },
     { icon: UserMultiple02Icon, label: "Creator" },
@@ -349,7 +380,7 @@ function FilterDropdown() {
         <HugeiconsIcon icon={FilterIcon} className="size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 p-0">
-        <div className="flex items-center justify-between border-b px-2 py-1.5 text-xs text-muted-foreground">
+        <div className="text-muted-foreground flex items-center justify-between border-b px-2 py-1.5 text-xs">
           <span>Add Filter...</span>
           <span className="rounded border px-1 font-mono text-[10px]">F</span>
         </div>
@@ -358,14 +389,17 @@ function FilterDropdown() {
             <button
               key={f.label}
               type="button"
-              className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs hover:bg-accent"
+              className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs"
             >
-              <HugeiconsIcon icon={f.icon} className="size-3.5 text-muted-foreground" />
+              <HugeiconsIcon
+                icon={f.icon}
+                className="text-muted-foreground size-3.5"
+              />
               <span className="flex-1 text-left">{f.label}</span>
               {f.label !== "Advanced filter" && (
                 <HugeiconsIcon
                   icon={ArrowRight01Icon}
-                  className="size-3 text-muted-foreground"
+                  className="text-muted-foreground size-3"
                 />
               )}
             </button>
@@ -392,7 +426,7 @@ function ViewOptions({
       { value: "owner", label: "Owner" },
       { value: "health", label: "Health" },
     ],
-    [],
+    []
   )
   const orderingOptions = useMemo(
     () => [
@@ -400,7 +434,7 @@ function ViewOptions({
       { value: "target", label: "Target date" },
       { value: "created", label: "Created" },
     ],
-    [],
+    []
   )
 
   const toggleProp = (key: string) => {
@@ -458,7 +492,13 @@ function ViewOptions({
   )
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
   return (
     <div className="flex items-center justify-between py-1.5 text-xs">
       <span>{label}</span>

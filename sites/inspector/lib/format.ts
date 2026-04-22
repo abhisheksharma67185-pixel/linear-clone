@@ -17,7 +17,7 @@ export function relativeTime(iso: string | undefined | null): string {
 }
 
 export function difficultyVariant(
-  difficulty: string,
+  difficulty: string
 ): "default" | "secondary" | "warning" | "destructive" {
   switch (difficulty) {
     case "easy":

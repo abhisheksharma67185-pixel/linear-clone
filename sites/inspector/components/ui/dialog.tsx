@@ -10,19 +10,19 @@ function Dialog(props: React.ComponentProps<typeof DialogPrimitive.Root>) {
 }
 
 function DialogTrigger(
-  props: React.ComponentProps<typeof DialogPrimitive.Trigger>,
+  props: React.ComponentProps<typeof DialogPrimitive.Trigger>
 ) {
   return <DialogPrimitive.Trigger {...props} />
 }
 
 function DialogClose(
-  props: React.ComponentProps<typeof DialogPrimitive.Close>,
+  props: React.ComponentProps<typeof DialogPrimitive.Close>
 ) {
   return <DialogPrimitive.Close {...props} />
 }
 
 function DialogPortal(
-  props: React.ComponentProps<typeof DialogPrimitive.Portal>,
+  props: React.ComponentProps<typeof DialogPrimitive.Portal>
 ) {
   return <DialogPrimitive.Portal {...props} />
 }
@@ -37,7 +37,7 @@ function DialogOverlay({
       className={cn(
         "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-200",
         "data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
-        className,
+        className
       )}
       {...props}
     />
@@ -60,9 +60,9 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "bg-background fixed top-1/2 left-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border p-6 shadow-lg outline-none",
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border bg-background p-6 shadow-lg outline-none",
           "duration-200 data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:opacity-0",
-          className,
+          className
         )}
         {...props}
       >
@@ -70,7 +70,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[active=true]:bg-accent absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none"
+            className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[active=true]:bg-accent"
           >
             <IconX className="size-4" />
             <span className="sr-only">Close</span>
@@ -85,10 +85,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn(
-        "flex flex-col gap-2 text-center sm:text-left",
-        className,
-      )}
+      className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
       {...props}
     />
   )
@@ -100,7 +97,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="dialog-footer"
       className={cn(
         "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-        className,
+        className
       )}
       {...props}
     />
@@ -127,7 +124,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
   )

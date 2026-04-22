@@ -1,7 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
-const R10 = { completion: 10.0, partialPerCheck: true, stepPenalty: -0.02, invalidActionPenalty: -0.2 };
-const R15 = { completion: 15.0, partialPerCheck: true, stepPenalty: -0.02, invalidActionPenalty: -0.2 };
+const R10 = {
+  completion: 10.0,
+  partialPerCheck: true,
+  stepPenalty: -0.02,
+  invalidActionPenalty: -0.2,
+}
+const R15 = {
+  completion: 15.0,
+  partialPerCheck: true,
+  stepPenalty: -0.02,
+  invalidActionPenalty: -0.2,
+}
 
 export const multiDomainTasks: TaskDefinition[] = [
   {
@@ -17,7 +27,11 @@ export const multiDomainTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "channel_exists",
-        expected: { name: "project-aurora", type: "public", topic: "Aurora redesign" },
+        expected: {
+          name: "project-aurora",
+          type: "public",
+          topic: "Aurora redesign",
+        },
         weight: 0.25,
         description: "project-aurora created",
       },
@@ -172,7 +186,10 @@ export const multiDomainTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "user_group_exists",
-        expected: { handle: "ship-crew", memberIds: ["usr-1", "usr-2", "usr-3", "usr-5"] },
+        expected: {
+          handle: "ship-crew",
+          memberIds: ["usr-1", "usr-2", "usr-3", "usr-5"],
+        },
         weight: 0.34,
         description: "ship-crew user group created",
       },
@@ -237,4 +254,4 @@ export const multiDomainTasks: TaskDefinition[] = [
     rewardProfile: R15,
     tags: ["multi-step", "huddle", "pin", "thread"],
   },
-];
+]

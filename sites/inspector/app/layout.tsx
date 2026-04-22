@@ -32,16 +32,16 @@ export default function RootLayout({
         "antialiased",
         fontMono.variable,
         "font-sans",
-        inter.variable,
+        inter.variable
       )}
     >
-      <body className="bg-background text-foreground min-h-svh">
+      <body className="min-h-svh bg-background text-foreground">
         <Providers>
           <div className="flex min-h-svh flex-col md:flex-row">
             <Sidebar />
-            <div className="flex flex-1 min-w-0 flex-col">
+            <div className="flex min-w-0 flex-1 flex-col">
               <MobileNav />
-              <main className="flex-1 min-w-0">{children}</main>
+              <main className="min-w-0 flex-1">{children}</main>
             </div>
           </div>
         </Providers>

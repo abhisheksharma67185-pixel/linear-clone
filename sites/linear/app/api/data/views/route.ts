@@ -1,20 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
-import * as store from "../../../lib/store";
+import { NextRequest, NextResponse } from "next/server"
+import * as store from "../../../lib/store"
 
 export async function GET() {
-  return NextResponse.json(store.getViews());
+  return NextResponse.json(store.getViews())
 }
 
 export async function POST(request: NextRequest) {
-  let fields;
+  let fields
   try {
-    fields = await request.json();
+    fields = await request.json()
   } catch {
-    return Response.json({ error: "Invalid JSON in request body" }, { status: 400 });
+    return Response.json(
+      { error: "Invalid JSON in request body" },
+      { status: 400 }
+    )
   }
-  const result = store.createView(fields);
+  const result = store.createView(fields)
   if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+    return NextResponse.json({ error: result.error }, { status: 400 })
   }
-  return NextResponse.json(result.data, { status: 201 });
+  return NextResponse.json(result.data, { status: 201 })
 }

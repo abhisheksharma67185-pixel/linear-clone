@@ -1,40 +1,51 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { MessageItem } from "@/components/message-item";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { MessageSquare } from "lucide-react";
+import { useEffect, useState } from "react"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { MessageItem } from "@/components/message-item"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { MessageSquare } from "lucide-react"
 
 type User = {
-  id: string;
-  name: string;
-  displayName: string;
-  avatar: string;
-  presence: "active" | "away" | "offline" | "dnd";
-};
+  id: string
+  name: string
+  displayName: string
+  avatar: string
+  presence: "active" | "away" | "offline" | "dnd"
+}
 
 type Message = {
-  id: string;
-  authorId: string;
-  text: string;
-  reactions: { emoji: string; userIds: string[] }[];
-  attachments: { id: string; type: "file" | "image" | "link"; name: string; url: string }[];
-  createdAt: string;
-  editedAt: string | null;
-  isDeleted: boolean;
-  threadRootId: string | null;
-  threadReplyCount: number;
-  threadParticipantIds: string[];
-  mentions: string[];
-};
+  id: string
+  authorId: string
+  text: string
+  reactions: { emoji: string; userIds: string[] }[]
+  attachments: {
+    id: string
+    type: "file" | "image" | "link"
+    name: string
+    url: string
+  }[]
+  createdAt: string
+  editedAt: string | null
+  isDeleted: boolean
+  threadRootId: string | null
+  threadReplyCount: number
+  threadParticipantIds: string[]
+  mentions: string[]
+}
 
-const CURRENT_USER_ID = "usr-1";
+const CURRENT_USER_ID = "usr-1"
 
 export default function ThreadsPage() {
-  const [threads, setThreads] = useState<Message[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [threads, setThreads] = useState<Message[]>([])
+  const [users, setUsers] = useState<User[]>([])
 
   useEffect(() => {
     Promise.all([
@@ -42,27 +53,27 @@ export default function ThreadsPage() {
       fetch("/api/data/users").then((r) => r.json()),
     ]).then(([msgs, u]: [Message[], User[]]) => {
       // Threads where viewer has participated (authored a reply or was mentioned in root)
-      const replyRoots = new Set<string>();
+      const replyRoots = new Set<string>()
       for (const m of msgs) {
         if (m.threadRootId && m.authorId === CURRENT_USER_ID) {
-          replyRoots.add(m.threadRootId);
+          replyRoots.add(m.threadRootId)
         }
       }
       for (const m of msgs) {
         if (m.mentions.includes(CURRENT_USER_ID) && m.threadReplyCount > 0) {
-          replyRoots.add(m.id);
+          replyRoots.add(m.id)
         }
       }
       const roots = msgs
         .filter((m) => replyRoots.has(m.id) && m.threadReplyCount > 0)
         .sort(
           (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
-      setThreads(roots);
-      setUsers(u);
-    });
-  }, []);
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+      setThreads(roots)
+      setUsers(u)
+    })
+  }, [])
 
   return (
     <>
@@ -76,7 +87,8 @@ export default function ThreadsPage() {
               </EmptyMedia>
               <EmptyTitle>No threads yet</EmptyTitle>
               <EmptyDescription>
-                When you reply to or are mentioned in a thread, it will show up here.
+                When you reply to or are mentioned in a thread, it will show up
+                here.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -101,5 +113,5 @@ export default function ThreadsPage() {
         )}
       </ScrollArea>
     </>
-  );
+  )
 }

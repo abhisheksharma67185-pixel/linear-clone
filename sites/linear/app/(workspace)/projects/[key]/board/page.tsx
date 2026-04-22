@@ -41,26 +41,88 @@ import {
   type DragEndEvent,
   type DragOverEvent,
 } from "@dnd-kit/core"
-import { useSortable, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import {
+  useSortable,
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 
 const STATUS_COLUMNS = [
-  { key: "backlog", label: "Backlog", icon: "○", color: "text-gray-400", dotColor: "bg-gray-400" },
-  { key: "todo", label: "Todo", icon: "◉", color: "text-blue-500", dotColor: "bg-blue-500" },
-  { key: "in_progress", label: "In Progress", icon: "◐", color: "text-yellow-500", dotColor: "bg-yellow-500" },
-  { key: "done", label: "Done", icon: "●", color: "text-green-500", dotColor: "bg-green-500" },
-  { key: "cancelled", label: "Cancelled", icon: "⊘", color: "text-red-400", dotColor: "bg-red-400" },
+  {
+    key: "backlog",
+    label: "Backlog",
+    icon: "○",
+    color: "text-gray-400",
+    dotColor: "bg-gray-400",
+  },
+  {
+    key: "todo",
+    label: "Todo",
+    icon: "◉",
+    color: "text-blue-500",
+    dotColor: "bg-blue-500",
+  },
+  {
+    key: "in_progress",
+    label: "In Progress",
+    icon: "◐",
+    color: "text-yellow-500",
+    dotColor: "bg-yellow-500",
+  },
+  {
+    key: "done",
+    label: "Done",
+    icon: "●",
+    color: "text-green-500",
+    dotColor: "bg-green-500",
+  },
+  {
+    key: "cancelled",
+    label: "Cancelled",
+    icon: "⊘",
+    color: "text-red-400",
+    dotColor: "bg-red-400",
+  },
 ] as const
 
-const PRIORITY_CONFIG: Record<string, { label: string; icon: string; style: string }> = {
-  urgent: { label: "Urgent", icon: "⚡", style: "text-red-600 bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800 dark:text-red-400" },
-  high: { label: "High", icon: "↑", style: "text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-400" },
-  medium: { label: "Medium", icon: "→", style: "text-yellow-600 bg-yellow-50 border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800 dark:text-yellow-400" },
-  low: { label: "Low", icon: "↓", style: "text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-400" },
-  none: { label: "None", icon: "—", style: "text-gray-500 bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400" },
+const PRIORITY_CONFIG: Record<
+  string,
+  { label: string; icon: string; style: string }
+> = {
+  urgent: {
+    label: "Urgent",
+    icon: "⚡",
+    style:
+      "text-red-600 bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800 dark:text-red-400",
+  },
+  high: {
+    label: "High",
+    icon: "↑",
+    style:
+      "text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-950 dark:border-orange-800 dark:text-orange-400",
+  },
+  medium: {
+    label: "Medium",
+    icon: "→",
+    style:
+      "text-yellow-600 bg-yellow-50 border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800 dark:text-yellow-400",
+  },
+  low: {
+    label: "Low",
+    icon: "↓",
+    style:
+      "text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-400",
+  },
+  none: {
+    label: "None",
+    icon: "—",
+    style:
+      "text-gray-500 bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400",
+  },
 }
 
-type StatusKey = typeof STATUS_COLUMNS[number]["key"]
+type StatusKey = (typeof STATUS_COLUMNS)[number]["key"]
 
 // ── Draggable Issue Card ─────────────────────────────────────────────
 function SortableIssueCard({
@@ -97,12 +159,15 @@ function SortableIssueCard({
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
-      <Card className="group hover:border-primary/30 transition-colors shadow-none cursor-grab active:cursor-grabbing" {...listeners}>
+      <Card
+        className="group hover:border-primary/30 cursor-grab shadow-none transition-colors active:cursor-grabbing"
+        {...listeners}
+      >
         <CardContent className="p-2.5">
-          <div className="flex items-center justify-between mb-1">
+          <div className="mb-1 flex items-center justify-between">
             <Link
               href={`/issues/${issue.identifier}`}
-              className="font-mono text-[10px] text-muted-foreground hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-primary font-mono text-[10px] transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
               {issue.identifier}
@@ -112,18 +177,27 @@ function SortableIssueCard({
                 render={
                   <Button
                     variant="ghost"
-                    className="size-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="size-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
                     onClick={(e) => e.stopPropagation()}
                     onPointerDown={(e) => e.stopPropagation()}
                   />
                 }
               >
-                <HugeiconsIcon icon={MoreHorizontalIcon} className="size-3.5 text-muted-foreground" />
+                <HugeiconsIcon
+                  icon={MoreHorizontalIcon}
+                  className="text-muted-foreground size-3.5"
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {STATUS_COLUMNS.filter((s) => s.key !== colKey).map((s) => (
-                  <DropdownMenuItem key={s.key} onClick={() => moveIssue(issue.id, s.key)}>
-                    <HugeiconsIcon icon={ArrowRight01Icon} className="size-3 mr-1.5" />
+                  <DropdownMenuItem
+                    key={s.key}
+                    onClick={() => moveIssue(issue.id, s.key)}
+                  >
+                    <HugeiconsIcon
+                      icon={ArrowRight01Icon}
+                      className="mr-1.5 size-3"
+                    />
                     Move to {s.label}
                   </DropdownMenuItem>
                 ))}
@@ -131,14 +205,18 @@ function SortableIssueCard({
             </DropdownMenu>
           </div>
 
-          <Link href={`/issues/${issue.identifier}`} onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
-            <p className="text-sm font-medium leading-snug mb-2 hover:text-primary transition-colors cursor-pointer line-clamp-2">
+          <Link
+            href={`/issues/${issue.identifier}`}
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <p className="hover:text-primary mb-2 line-clamp-2 cursor-pointer text-sm leading-snug font-medium transition-colors">
               {issue.title}
             </p>
           </Link>
 
           {issueLabels.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
+            <div className="mb-2 flex flex-wrap gap-1">
               {issueLabels.map((label) => (
                 <span
                   key={label.id}
@@ -156,7 +234,9 @@ function SortableIssueCard({
               <Tooltip>
                 <TooltipTrigger
                   render={
-                    <span className={`inline-flex items-center rounded border px-1 py-0.5 text-[9px] font-medium ${priority.style}`} />
+                    <span
+                      className={`inline-flex items-center rounded border px-1 py-0.5 text-[9px] font-medium ${priority.style}`}
+                    />
                   }
                 >
                   {priority.icon}
@@ -164,7 +244,7 @@ function SortableIssueCard({
                 <TooltipContent>{priority.label} priority</TooltipContent>
               </Tooltip>
               {issue.estimate != null && (
-                <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 tabular-nums">
+                <span className="text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 text-[10px] tabular-nums">
                   {issue.estimate}
                 </span>
               )}
@@ -174,7 +254,9 @@ function SortableIssueCard({
                 <TooltipTrigger render={<span />}>
                   <Avatar className="size-5">
                     <AvatarImage src={assignee.avatar} />
-                    <AvatarFallback className="text-[8px]">{assignee.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="text-[8px]">
+                      {assignee.name.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                 </TooltipTrigger>
                 <TooltipContent>{assignee.name}</TooltipContent>
@@ -188,33 +270,53 @@ function SortableIssueCard({
 }
 
 // ── Drag Overlay Card (ghost shown while dragging) ───────────────────
-function DragOverlayCard({ issue, members, labels: allLabels }: { issue: Issue; members: Member[]; labels: Label[] }) {
+function DragOverlayCard({
+  issue,
+  members,
+  labels: allLabels,
+}: {
+  issue: Issue
+  members: Member[]
+  labels: Label[]
+}) {
   const assignee = members.find((m) => m.id === issue.assigneeId)
   const priority = PRIORITY_CONFIG[issue.priority]
   const issueLabels = allLabels.filter((l) => issue.labelIds.includes(l.id))
 
   return (
-    <Card className="shadow-lg border-primary/40 w-[244px] rotate-2">
+    <Card className="border-primary/40 w-[244px] rotate-2 shadow-lg">
       <CardContent className="p-2.5">
-        <p className="font-mono text-[10px] text-muted-foreground mb-1">{issue.identifier}</p>
-        <p className="text-sm font-medium leading-snug mb-2 line-clamp-2">{issue.title}</p>
+        <p className="text-muted-foreground mb-1 font-mono text-[10px]">
+          {issue.identifier}
+        </p>
+        <p className="mb-2 line-clamp-2 text-sm leading-snug font-medium">
+          {issue.title}
+        </p>
         {issueLabels.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className="mb-2 flex flex-wrap gap-1">
             {issueLabels.map((label) => (
-              <span key={label.id} className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ backgroundColor: label.color }}>
+              <span
+                key={label.id}
+                className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white"
+                style={{ backgroundColor: label.color }}
+              >
                 {label.name}
               </span>
             ))}
           </div>
         )}
         <div className="flex items-center justify-between">
-          <span className={`inline-flex items-center rounded border px-1 py-0.5 text-[9px] font-medium ${priority.style}`}>
+          <span
+            className={`inline-flex items-center rounded border px-1 py-0.5 text-[9px] font-medium ${priority.style}`}
+          >
             {priority.icon}
           </span>
           {assignee && (
             <Avatar className="size-5">
               <AvatarImage src={assignee.avatar} />
-              <AvatarFallback className="text-[8px]">{assignee.name.charAt(0)}</AvatarFallback>
+              <AvatarFallback className="text-[8px]">
+                {assignee.name.charAt(0)}
+              </AvatarFallback>
             </Avatar>
           )}
         </div>
@@ -232,7 +334,7 @@ function DroppableColumn({
   moveIssue,
   isLast,
 }: {
-  col: typeof STATUS_COLUMNS[number]
+  col: (typeof STATUS_COLUMNS)[number]
   issues: Issue[]
   members: Member[]
   labels: Label[]
@@ -240,20 +342,28 @@ function DroppableColumn({
   isLast: boolean
 }) {
   return (
-    <div className={`flex flex-col min-w-[260px] w-[260px] flex-shrink-0 ${!isLast ? "border-r" : ""}`}>
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b bg-muted/30">
+    <div
+      className={`flex w-[260px] min-w-[260px] flex-shrink-0 flex-col ${!isLast ? "border-r" : ""}`}
+    >
+      <div className="bg-muted/30 flex items-center gap-2 border-b px-3 py-2.5">
         <span className={`text-sm ${col.color}`}>{col.icon}</span>
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
           {col.label}
         </span>
-        <span className="text-[10px] text-muted-foreground/60 tabular-nums ml-auto font-mono">
+        <span className="text-muted-foreground/60 ml-auto font-mono text-[10px] tabular-nums">
           {colIssues.length}
         </span>
       </div>
 
       <ScrollArea className="flex-1">
-        <SortableContext items={colIssues.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-          <div className="flex flex-col gap-1.5 p-2 min-h-[100px]" data-column={col.key}>
+        <SortableContext
+          items={colIssues.map((i) => i.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div
+            className="flex min-h-[100px] flex-col gap-1.5 p-2"
+            data-column={col.key}
+          >
             {colIssues.map((issue) => (
               <SortableIssueCard
                 key={issue.id}
@@ -265,8 +375,8 @@ function DroppableColumn({
               />
             ))}
             {colIssues.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground/50">
-                <span className={`text-2xl mb-1 ${col.color}`}>{col.icon}</span>
+              <div className="text-muted-foreground/50 flex flex-col items-center justify-center py-12">
+                <span className={`mb-1 text-2xl ${col.color}`}>{col.icon}</span>
                 <span className="text-xs">No issues</span>
               </div>
             )}
@@ -369,12 +479,12 @@ export default function BoardPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex items-center gap-3 px-6 py-3 border-b">
+      <div className="flex h-full flex-col">
+        <div className="flex items-center gap-3 border-b px-6 py-3">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-16" />
         </div>
-        <div className="flex flex-1 p-2 gap-2">
+        <div className="flex flex-1 gap-2 p-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex-1 space-y-2">
               <Skeleton className="h-8 w-full" />
@@ -392,7 +502,7 @@ export default function BoardPage() {
       <div className="flex items-center justify-center p-12">
         <Card className="max-w-sm text-center">
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Team not found.</p>
+            <p className="text-muted-foreground text-sm">Team not found.</p>
           </CardContent>
         </Card>
       </div>
@@ -410,28 +520,45 @@ export default function BoardPage() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-full">
+      <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b">
+        <div className="flex items-center justify-between border-b px-6 py-3">
           <div className="flex items-center gap-3">
             <h1 className="text-base font-semibold">{team.name}</h1>
-            <Badge variant="outline" className="text-[10px] font-mono">{team.key}</Badge>
+            <Badge variant="outline" className="font-mono text-[10px]">
+              {team.key}
+            </Badge>
             <Separator orientation="vertical" className="h-4" />
-            <span className="text-xs text-muted-foreground">{teamIssues.length} issues</span>
+            <span className="text-muted-foreground text-xs">
+              {teamIssues.length} issues
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<Button variant={filterPriority ? "secondary" : "ghost"} size="sm" className="h-7 text-xs gap-1" />}
+                render={
+                  <Button
+                    variant={filterPriority ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 gap-1 text-xs"
+                  />
+                }
               >
                 <HugeiconsIcon icon={FilterIcon} className="size-3" />
-                {filterPriority ? PRIORITY_CONFIG[filterPriority].label : "Priority"}
+                {filterPriority
+                  ? PRIORITY_CONFIG[filterPriority].label
+                  : "Priority"}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setFilterPriority(null)}>All priorities</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterPriority(null)}>
+                  All priorities
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {Object.entries(PRIORITY_CONFIG).map(([key, cfg]) => (
-                  <DropdownMenuItem key={key} onClick={() => setFilterPriority(key)}>
+                  <DropdownMenuItem
+                    key={key}
+                    onClick={() => setFilterPriority(key)}
+                  >
                     <span className="mr-1">{cfg.icon}</span> {cfg.label}
                   </DropdownMenuItem>
                 ))}
@@ -440,18 +567,34 @@ export default function BoardPage() {
 
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<Button variant={filterAssignee ? "secondary" : "ghost"} size="sm" className="h-7 text-xs gap-1" />}
+                render={
+                  <Button
+                    variant={filterAssignee ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 gap-1 text-xs"
+                  />
+                }
               >
-                {filterAssignee ? members.find((m) => m.id === filterAssignee)?.name ?? "Assignee" : "Assignee"}
+                {filterAssignee
+                  ? (members.find((m) => m.id === filterAssignee)?.name ??
+                    "Assignee")
+                  : "Assignee"}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setFilterAssignee(null)}>All members</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilterAssignee(null)}>
+                  All members
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {teamMembers.map((m) => (
-                  <DropdownMenuItem key={m.id} onClick={() => setFilterAssignee(m.id)}>
-                    <Avatar className="size-4 mr-1.5">
+                  <DropdownMenuItem
+                    key={m.id}
+                    onClick={() => setFilterAssignee(m.id)}
+                  >
+                    <Avatar className="mr-1.5 size-4">
                       <AvatarImage src={m.avatar} />
-                      <AvatarFallback className="text-[7px]">{m.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="text-[7px]">
+                        {m.name.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     {m.name}
                   </DropdownMenuItem>
@@ -460,7 +603,15 @@ export default function BoardPage() {
             </DropdownMenu>
 
             {hasFilters && (
-              <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={() => { setFilterPriority(null); setFilterAssignee(null) }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground h-7 text-xs"
+                onClick={() => {
+                  setFilterPriority(null)
+                  setFilterAssignee(null)
+                }}
+              >
                 Clear
               </Button>
             )}
@@ -475,7 +626,7 @@ export default function BoardPage() {
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
-          <div className="flex flex-1 min-h-0 overflow-x-auto">
+          <div className="flex min-h-0 flex-1 overflow-x-auto">
             {STATUS_COLUMNS.map((col, colIdx) => {
               const colIssues = teamIssues.filter((i) => i.status === col.key)
               return (
@@ -494,7 +645,11 @@ export default function BoardPage() {
 
           <DragOverlay>
             {activeIssue ? (
-              <DragOverlayCard issue={activeIssue} members={members} labels={labels} />
+              <DragOverlayCard
+                issue={activeIssue}
+                members={members}
+                labels={labels}
+              />
             ) : null}
           </DragOverlay>
         </DndContext>

@@ -16,7 +16,9 @@ interface IpAllowlistEntry {
 export default function IpAllowlistsPage() {
   const [search, setSearch] = useState("")
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [editingEntry, setEditingEntry] = useState<IpAllowlistEntry | null>(null)
+  const [editingEntry, setEditingEntry] = useState<IpAllowlistEntry | null>(
+    null
+  )
   const [allowlists, setAllowlists] = useState<IpAllowlistEntry[]>([])
   const [actionsOpen, setActionsOpen] = useState<string | null>(null)
 
@@ -26,7 +28,9 @@ export default function IpAllowlistsPage() {
   const [formIpAddresses, setFormIpAddresses] = useState<string[]>([])
   const [formAccessOrigin, setFormAccessOrigin] = useState("Any")
   const [formAppliesTo, setFormAppliesTo] = useState<string[]>(["All apps"])
-  const [formStatus, setFormStatus] = useState<"Enabled" | "Disabled">("Enabled")
+  const [formStatus, setFormStatus] = useState<"Enabled" | "Disabled">(
+    "Enabled"
+  )
   const [formError, setFormError] = useState("")
 
   const resetForm = () => {
@@ -63,7 +67,9 @@ export default function IpAllowlistsPage() {
     // Basic IP/CIDR validation
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/
     if (!ipRegex.test(trimmed)) {
-      setFormError("Enter a valid IP address or CIDR range (e.g., 192.168.1.0/24)")
+      setFormError(
+        "Enter a valid IP address or CIDR range (e.g., 192.168.1.0/24)"
+      )
       return
     }
     if (formIpAddresses.includes(trimmed)) {
@@ -149,24 +155,36 @@ export default function IpAllowlistsPage() {
   // Create / Edit form overlay
   if (showCreateForm) {
     return (
-      <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
         <button
-          onClick={() => { setShowCreateForm(false); resetForm() }}
-          className="absolute left-6 top-6 rounded p-1.5 text-muted-foreground hover:bg-accent"
+          onClick={() => {
+            setShowCreateForm(false)
+            resetForm()
+          }}
+          className="absolute top-6 left-6 rounded p-1.5 text-muted-foreground hover:bg-accent"
         >
-          <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            className="size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
 
-        <div className="max-w-xl mx-auto px-8 pt-24 pb-32">
-          <h1 className="text-2xl font-bold mb-2">
+        <div className="mx-auto max-w-xl px-8 pt-24 pb-32">
+          <h1 className="mb-2 text-2xl font-bold">
             {editingEntry ? "Edit IP allowlist" : "Create IP allowlist"}
           </h1>
-          <p className="text-sm text-muted-foreground mb-8">
-            Define IP addresses and ranges that are allowed to access your organization&apos;s apps.{" "}
-            <button type="button" className="text-blue-600 hover:underline">More about IP allowlists.</button>
+          <p className="mb-8 text-sm text-muted-foreground">
+            Define IP addresses and ranges that are allowed to access your
+            organization&apos;s apps.{" "}
+            <button type="button" className="text-blue-600 hover:underline">
+              More about IP allowlists.
+            </button>
           </p>
 
           {formError && (
@@ -178,7 +196,7 @@ export default function IpAllowlistsPage() {
           <div className="space-y-6">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">
+              <label className="mb-1.5 block text-sm font-medium">
                 Name <span className="text-red-500">*</span>
               </label>
               <Input
@@ -190,18 +208,27 @@ export default function IpAllowlistsPage() {
 
             {/* IP addresses */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">
+              <label className="mb-1.5 block text-sm font-medium">
                 IP addresses <span className="text-red-500">*</span>
               </label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Add individual IP addresses or CIDR ranges (e.g., 192.168.1.0/24)
+              <p className="mb-2 text-xs text-muted-foreground">
+                Add individual IP addresses or CIDR ranges (e.g.,
+                192.168.1.0/24)
               </p>
               <div className="flex gap-2">
                 <Input
                   placeholder="Enter IP address or CIDR range"
                   value={formIpInput}
-                  onChange={(e) => { setFormIpInput(e.target.value); setFormError("") }}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addIpAddress() } }}
+                  onChange={(e) => {
+                    setFormIpInput(e.target.value)
+                    setFormError("")
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      addIpAddress()
+                    }
+                  }}
                 />
                 <Button type="button" variant="outline" onClick={addIpAddress}>
                   Add
@@ -220,7 +247,13 @@ export default function IpAllowlistsPage() {
                         onClick={() => removeIpAddress(ip)}
                         className="text-muted-foreground hover:text-foreground"
                       >
-                        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          className="size-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <line x1="18" y1="6" x2="6" y2="18" />
                           <line x1="6" y1="6" x2="18" y2="18" />
                         </svg>
@@ -233,11 +266,13 @@ export default function IpAllowlistsPage() {
 
             {/* Access origin */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">Access origin</label>
+              <label className="mb-1.5 block text-sm font-medium">
+                Access origin
+              </label>
               <select
                 value={formAccessOrigin}
                 onChange={(e) => setFormAccessOrigin(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 <option value="Any">Any</option>
                 <option value="Browser">Browser</option>
@@ -247,24 +282,28 @@ export default function IpAllowlistsPage() {
 
             {/* Applies to */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">Applies to</label>
+              <label className="mb-1.5 block text-sm font-medium">
+                Applies to
+              </label>
               <select
                 value={formAppliesTo[0]}
                 onChange={(e) => setFormAppliesTo([e.target.value])}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 <option value="All apps">All apps</option>
                 <option value="Jira">Jira</option>
                 <option value="Confluence">Confluence</option>
-                <option value="Jira Service Management">Jira Service Management</option>
+                <option value="Jira Service Management">
+                  Jira Service Management
+                </option>
               </select>
             </div>
 
             {/* Status */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">Status</label>
+              <label className="mb-1.5 block text-sm font-medium">Status</label>
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
                   <input
                     type="radio"
                     name="status"
@@ -274,7 +313,7 @@ export default function IpAllowlistsPage() {
                   />
                   Enabled
                 </label>
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
                   <input
                     type="radio"
                     name="status"
@@ -289,11 +328,20 @@ export default function IpAllowlistsPage() {
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center gap-3 border-t bg-background py-4">
-          <Button variant="outline" onClick={() => { setShowCreateForm(false); resetForm() }}>
+        <div className="fixed right-0 bottom-0 left-0 flex items-center justify-center gap-3 border-t bg-background py-4">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowCreateForm(false)
+              resetForm()
+            }}
+          >
             Cancel
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleSave}>
+          <Button
+            className="bg-blue-600 text-white hover:bg-blue-700"
+            onClick={handleSave}
+          >
             {editingEntry ? "Save" : "Create"}
           </Button>
         </div>
@@ -302,23 +350,35 @@ export default function IpAllowlistsPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl">
-      <div className="flex items-center justify-between mb-4">
+    <div className="max-w-5xl p-8">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">IP allowlists</h1>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={openCreate}>
+        <Button
+          className="bg-blue-600 text-white hover:bg-blue-700"
+          onClick={openCreate}
+        >
           Create IP allowlist
         </Button>
       </div>
 
-      <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
-        An IP allowlist ensures that only users from trusted IP addresses or locations can access the apps in your organization.{" "}
-        <button type="button" className="text-blue-600 hover:underline">More about IP allowlists.</button>
+      <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
+        An IP allowlist ensures that only users from trusted IP addresses or
+        locations can access the apps in your organization.{" "}
+        <button type="button" className="text-blue-600 hover:underline">
+          More about IP allowlists.
+        </button>
       </p>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="relative flex-1 max-w-sm">
-          <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="relative max-w-sm flex-1">
+          <svg
+            className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
@@ -331,21 +391,33 @@ export default function IpAllowlistsPage() {
         </div>
         <Button variant="outline" size="sm" className="gap-1">
           Origin
-          <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
+          <svg className="size-3" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M4 6l4 4 4-4" />
+          </svg>
         </Button>
         <Button variant="outline" size="sm" className="gap-1">
           Applies to
-          <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
+          <svg className="size-3" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M4 6l4 4 4-4" />
+          </svg>
         </Button>
         <Button variant="outline" size="sm" className="gap-1">
           Status
-          <svg className="size-3" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4" /></svg>
+          <svg className="size-3" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M4 6l4 4 4-4" />
+          </svg>
         </Button>
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+      <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
         <span>Showing {filteredAllowlists.length} items</span>
-        <svg className="size-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-4 animate-spin"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M21 12a9 9 0 1 1-6.219-8.56" />
         </svg>
       </div>
@@ -356,7 +428,9 @@ export default function IpAllowlistsPage() {
           <thead>
             <tr className="border-b bg-muted/30">
               <th className="px-4 py-2.5 text-left font-medium">Name</th>
-              <th className="px-4 py-2.5 text-left font-medium">Access origin</th>
+              <th className="px-4 py-2.5 text-left font-medium">
+                Access origin
+              </th>
               <th className="px-4 py-2.5 text-left font-medium">Applies to</th>
               <th className="px-4 py-2.5 text-left font-medium">Status</th>
               <th className="px-4 py-2.5 text-left font-medium">Actions</th>
@@ -365,16 +439,22 @@ export default function IpAllowlistsPage() {
           <tbody>
             {filteredAllowlists.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-sm italic text-muted-foreground">
+                <td
+                  colSpan={5}
+                  className="px-4 py-8 text-center text-sm text-muted-foreground italic"
+                >
                   No IP allowlist created
                 </td>
               </tr>
             ) : (
               filteredAllowlists.map((entry) => (
-                <tr key={entry.id} className="border-b last:border-b-0 hover:bg-muted/20">
+                <tr
+                  key={entry.id}
+                  className="border-b last:border-b-0 hover:bg-muted/20"
+                >
                   <td className="px-4 py-3">
                     <div className="font-medium">{entry.name}</div>
-                    <div className="text-xs text-muted-foreground font-mono mt-0.5">
+                    <div className="mt-0.5 font-mono text-xs text-muted-foreground">
                       {entry.ipAddresses.join(", ")}
                     </div>
                   </td>
@@ -396,11 +476,17 @@ export default function IpAllowlistsPage() {
                       <button
                         type="button"
                         onClick={() =>
-                          setActionsOpen(actionsOpen === entry.id ? null : entry.id)
+                          setActionsOpen(
+                            actionsOpen === entry.id ? null : entry.id
+                          )
                         }
                         className="rounded p-1 hover:bg-accent"
                       >
-                        <svg className="size-5" viewBox="0 0 24 24" fill="currentColor">
+                        <svg
+                          className="size-5"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
                           <circle cx="12" cy="5" r="1.5" />
                           <circle cx="12" cy="12" r="1.5" />
                           <circle cx="12" cy="19" r="1.5" />
@@ -412,7 +498,7 @@ export default function IpAllowlistsPage() {
                             className="fixed inset-0 z-40"
                             onClick={() => setActionsOpen(null)}
                           />
-                          <div className="absolute right-0 top-8 z-50 w-48 rounded-md border bg-popover shadow-md">
+                          <div className="absolute top-8 right-0 z-50 w-48 rounded-md border bg-popover shadow-md">
                             <button
                               type="button"
                               className="w-full px-4 py-2 text-left text-sm hover:bg-accent"
@@ -425,7 +511,9 @@ export default function IpAllowlistsPage() {
                               className="w-full px-4 py-2 text-left text-sm hover:bg-accent"
                               onClick={() => toggleStatus(entry.id)}
                             >
-                              {entry.status === "Enabled" ? "Disable" : "Enable"}
+                              {entry.status === "Enabled"
+                                ? "Disable"
+                                : "Enable"}
                             </button>
                             <button
                               type="button"

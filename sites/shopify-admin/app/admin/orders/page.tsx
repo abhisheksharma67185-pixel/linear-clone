@@ -57,13 +57,18 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetch("/api/data/orders")
-      .then((res) => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
       .then((data) => {
         setOrders(data);
         setFilteredOrders(data);
         setLoading(false);
       })
-      .catch(() => { setLoading(false); });
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
 
   const resourceName = { singular: "order", plural: "orders" };
@@ -169,10 +174,22 @@ export default function OrdersPage() {
 
   const appliedFilters = [
     ...(fulfillmentFilter.length > 0
-      ? [{ key: "fulfillmentStatus", label: `Fulfillment: ${fulfillmentFilter.join(", ")}`, onRemove: () => handleFulfillmentFilterChange([]) }]
+      ? [
+          {
+            key: "fulfillmentStatus",
+            label: `Fulfillment: ${fulfillmentFilter.join(", ")}`,
+            onRemove: () => handleFulfillmentFilterChange([]),
+          },
+        ]
       : []),
     ...(paymentFilter.length > 0
-      ? [{ key: "paymentStatus", label: `Payment: ${paymentFilter.join(", ")}`, onRemove: () => handlePaymentFilterChange([]) }]
+      ? [
+          {
+            key: "paymentStatus",
+            label: `Payment: ${paymentFilter.join(", ")}`,
+            onRemove: () => handlePaymentFilterChange([]),
+          },
+        ]
       : []),
   ];
 

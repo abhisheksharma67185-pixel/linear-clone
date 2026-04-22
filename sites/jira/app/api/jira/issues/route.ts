@@ -2,8 +2,8 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   const baseUrl = process.env.ATLASSIAN_BASE_URL
-  const email   = process.env.ATLASSIAN_EMAIL
-  const token   = process.env.ATLASSIAN_API_TOKEN
+  const email = process.env.ATLASSIAN_EMAIL
+  const token = process.env.ATLASSIAN_API_TOKEN
 
   if (!baseUrl || !email || !token) {
     return NextResponse.json(
@@ -13,7 +13,9 @@ export async function GET() {
   }
 
   const credentials = Buffer.from(`${email}:${token}`).toString("base64")
-  const jql = encodeURIComponent("project in (SCRUM, PLAT) ORDER BY updated DESC")
+  const jql = encodeURIComponent(
+    "project in (SCRUM, PLAT) ORDER BY updated DESC"
+  )
 
   try {
     const res = await fetch(

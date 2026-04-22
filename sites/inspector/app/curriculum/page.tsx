@@ -24,16 +24,52 @@ import type { TasksResponse, TaskSummary } from "@/lib/types"
 // curriculum.ts so the inspector renders the same labels even if a site
 // doesn't expose its curriculum endpoint.
 const STAGE_DEFS: { stage: number; title: string; description: string }[] = [
-  { stage: 1, title: "Navigation Basics", description: "Navigate between pages and identify content" },
-  { stage: 2, title: "Single Field Reads & Updates", description: "Read data and modify one field on existing entities" },
+  {
+    stage: 1,
+    title: "Navigation Basics",
+    description: "Navigate between pages and identify content",
+  },
+  {
+    stage: 2,
+    title: "Single Field Reads & Updates",
+    description: "Read data and modify one field on existing entities",
+  },
   { stage: 3, title: "Entity Creation", description: "Create new entities" },
-  { stage: 4, title: "Order Operations", description: "Fulfill orders, capture payments, issue refunds" },
-  { stage: 5, title: "Multi-Field Operations", description: "Update multiple fields in one operation" },
-  { stage: 6, title: "Search & Information Retrieval", description: "Find specific data using search and calculation" },
-  { stage: 7, title: "Conditional Logic", description: "Tasks requiring inspection before action" },
-  { stage: 8, title: "Error Recognition & Multi-Step", description: "Impossible tasks and multi-step workflows" },
-  { stage: 9, title: "Cross-Domain Workflows", description: "Tasks spanning multiple domains" },
-  { stage: 10, title: "Expert Scenarios", description: "Complex real-world scenarios with multiple objectives" },
+  {
+    stage: 4,
+    title: "Order Operations",
+    description: "Fulfill orders, capture payments, issue refunds",
+  },
+  {
+    stage: 5,
+    title: "Multi-Field Operations",
+    description: "Update multiple fields in one operation",
+  },
+  {
+    stage: 6,
+    title: "Search & Information Retrieval",
+    description: "Find specific data using search and calculation",
+  },
+  {
+    stage: 7,
+    title: "Conditional Logic",
+    description: "Tasks requiring inspection before action",
+  },
+  {
+    stage: 8,
+    title: "Error Recognition & Multi-Step",
+    description: "Impossible tasks and multi-step workflows",
+  },
+  {
+    stage: 9,
+    title: "Cross-Domain Workflows",
+    description: "Tasks spanning multiple domains",
+  },
+  {
+    stage: 10,
+    title: "Expert Scenarios",
+    description: "Complex real-world scenarios with multiple objectives",
+  },
 ]
 
 export default function CurriculumPage() {
@@ -101,14 +137,14 @@ export default function CurriculumPage() {
           {STAGE_DEFS.map((def) => {
             const total = Object.values(counts[def.stage] ?? {}).reduce(
               (a, b) => a + b,
-              0,
+              0
             )
             return (
               <Card key={def.stage} className="flex flex-col">
                 <CardHeader>
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="flex items-center gap-2">
-                      <span className="inline-flex size-7 items-center justify-center rounded-md bg-primary/10 text-primary text-sm font-semibold">
+                      <span className="inline-flex size-7 items-center justify-center rounded-md bg-primary/10 text-sm font-semibold text-primary">
                         {def.stage}
                       </span>
                       <span>{def.title}</span>
@@ -127,7 +163,11 @@ export default function CurriculumPage() {
                         const c = counts[def.stage]?.[site.id] ?? 0
                         if (q.isError) {
                           return (
-                            <Badge key={site.id} variant="outline" className="opacity-60">
+                            <Badge
+                              key={site.id}
+                              variant="outline"
+                              className="opacity-60"
+                            >
                               {site.name}: down
                             </Badge>
                           )
@@ -139,7 +179,7 @@ export default function CurriculumPage() {
                           >
                             <Badge
                               variant={c > 0 ? "secondary" : "outline"}
-                              className="hover:bg-accent transition-colors cursor-pointer"
+                              className="cursor-pointer transition-colors hover:bg-accent"
                             >
                               {site.name}: {c}
                             </Badge>

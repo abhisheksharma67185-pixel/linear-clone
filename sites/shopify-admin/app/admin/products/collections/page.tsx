@@ -119,9 +119,7 @@ export default function CollectionsPage() {
           onAction: handleCreate,
           disabled: !newTitle.trim(),
         }}
-        secondaryActions={[
-          { content: "Cancel", onAction: () => setShowModal(false) },
-        ]}
+        secondaryActions={[{ content: "Cancel", onAction: () => setShowModal(false) }]}
       >
         <Modal.Section>
           <TextField
@@ -134,9 +132,7 @@ export default function CollectionsPage() {
         </Modal.Section>
       </Modal>
 
-      {toastMessage && (
-        <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />
-      )}
+      {toastMessage && <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />}
     </Frame>
   );
 }

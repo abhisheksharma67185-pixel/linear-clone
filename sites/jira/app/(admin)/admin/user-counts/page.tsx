@@ -14,10 +14,19 @@ export default function UserCountsPage() {
           <rect x="52" y="64" width="4" height="12" rx="2" fill="#E9D5FF" />
           <circle cx="60" cy="38" r="3" fill="#E9D5FF" opacity="0.5" />
         </svg>
-        <h2 className="mb-3 text-xl font-semibold">We&apos;re unable to let you in</h2>
-        <p className="mb-2 text-sm text-muted-foreground">You need to have an eligible plan to access this feature.</p>
-        <p className="mb-6 text-sm text-muted-foreground">If you think you should have access, try refreshing the page or contact support.</p>
-        <Button className="bg-blue-600 text-white hover:bg-blue-700">See eligible plans</Button>
+        <h2 className="mb-3 text-xl font-semibold">
+          We&apos;re unable to let you in
+        </h2>
+        <p className="mb-2 text-sm text-muted-foreground">
+          You need to have an eligible plan to access this feature.
+        </p>
+        <p className="mb-6 text-sm text-muted-foreground">
+          If you think you should have access, try refreshing the page or
+          contact support.
+        </p>
+        <Button className="bg-blue-600 text-white hover:bg-blue-700">
+          See eligible plans
+        </Button>
       </div>
     </div>
   )

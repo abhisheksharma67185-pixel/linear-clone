@@ -59,10 +59,14 @@ export default function AutomationsPage() {
         </Badge>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{automation.trigger}</Text>
+        <Text as="span" tone="subdued">
+          {automation.trigger}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" numeric>{automation.sent.toLocaleString()}</Text>
+        <Text as="span" numeric>
+          {automation.sent.toLocaleString()}
+        </Text>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));

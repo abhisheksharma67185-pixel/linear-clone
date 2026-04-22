@@ -28,7 +28,12 @@ interface UserProfileDropdownProps {
 
 function LightThumbail() {
   return (
-    <svg width="88" height="66" viewBox="0 0 88 66" className="rounded border border-[#dfe1e6] shrink-0">
+    <svg
+      width="88"
+      height="66"
+      viewBox="0 0 88 66"
+      className="shrink-0 rounded border border-[#dfe1e6]"
+    >
       <rect width="88" height="66" fill="#f4f5f7" rx="3" />
       {/* Sidebar */}
       <rect x="0" y="0" width="18" height="66" fill="#e8eaed" rx="3" />
@@ -38,7 +43,15 @@ function LightThumbail() {
       <rect x="3" y="26" width="9" height="2" rx="1" fill="#b0b8c8" />
       {/* Top bar */}
       <rect x="18" y="0" width="70" height="10" fill="#fff" />
-      <rect x="20" y="3" width="18" height="4" rx="1" fill="#0052cc" opacity="0.9" />
+      <rect
+        x="20"
+        y="3"
+        width="18"
+        height="4"
+        rx="1"
+        fill="#0052cc"
+        opacity="0.9"
+      />
       {/* Content rows */}
       <rect x="20" y="14" width="58" height="3" rx="1" fill="#dde1e7" />
       <rect x="20" y="20" width="42" height="3" rx="1" fill="#dde1e7" />
@@ -51,7 +64,12 @@ function LightThumbail() {
 
 function DarkThumbnail() {
   return (
-    <svg width="88" height="66" viewBox="0 0 88 66" className="rounded border border-[#3b4252] shrink-0">
+    <svg
+      width="88"
+      height="66"
+      viewBox="0 0 88 66"
+      className="shrink-0 rounded border border-[#3b4252]"
+    >
       <rect width="88" height="66" fill="#1e2433" rx="3" />
       {/* Sidebar */}
       <rect x="0" y="0" width="18" height="66" fill="#161b27" rx="3" />
@@ -61,7 +79,15 @@ function DarkThumbnail() {
       <rect x="3" y="26" width="9" height="2" rx="1" fill="#4a5568" />
       {/* Top bar */}
       <rect x="18" y="0" width="70" height="10" fill="#1a2035" />
-      <rect x="20" y="3" width="18" height="4" rx="1" fill="#0052cc" opacity="0.9" />
+      <rect
+        x="20"
+        y="3"
+        width="18"
+        height="4"
+        rx="1"
+        fill="#0052cc"
+        opacity="0.9"
+      />
       {/* Content rows */}
       <rect x="20" y="14" width="58" height="3" rx="1" fill="#2d3748" />
       <rect x="20" y="20" width="42" height="3" rx="1" fill="#2d3748" />
@@ -74,7 +100,12 @@ function DarkThumbnail() {
 
 function SystemThumbnail() {
   return (
-    <svg width="88" height="66" viewBox="0 0 88 66" className="rounded border border-[#3b4252] shrink-0">
+    <svg
+      width="88"
+      height="66"
+      viewBox="0 0 88 66"
+      className="shrink-0 rounded border border-[#3b4252]"
+    >
       {/* Left half light, right half dark */}
       <rect width="44" height="66" fill="#f4f5f7" rx="3" />
       <rect x="44" width="44" height="66" fill="#1e2433" />
@@ -90,7 +121,15 @@ function SystemThumbnail() {
       <rect x="45" y="20" width="7" height="2" rx="1" fill="#4a5568" />
       {/* Top bar left */}
       <rect x="10" y="0" width="34" height="8" fill="#fff" />
-      <rect x="12" y="2" width="14" height="4" rx="1" fill="#0052cc" opacity="0.9" />
+      <rect
+        x="12"
+        y="2"
+        width="14"
+        height="4"
+        rx="1"
+        fill="#0052cc"
+        opacity="0.9"
+      />
       {/* Top bar right */}
       <rect x="54" y="0" width="34" height="8" fill="#1a2035" />
       {/* Content left */}
@@ -158,7 +197,7 @@ export function UserProfileDropdown({
       <PopoverTrigger
         aria-label="User profile"
         data-testid="user-profile-trigger"
-        className="rounded-full transition-all hover:ring-2 hover:ring-blue-200 dark:hover:ring-blue-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="rounded-full transition-all hover:ring-2 hover:ring-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:ring-blue-900"
       >
         <Avatar className="size-8 cursor-pointer">
           <AvatarFallback className="bg-[#0052cc] text-xs font-semibold text-white">
@@ -170,7 +209,7 @@ export function UserProfileDropdown({
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[240px] p-0 overflow-visible rounded-[3px] border border-[#dfe1e6] shadow-[0_8px_24px_rgba(9,30,66,0.15)]"
+        className="w-[240px] overflow-visible rounded-[3px] border border-[#dfe1e6] p-0 shadow-[0_8px_24px_rgba(9,30,66,0.15)]"
       >
         {/* User info header */}
         <div className="px-4 pt-3 pb-2">
@@ -181,10 +220,10 @@ export function UserProfileDropdown({
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-[#172b4d] dark:text-foreground truncate leading-tight">
+              <p className="truncate text-[13px] leading-tight font-semibold text-[#172b4d] dark:text-foreground">
                 {name}
               </p>
-              <p className="text-[11px] text-[#6b778c] dark:text-muted-foreground truncate leading-tight">
+              <p className="truncate text-[11px] leading-tight text-[#6b778c] dark:text-muted-foreground">
                 {email}
               </p>
             </div>
@@ -199,11 +238,11 @@ export function UserProfileDropdown({
             href="/home/profile"
             onClick={closeAll}
             data-testid="menu-profile"
-            className="flex items-center gap-3 px-4 py-2 text-[13px] text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7] dark:hover:bg-accent transition-colors"
+            className="flex items-center gap-3 px-4 py-2 text-[13px] text-[#172b4d] transition-colors hover:bg-[#f4f5f7] dark:text-foreground dark:hover:bg-accent"
           >
             <HugeiconsIcon
               icon={UserCircle02Icon}
-              className="size-[18px] text-[#626f86] dark:text-muted-foreground shrink-0"
+              className="size-[18px] shrink-0 text-[#626f86] dark:text-muted-foreground"
               aria-hidden="true"
               data-testid="icon-profile"
             />
@@ -214,11 +253,11 @@ export function UserProfileDropdown({
             href="/home/account-settings"
             onClick={closeAll}
             data-testid="menu-account-settings"
-            className="flex items-center gap-3 px-4 py-2 text-[13px] text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7] dark:hover:bg-accent transition-colors"
+            className="flex items-center gap-3 px-4 py-2 text-[13px] text-[#172b4d] transition-colors hover:bg-[#f4f5f7] dark:text-foreground dark:hover:bg-accent"
           >
             <HugeiconsIcon
               icon={Settings02Icon}
-              className="size-[18px] text-[#626f86] dark:text-muted-foreground shrink-0"
+              className="size-[18px] shrink-0 text-[#626f86] dark:text-muted-foreground"
               aria-hidden="true"
               data-testid="icon-account-settings"
             />
@@ -232,12 +271,12 @@ export function UserProfileDropdown({
               aria-label="Theme"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               data-testid="menu-theme"
-              className="flex w-full items-center justify-between px-4 py-2 text-[13px] text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7] dark:hover:bg-accent transition-colors"
+              className="flex w-full items-center justify-between px-4 py-2 text-[13px] text-[#172b4d] transition-colors hover:bg-[#f4f5f7] dark:text-foreground dark:hover:bg-accent"
             >
               <span className="flex items-center gap-3">
                 <HugeiconsIcon
                   icon={Moon01Icon}
-                  className="size-[18px] text-[#626f86] dark:text-muted-foreground shrink-0"
+                  className="size-[18px] shrink-0 text-[#626f86] dark:text-muted-foreground"
                   aria-hidden="true"
                   data-testid="icon-theme"
                 />
@@ -245,7 +284,7 @@ export function UserProfileDropdown({
               </span>
               <HugeiconsIcon
                 icon={ArrowRight01Icon}
-                className="size-4 text-[#626f86] dark:text-muted-foreground shrink-0"
+                className="size-4 shrink-0 text-[#626f86] dark:text-muted-foreground"
                 aria-hidden="true"
                 data-testid="icon-theme-chevron"
               />
@@ -261,11 +300,11 @@ export function UserProfileDropdown({
             href="/switch-account"
             onClick={closeAll}
             data-testid="menu-switch-account"
-            className="flex items-center gap-3 px-4 py-2 text-[13px] text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7] dark:hover:bg-accent transition-colors"
+            className="flex items-center gap-3 px-4 py-2 text-[13px] text-[#172b4d] transition-colors hover:bg-[#f4f5f7] dark:text-foreground dark:hover:bg-accent"
           >
             <HugeiconsIcon
               icon={Exchange01Icon}
-              className="size-[18px] text-[#626f86] dark:text-muted-foreground shrink-0"
+              className="size-[18px] shrink-0 text-[#626f86] dark:text-muted-foreground"
               aria-hidden="true"
               data-testid="icon-switch-account"
             />
@@ -276,11 +315,11 @@ export function UserProfileDropdown({
             type="button"
             onClick={handleLogout}
             data-testid="menu-logout"
-            className="flex w-full items-center gap-3 px-4 py-2 text-[13px] text-[#172b4d] dark:text-foreground hover:bg-[#f4f5f7] dark:hover:bg-accent transition-colors"
+            className="flex w-full items-center gap-3 px-4 py-2 text-[13px] text-[#172b4d] transition-colors hover:bg-[#f4f5f7] dark:text-foreground dark:hover:bg-accent"
           >
             <HugeiconsIcon
               icon={Logout01Icon}
-              className="size-[18px] text-[#626f86] dark:text-muted-foreground shrink-0"
+              className="size-[18px] shrink-0 text-[#626f86] dark:text-muted-foreground"
               aria-hidden="true"
               data-testid="icon-logout"
             />

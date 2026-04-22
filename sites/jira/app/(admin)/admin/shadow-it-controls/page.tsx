@@ -2,14 +2,47 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 const apps = [
-  { name: "Confluence", color: "bg-blue-600", tooltip: "You need a Confluence Enterprise or Teamwork Collection Enterprise subscription to change this request setting." },
-  { name: "Jira Service Management", color: "bg-green-500", tooltip: "You need a Jira Service Management Enterprise or Teamwork Collection Enterprise subscription to change this request setting." },
-  { name: "Jira", color: "bg-blue-600", tooltip: "You need a Jira Enterprise or Teamwork Collection Enterprise subscription to change this request setting." },
-  { name: "Trello", color: "bg-purple-500", tooltip: "You need a Confluence, Jira, Jira Service Management, or Teamwork Collection Enterprise subscription to change this request setting." },
-  { name: "Bitbucket", color: "bg-green-600", beta: true, tooltip: "As part of the beta program, this is only available to Bitbucket customers with a Premium plan." },
+  {
+    name: "Confluence",
+    color: "bg-blue-600",
+    tooltip:
+      "You need a Confluence Enterprise or Teamwork Collection Enterprise subscription to change this request setting.",
+  },
+  {
+    name: "Jira Service Management",
+    color: "bg-green-500",
+    tooltip:
+      "You need a Jira Service Management Enterprise or Teamwork Collection Enterprise subscription to change this request setting.",
+  },
+  {
+    name: "Jira",
+    color: "bg-blue-600",
+    tooltip:
+      "You need a Jira Enterprise or Teamwork Collection Enterprise subscription to change this request setting.",
+  },
+  {
+    name: "Trello",
+    color: "bg-purple-500",
+    tooltip:
+      "You need a Confluence, Jira, Jira Service Management, or Teamwork Collection Enterprise subscription to change this request setting.",
+  },
+  {
+    name: "Bitbucket",
+    color: "bg-green-600",
+    beta: true,
+    tooltip:
+      "As part of the beta program, this is only available to Bitbucket customers with a Premium plan.",
+  },
 ]
 
 function AppIcon({ color }: { color: string }) {
@@ -22,26 +55,45 @@ function AppIcon({ color }: { color: string }) {
   )
 }
 
-function InfoPopover({ tooltip, hasPlanLink }: { tooltip: string; hasPlanLink: boolean }) {
+function InfoPopover({
+  tooltip,
+  hasPlanLink,
+}: {
+  tooltip: string
+  hasPlanLink: boolean
+}) {
   const [open, setOpen] = useState(false)
 
   return (
     <div className="relative inline-block">
       <button
         onClick={() => setOpen(!open)}
-        className="text-blue-500 hover:text-blue-600 transition-colors"
+        className="text-blue-500 transition-colors hover:text-blue-600"
       >
-        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+        <svg
+          className="size-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-1 z-50 w-56 rounded-lg border bg-background p-3 shadow-lg">
-            <p className="text-xs text-muted-foreground leading-relaxed">
+          <div className="absolute top-full right-0 z-50 mt-1 w-56 rounded-lg border bg-background p-3 shadow-lg">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               {tooltip}
               {hasPlanLink && (
                 <>
-                  {" "}<button className="text-blue-600 hover:underline">Learn about Enterprise plans</button>
+                  {" "}
+                  <button className="text-blue-600 hover:underline">
+                    Learn about Enterprise plans
+                  </button>
                 </>
               )}
             </p>
@@ -57,17 +109,29 @@ export default function ShadowItControlsPage() {
 
   if (showSettings) {
     return (
-      <div className="p-8 max-w-5xl">
+      <div className="max-w-5xl p-8">
         <button
           onClick={() => setShowSettings(false)}
-          className="flex items-center gap-1.5 text-sm text-blue-600 hover:underline mb-4"
+          className="mb-4 flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
         >
-          <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+          <svg
+            className="size-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
           Back to Shadow IT controls
         </button>
         <h1 className="mb-4 text-2xl font-semibold">App request settings</h1>
-        <p className="mb-6 text-sm text-muted-foreground max-w-3xl">
-          These settings control what happens when a user tries to sign up for a new app. Request settings are only available for eligible app plans. <button className="text-blue-600 hover:underline">Learn more about app request settings</button>
+        <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
+          These settings control what happens when a user tries to sign up for a
+          new app. Request settings are only available for eligible app plans.{" "}
+          <button className="text-blue-600 hover:underline">
+            Learn more about app request settings
+          </button>
         </p>
 
         <div className="rounded-lg border">
@@ -75,7 +139,9 @@ export default function ShadowItControlsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="font-medium">App</TableHead>
-                <TableHead className="font-medium w-[200px]">App setting</TableHead>
+                <TableHead className="w-[200px] font-medium">
+                  App setting
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -87,14 +153,19 @@ export default function ShadowItControlsPage() {
                       <span className="text-sm text-muted-foreground">
                         {app.name}
                         {app.beta && (
-                          <span className="ml-2 rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase text-muted-foreground">BETA</span>
+                          <span className="ml-2 rounded border px-1.5 py-0.5 text-[9px] font-bold text-muted-foreground uppercase">
+                            BETA
+                          </span>
                         )}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1.5">
-                      <InfoPopover tooltip={app.tooltip} hasPlanLink={!app.beta} />
+                      <InfoPopover
+                        tooltip={app.tooltip}
+                        hasPlanLink={!app.beta}
+                      />
                       <span className="text-sm">Allow new apps</span>
                     </div>
                   </TableCell>
@@ -108,12 +179,12 @@ export default function ShadowItControlsPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="max-w-5xl p-8">
       <h1 className="mb-8 text-2xl font-semibold">Shadow IT controls</h1>
 
-      <div className="flex flex-col items-center text-center py-8">
+      <div className="flex flex-col items-center py-8 text-center">
         <svg
-          className="size-28 mb-6"
+          className="mb-6 size-28"
           viewBox="0 0 120 120"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -141,12 +212,18 @@ export default function ShadowItControlsPage() {
           Control the ability of users to sign up for apps
         </h2>
         <p className="mb-6 max-w-md text-sm text-muted-foreground">
-          Prevent users from signing up for an app without your approval. To start, update your request settings for each eligible app.{" "}
+          Prevent users from signing up for an app without your approval. To
+          start, update your request settings for each eligible app.{" "}
           <button className="text-blue-600 hover:underline">
             Explore shadow IT controls
           </button>
         </p>
-        <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => setShowSettings(true)}>Update request settings</Button>
+        <Button
+          className="bg-blue-600 text-white hover:bg-blue-700"
+          onClick={() => setShowSettings(true)}
+        >
+          Update request settings
+        </Button>
       </div>
     </div>
   )

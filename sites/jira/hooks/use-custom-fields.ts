@@ -31,7 +31,9 @@ export function useCustomFields() {
   const [fields, setFields] = useState<CustomField[]>(_cache ?? [])
 
   const refresh = useCallback(() => {
-    fetchAndCacheFields().then(setFields).catch(() => {})
+    fetchAndCacheFields()
+      .then(setFields)
+      .catch(() => {})
   }, [])
 
   useEffect(() => {

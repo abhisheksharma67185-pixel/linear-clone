@@ -35,7 +35,7 @@ export default function TeamsPage() {
 
   const memberById = useMemo(
     () => new Map(members.map((m) => [m.id, m])),
-    [members],
+    [members]
   )
   const activeByTeam = useMemo(() => {
     const counts = new Map<string, number>()
@@ -64,104 +64,108 @@ export default function TeamsPage() {
 
   return (
     <TooltipProvider>
-    <div className="flex flex-col gap-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Teams</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          All teams in your organization.
-        </p>
-      </div>
-
-      {teams.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No teams found.</p>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {teams.map((team) => {
-            const lead = memberById.get(team.leadId)
-            const memberCount = team.memberIds.length
-            const active = activeByTeam.get(team.id) ?? 0
-            const visibleMembers = team.memberIds
-              .slice(0, 4)
-              .map((id) => memberById.get(id))
-              .filter((m): m is Member => Boolean(m))
-            const extra = memberCount - visibleMembers.length
-            return (
-              <Link key={team.id} href={`/projects/${team.key}/board`}>
-                <Card className="hover:bg-accent/50 transition-colors cursor-pointer h-full">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="flex size-6 shrink-0 items-center justify-center rounded bg-muted text-[10px] font-semibold text-foreground">
-                          {team.key.slice(0, 2)}
-                        </div>
-                        <CardTitle className="text-base font-medium">
-                          {team.name}
-                        </CardTitle>
-                      </div>
-                      <Badge variant="outline" className="font-mono text-[10px]">
-                        {team.key}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {team.description}
-                    </p>
-                    <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
-                      {lead && (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger render={<span />}>
-                              <Avatar className="size-4">
-                                <AvatarImage src={lead.avatar} />
-                                <AvatarFallback className="text-[8px]">
-                                  {lead.name.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
-                            </TooltipTrigger>
-                            <TooltipContent>{lead.name}</TooltipContent>
-                          </Tooltip>
-                          <span>Lead: {lead.name}</span>
-                          <span className="text-border">|</span>
-                        </>
-                      )}
-                      <span>
-                        {memberCount} {memberCount === 1 ? "member" : "members"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex -space-x-1.5">
-                        {visibleMembers.map((m) => (
-                          <Tooltip key={m.id}>
-                            <TooltipTrigger render={<span />}>
-                              <Avatar className="size-5 ring-2 ring-card">
-                                <AvatarImage src={m.avatar} />
-                                <AvatarFallback className="text-[8px]">
-                                  {m.name.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
-                            </TooltipTrigger>
-                            <TooltipContent>{m.name}</TooltipContent>
-                          </Tooltip>
-                        ))}
-                        {extra > 0 && (
-                          <span className="z-10 flex size-5 items-center justify-center rounded-full bg-muted text-[9px] font-medium text-muted-foreground ring-2 ring-card">
-                            +{extra}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {active} active {active === 1 ? "issue" : "issues"}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            )
-          })}
+      <div className="flex flex-col gap-6 p-6">
+        <div>
+          <h1 className="text-2xl font-semibold">Teams</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            All teams in your organization.
+          </p>
         </div>
-      )}
-    </div>
+
+        {teams.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No teams found.</p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {teams.map((team) => {
+              const lead = memberById.get(team.leadId)
+              const memberCount = team.memberIds.length
+              const active = activeByTeam.get(team.id) ?? 0
+              const visibleMembers = team.memberIds
+                .slice(0, 4)
+                .map((id) => memberById.get(id))
+                .filter((m): m is Member => Boolean(m))
+              const extra = memberCount - visibleMembers.length
+              return (
+                <Link key={team.id} href={`/projects/${team.key}/board`}>
+                  <Card className="hover:bg-accent/50 h-full cursor-pointer transition-colors">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-muted text-foreground flex size-6 shrink-0 items-center justify-center rounded text-[10px] font-semibold">
+                            {team.key.slice(0, 2)}
+                          </div>
+                          <CardTitle className="text-base font-medium">
+                            {team.name}
+                          </CardTitle>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className="font-mono text-[10px]"
+                        >
+                          {team.key}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground mb-3 text-sm">
+                        {team.description}
+                      </p>
+                      <div className="text-muted-foreground mb-3 flex items-center gap-2 text-xs">
+                        {lead && (
+                          <>
+                            <Tooltip>
+                              <TooltipTrigger render={<span />}>
+                                <Avatar className="size-4">
+                                  <AvatarImage src={lead.avatar} />
+                                  <AvatarFallback className="text-[8px]">
+                                    {lead.name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </TooltipTrigger>
+                              <TooltipContent>{lead.name}</TooltipContent>
+                            </Tooltip>
+                            <span>Lead: {lead.name}</span>
+                            <span className="text-border">|</span>
+                          </>
+                        )}
+                        <span>
+                          {memberCount}{" "}
+                          {memberCount === 1 ? "member" : "members"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex -space-x-1.5">
+                          {visibleMembers.map((m) => (
+                            <Tooltip key={m.id}>
+                              <TooltipTrigger render={<span />}>
+                                <Avatar className="ring-card size-5 ring-2">
+                                  <AvatarImage src={m.avatar} />
+                                  <AvatarFallback className="text-[8px]">
+                                    {m.name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </TooltipTrigger>
+                              <TooltipContent>{m.name}</TooltipContent>
+                            </Tooltip>
+                          ))}
+                          {extra > 0 && (
+                            <span className="bg-muted text-muted-foreground ring-card z-10 flex size-5 items-center justify-center rounded-full text-[9px] font-medium ring-2">
+                              +{extra}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-muted-foreground text-xs">
+                          {active} active {active === 1 ? "issue" : "issues"}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </TooltipProvider>
   )
 }

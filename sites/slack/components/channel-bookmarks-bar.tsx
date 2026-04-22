@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import { Plus } from "lucide-react";
-import { emojiFor } from "./reaction-bar";
+import { Plus } from "lucide-react"
+import { emojiFor } from "./reaction-bar"
 
 type Bookmark = {
-  id: string;
-  title: string;
-  url: string;
-  emoji: string;
-};
+  id: string
+  title: string
+  url: string
+  emoji: string
+}
 
 export function ChannelBookmarksBar({ bookmarks }: { bookmarks: Bookmark[] }) {
-  if (bookmarks.length === 0) return null;
+  if (bookmarks.length === 0) return null
   return (
     <div className="flex h-8 shrink-0 items-center gap-1 overflow-x-auto border-b border-border px-4 text-xs">
       {bookmarks.map((b) => (
@@ -34,5 +34,5 @@ export function ChannelBookmarksBar({ bookmarks }: { bookmarks: Bookmark[] }) {
         Add
       </button>
     </div>
-  );
+  )
 }

@@ -82,9 +82,10 @@ export function InvitePeopleDialog({
     setSent(final.length)
   }
 
-  const inviteLink = typeof window !== "undefined"
-    ? `${window.location.origin}/invite/theta-engineering?token=demo`
-    : "/invite/theta-engineering?token=demo"
+  const inviteLink =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/invite/theta-engineering?token=demo`
+      : "/invite/theta-engineering?token=demo"
 
   const copyLink = async () => {
     try {
@@ -108,7 +109,10 @@ export function InvitePeopleDialog({
 
         {sent !== null ? (
           <div className="flex flex-col items-center gap-3 py-6">
-            <HugeiconsIcon icon={Tick02Icon} className="size-8 text-emerald-500" />
+            <HugeiconsIcon
+              icon={Tick02Icon}
+              className="size-8 text-emerald-500"
+            />
             <p className="text-sm font-medium">
               {sent} invite{sent === 1 ? "" : "s"} sent
             </p>
@@ -121,13 +125,13 @@ export function InvitePeopleDialog({
                 Email addresses
               </label>
               <div
-                className="flex min-h-9 flex-wrap items-center gap-1 rounded-md border bg-transparent px-2 py-1 focus-within:ring-2 focus-within:ring-ring"
+                className="focus-within:ring-ring flex min-h-9 flex-wrap items-center gap-1 rounded-md border bg-transparent px-2 py-1 focus-within:ring-2"
                 onClick={() => inputRef.current?.focus()}
               >
                 {emails.map((email) => (
                   <span
                     key={email}
-                    className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-xs"
+                    className="bg-muted flex items-center gap-1 rounded px-1.5 py-0.5 text-xs"
                   >
                     {email}
                     <button
@@ -150,32 +154,36 @@ export function InvitePeopleDialog({
                     if (e.key === "Enter" || e.key === ",") {
                       e.preventDefault()
                       commitDraft()
-                    } else if (e.key === "Backspace" && !draft && emails.length) {
+                    } else if (
+                      e.key === "Backspace" &&
+                      !draft &&
+                      emails.length
+                    ) {
                       setEmails((prev) => prev.slice(0, -1))
                     }
                   }}
                   onBlur={commitDraft}
                   placeholder={emails.length ? "" : "name@company.com, …"}
-                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
+                  className="placeholder:text-muted-foreground/60 flex-1 bg-transparent text-sm outline-none"
                 />
               </div>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Role</span>
+              <span className="text-muted-foreground text-xs">Role</span>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
                     <button
                       type="button"
-                      className="flex h-7 items-center gap-1.5 rounded-md border px-2 text-xs hover:bg-muted/60"
+                      className="hover:bg-muted/60 flex h-7 items-center gap-1.5 rounded-md border px-2 text-xs"
                     />
                   }
                 >
                   <span>{ROLE_LABEL[role]}</span>
                   <HugeiconsIcon
                     icon={ArrowDown01Icon}
-                    className="size-3 text-muted-foreground"
+                    className="text-muted-foreground size-3"
                   />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40">
@@ -185,7 +193,7 @@ export function InvitePeopleDialog({
                       {r === role && (
                         <HugeiconsIcon
                           icon={Tick02Icon}
-                          className="ml-auto text-muted-foreground"
+                          className="text-muted-foreground ml-auto"
                         />
                       )}
                     </DropdownMenuItem>
@@ -194,14 +202,16 @@ export function InvitePeopleDialog({
               </DropdownMenu>
             </div>
 
-            <div className="rounded-md border bg-muted/40 p-2 text-xs">
+            <div className="bg-muted/40 rounded-md border p-2 text-xs">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
                   <HugeiconsIcon
                     icon={Link01Icon}
-                    className="size-3.5 text-muted-foreground"
+                    className="text-muted-foreground size-3.5"
                   />
-                  <span className="truncate text-muted-foreground">{inviteLink}</span>
+                  <span className="text-muted-foreground truncate">
+                    {inviteLink}
+                  </span>
                 </div>
                 <Button
                   variant="ghost"

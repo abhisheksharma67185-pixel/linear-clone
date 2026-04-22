@@ -74,7 +74,7 @@ export default function SegmentsPage() {
   const [toastMessage, setToastMessage] = useState("");
 
   const filteredSegments = segments.filter((s) =>
-    s.name.toLowerCase().includes(queryValue.toLowerCase())
+    s.name.toLowerCase().includes(queryValue.toLowerCase()),
   );
 
   const resourceName = { singular: "segment", plural: "segments" };
@@ -188,9 +188,7 @@ export default function SegmentsPage() {
           onAction: handleCreate,
           disabled: !newSegmentName.trim(),
         }}
-        secondaryActions={[
-          { content: "Cancel", onAction: () => setShowModal(false) },
-        ]}
+        secondaryActions={[{ content: "Cancel", onAction: () => setShowModal(false) }]}
       >
         <Modal.Section>
           <BlockStack gap="300">
@@ -212,9 +210,7 @@ export default function SegmentsPage() {
         </Modal.Section>
       </Modal>
 
-      {toastMessage && (
-        <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />
-      )}
+      {toastMessage && <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />}
     </Frame>
   );
 }

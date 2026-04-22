@@ -38,7 +38,10 @@ export default function MyIssuesPage() {
   }, [])
 
   const assigned = issues.filter(
-    (i) => i.assigneeId === CURRENT_USER && i.status !== "done" && i.status !== "cancelled",
+    (i) =>
+      i.assigneeId === CURRENT_USER &&
+      i.status !== "done" &&
+      i.status !== "cancelled"
   )
   const created = issues.filter((i) => i.creatorId === CURRENT_USER)
 
@@ -47,7 +50,7 @@ export default function MyIssuesPage() {
       <div className="flex h-full min-h-0 flex-col">
         <header className="flex items-center justify-between px-6 py-3">
           <h1 className="text-sm font-medium">My issues</h1>
-          <div className="flex items-center gap-0.5 text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-0.5">
             <Button variant="ghost" size="icon" className="size-7">
               <HugeiconsIcon icon={FilterIcon} className="size-4" />
             </Button>
@@ -61,7 +64,10 @@ export default function MyIssuesPage() {
           </div>
         </header>
 
-        <Tabs defaultValue="assigned" className="flex min-h-0 flex-1 flex-col gap-0">
+        <Tabs
+          defaultValue="assigned"
+          className="flex min-h-0 flex-1 flex-col gap-0"
+        >
           <div className="px-4">
             <TabsList className="h-10 gap-1 bg-transparent p-0">
               <TabPill value="assigned">Assigned</TabPill>
@@ -105,7 +111,10 @@ export default function MyIssuesPage() {
           </TabsContent>
 
           <TabsContent value="activity" className="m-0 flex-1 overflow-auto">
-            <EmptyState label="No recent activity" onCreate={() => setCreateOpen(true)} />
+            <EmptyState
+              label="No recent activity"
+              onCreate={() => setCreateOpen(true)}
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -115,11 +124,17 @@ export default function MyIssuesPage() {
   )
 }
 
-function TabPill({ value, children }: { value: string; children: React.ReactNode }) {
+function TabPill({
+  value,
+  children,
+}: {
+  value: string
+  children: React.ReactNode
+}) {
   return (
     <TabsTrigger
       value={value}
-      className="rounded-full border-0 bg-transparent px-3 py-1 text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-accent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+      className="text-muted-foreground data-[state=active]:bg-accent data-[state=active]:text-foreground rounded-full border-0 bg-transparent px-3 py-1 text-xs font-medium shadow-none data-[state=active]:shadow-none"
     >
       {children}
     </TabsTrigger>
@@ -136,11 +151,17 @@ function LoadingRows() {
   )
 }
 
-function EmptyState({ label, onCreate }: { label: string; onCreate: () => void }) {
+function EmptyState({
+  label,
+  onCreate,
+}: {
+  label: string
+  onCreate: () => void
+}) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-5 py-24">
       <EmptyIllustration />
-      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="text-muted-foreground text-sm">{label}</p>
       <Button
         onClick={onCreate}
         className="h-8 rounded-full bg-violet-600 px-4 text-xs font-medium text-white hover:bg-violet-700"
@@ -155,7 +176,7 @@ function EmptyIllustration() {
   return (
     <svg
       viewBox="0 0 160 120"
-      className="h-24 w-32 text-muted-foreground"
+      className="text-muted-foreground h-24 w-32"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.4"
@@ -182,7 +203,13 @@ function EmptyIllustration() {
   )
 }
 
-function IssueList({ issues, members }: { issues: Issue[]; members: Member[] }) {
+function IssueList({
+  issues,
+  members,
+}: {
+  issues: Issue[]
+  members: Member[]
+}) {
   return (
     <ul className="divide-y">
       {issues.map((issue) => {
@@ -191,7 +218,7 @@ function IssueList({ issues, members }: { issues: Issue[]; members: Member[] }) 
           <li key={issue.id}>
             <Link
               href={`/issues/${issue.identifier}`}
-              className="flex items-center gap-3 px-6 py-2.5 transition-colors hover:bg-accent/50"
+              className="hover:bg-accent/50 flex items-center gap-3 px-6 py-2.5 transition-colors"
             >
               <Badge
                 variant="secondary"
@@ -199,7 +226,7 @@ function IssueList({ issues, members }: { issues: Issue[]; members: Member[] }) 
               >
                 {issue.priority}
               </Badge>
-              <span className="w-16 font-mono text-xs text-muted-foreground">
+              <span className="text-muted-foreground w-16 font-mono text-xs">
                 {issue.identifier}
               </span>
               <span className="flex-1 truncate text-sm">{issue.title}</span>
@@ -207,7 +234,8 @@ function IssueList({ issues, members }: { issues: Issue[]; members: Member[] }) 
                 variant="secondary"
                 className={`text-[10px] ${statusStyle[issue.status]}`}
               >
-                {issue.status.charAt(0).toUpperCase() + issue.status.slice(1).replace("_", " ")}
+                {issue.status.charAt(0).toUpperCase() +
+                  issue.status.slice(1).replace("_", " ")}
               </Badge>
               {assignee && (
                 <Avatar className="size-6">

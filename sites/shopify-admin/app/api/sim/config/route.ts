@@ -24,7 +24,10 @@ export async function POST(request: NextRequest) {
 
   const seed = body.seed !== undefined ? Number(body.seed) : undefined;
   if (seed !== undefined && (!isFinite(seed) || seed < 0)) {
-    return NextResponse.json({ error: "seed must be a non-negative finite number" }, { status: 400 });
+    return NextResponse.json(
+      { error: "seed must be a non-negative finite number" },
+      { status: 400 },
+    );
   }
 
   const config: EpisodeConfig = {

@@ -45,12 +45,17 @@ export default function DiscountsPage() {
 
   useEffect(() => {
     fetch("/api/data/discounts")
-      .then((res) => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
       .then((data) => {
         setDiscounts(data);
         setLoading(false);
       })
-      .catch(() => { setLoading(false); });
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
 
   const handleQueryChange = useCallback((value: string) => {
@@ -65,7 +70,7 @@ export default function DiscountsPage() {
     (d) =>
       !queryValue ||
       d.title.toLowerCase().includes(queryValue.toLowerCase()) ||
-      (d.code?.toLowerCase().includes(queryValue.toLowerCase()))
+      d.code?.toLowerCase().includes(queryValue.toLowerCase()),
   );
 
   const resourceName = { singular: "discount", plural: "discounts" };

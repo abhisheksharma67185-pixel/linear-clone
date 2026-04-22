@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import { SmilePlus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { SmilePlus } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-type Reaction = { emoji: string; userIds: string[] };
+type Reaction = { emoji: string; userIds: string[] }
 
 const EMOJI_MAP: Record<string, string> = {
   ":+1:": "👍",
@@ -37,10 +37,10 @@ const EMOJI_MAP: Record<string, string> = {
   ":notebook:": "📓",
   ":kanban:": "📋",
   ":bookmark:": "🔖",
-};
+}
 
 export function emojiFor(shortcode: string): string {
-  return EMOJI_MAP[shortcode] ?? shortcode.replace(/:/g, "");
+  return EMOJI_MAP[shortcode] ?? shortcode.replace(/:/g, "")
 }
 
 export function ReactionBar({
@@ -49,16 +49,16 @@ export function ReactionBar({
   onToggle,
   onAdd,
 }: {
-  reactions: Reaction[];
-  currentUserId: string;
-  onToggle: (emoji: string) => void;
-  onAdd: () => void;
+  reactions: Reaction[]
+  currentUserId: string
+  onToggle: (emoji: string) => void
+  onAdd: () => void
 }) {
-  if (reactions.length === 0) return null;
+  if (reactions.length === 0) return null
   return (
     <div className="mt-1 flex flex-wrap items-center gap-1">
       {reactions.map((r) => {
-        const mine = r.userIds.includes(currentUserId);
+        const mine = r.userIds.includes(currentUserId)
         return (
           <button
             key={r.emoji}
@@ -68,13 +68,13 @@ export function ReactionBar({
               "flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors",
               mine
                 ? "border-primary bg-primary/10 text-primary"
-                : "border-border bg-secondary hover:border-primary/30 hover:bg-secondary/80",
+                : "border-border bg-secondary hover:border-primary/30 hover:bg-secondary/80"
             )}
           >
             <span>{emojiFor(r.emoji)}</span>
             <span className="font-semibold">{r.userIds.length}</span>
           </button>
-        );
+        )
       })}
       <button
         type="button"
@@ -85,5 +85,5 @@ export function ReactionBar({
         <SmilePlus className="size-3.5" />
       </button>
     </div>
-  );
+  )
 }

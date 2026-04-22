@@ -1,36 +1,40 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileText } from "lucide-react";
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { FileText } from "lucide-react"
 
 type Attachment = {
-  id: string;
-  type: "file" | "image" | "link";
-  name: string;
-  url: string;
-};
-type Message = { id: string; channelId: string | null; attachments: Attachment[] };
-type Channel = { id: string; name: string };
+  id: string
+  type: "file" | "image" | "link"
+  name: string
+  url: string
+}
+type Message = {
+  id: string
+  channelId: string | null
+  attachments: Attachment[]
+}
+type Channel = { id: string; name: string }
 
 export default function ChannelFilesPage() {
-  const params = useParams<{ channelName: string }>();
-  const [channel, setChannel] = useState<Channel | null>(null);
-  const [files, setFiles] = useState<Attachment[]>([]);
+  const params = useParams<{ channelName: string }>()
+  const [channel, setChannel] = useState<Channel | null>(null)
+  const [files, setFiles] = useState<Attachment[]>([])
 
   useEffect(() => {
     fetch(`/api/data/channels/${params.channelName}`)
       .then((r) => r.json())
       .then(async (c: Channel) => {
-        setChannel(c);
+        setChannel(c)
         const msgs: Message[] = await fetch(
-          `/api/data/messages?channelId=${c.id}`,
-        ).then((r) => r.json());
-        setFiles(msgs.flatMap((m) => m.attachments));
-      });
-  }, [params.channelName]);
+          `/api/data/messages?channelId=${c.id}`
+        ).then((r) => r.json())
+        setFiles(msgs.flatMap((m) => m.attachments))
+      })
+  }, [params.channelName])
 
   return (
     <>
@@ -64,5 +68,5 @@ export default function ChannelFilesPage() {
         )}
       </ScrollArea>
     </>
-  );
+  )
 }

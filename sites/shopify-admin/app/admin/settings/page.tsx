@@ -1,6 +1,18 @@
 "use client";
 
-import { Page, Layout, Card, Form, FormLayout, TextField, Select, Banner, Spinner, Box, InlineStack } from "@shopify/polaris";
+import {
+  Page,
+  Layout,
+  Card,
+  Form,
+  FormLayout,
+  TextField,
+  Select,
+  Banner,
+  Spinner,
+  Box,
+  InlineStack,
+} from "@shopify/polaris";
 import { useState, useCallback, useEffect } from "react";
 import type { StoreSettings } from "../../lib/mock-data";
 
@@ -94,15 +106,16 @@ export default function SettingsPage() {
     zip,
   ]);
 
-  if (!settings) return (
-    <Page title="Settings">
-      <Box padding="1000">
-        <InlineStack align="center">
-          <Spinner size="large" />
-        </InlineStack>
-      </Box>
-    </Page>
-  );
+  if (!settings)
+    return (
+      <Page title="Settings">
+        <Box padding="1000">
+          <InlineStack align="center">
+            <Spinner size="large" />
+          </InlineStack>
+        </Box>
+      </Page>
+    );
 
   return (
     <Page
@@ -127,104 +140,109 @@ export default function SettingsPage() {
             title="Store details"
             description="Your store name and contact information"
           >
-          <Card>
-            <FormLayout>
-              <TextField
-                label="Store name"
-                value={storeName}
-                onChange={setStoreName}
-                autoComplete="off"
-              />
-              <TextField
-                label="Store contact email"
-                value={email}
-                onChange={setEmail}
-                type="email"
-                autoComplete="off"
-              />
-              <TextField label="Store phone" value={phone} onChange={setPhone} autoComplete="off" />
-            </FormLayout>
-          </Card>
-        </Layout.AnnotatedSection>
+            <Card>
+              <FormLayout>
+                <TextField
+                  label="Store name"
+                  value={storeName}
+                  onChange={setStoreName}
+                  autoComplete="off"
+                />
+                <TextField
+                  label="Store contact email"
+                  value={email}
+                  onChange={setEmail}
+                  type="email"
+                  autoComplete="off"
+                />
+                <TextField
+                  label="Store phone"
+                  value={phone}
+                  onChange={setPhone}
+                  autoComplete="off"
+                />
+              </FormLayout>
+            </Card>
+          </Layout.AnnotatedSection>
 
-        <Layout.AnnotatedSection
-          title="Store address"
-          description="This address will appear on your invoices"
-        >
-          <Card>
-            <FormLayout>
-              <TextField
-                label="Address"
-                value={address1}
-                onChange={setAddress1}
-                autoComplete="off"
-              />
-              <FormLayout.Group>
-                <TextField label="City" value={city} onChange={setCity} autoComplete="off" />
+          <Layout.AnnotatedSection
+            title="Store address"
+            description="This address will appear on your invoices"
+          >
+            <Card>
+              <FormLayout>
                 <TextField
-                  label="State/Province"
-                  value={province}
-                  onChange={setProvince}
+                  label="Address"
+                  value={address1}
+                  onChange={setAddress1}
                   autoComplete="off"
                 />
-              </FormLayout.Group>
-              <FormLayout.Group>
-                <TextField
-                  label="Country"
-                  value={country}
-                  onChange={setCountry}
-                  autoComplete="off"
-                />
-                <TextField
-                  label="ZIP/Postal code"
-                  value={zip}
-                  onChange={setZip}
-                  autoComplete="off"
-                />
-              </FormLayout.Group>
-            </FormLayout>
-          </Card>
-        </Layout.AnnotatedSection>
+                <FormLayout.Group>
+                  <TextField label="City" value={city} onChange={setCity} autoComplete="off" />
+                  <TextField
+                    label="State/Province"
+                    value={province}
+                    onChange={setProvince}
+                    autoComplete="off"
+                  />
+                </FormLayout.Group>
+                <FormLayout.Group>
+                  <TextField
+                    label="Country"
+                    value={country}
+                    onChange={setCountry}
+                    autoComplete="off"
+                  />
+                  <TextField
+                    label="ZIP/Postal code"
+                    value={zip}
+                    onChange={setZip}
+                    autoComplete="off"
+                  />
+                </FormLayout.Group>
+              </FormLayout>
+            </Card>
+          </Layout.AnnotatedSection>
 
-        <Layout.AnnotatedSection
-          title="Standards and formats"
-          description="Currency, weight units, and timezone"
-        >
-          <Card>
-            <FormLayout>
-              <Select
-                label="Currency"
-                options={[
-                  { label: "US Dollar (USD)", value: "USD" },
-                  { label: "Canadian Dollar (CAD)", value: "CAD" },
-                  { label: "British Pound (GBP)", value: "GBP" },
-                  { label: "Euro (EUR)", value: "EUR" },
-                ]}
-                value={currency}
-                onChange={setCurrency}
-              />
-              <Select
-                label="Weight unit"
-                options={[
-                  { label: "Pounds (lb)", value: "lb" },
-                  { label: "Kilograms (kg)", value: "kg" },
-                ]}
-                value={weightUnit}
-                onChange={setWeightUnit}
-              />
-              <Select
-                label="Timezone"
-                options={[
-                  { label: "Eastern Time (US)", value: "America/New_York" },
-                  { label: "Central Time (US)", value: "America/Chicago" },
-                  { label: "Pacific Time (US)", value: "America/Los_Angeles" },
-                  { label: "UTC", value: "UTC" },
-                ]}
-                value={timezone}
-                onChange={setTimezone}
-              />
-            </FormLayout>
-          </Card>
+          <Layout.AnnotatedSection
+            title="Standards and formats"
+            description="Currency, weight units, and timezone"
+          >
+            <Card>
+              <FormLayout>
+                <Select
+                  label="Currency"
+                  options={[
+                    { label: "US Dollar (USD)", value: "USD" },
+                    { label: "Canadian Dollar (CAD)", value: "CAD" },
+                    { label: "British Pound (GBP)", value: "GBP" },
+                    { label: "Euro (EUR)", value: "EUR" },
+                  ]}
+                  value={currency}
+                  onChange={setCurrency}
+                />
+                <Select
+                  label="Weight unit"
+                  options={[
+                    { label: "Pounds (lb)", value: "lb" },
+                    { label: "Kilograms (kg)", value: "kg" },
+                  ]}
+                  value={weightUnit}
+                  onChange={setWeightUnit}
+                />
+                <Select
+                  label="Timezone"
+                  options={[
+                    { label: "Eastern Time (US)", value: "America/New_York" },
+                    { label: "Central Time (US)", value: "America/Chicago" },
+                    { label: "Pacific Time (US)", value: "America/Los_Angeles" },
+                    { label: "UTC", value: "UTC" },
+                  ]}
+                  value={timezone}
+                  onChange={setTimezone}
+                />
+              </FormLayout>
+            </Card>
           </Layout.AnnotatedSection>
         </Layout>
       </Form>

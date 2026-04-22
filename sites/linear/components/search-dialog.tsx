@@ -42,17 +42,31 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
       <DialogContent
         showCloseButton={false}
         className="flex max-w-none flex-col gap-0 overflow-hidden p-0"
-        style={{ width: "calc(100vw - var(--sidebar-width, 240px))", marginLeft: "auto", marginRight: 0, transform: "none", left: "auto", right: 0, top: 0, bottom: 0, borderRadius: 0, height: "100vh" }}
+        style={{
+          width: "calc(100vw - var(--sidebar-width, 240px))",
+          marginLeft: "auto",
+          marginRight: 0,
+          transform: "none",
+          left: "auto",
+          right: 0,
+          top: 0,
+          bottom: 0,
+          borderRadius: 0,
+          height: "100vh",
+        }}
       >
         {/* Search input */}
         <div className="flex items-center gap-3 border-b px-5 py-3.5">
-          <HugeiconsIcon icon={Search01Icon} className="size-4 shrink-0 text-muted-foreground" />
+          <HugeiconsIcon
+            icon={Search01Icon}
+            className="text-muted-foreground size-4 shrink-0"
+          />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search issues, projects, and documents..."
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            className="text-foreground placeholder:text-muted-foreground flex-1 bg-transparent text-sm focus:outline-none"
           />
         </div>
 
@@ -75,11 +89,20 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             ))}
           </div>
           <div className="flex items-center gap-1.5">
-            <button type="button" className="flex size-7 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground">
+            <button
+              type="button"
+              className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
+            >
               <HugeiconsIcon icon={FilterHorizontalIcon} className="size-3.5" />
             </button>
-            <button type="button" className="flex size-7 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground">
-              <HugeiconsIcon icon={SlidersHorizontalIcon} className="size-3.5" />
+            <button
+              type="button"
+              className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
+            >
+              <HugeiconsIcon
+                icon={SlidersHorizontalIcon}
+                className="size-3.5"
+              />
             </button>
           </div>
         </div>
@@ -88,11 +111,13 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
         <div className="flex-1 overflow-auto">
           {query.length === 0 ? (
             <div className="flex h-full items-center justify-center">
-              <p className="text-xs text-muted-foreground/50">Type to search</p>
+              <p className="text-muted-foreground/50 text-xs">Type to search</p>
             </div>
           ) : (
             <div className="flex h-full items-center justify-center">
-              <p className="text-xs text-muted-foreground">No results for &quot;{query}&quot;</p>
+              <p className="text-muted-foreground text-xs">
+                No results for &quot;{query}&quot;
+              </p>
             </div>
           )}
         </div>

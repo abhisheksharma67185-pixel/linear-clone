@@ -21,14 +21,36 @@ const ASSIGNEE = {
 }
 
 const ISSUES = [
-  { id: "abh-1", identifier: "ABH-1", title: "Get familiar with Linear", date: "Apr 21" },
-  { id: "abh-2", identifier: "ABH-2", title: "Set up your teams", date: "Apr 21" },
-  { id: "abh-3", identifier: "ABH-3", title: "Connect your tools", date: "Apr 21" },
-  { id: "abh-4", identifier: "ABH-4", title: "Import your data", date: "Apr 21" },
+  {
+    id: "abh-1",
+    identifier: "ABH-1",
+    title: "Get familiar with Linear",
+    date: "Apr 21",
+  },
+  {
+    id: "abh-2",
+    identifier: "ABH-2",
+    title: "Set up your teams",
+    date: "Apr 21",
+  },
+  {
+    id: "abh-3",
+    identifier: "ABH-3",
+    title: "Connect your tools",
+    date: "Apr 21",
+  },
+  {
+    id: "abh-4",
+    identifier: "ABH-4",
+    title: "Import your data",
+    date: "Apr 21",
+  },
 ]
 
 export default function TeamIssuesPage() {
-  const [activeTab, setActiveTab] = useState<"all" | "active" | "backlog">("active")
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "backlog">(
+    "active"
+  )
   const [collapsed, setCollapsed] = useState(false)
 
   return (
@@ -40,13 +62,25 @@ export default function TeamIssuesPage() {
             <HugeiconsIcon icon={UserIcon} className="size-2.5" />
           </span>
           <h1 className="text-sm font-medium">Issues</h1>
-          <button type="button" className="ml-0.5 text-muted-foreground/50 hover:text-foreground">
-            <svg viewBox="0 0 16 16" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <button
+            type="button"
+            className="text-muted-foreground/50 hover:text-foreground ml-0.5"
+          >
+            <svg
+              viewBox="0 0 16 16"
+              className="size-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
               <path d="M8 2l.8 2.4L11 4l-1.8 1.4.6 2.4L8 6.5 6.2 7.8l.6-2.4L5 4l2.2.4z" />
             </svg>
           </button>
         </div>
-        <button type="button" className="text-muted-foreground hover:text-foreground">
+        <button
+          type="button"
+          className="text-muted-foreground hover:text-foreground"
+        >
           <HugeiconsIcon icon={Notification01Icon} className="size-4" />
         </button>
       </header>
@@ -65,17 +99,19 @@ export default function TeamIssuesPage() {
                   : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
               }`}
             >
-              {tab === "all" ? "All issues" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === "all"
+                ? "All issues"
+                : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
           <button
             type="button"
-            className="ml-1 flex size-6 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="text-muted-foreground hover:bg-accent hover:text-foreground ml-1 flex size-6 items-center justify-center rounded"
           >
             <HugeiconsIcon icon={Layers01Icon} className="size-3" />
           </button>
         </div>
-        <div className="flex items-center gap-0.5 text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-0.5">
           <Button variant="ghost" size="icon" className="size-7">
             <HugeiconsIcon icon={FilterIcon} className="size-3.5" />
           </Button>
@@ -91,7 +127,7 @@ export default function TeamIssuesPage() {
       {/* Content */}
       <div className="flex-1 overflow-auto">
         {/* Group header */}
-        <div className="group flex items-center gap-2 px-5 py-2 hover:bg-accent/30">
+        <div className="group hover:bg-accent/30 flex items-center gap-2 px-5 py-2">
           <button
             type="button"
             onClick={() => setCollapsed((v) => !v)}
@@ -99,7 +135,7 @@ export default function TeamIssuesPage() {
           >
             <svg
               viewBox="0 0 8 8"
-              className={`size-2 shrink-0 fill-current text-muted-foreground/70 transition-transform ${
+              className={`text-muted-foreground/70 size-2 shrink-0 fill-current transition-transform ${
                 collapsed ? "-rotate-90" : ""
               }`}
             >
@@ -107,11 +143,13 @@ export default function TeamIssuesPage() {
             </svg>
             <StatusCircle />
             <span>Todo</span>
-            <span className="ml-0.5 text-xs font-normal text-muted-foreground">{ISSUES.length}</span>
+            <span className="text-muted-foreground ml-0.5 text-xs font-normal">
+              {ISSUES.length}
+            </span>
           </button>
           <button
             type="button"
-            className="ml-auto flex size-5 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
+            className="text-muted-foreground hover:bg-accent hover:text-foreground ml-auto flex size-5 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100"
           >
             <HugeiconsIcon icon={PlusSignIcon} className="size-3" />
           </button>
@@ -122,17 +160,16 @@ export default function TeamIssuesPage() {
           ISSUES.map((issue) => (
             <div
               key={issue.id}
-              className="group flex items-center gap-2 border-b border-transparent px-5 py-2 transition-colors hover:bg-accent/40"
+              className="group hover:bg-accent/40 flex items-center gap-2 border-b border-transparent px-5 py-2 transition-colors"
             >
               {/* Checkbox (shows on hover) */}
               <div className="flex size-4 shrink-0 items-center justify-center">
-                <div className="flex size-3.5 items-center justify-center rounded border border-muted-foreground/30 opacity-0 group-hover:opacity-100">
-                </div>
+                <div className="border-muted-foreground/30 flex size-3.5 items-center justify-center rounded border opacity-0 group-hover:opacity-100"></div>
               </div>
               {/* Priority */}
               <PriorityDots />
               {/* Identifier */}
-              <span className="w-12 font-mono text-[11px] text-muted-foreground">
+              <span className="text-muted-foreground w-12 font-mono text-[11px]">
                 {issue.identifier}
               </span>
               {/* Status */}
@@ -141,12 +178,14 @@ export default function TeamIssuesPage() {
               <span className="flex-1 truncate text-sm">{issue.title}</span>
               {/* Assignee */}
               <Avatar className="size-5">
-                <AvatarFallback className="text-[9px] bg-violet-600 text-white">
+                <AvatarFallback className="bg-violet-600 text-[9px] text-white">
                   {ASSIGNEE.initials}
                 </AvatarFallback>
               </Avatar>
               {/* Date */}
-              <span className="w-12 text-right text-xs text-muted-foreground">{issue.date}</span>
+              <span className="text-muted-foreground w-12 text-right text-xs">
+                {issue.date}
+              </span>
             </div>
           ))}
       </div>
@@ -156,7 +195,11 @@ export default function TeamIssuesPage() {
 
 function StatusCircle() {
   return (
-    <svg viewBox="0 0 16 16" className="size-3.5 shrink-0 text-muted-foreground/60" fill="none">
+    <svg
+      viewBox="0 0 16 16"
+      className="text-muted-foreground/60 size-3.5 shrink-0"
+      fill="none"
+    >
       <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   )
@@ -164,7 +207,7 @@ function StatusCircle() {
 
 function PriorityDots() {
   return (
-    <span className="flex items-center gap-[2px] text-muted-foreground/50">
+    <span className="text-muted-foreground/50 flex items-center gap-[2px]">
       <span className="block size-[3px] rounded-full bg-current" />
       <span className="block size-[3px] rounded-full bg-current" />
       <span className="block size-[3px] rounded-full bg-current" />

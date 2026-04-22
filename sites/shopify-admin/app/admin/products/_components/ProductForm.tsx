@@ -196,530 +196,539 @@ export default function ProductForm({ product, isNew }: ProductFormProps) {
           {/* Main column */}
           <Layout.Section>
             {/* Title + Description */}
-          <Card>
-            <BlockStack gap="400">
-              <TextField label="Title" value={title} onChange={setTitle} autoComplete="off" />
-              <TextField
-                label="Description"
-                value={description}
-                onChange={setDescription}
-                multiline={6}
-                autoComplete="off"
-              />
-            </BlockStack>
-          </Card>
-
-          {/* Media */}
-          <Card>
-            <BlockStack gap="300">
-              <Text as="h2" variant="headingSm">
-                Media
-              </Text>
-              <DropZone
-                onDrop={(_droppedFiles, acceptedFiles) =>
-                  setUploadedFiles((prev) => [...prev, ...acceptedFiles])
-                }
-                variableHeight
-              >
-                <DropZone.FileUpload
-                  actionTitle="Upload new"
-                  actionHint="Accepts images, videos, or 3D models"
+            <Card>
+              <BlockStack gap="400">
+                <TextField label="Title" value={title} onChange={setTitle} autoComplete="off" />
+                <TextField
+                  label="Description"
+                  value={description}
+                  onChange={setDescription}
+                  multiline={6}
+                  autoComplete="off"
                 />
-              </DropZone>
-              {uploadedFiles.length > 0 && (
-                <InlineStack gap="200" wrap>
-                  {uploadedFiles.map((file, i) => (
-                    <Tag
-                      key={`${file.name}-${i}`}
-                      onRemove={() =>
-                        setUploadedFiles((prev) => prev.filter((_, idx) => idx !== i))
-                      }
-                    >
-                      {file.name}
-                    </Tag>
-                  ))}
-                </InlineStack>
-              )}
-            </BlockStack>
-          </Card>
+              </BlockStack>
+            </Card>
 
-          {/* Category */}
-          <Card>
-            <Select
-              label="Category"
-              placeholder="Choose a product category"
-              options={[
-                { label: "Animals & Pet Supplies", value: "animals" },
-                { label: "Apparel & Accessories", value: "apparel" },
-                { label: "Arts & Entertainment", value: "arts" },
-                { label: "Baby & Toddler", value: "baby" },
-                { label: "Business & Industrial", value: "business" },
-                { label: "Cameras & Optics", value: "cameras" },
-                { label: "Electronics", value: "electronics" },
-                { label: "Food, Beverages & Tobacco", value: "food" },
-                { label: "Furniture", value: "furniture" },
-                { label: "Hardware", value: "hardware" },
-                { label: "Health & Beauty", value: "health" },
-                { label: "Home & Garden", value: "home" },
-                { label: "Luggage & Bags", value: "luggage" },
-                { label: "Media", value: "media" },
-                { label: "Office Supplies", value: "office" },
-                { label: "Software", value: "software" },
-                { label: "Sporting Goods", value: "sporting" },
-                { label: "Toys & Games", value: "toys" },
-                { label: "Vehicles & Parts", value: "vehicles" },
-              ]}
-              value={category}
-              onChange={setCategory}
-              helpText="Determines tax rates and adds metafields to improve search, filters, and cross-channel sales"
-            />
-          </Card>
-
-          {/* Price */}
-          <Card>
-            <BlockStack gap="400">
-              <TextField
-                label="Price"
-                value={price}
-                onChange={setPrice}
-                prefix="$"
-                type="number"
-                autoComplete="off"
-              />
-            </BlockStack>
-          </Card>
-
-          {/* Additional display prices */}
-          <Card>
-            <BlockStack gap="400">
-              <Button
-                variant="plain"
-                onClick={() => setShowPriceExtras(!showPriceExtras)}
-                disclosure={showPriceExtras ? "up" : "down"}
-              >
-                Additional display prices
-              </Button>
-              <Collapsible open={showPriceExtras} id="price-extras">
-                <FormLayout>
-                  <FormLayout.Group>
-                    <TextField
-                      label="Compare-at price"
-                      value={compareAtPrice}
-                      onChange={setCompareAtPrice}
-                      prefix="$"
-                      type="number"
-                      autoComplete="off"
-                    />
-                    <Select
-                      label="Unit price"
-                      placeholder="--"
-                      options={[
-                        { label: "per item", value: "item" },
-                        { label: "per kg", value: "kg" },
-                        { label: "per lb", value: "lb" },
-                      ]}
-                      value=""
-                      onChange={() => {}}
-                    />
-                  </FormLayout.Group>
-                  <Checkbox
-                    label="Charge tax on this product"
-                    checked={chargeTax}
-                    onChange={setChargeTax}
+            {/* Media */}
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h2" variant="headingSm">
+                  Media
+                </Text>
+                <DropZone
+                  onDrop={(_droppedFiles, acceptedFiles) =>
+                    setUploadedFiles((prev) => [...prev, ...acceptedFiles])
+                  }
+                  variableHeight
+                >
+                  <DropZone.FileUpload
+                    actionTitle="Upload new"
+                    actionHint="Accepts images, videos, or 3D models"
                   />
-                  <InlineStack gap="400">
-                    <Text as="span" variant="bodySm" tone="subdued">
-                      Cost --
-                    </Text>
-                    <Text as="span" variant="bodySm" tone="subdued">
-                      Profit --
-                    </Text>
-                    <Text as="span" variant="bodySm" tone="subdued">
-                      Margin --
-                    </Text>
+                </DropZone>
+                {uploadedFiles.length > 0 && (
+                  <InlineStack gap="200" wrap>
+                    {uploadedFiles.map((file, i) => (
+                      <Tag
+                        key={`${file.name}-${i}`}
+                        onRemove={() =>
+                          setUploadedFiles((prev) => prev.filter((_, idx) => idx !== i))
+                        }
+                      >
+                        {file.name}
+                      </Tag>
+                    ))}
                   </InlineStack>
-                </FormLayout>
-              </Collapsible>
-            </BlockStack>
-          </Card>
+                )}
+              </BlockStack>
+            </Card>
 
-          {/* Inventory */}
-          <Card>
-            <BlockStack gap="400">
-              <InlineStack align="space-between" blockAlign="center">
-                <Text as="h2" variant="headingSm">
-                  Inventory
-                </Text>
-                <Checkbox
-                  label="Inventory tracked"
-                  checked={trackInventory}
-                  onChange={setTrackInventory}
+            {/* Category */}
+            <Card>
+              <Select
+                label="Category"
+                placeholder="Choose a product category"
+                options={[
+                  { label: "Animals & Pet Supplies", value: "animals" },
+                  { label: "Apparel & Accessories", value: "apparel" },
+                  { label: "Arts & Entertainment", value: "arts" },
+                  { label: "Baby & Toddler", value: "baby" },
+                  { label: "Business & Industrial", value: "business" },
+                  { label: "Cameras & Optics", value: "cameras" },
+                  { label: "Electronics", value: "electronics" },
+                  { label: "Food, Beverages & Tobacco", value: "food" },
+                  { label: "Furniture", value: "furniture" },
+                  { label: "Hardware", value: "hardware" },
+                  { label: "Health & Beauty", value: "health" },
+                  { label: "Home & Garden", value: "home" },
+                  { label: "Luggage & Bags", value: "luggage" },
+                  { label: "Media", value: "media" },
+                  { label: "Office Supplies", value: "office" },
+                  { label: "Software", value: "software" },
+                  { label: "Sporting Goods", value: "sporting" },
+                  { label: "Toys & Games", value: "toys" },
+                  { label: "Vehicles & Parts", value: "vehicles" },
+                ]}
+                value={category}
+                onChange={setCategory}
+                helpText="Determines tax rates and adds metafields to improve search, filters, and cross-channel sales"
+              />
+            </Card>
+
+            {/* Price */}
+            <Card>
+              <BlockStack gap="400">
+                <TextField
+                  label="Price"
+                  value={price}
+                  onChange={setPrice}
+                  prefix="$"
+                  type="number"
+                  autoComplete="off"
                 />
-              </InlineStack>
-              <Box background="bg-surface-secondary" borderRadius="200" padding="300">
-                <InlineStack align="space-between">
-                  <Text as="span" variant="bodySm" fontWeight="semibold">
-                    Quantity
-                  </Text>
-                  <Text as="span" variant="bodySm" fontWeight="semibold">
-                    Quantity
-                  </Text>
-                </InlineStack>
-              </Box>
-              <InlineStack align="space-between" blockAlign="center">
-                <Text as="span" variant="bodyMd">
-                  Shop location
-                </Text>
-                <Box maxWidth="100px">
-                  <TextField
-                    label="Quantity"
-                    labelHidden
-                    value={inventory}
-                    onChange={setInventory}
-                    type="number"
-                    autoComplete="off"
-                  />
-                </Box>
-              </InlineStack>
-            </BlockStack>
-          </Card>
+              </BlockStack>
+            </Card>
 
-          {/* More details (SKU, Barcode) */}
-          <Card>
-            <BlockStack gap="400">
-              <Button
-                variant="plain"
-                onClick={() => setShowMoreDetails(!showMoreDetails)}
-                disclosure={showMoreDetails ? "up" : "down"}
-              >
-                More details
-              </Button>
-              <Collapsible open={showMoreDetails} id="more-details">
-                <BlockStack gap="300">
-                  <FormLayout.Group>
-                    <TextField
-                      label="SKU (Stock Keeping Unit)"
-                      value={sku}
-                      onChange={setSku}
-                      autoComplete="off"
-                    />
-                    <TextField
-                      label="Barcode (ISBN, UPC, GTIN, etc.)"
-                      value={barcode}
-                      onChange={setBarcode}
-                      autoComplete="off"
-                    />
-                  </FormLayout.Group>
-                  <Checkbox
-                    label="Continue selling when out of stock"
-                    checked={continueSellingOos}
-                    onChange={setContinueSellingOos}
-                  />
-                </BlockStack>
-              </Collapsible>
-            </BlockStack>
-          </Card>
-
-          {/* Shipping */}
-          <Card>
-            <BlockStack gap="400">
-              <InlineStack align="space-between" blockAlign="center">
-                <Text as="h2" variant="headingSm">
-                  Shipping
-                </Text>
-                <Checkbox label="Physical product" checked={isPhysical} onChange={setIsPhysical} />
-              </InlineStack>
-              {isPhysical && (
-                <FormLayout>
-                  <FormLayout.Group>
-                    <Select
-                      label="Package"
-                      options={[
-                        {
-                          label:
-                            "Store default \u2022 Sample box - 22 \u00d7 13.7 \u00d7 4.2 cm, 0 kg",
-                          value: "default",
-                        },
-                      ]}
-                      value="default"
-                      onChange={() => {}}
-                    />
-                    <TextField
-                      label="Product weight"
-                      value={weight}
-                      onChange={setWeight}
-                      type="number"
-                      autoComplete="off"
-                      connectedRight={
-                        <Select
-                          label="Unit"
-                          labelHidden
-                          options={[
-                            { label: "kg", value: "kg" },
-                            { label: "lb", value: "lb" },
-                            { label: "g", value: "g" },
-                            { label: "oz", value: "oz" },
-                          ]}
-                          value={weightUnit}
-                          onChange={setWeightUnit}
-                        />
-                      }
-                    />
-                  </FormLayout.Group>
-                </FormLayout>
-              )}
-            </BlockStack>
-          </Card>
-
-          {/* Customs information */}
-          {isPhysical && (
+            {/* Additional display prices */}
             <Card>
               <BlockStack gap="400">
                 <Button
                   variant="plain"
-                  onClick={() => setShowCustomsInfo(!showCustomsInfo)}
-                  disclosure={showCustomsInfo ? "up" : "down"}
+                  onClick={() => setShowPriceExtras(!showPriceExtras)}
+                  disclosure={showPriceExtras ? "up" : "down"}
                 >
-                  Customs information
+                  Additional display prices
                 </Button>
-                <Collapsible open={showCustomsInfo} id="customs-info">
-                  <BlockStack gap="300">
-                    <Select
-                      label="Country/Region of origin"
-                      placeholder="Select"
-                      options={[
-                        { label: "United States", value: "US" },
-                        { label: "India", value: "IN" },
-                        { label: "China", value: "CN" },
-                        { label: "United Kingdom", value: "GB" },
-                      ]}
-                      value={countryOfOrigin}
-                      onChange={setCountryOfOrigin}
+                <Collapsible open={showPriceExtras} id="price-extras">
+                  <FormLayout>
+                    <FormLayout.Group>
+                      <TextField
+                        label="Compare-at price"
+                        value={compareAtPrice}
+                        onChange={setCompareAtPrice}
+                        prefix="$"
+                        type="number"
+                        autoComplete="off"
+                      />
+                      <Select
+                        label="Unit price"
+                        placeholder="--"
+                        options={[
+                          { label: "per item", value: "item" },
+                          { label: "per kg", value: "kg" },
+                          { label: "per lb", value: "lb" },
+                        ]}
+                        value=""
+                        onChange={() => {}}
+                      />
+                    </FormLayout.Group>
+                    <Checkbox
+                      label="Charge tax on this product"
+                      checked={chargeTax}
+                      onChange={setChargeTax}
                     />
+                    <InlineStack gap="400">
+                      <Text as="span" variant="bodySm" tone="subdued">
+                        Cost --
+                      </Text>
+                      <Text as="span" variant="bodySm" tone="subdued">
+                        Profit --
+                      </Text>
+                      <Text as="span" variant="bodySm" tone="subdued">
+                        Margin --
+                      </Text>
+                    </InlineStack>
+                  </FormLayout>
+                </Collapsible>
+              </BlockStack>
+            </Card>
+
+            {/* Inventory */}
+            <Card>
+              <BlockStack gap="400">
+                <InlineStack align="space-between" blockAlign="center">
+                  <Text as="h2" variant="headingSm">
+                    Inventory
+                  </Text>
+                  <Checkbox
+                    label="Inventory tracked"
+                    checked={trackInventory}
+                    onChange={setTrackInventory}
+                  />
+                </InlineStack>
+                <Box background="bg-surface-secondary" borderRadius="200" padding="300">
+                  <InlineStack align="space-between">
+                    <Text as="span" variant="bodySm" fontWeight="semibold">
+                      Quantity
+                    </Text>
+                    <Text as="span" variant="bodySm" fontWeight="semibold">
+                      Quantity
+                    </Text>
+                  </InlineStack>
+                </Box>
+                <InlineStack align="space-between" blockAlign="center">
+                  <Text as="span" variant="bodyMd">
+                    Shop location
+                  </Text>
+                  <Box maxWidth="100px">
                     <TextField
-                      label="Harmonized System (HS) code"
-                      value={hsCode}
-                      onChange={setHsCode}
-                      placeholder="Enter a 6-digit code or search by keyword"
+                      label="Quantity"
+                      labelHidden
+                      value={inventory}
+                      onChange={setInventory}
+                      type="number"
                       autoComplete="off"
+                    />
+                  </Box>
+                </InlineStack>
+              </BlockStack>
+            </Card>
+
+            {/* More details (SKU, Barcode) */}
+            <Card>
+              <BlockStack gap="400">
+                <Button
+                  variant="plain"
+                  onClick={() => setShowMoreDetails(!showMoreDetails)}
+                  disclosure={showMoreDetails ? "up" : "down"}
+                >
+                  More details
+                </Button>
+                <Collapsible open={showMoreDetails} id="more-details">
+                  <BlockStack gap="300">
+                    <FormLayout.Group>
+                      <TextField
+                        label="SKU (Stock Keeping Unit)"
+                        value={sku}
+                        onChange={setSku}
+                        autoComplete="off"
+                      />
+                      <TextField
+                        label="Barcode (ISBN, UPC, GTIN, etc.)"
+                        value={barcode}
+                        onChange={setBarcode}
+                        autoComplete="off"
+                      />
+                    </FormLayout.Group>
+                    <Checkbox
+                      label="Continue selling when out of stock"
+                      checked={continueSellingOos}
+                      onChange={setContinueSellingOos}
                     />
                   </BlockStack>
                 </Collapsible>
               </BlockStack>
             </Card>
-          )}
 
-          {/* Variants */}
-          <Card>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">
-                Variants
-              </Text>
-              {variantOptions.map((option, optIndex) => (
-                <Card key={optIndex}>
-                  <BlockStack gap="300">
-                    <TextField
-                      label="Option name"
-                      value={option.name}
-                      onChange={(val) => updateOptionName(optIndex, val)}
-                      autoComplete="off"
-                      error={option.name === "" ? "Option name is required." : undefined}
-                    />
-                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                      Option values
-                    </Text>
-                    {option.values.map((val, valIndex) => (
+            {/* Shipping */}
+            <Card>
+              <BlockStack gap="400">
+                <InlineStack align="space-between" blockAlign="center">
+                  <Text as="h2" variant="headingSm">
+                    Shipping
+                  </Text>
+                  <Checkbox
+                    label="Physical product"
+                    checked={isPhysical}
+                    onChange={setIsPhysical}
+                  />
+                </InlineStack>
+                {isPhysical && (
+                  <FormLayout>
+                    <FormLayout.Group>
+                      <Select
+                        label="Package"
+                        options={[
+                          {
+                            label:
+                              "Store default \u2022 Sample box - 22 \u00d7 13.7 \u00d7 4.2 cm, 0 kg",
+                            value: "default",
+                          },
+                        ]}
+                        value="default"
+                        onChange={() => {}}
+                      />
                       <TextField
-                        key={valIndex}
-                        label={`Value ${valIndex + 1}`}
-                        labelHidden
-                        value={val}
-                        onChange={(v) => updateOptionValue(optIndex, valIndex, v)}
+                        label="Product weight"
+                        value={weight}
+                        onChange={setWeight}
+                        type="number"
+                        autoComplete="off"
+                        connectedRight={
+                          <Select
+                            label="Unit"
+                            labelHidden
+                            options={[
+                              { label: "kg", value: "kg" },
+                              { label: "lb", value: "lb" },
+                              { label: "g", value: "g" },
+                              { label: "oz", value: "oz" },
+                            ]}
+                            value={weightUnit}
+                            onChange={setWeightUnit}
+                          />
+                        }
+                      />
+                    </FormLayout.Group>
+                  </FormLayout>
+                )}
+              </BlockStack>
+            </Card>
+
+            {/* Customs information */}
+            {isPhysical && (
+              <Card>
+                <BlockStack gap="400">
+                  <Button
+                    variant="plain"
+                    onClick={() => setShowCustomsInfo(!showCustomsInfo)}
+                    disclosure={showCustomsInfo ? "up" : "down"}
+                  >
+                    Customs information
+                  </Button>
+                  <Collapsible open={showCustomsInfo} id="customs-info">
+                    <BlockStack gap="300">
+                      <Select
+                        label="Country/Region of origin"
+                        placeholder="Select"
+                        options={[
+                          { label: "United States", value: "US" },
+                          { label: "India", value: "IN" },
+                          { label: "China", value: "CN" },
+                          { label: "United Kingdom", value: "GB" },
+                        ]}
+                        value={countryOfOrigin}
+                        onChange={setCountryOfOrigin}
+                      />
+                      <TextField
+                        label="Harmonized System (HS) code"
+                        value={hsCode}
+                        onChange={setHsCode}
+                        placeholder="Enter a 6-digit code or search by keyword"
                         autoComplete="off"
                       />
-                    ))}
-                    <InlineStack align="space-between">
-                      <Button tone="critical" onClick={() => removeVariantOption(optIndex)}>
-                        Delete
-                      </Button>
-                      <Button
-                        variant="primary"
-                        onClick={() => {
-                          setVariantOptions((prev) => {
-                            const next = [...prev];
-                            next[optIndex] = {
-                              ...next[optIndex],
-                              values: [...next[optIndex].values, ""],
-                            };
-                            return next;
-                          });
-                        }}
-                      >
-                        Done
-                      </Button>
-                    </InlineStack>
-                  </BlockStack>
-                </Card>
-              ))}
-              <Button icon={PlusIcon} variant="plain" onClick={addVariantOption}>
-                {variantOptions.length === 0
-                  ? "Add options like size or color"
-                  : "Add another option"}
-              </Button>
-            </BlockStack>
-          </Card>
-
-          {/* Search engine listing */}
-          <Card>
-            <BlockStack gap="300">
-              <Text as="h2" variant="headingSm">
-                Search engine listing
-              </Text>
-              <Text as="p" variant="bodySm" tone="subdued">
-                Add a title and description to see how this product might appear in a search engine
-                listing
-              </Text>
-            </BlockStack>
-          </Card>
-        </Layout.Section>
-
-        {/* Sidebar */}
-        <Layout.Section variant="oneThird">
-          <Card>
-            <BlockStack gap="300">
-              <Text as="h2" variant="headingSm">
-                Status
-              </Text>
-              <Select
-                label="Status"
-                labelHidden
-                options={[
-                  { label: "Active", value: "active" },
-                  { label: "Draft", value: "draft" },
-                  { label: "Archived", value: "archived" },
-                ]}
-                value={status}
-                onChange={setStatus}
-              />
-            </BlockStack>
-          </Card>
-
-          <Card>
-            <BlockStack gap="300">
-              <InlineStack align="space-between" blockAlign="center">
-                <Text as="h2" variant="headingSm">
-                  Publishing
-                </Text>
-                <Button variant="plain" onClick={() => setPublishingOpen(true)}>
-                  Manage
-                </Button>
-              </InlineStack>
-              <InlineStack gap="200">
-                {onlineStoreEnabled && <Badge>Online Store</Badge>}
-                {posEnabled && <Badge>Point of Sale</Badge>}
-              </InlineStack>
-            </BlockStack>
-            <Modal
-              open={publishingOpen}
-              onClose={() => setPublishingOpen(false)}
-              title="Manage publishing"
-            >
-              <Modal.Section>
-                <BlockStack gap="400">
-                  <TextField
-                    label="Search channels"
-                    labelHidden
-                    placeholder="Search channels"
-                    value=""
-                    onChange={() => {}}
-                    prefix={<Icon source={SearchIcon} />}
-                    autoComplete="off"
-                  />
-                  <BlockStack gap="200">
-                    <InlineStack align="space-between" blockAlign="center">
-                      <Text as="span" variant="bodyMd" fontWeight="semibold">
-                        Sales Channels
-                      </Text>
-                      <Checkbox
-                        label=""
-                        labelHidden
-                        checked={onlineStoreEnabled && posEnabled}
-                        onChange={(checked) => {
-                          setOnlineStoreEnabled(checked);
-                          setPosEnabled(checked);
-                        }}
-                      />
-                    </InlineStack>
-                    <InlineStack align="space-between" blockAlign="center">
-                      <Text as="span" variant="bodyMd">
-                        Online Store
-                      </Text>
-                      <Checkbox
-                        label=""
-                        labelHidden
-                        checked={onlineStoreEnabled}
-                        onChange={setOnlineStoreEnabled}
-                      />
-                    </InlineStack>
-                    <InlineStack align="space-between" blockAlign="center">
-                      <Text as="span" variant="bodyMd">
-                        Point of Sale
-                      </Text>
-                      <Checkbox
-                        label=""
-                        labelHidden
-                        checked={posEnabled}
-                        onChange={setPosEnabled}
-                      />
-                    </InlineStack>
-                  </BlockStack>
+                    </BlockStack>
+                  </Collapsible>
                 </BlockStack>
-              </Modal.Section>
-              <Modal.Section>
-                <InlineStack align="end" gap="200">
-                  <Button onClick={() => setPublishingOpen(false)}>Cancel</Button>
-                  <Button variant="primary" onClick={() => setPublishingOpen(false)}>
-                    Done
+              </Card>
+            )}
+
+            {/* Variants */}
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingSm">
+                  Variants
+                </Text>
+                {variantOptions.map((option, optIndex) => (
+                  <Card key={optIndex}>
+                    <BlockStack gap="300">
+                      <TextField
+                        label="Option name"
+                        value={option.name}
+                        onChange={(val) => updateOptionName(optIndex, val)}
+                        autoComplete="off"
+                        error={option.name === "" ? "Option name is required." : undefined}
+                      />
+                      <Text as="span" variant="bodySm" fontWeight="semibold">
+                        Option values
+                      </Text>
+                      {option.values.map((val, valIndex) => (
+                        <TextField
+                          key={valIndex}
+                          label={`Value ${valIndex + 1}`}
+                          labelHidden
+                          value={val}
+                          onChange={(v) => updateOptionValue(optIndex, valIndex, v)}
+                          autoComplete="off"
+                        />
+                      ))}
+                      <InlineStack align="space-between">
+                        <Button tone="critical" onClick={() => removeVariantOption(optIndex)}>
+                          Delete
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onClick={() => {
+                            setVariantOptions((prev) => {
+                              const next = [...prev];
+                              next[optIndex] = {
+                                ...next[optIndex],
+                                values: [...next[optIndex].values, ""],
+                              };
+                              return next;
+                            });
+                          }}
+                        >
+                          Done
+                        </Button>
+                      </InlineStack>
+                    </BlockStack>
+                  </Card>
+                ))}
+                <Button icon={PlusIcon} variant="plain" onClick={addVariantOption}>
+                  {variantOptions.length === 0
+                    ? "Add options like size or color"
+                    : "Add another option"}
+                </Button>
+              </BlockStack>
+            </Card>
+
+            {/* Search engine listing */}
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h2" variant="headingSm">
+                  Search engine listing
+                </Text>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Add a title and description to see how this product might appear in a search
+                  engine listing
+                </Text>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+
+          {/* Sidebar */}
+          <Layout.Section variant="oneThird">
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h2" variant="headingSm">
+                  Status
+                </Text>
+                <Select
+                  label="Status"
+                  labelHidden
+                  options={[
+                    { label: "Active", value: "active" },
+                    { label: "Draft", value: "draft" },
+                    { label: "Archived", value: "archived" },
+                  ]}
+                  value={status}
+                  onChange={setStatus}
+                />
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="300">
+                <InlineStack align="space-between" blockAlign="center">
+                  <Text as="h2" variant="headingSm">
+                    Publishing
+                  </Text>
+                  <Button variant="plain" onClick={() => setPublishingOpen(true)}>
+                    Manage
                   </Button>
                 </InlineStack>
-              </Modal.Section>
-            </Modal>
-          </Card>
+                <InlineStack gap="200">
+                  {onlineStoreEnabled && <Badge>Online Store</Badge>}
+                  {posEnabled && <Badge>Point of Sale</Badge>}
+                </InlineStack>
+              </BlockStack>
+              <Modal
+                open={publishingOpen}
+                onClose={() => setPublishingOpen(false)}
+                title="Manage publishing"
+              >
+                <Modal.Section>
+                  <BlockStack gap="400">
+                    <TextField
+                      label="Search channels"
+                      labelHidden
+                      placeholder="Search channels"
+                      value=""
+                      onChange={() => {}}
+                      prefix={<Icon source={SearchIcon} />}
+                      autoComplete="off"
+                    />
+                    <BlockStack gap="200">
+                      <InlineStack align="space-between" blockAlign="center">
+                        <Text as="span" variant="bodyMd" fontWeight="semibold">
+                          Sales Channels
+                        </Text>
+                        <Checkbox
+                          label=""
+                          labelHidden
+                          checked={onlineStoreEnabled && posEnabled}
+                          onChange={(checked) => {
+                            setOnlineStoreEnabled(checked);
+                            setPosEnabled(checked);
+                          }}
+                        />
+                      </InlineStack>
+                      <InlineStack align="space-between" blockAlign="center">
+                        <Text as="span" variant="bodyMd">
+                          Online Store
+                        </Text>
+                        <Checkbox
+                          label=""
+                          labelHidden
+                          checked={onlineStoreEnabled}
+                          onChange={setOnlineStoreEnabled}
+                        />
+                      </InlineStack>
+                      <InlineStack align="space-between" blockAlign="center">
+                        <Text as="span" variant="bodyMd">
+                          Point of Sale
+                        </Text>
+                        <Checkbox
+                          label=""
+                          labelHidden
+                          checked={posEnabled}
+                          onChange={setPosEnabled}
+                        />
+                      </InlineStack>
+                    </BlockStack>
+                  </BlockStack>
+                </Modal.Section>
+                <Modal.Section>
+                  <InlineStack align="end" gap="200">
+                    <Button onClick={() => setPublishingOpen(false)}>Cancel</Button>
+                    <Button variant="primary" onClick={() => setPublishingOpen(false)}>
+                      Done
+                    </Button>
+                  </InlineStack>
+                </Modal.Section>
+              </Modal>
+            </Card>
 
-          <Card>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">
-                Product organization
-              </Text>
-              <FormLayout>
-                <TextField label="Type" value={type} onChange={setType} autoComplete="off" />
-                <TextField label="Vendor" value={vendor} onChange={setVendor} autoComplete="off" />
-                <TextField
-                  label="Collections"
-                  value=""
-                  onChange={() => {}}
-                  autoComplete="off"
-                  placeholder="Search collections"
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingSm">
+                  Product organization
+                </Text>
+                <FormLayout>
+                  <TextField label="Type" value={type} onChange={setType} autoComplete="off" />
+                  <TextField
+                    label="Vendor"
+                    value={vendor}
+                    onChange={setVendor}
+                    autoComplete="off"
+                  />
+                  <TextField
+                    label="Collections"
+                    value=""
+                    onChange={() => {}}
+                    autoComplete="off"
+                    placeholder="Search collections"
+                  />
+                  <TextField label="Tags" value={tags} onChange={setTags} autoComplete="off" />
+                </FormLayout>
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h2" variant="headingSm">
+                  Theme template
+                </Text>
+                <Select
+                  label="Theme template"
+                  labelHidden
+                  options={[{ label: "Default product", value: "default" }]}
+                  value={themeTemplate}
+                  onChange={setThemeTemplate}
                 />
-                <TextField label="Tags" value={tags} onChange={setTags} autoComplete="off" />
-              </FormLayout>
-            </BlockStack>
-          </Card>
-
-          <Card>
-            <BlockStack gap="300">
-              <Text as="h2" variant="headingSm">
-                Theme template
-              </Text>
-              <Select
-                label="Theme template"
-                labelHidden
-                options={[{ label: "Default product", value: "default" }]}
-                value={themeTemplate}
-                onChange={setThemeTemplate}
-              />
-            </BlockStack>
-          </Card>
+              </BlockStack>
+            </Card>
           </Layout.Section>
         </Layout>
       </Form>

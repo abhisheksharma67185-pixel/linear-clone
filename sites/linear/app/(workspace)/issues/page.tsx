@@ -66,9 +66,15 @@ export default function AllIssuesPage() {
     members.find((m) => m.id === id)?.name ?? "Unassigned"
 
   const filtered = issues.filter((issue) => {
-    if (search && !issue.title.toLowerCase().includes(search.toLowerCase()) && !issue.identifier.toLowerCase().includes(search.toLowerCase())) return false
+    if (
+      search &&
+      !issue.title.toLowerCase().includes(search.toLowerCase()) &&
+      !issue.identifier.toLowerCase().includes(search.toLowerCase())
+    )
+      return false
     if (statusFilter !== "all" && issue.status !== statusFilter) return false
-    if (priorityFilter !== "all" && issue.priority !== priorityFilter) return false
+    if (priorityFilter !== "all" && issue.priority !== priorityFilter)
+      return false
     return true
   })
 
@@ -81,7 +87,7 @@ export default function AllIssuesPage() {
     <div className="flex flex-col gap-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold">All Issues</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-muted-foreground mt-1 text-sm">
           {filtered.length} of {issues.length} issues
         </p>
       </div>
@@ -93,7 +99,10 @@ export default function AllIssuesPage() {
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
         />
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "all")}>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => setStatusFilter(v ?? "all")}
+        >
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -106,7 +115,10 @@ export default function AllIssuesPage() {
             <SelectItem value="cancelled">Cancelled</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v ?? "all")}>
+        <Select
+          value={priorityFilter}
+          onValueChange={(v) => setPriorityFilter(v ?? "all")}
+        >
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Priority" />
           </SelectTrigger>
@@ -125,9 +137,11 @@ export default function AllIssuesPage() {
         if (teamIssues.length === 0) return null
         return (
           <div key={team.id}>
-            <h2 className="text-sm font-semibold text-muted-foreground mb-2">
+            <h2 className="text-muted-foreground mb-2 text-sm font-semibold">
               {team.key} — {team.name}
-              <span className="ml-2 text-xs font-normal">{teamIssues.length}</span>
+              <span className="ml-2 text-xs font-normal">
+                {teamIssues.length}
+              </span>
             </h2>
             <div className="rounded-md border">
               <Table>
@@ -151,17 +165,25 @@ export default function AllIssuesPage() {
                           {issue.identifier}
                         </Link>
                       </TableCell>
-                      <TableCell className="font-medium">{issue.title}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="font-medium">
+                        {issue.title}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
                         {memberName(issue.assigneeId)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={`text-[10px] ${priorityStyle[issue.priority]}`}>
+                        <Badge
+                          variant="secondary"
+                          className={`text-[10px] ${priorityStyle[issue.priority]}`}
+                        >
                           {issue.priority}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={`text-[10px] ${statusStyle[issue.status]}`}>
+                        <Badge
+                          variant="secondary"
+                          className={`text-[10px] ${statusStyle[issue.status]}`}
+                        >
                           {issue.status.replace("_", " ")}
                         </Badge>
                       </TableCell>

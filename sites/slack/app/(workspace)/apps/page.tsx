@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { Grid3x3 } from "lucide-react";
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { Grid3x3 } from "lucide-react"
 
 const apps = [
   { name: "Google Calendar", description: "Sync your calendar to Slack" },
@@ -10,7 +10,7 @@ const apps = [
   { name: "Zoom", description: "Start Zoom calls with /zoom" },
   { name: "Polly", description: "Create polls and surveys" },
   { name: "Loom", description: "Share Loom videos" },
-];
+]
 
 export default function AppsPage() {
   return (
@@ -33,5 +33,5 @@ export default function AppsPage() {
         ))}
       </div>
     </>
-  );
+  )
 }

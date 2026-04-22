@@ -1,35 +1,35 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R2 = {
   completion: 2.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const R5 = {
   completion: 5.0,
   partialPerCheck: true,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const R8 = {
   completion: 8.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 const R10 = {
   completion: 10.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 const R15 = {
   completion: 15.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 
 // Key issue reference (new CESS data):
 //   iss-1  PLT-101  Implement OAuth2 PKCE flow        done         proj-1
@@ -400,7 +400,8 @@ export const issueTasks: TaskDefinition[] = [
         predicate: "issue_has_fields",
         id: "iss-6",
         expected: {
-          description: "FIDO2/WebAuthn enrollment with platform and cross-platform authenticators",
+          description:
+            "FIDO2/WebAuthn enrollment with platform and cross-platform authenticators",
           labelIds: ["label-2", "label-6"],
         },
         weight: 1.0,
@@ -450,15 +451,78 @@ export const issueTasks: TaskDefinition[] = [
     title: "Transition Sprint 13 in-progress to done",
     goal: "Transition all in_progress issues in Sprint 13 (cycle-6) to 'done'. In-progress issues in Sprint 13: PLT-102 (iss-2), PLT-103 (iss-3), PLT-107 (iss-7), PLT-112 (iss-12), PLT-118 (iss-18), PLT-202 (iss-40), PLT-204 (iss-42), PLT-205 (iss-43), PLT-211 (iss-49).",
     evalChecks: [
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-2",  expected: "done", weight: 0.12, description: "PLT-102 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-3",  expected: "done", weight: 0.12, description: "PLT-103 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-7",  expected: "done", weight: 0.11, description: "PLT-107 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-12", expected: "done", weight: 0.11, description: "PLT-112 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-18", expected: "done", weight: 0.11, description: "PLT-118 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-40", expected: "done", weight: 0.11, description: "PLT-202 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-42", expected: "done", weight: 0.11, description: "PLT-204 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-43", expected: "done", weight: 0.11, description: "PLT-205 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-49", expected: "done", weight: 0.10, description: "PLT-211 done" },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-2",
+        expected: "done",
+        weight: 0.12,
+        description: "PLT-102 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-3",
+        expected: "done",
+        weight: 0.12,
+        description: "PLT-103 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-7",
+        expected: "done",
+        weight: 0.11,
+        description: "PLT-107 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-12",
+        expected: "done",
+        weight: 0.11,
+        description: "PLT-112 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-18",
+        expected: "done",
+        weight: 0.11,
+        description: "PLT-118 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-40",
+        expected: "done",
+        weight: 0.11,
+        description: "PLT-202 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-42",
+        expected: "done",
+        weight: 0.11,
+        description: "PLT-204 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-43",
+        expected: "done",
+        weight: 0.11,
+        description: "PLT-205 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-49",
+        expected: "done",
+        weight: 0.1,
+        description: "PLT-211 done",
+      },
     ],
     maxSteps: 30,
     rewardProfile: R10,
@@ -474,10 +538,38 @@ export const issueTasks: TaskDefinition[] = [
     title: "Bulk priority for Payment API issues",
     goal: "Set priority to 'urgent' for all Payment API v2 (proj-3) issues that are currently 'in_progress'. In-progress Payment API issues: PLT-202 (iss-40), PLT-204 (iss-42), PLT-205 (iss-43), PLT-211 (iss-49).",
     evalChecks: [
-      { type: "state_predicate", predicate: "issue_has_priority", id: "iss-40", expected: "urgent", weight: 0.25, description: "PLT-202 urgent" },
-      { type: "state_predicate", predicate: "issue_has_priority", id: "iss-42", expected: "urgent", weight: 0.25, description: "PLT-204 urgent" },
-      { type: "state_predicate", predicate: "issue_has_priority", id: "iss-43", expected: "urgent", weight: 0.25, description: "PLT-205 urgent" },
-      { type: "state_predicate", predicate: "issue_has_priority", id: "iss-49", expected: "urgent", weight: 0.25, description: "PLT-211 urgent" },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_priority",
+        id: "iss-40",
+        expected: "urgent",
+        weight: 0.25,
+        description: "PLT-202 urgent",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_priority",
+        id: "iss-42",
+        expected: "urgent",
+        weight: 0.25,
+        description: "PLT-204 urgent",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_priority",
+        id: "iss-43",
+        expected: "urgent",
+        weight: 0.25,
+        description: "PLT-205 urgent",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_priority",
+        id: "iss-49",
+        expected: "urgent",
+        weight: 0.25,
+        description: "PLT-211 urgent",
+      },
     ],
     maxSteps: 25,
     rewardProfile: R10,
@@ -493,9 +585,30 @@ export const issueTasks: TaskDefinition[] = [
     title: "Set estimates for triage backlog",
     goal: "Set estimate to 3 for these three unestimated triage backlog issues: PLT-301 (iss-51), PLT-302 (iss-52), PLT-303 (iss-53).",
     evalChecks: [
-      { type: "state_predicate", predicate: "issue_has_estimate", id: "iss-51", expected: 3, weight: 0.34, description: "PLT-301 est 3" },
-      { type: "state_predicate", predicate: "issue_has_estimate", id: "iss-52", expected: 3, weight: 0.33, description: "PLT-302 est 3" },
-      { type: "state_predicate", predicate: "issue_has_estimate", id: "iss-53", expected: 3, weight: 0.33, description: "PLT-303 est 3" },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_estimate",
+        id: "iss-51",
+        expected: 3,
+        weight: 0.34,
+        description: "PLT-301 est 3",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_estimate",
+        id: "iss-52",
+        expected: 3,
+        weight: 0.33,
+        description: "PLT-302 est 3",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_estimate",
+        id: "iss-53",
+        expected: 3,
+        weight: 0.33,
+        description: "PLT-303 est 3",
+      },
     ],
     maxSteps: 25,
     rewardProfile: R10,
@@ -715,4 +828,4 @@ export const issueTasks: TaskDefinition[] = [
     rewardProfile: R10,
     tags: ["create", "multi-field"],
   },
-];
+]

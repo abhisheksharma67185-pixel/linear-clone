@@ -52,15 +52,17 @@ export default function PurchaseOrdersPage() {
         <Text as="span">{po.supplier}</Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Badge tone={po.status === "Received" ? "success" : "warning"}>
-          {po.status}
-        </Badge>
+        <Badge tone={po.status === "Received" ? "success" : "warning"}>{po.status}</Badge>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" numeric>{po.items}</Text>
+        <Text as="span" numeric>
+          {po.items}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{po.date}</Text>
+        <Text as="span" tone="subdued">
+          {po.date}
+        </Text>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));

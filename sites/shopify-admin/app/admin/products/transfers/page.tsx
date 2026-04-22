@@ -60,7 +60,9 @@ export default function TransfersPage() {
         </Badge>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" numeric>{transfer.items}</Text>
+        <Text as="span" numeric>
+          {transfer.items}
+        </Text>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));

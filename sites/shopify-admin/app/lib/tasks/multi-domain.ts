@@ -222,7 +222,7 @@ export const multiDomainTasks: TaskDefinition[] = [
         type: "state_absent",
         entity: "products",
         id: "10",
-        weight: 0.10,
+        weight: 0.1,
         description: "P10 (already archived) deleted",
       },
       {

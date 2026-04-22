@@ -30,8 +30,12 @@ export default function PersonalProfilePage() {
   const [department, setDepartment] = useState("")
   const [organization] = useState("abhisheksharma67185")
   const [location, setLocation] = useState("")
-  const [timezone, setTimezone] = useState("(GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi")
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
+  const [timezone, setTimezone] = useState(
+    "(GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi"
+  )
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  )
 
   const handleSave = () => {
     if (!fullName.trim()) return
@@ -43,32 +47,39 @@ export default function PersonalProfilePage() {
   }
 
   return (
-    <div className="p-8 max-w-3xl">
-      <h1 className="text-2xl font-semibold mb-2">Profile and visibility</h1>
-      <p className="text-sm text-muted-foreground mb-8">
-        Manage your personal information, and control which information other people see and apps may access.
+    <div className="max-w-3xl p-8">
+      <h1 className="mb-2 text-2xl font-semibold">Profile and visibility</h1>
+      <p className="mb-8 text-sm text-muted-foreground">
+        Manage your personal information, and control which information other
+        people see and apps may access.
       </p>
 
       {/* Profile photo */}
       <section className="mb-10">
-        <h2 className="text-base font-semibold mb-4">Profile photo</h2>
+        <h2 className="mb-4 text-base font-semibold">Profile photo</h2>
         <div className="flex items-center gap-4">
           <Avatar className="size-20">
-            <AvatarFallback className="bg-blue-600 text-2xl font-semibold text-white">AS</AvatarFallback>
+            <AvatarFallback className="bg-blue-600 text-2xl font-semibold text-white">
+              AS
+            </AvatarFallback>
           </Avatar>
           <div>
-            <Button variant="outline" size="sm">Upload a photo</Button>
-            <p className="text-xs text-muted-foreground mt-1">Max file size: 1MB. JPG, GIF, or PNG.</p>
+            <Button variant="outline" size="sm">
+              Upload a photo
+            </Button>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Max file size: 1MB. JPG, GIF, or PNG.
+            </p>
           </div>
         </div>
       </section>
 
       {/* About you */}
       <section className="mb-10">
-        <h2 className="text-base font-semibold mb-4">About you</h2>
+        <h2 className="mb-4 text-base font-semibold">About you</h2>
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium block mb-1">
+            <label className="mb-1 block text-sm font-medium">
               Full name <span className="text-red-500">*</span>
             </label>
             <Input
@@ -79,17 +90,17 @@ export default function PersonalProfilePage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium block mb-1">Public name</label>
-            <Input
-              value={fullName}
-              disabled
-              className="max-w-sm bg-muted"
-            />
-            <p className="text-xs text-muted-foreground mt-1">This name is visible to anyone who can view your content.</p>
+            <label className="mb-1 block text-sm font-medium">
+              Public name
+            </label>
+            <Input value={fullName} disabled className="max-w-sm bg-muted" />
+            <p className="mt-1 text-xs text-muted-foreground">
+              This name is visible to anyone who can view your content.
+            </p>
           </div>
 
           <div>
-            <label className="text-sm font-medium block mb-1">Job title</label>
+            <label className="mb-1 block text-sm font-medium">Job title</label>
             <Input
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
@@ -99,7 +110,7 @@ export default function PersonalProfilePage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium block mb-1">Department</label>
+            <label className="mb-1 block text-sm font-medium">Department</label>
             <Input
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
@@ -109,7 +120,9 @@ export default function PersonalProfilePage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium block mb-1">Organization</label>
+            <label className="mb-1 block text-sm font-medium">
+              Organization
+            </label>
             <Input
               value={organization}
               disabled
@@ -118,7 +131,7 @@ export default function PersonalProfilePage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium block mb-1">Based in</label>
+            <label className="mb-1 block text-sm font-medium">Based in</label>
             <Input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
@@ -128,14 +141,16 @@ export default function PersonalProfilePage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium block mb-1">Time zone</label>
+            <label className="mb-1 block text-sm font-medium">Time zone</label>
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
               className="w-full max-w-sm rounded-md border bg-background px-3 py-2 text-sm"
             >
               {timezones.map((tz) => (
-                <option key={tz} value={tz}>{tz}</option>
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
               ))}
             </select>
           </div>
@@ -144,26 +159,29 @@ export default function PersonalProfilePage() {
 
       {/* Contact */}
       <section className="mb-10">
-        <h2 className="text-base font-semibold mb-4">Contact</h2>
+        <h2 className="mb-4 text-base font-semibold">Contact</h2>
         <div>
-          <label className="text-sm font-medium block mb-1">Email address</label>
-          <Input
-            value={email}
-            disabled
-            className="max-w-sm bg-muted"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            This is the email address associated with your Atlassian account. To change it, go to Account settings.
+          <label className="mb-1 block text-sm font-medium">
+            Email address
+          </label>
+          <Input value={email} disabled className="max-w-sm bg-muted" />
+          <p className="mt-1 text-xs text-muted-foreground">
+            This is the email address associated with your Atlassian account. To
+            change it, go to Account settings.
           </p>
         </div>
       </section>
 
       <Button
-        className="bg-blue-600 hover:bg-blue-700 text-white"
+        className="bg-blue-600 text-white hover:bg-blue-700"
         onClick={handleSave}
         disabled={!fullName.trim() || saveStatus === "saving"}
       >
-        {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved!" : "Save changes"}
+        {saveStatus === "saving"
+          ? "Saving..."
+          : saveStatus === "saved"
+            ? "Saved!"
+            : "Save changes"}
       </Button>
     </div>
   )

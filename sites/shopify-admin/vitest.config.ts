@@ -5,10 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@/": `${path.resolve(__dirname, ".")}/`,
-      "@thetabench/core": path.resolve(
-        __dirname,
-        "../../packages/thetabench-core/src/index.ts",
-      ),
+      "@thetabench/core": path.resolve(__dirname, "../../packages/thetabench-core/src/index.ts"),
     },
   },
   test: {

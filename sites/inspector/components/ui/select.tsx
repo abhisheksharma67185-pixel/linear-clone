@@ -33,7 +33,7 @@ function Select({
 }
 
 function SelectValue(
-  props: React.ComponentProps<typeof SelectPrimitive.Value>,
+  props: React.ComponentProps<typeof SelectPrimitive.Value>
 ) {
   return <SelectPrimitive.Value {...props} />
 }
@@ -47,10 +47,10 @@ function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        "border-input data-[active=true]:bg-accent data-[popup-open]:bg-accent flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50",
-        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-        "[&>span]:line-clamp-1 dark:bg-input/30 dark:hover:bg-input/50",
-        className,
+        "flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[active=true]:bg-accent data-[popup-open]:bg-accent",
+        "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        "dark:bg-input/30 dark:hover:bg-input/50 [&>span]:line-clamp-1",
+        className
       )}
       {...props}
     >
@@ -73,11 +73,11 @@ function SelectContent({
         <SelectPrimitive.Popup
           data-slot="select-content"
           className={cn(
-            "bg-popover text-popover-foreground relative z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border shadow-md outline-none",
+            "relative z-50 min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md outline-none",
             "max-h-[min(var(--available-height),24rem)]",
             "data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
-            "data-[side=bottom]:translate-y-0 data-[side=top]:translate-y-0 transition-opacity duration-150",
-            className,
+            "transition-opacity duration-150 data-[side=bottom]:translate-y-0 data-[side=top]:translate-y-0",
+            className
           )}
           {...props}
         >
@@ -99,8 +99,8 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm select-none outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        className,
+        "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
+        className
       )}
       {...props}
     >
@@ -121,7 +121,7 @@ function SelectSeparator({
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      className={cn("bg-border -mx-1 my-1 h-px", className)}
+      className={cn("-mx-1 my-1 h-px bg-border", className)}
       {...props}
     />
   )

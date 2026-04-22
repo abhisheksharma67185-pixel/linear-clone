@@ -1,25 +1,35 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 type Workspace = {
-  name: string;
-  urlKey: string;
-  domain: string;
-  plan: string;
-  createdAt: string;
-};
+  name: string
+  urlKey: string
+  domain: string
+  plan: string
+  createdAt: string
+}
 
 export default function AdminPage() {
-  const [workspace, setWorkspace] = useState<Workspace | null>(null);
-  const [counts, setCounts] = useState<{ channels: number; users: number; messages: number }>({
+  const [workspace, setWorkspace] = useState<Workspace | null>(null)
+  const [counts, setCounts] = useState<{
+    channels: number
+    users: number
+    messages: number
+  }>({
     channels: 0,
     users: 0,
     messages: 0,
-  });
+  })
 
   useEffect(() => {
     Promise.all([
@@ -28,14 +38,14 @@ export default function AdminPage() {
       fetch("/api/data/users").then((r) => r.json()),
       fetch("/api/data/messages").then((r) => r.json()),
     ]).then(([ws, chs, us, msgs]) => {
-      setWorkspace(ws);
+      setWorkspace(ws)
       setCounts({
         channels: chs.length,
         users: us.length,
         messages: msgs.length,
-      });
-    });
-  }, []);
+      })
+    })
+  }, [])
 
   return (
     <>
@@ -66,25 +76,25 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <div className="text-xs font-semibold uppercase text-muted-foreground">
+                <div className="text-xs font-semibold text-muted-foreground uppercase">
                   Name
                 </div>
                 <div>{workspace?.name}</div>
               </div>
               <div>
-                <div className="text-xs font-semibold uppercase text-muted-foreground">
+                <div className="text-xs font-semibold text-muted-foreground uppercase">
                   URL key
                 </div>
                 <div>{workspace?.urlKey}</div>
               </div>
               <div>
-                <div className="text-xs font-semibold uppercase text-muted-foreground">
+                <div className="text-xs font-semibold text-muted-foreground uppercase">
                   Plan
                 </div>
                 <div>{workspace?.plan}</div>
               </div>
               <div>
-                <div className="text-xs font-semibold uppercase text-muted-foreground">
+                <div className="text-xs font-semibold text-muted-foreground uppercase">
                   Created
                 </div>
                 <div>
@@ -98,5 +108,5 @@ export default function AdminPage() {
         </div>
       </ScrollArea>
     </>
-  );
+  )
 }

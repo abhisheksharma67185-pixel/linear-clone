@@ -1,24 +1,24 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { LayoutList } from "lucide-react";
+import { useEffect, useState } from "react"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { LayoutList } from "lucide-react"
 
 type SlackList = {
-  id: string;
-  name: string;
-  channelId: string | null;
-  items: unknown[];
-};
+  id: string
+  name: string
+  channelId: string | null
+  items: unknown[]
+}
 
 export default function ListsPage() {
-  const [lists, setLists] = useState<SlackList[]>([]);
+  const [lists, setLists] = useState<SlackList[]>([])
   useEffect(() => {
     fetch("/api/data/lists")
       .then((r) => r.json())
-      .then(setLists);
-  }, []);
+      .then(setLists)
+  }, [])
 
   return (
     <>
@@ -42,5 +42,5 @@ export default function ListsPage() {
         </div>
       </ScrollArea>
     </>
-  );
+  )
 }

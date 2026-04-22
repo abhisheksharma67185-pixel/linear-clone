@@ -50,12 +50,12 @@ export default function CatalogsPage() {
         <Text as="span">{catalog.market}</Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" numeric>{catalog.products}</Text>
+        <Text as="span" numeric>
+          {catalog.products}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Badge tone={catalog.status === "Active" ? "success" : undefined}>
-          {catalog.status}
-        </Badge>
+        <Badge tone={catalog.status === "Active" ? "success" : undefined}>{catalog.status}</Badge>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));

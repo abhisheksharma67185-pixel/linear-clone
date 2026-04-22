@@ -21,7 +21,7 @@ async function forward(request: NextRequest, ctx: Ctx) {
       {
         error: `Unknown site '${site}'. Pass x-inspector-site-url header or add a default entry.`,
       },
-      { status: 404 },
+      { status: 404 }
     )
   }
 
@@ -61,7 +61,7 @@ async function forward(request: NextRequest, ctx: Ctx) {
         error: `Upstream fetch failed: ${message}`,
         target: targetUrl,
       },
-      { status: 502 },
+      { status: 502 }
     )
   }
 

@@ -36,7 +36,9 @@ export function resetRLState(): void {
 // ---------------------------------------------------------------------------
 
 function getContextData(): Record<string, unknown> {
-  const match = _rlState.currentPage.match(/^\/admin\/(products|orders|customers|discounts)\/(\d+)$/);
+  const match = _rlState.currentPage.match(
+    /^\/admin\/(products|orders|customers|discounts)\/(\d+)$/,
+  );
   if (match) {
     const [, entity, id] = match;
     switch (entity) {
@@ -56,7 +58,10 @@ function getContextData(): Record<string, unknown> {
 function getAvailableActions(): string[] {
   const base = ["navigate", "search", "select"];
 
-  if (_rlState.currentPage === "/admin/products" || _rlState.currentPage === "/admin/products/new") {
+  if (
+    _rlState.currentPage === "/admin/products" ||
+    _rlState.currentPage === "/admin/products/new"
+  ) {
     return [...base, "create_product"];
   }
   if (_rlState.currentPage.match(/^\/admin\/products\/\d+$/)) {
@@ -71,13 +76,19 @@ function getAvailableActions(): string[] {
     if (order?.paymentStatus === "paid") actions.push("refund_order");
     return actions;
   }
-  if (_rlState.currentPage === "/admin/customers" || _rlState.currentPage === "/admin/customers/new") {
+  if (
+    _rlState.currentPage === "/admin/customers" ||
+    _rlState.currentPage === "/admin/customers/new"
+  ) {
     return [...base, "create_customer"];
   }
   if (_rlState.currentPage.match(/^\/admin\/customers\/\d+$/)) {
     return [...base, "update_customer"];
   }
-  if (_rlState.currentPage === "/admin/discounts" || _rlState.currentPage === "/admin/discounts/new") {
+  if (
+    _rlState.currentPage === "/admin/discounts" ||
+    _rlState.currentPage === "/admin/discounts/new"
+  ) {
     return [...base, "create_discount"];
   }
   if (_rlState.currentPage.match(/^\/admin\/discounts\/\d+$/)) {

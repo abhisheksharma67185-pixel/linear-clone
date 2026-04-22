@@ -8,37 +8,40 @@
 // ---------------------------------------------------------------------------
 
 export interface MutationDefinition {
-  name: string;
-  description: string;
-  params: Record<string, string>;
+  name: string
+  description: string
+  params: Record<string, string>
 }
 
 export interface MutationResult {
-  success: boolean;
-  error?: string;
-  data?: unknown;
+  success: boolean
+  error?: string
+  data?: unknown
 }
 
 export interface ConfigSchema {
-  universal: Record<string, { type: string; default: unknown; description: string }>;
-  site: Record<string, { type: string; default: unknown; description: string }>;
+  universal: Record<
+    string,
+    { type: string; default: unknown; description: string }
+  >
+  site: Record<string, { type: string; default: unknown; description: string }>
 }
 
 export interface SitePlugin {
-  id: string;
-  name: string;
-  category: string;
-  version: string;
+  id: string
+  name: string
+  category: string
+  version: string
 
-  getState(): Record<string, unknown>;
-  setState(state: Record<string, unknown>): void;
-  reset(seed?: number): void;
+  getState(): Record<string, unknown>
+  setState(state: Record<string, unknown>): void
+  reset(seed?: number): void
 
-  getMutations(): MutationDefinition[];
-  executeMutation(name: string, args: unknown[]): MutationResult;
+  getMutations(): MutationDefinition[]
+  executeMutation(name: string, args: unknown[]): MutationResult
 
-  getConfigSchema(): ConfigSchema;
-  applyConfig(config: Record<string, unknown>): void;
+  getConfigSchema(): ConfigSchema
+  applyConfig(config: Record<string, unknown>): void
 }
 
 // ---------------------------------------------------------------------------
@@ -46,24 +49,24 @@ export interface SitePlugin {
 // ---------------------------------------------------------------------------
 
 export interface FieldDiff {
-  path: string;
-  entity: string;
-  id?: string;
-  field: string;
-  before: unknown;
-  after: unknown;
+  path: string
+  entity: string
+  id?: string
+  field: string
+  before: unknown
+  after: unknown
 }
 
 export interface EntityRef {
-  entity: string;
-  id: string;
-  item: Record<string, unknown>;
+  entity: string
+  id: string
+  item: Record<string, unknown>
 }
 
 export interface StateDiff {
-  added: EntityRef[];
-  removed: { entity: string; id: string }[];
-  modified: FieldDiff[];
+  added: EntityRef[]
+  removed: { entity: string; id: string }[]
+  modified: FieldDiff[]
 }
 
 // ---------------------------------------------------------------------------
@@ -71,19 +74,19 @@ export interface StateDiff {
 // ---------------------------------------------------------------------------
 
 export interface EpisodeConfig {
-  taskId: string;
-  seed?: number;
-  mode: "rest" | "browser";
-  configOverrides?: Record<string, unknown>;
+  taskId: string
+  seed?: number
+  mode: "rest" | "browser"
+  configOverrides?: Record<string, unknown>
 }
 
 export interface ActionLogEntry {
-  step: number;
-  timestamp: string;
-  action: string;
-  payload: Record<string, unknown>;
-  reward: number;
-  success: boolean;
+  step: number
+  timestamp: string
+  action: string
+  payload: Record<string, unknown>
+  reward: number
+  success: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -91,23 +94,23 @@ export interface ActionLogEntry {
 // ---------------------------------------------------------------------------
 
 export interface CheckResult {
-  passed: boolean;
-  actual?: unknown;
-  message: string;
-  weight?: number;
+  passed: boolean
+  actual?: unknown
+  message: string
+  weight?: number
 }
 
 export interface EvalResult {
-  score: number;
-  checks: CheckResult[];
-  passed: number;
-  total: number;
+  score: number
+  checks: CheckResult[]
+  passed: number
+  total: number
 }
 
 export interface JudgeResult {
-  passed: boolean;
-  reasoning: string;
-  matchType: "exact" | "variation" | "semantic" | "failed";
+  passed: boolean
+  reasoning: string
+  matchType: "exact" | "variation" | "semantic" | "failed"
 }
 
 // ---------------------------------------------------------------------------
@@ -115,20 +118,23 @@ export interface JudgeResult {
 // ---------------------------------------------------------------------------
 
 export interface LeaderboardEntry {
-  id: string;
-  agentName: string;
-  modelName: string;
-  mode: "rest" | "browser";
-  submittedAt: string;
+  id: string
+  agentName: string
+  modelName: string
+  mode: "rest" | "browser"
+  submittedAt: string
   results: {
-    totalTasks: number;
-    tasksPassed: number;
-    avgScore: number;
-    avgSteps: number;
-    avgReward: number;
-    highestStage: number;
-    perDomain: Record<string, { attempted: number; passed: number; avgScore: number }>;
-  };
+    totalTasks: number
+    tasksPassed: number
+    avgScore: number
+    avgSteps: number
+    avgReward: number
+    highestStage: number
+    perDomain: Record<
+      string,
+      { attempted: number; passed: number; avgScore: number }
+    >
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -136,10 +142,10 @@ export interface LeaderboardEntry {
 // ---------------------------------------------------------------------------
 
 export interface CurriculumStage {
-  stage: number;
-  title: string;
-  description: string;
-  domains: string[];
-  difficultyRange: [string, string];
-  taskIds: string[];
+  stage: number
+  title: string
+  description: string
+  domains: string[]
+  difficultyRange: [string, string]
+  taskIds: string[]
 }

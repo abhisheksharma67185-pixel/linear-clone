@@ -1,25 +1,35 @@
-"use client";
+"use client"
 
-import { Hash, Lock, Star, Headphones, Volume2, Bell, Users, Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  Hash,
+  Lock,
+  Star,
+  Headphones,
+  Volume2,
+  Bell,
+  Users,
+  Info,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/ui/tooltip"
 
 type Channel = {
-  id: string;
-  name: string;
-  topic: string;
-  type: "public" | "private";
-  isArchived: boolean;
-  isShared: boolean;
-  memberIds: string[];
-};
+  id: string
+  name: string
+  topic: string
+  type: "public" | "private"
+  isArchived: boolean
+  isShared: boolean
+  memberIds: string[]
+}
 
 export function ChannelHeader({ channel }: { channel: Channel }) {
-  const Icon = channel.type === "private" ? Lock : channel.isShared ? Volume2 : Hash;
+  const Icon =
+    channel.type === "private" ? Lock : channel.isShared ? Volume2 : Hash
   return (
     <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4">
       <div className="flex min-w-0 items-center gap-2">
@@ -50,7 +60,7 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
           </span>
         )}
         {channel.isArchived ? (
-          <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
+          <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground uppercase">
             Archived
           </span>
         ) : null}
@@ -79,7 +89,11 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
         <Tooltip>
           <TooltipTrigger
             render={
-              <Button variant="ghost" size="icon" className="size-8 gap-1 px-2 w-auto">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 w-auto gap-1 px-2"
+              >
                 <Users className="size-4" />
                 <span className="text-xs font-semibold">
                   {channel.memberIds.length}
@@ -101,5 +115,5 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
         </Tooltip>
       </div>
     </header>
-  );
+  )
 }

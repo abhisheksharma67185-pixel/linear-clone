@@ -27,11 +27,11 @@ export type TaskDomain =
   | "reactions"
   | "huddles"
   | "canvases"
-  | "lists";
+  | "lists"
 
-export type TaskDifficulty = "easy" | "medium" | "hard" | "expert";
+export type TaskDifficulty = "easy" | "medium" | "hard" | "expert"
 
-export type TaskType = "action" | "retrieval" | "action_retrieval" | "no_action";
+export type TaskType = "action" | "retrieval" | "action_retrieval" | "no_action"
 
 // ---------------------------------------------------------------------------
 // Evaluation checks
@@ -43,17 +43,17 @@ export type EvalCheckType =
   | "state_absent"
   | "state_count"
   | "state_predicate"
-  | "retrieval";
+  | "retrieval"
 
 export interface EvalCheck {
-  type: EvalCheckType;
-  entity?: string;
-  id?: string;
-  field?: string;
-  expected?: unknown;
-  predicate?: string;
-  weight: number;
-  description: string;
+  type: EvalCheckType
+  entity?: string
+  id?: string
+  field?: string
+  expected?: unknown
+  predicate?: string
+  weight: number
+  description: string
 }
 
 // ---------------------------------------------------------------------------
@@ -61,10 +61,10 @@ export interface EvalCheck {
 // ---------------------------------------------------------------------------
 
 export interface RetrievalRubric {
-  question: string;
-  groundTruth: string;
-  acceptableVariations: string[];
-  rubric: string;
+  question: string
+  groundTruth: string
+  acceptableVariations: string[]
+  rubric: string
 }
 
 // ---------------------------------------------------------------------------
@@ -72,10 +72,10 @@ export interface RetrievalRubric {
 // ---------------------------------------------------------------------------
 
 export interface RewardProfile {
-  completion: number;
-  partialPerCheck: boolean;
-  stepPenalty: number;
-  invalidActionPenalty: number;
+  completion: number
+  partialPerCheck: boolean
+  stepPenalty: number
+  invalidActionPenalty: number
 }
 
 // ---------------------------------------------------------------------------
@@ -83,8 +83,8 @@ export interface RewardProfile {
 // ---------------------------------------------------------------------------
 
 export interface SetupAction {
-  mutation: string;
-  args: unknown[];
+  mutation: string
+  args: unknown[]
 }
 
 // ---------------------------------------------------------------------------
@@ -92,28 +92,28 @@ export interface SetupAction {
 // ---------------------------------------------------------------------------
 
 export interface TaskDefinition {
-  id: string;
-  site: string;
-  domain: TaskDomain;
-  type: TaskType;
-  difficulty: TaskDifficulty;
-  curriculumStage: number;
+  id: string
+  site: string
+  domain: TaskDomain
+  type: TaskType
+  difficulty: TaskDifficulty
+  curriculumStage: number
 
-  title: string;
-  goal: string;
-  hint?: string;
+  title: string
+  goal: string
+  hint?: string
 
-  requires?: string[];
-  setup?: SetupAction[];
-  configOverrides?: Record<string, unknown>;
+  requires?: string[]
+  setup?: SetupAction[]
+  configOverrides?: Record<string, unknown>
 
-  retrievalRubric?: RetrievalRubric;
-  impossibilityReason?: string;
-  evalChecks: EvalCheck[];
+  retrievalRubric?: RetrievalRubric
+  impossibilityReason?: string
+  evalChecks: EvalCheck[]
 
-  maxSteps: number;
-  timeLimitSeconds?: number;
+  maxSteps: number
+  timeLimitSeconds?: number
 
-  rewardProfile: RewardProfile;
-  tags: string[];
+  rewardProfile: RewardProfile
+  tags: string[]
 }

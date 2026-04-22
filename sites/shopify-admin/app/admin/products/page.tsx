@@ -122,12 +122,16 @@ function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) 
             </DropZone>
             {csvFile && (
               <Banner tone="info">
-                <Text as="span" variant="bodyMd">Selected file: {csvFile.name}</Text>
+                <Text as="span" variant="bodyMd">
+                  Selected file: {csvFile.name}
+                </Text>
               </Banner>
             )}
             {csvSuccess && (
               <Banner tone="success">
-                <Text as="span" variant="bodyMd">CSV import started</Text>
+                <Text as="span" variant="bodyMd">
+                  CSV import started
+                </Text>
               </Banner>
             )}
           </BlockStack>
@@ -259,13 +263,18 @@ export default function ProductsPage() {
 
   useEffect(() => {
     fetch("/api/data/products")
-      .then((res) => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
       .then((data) => {
         setProducts(data);
         setFilteredProducts(data);
         setLoading(false);
       })
-      .catch(() => { setLoading(false); });
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
 
   const resourceName = { singular: "product", plural: "products" };
@@ -335,9 +344,16 @@ export default function ProductsPage() {
     },
   ];
 
-  const appliedFilters = statusFilter.length > 0
-    ? [{ key: "status", label: `Status: ${statusFilter.join(", ")}`, onRemove: () => handleStatusFilterChange([]) }]
-    : [];
+  const appliedFilters =
+    statusFilter.length > 0
+      ? [
+          {
+            key: "status",
+            label: `Status: ${statusFilter.join(", ")}`,
+            onRemove: () => handleStatusFilterChange([]),
+          },
+        ]
+      : [];
 
   if (loading) {
     return (

@@ -1,8 +1,23 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
-const R2 = { completion: 2.0, partialPerCheck: false, stepPenalty: -0.01, invalidActionPenalty: -0.1 };
-const R5 = { completion: 5.0, partialPerCheck: true, stepPenalty: -0.01, invalidActionPenalty: -0.1 };
-const R8 = { completion: 8.0, partialPerCheck: true, stepPenalty: -0.02, invalidActionPenalty: -0.2 };
+const R2 = {
+  completion: 2.0,
+  partialPerCheck: false,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+}
+const R5 = {
+  completion: 5.0,
+  partialPerCheck: true,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+}
+const R8 = {
+  completion: 8.0,
+  partialPerCheck: true,
+  stepPenalty: -0.02,
+  invalidActionPenalty: -0.2,
+}
 
 export const messageTasks: TaskDefinition[] = [
   {
@@ -18,7 +33,11 @@ export const messageTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "message_in_channel",
-        expected: { channelId: "ch-1", text: "Good morning, team!", authorId: "usr-1" },
+        expected: {
+          channelId: "ch-1",
+          text: "Good morning, team!",
+          authorId: "usr-1",
+        },
         weight: 1.0,
         description: "Message exists in #general from usr-1",
       },
@@ -40,7 +59,11 @@ export const messageTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "message_in_channel",
-        expected: { channelId: "ch-2", text: "Happy Friday!", authorId: "usr-1" },
+        expected: {
+          channelId: "ch-2",
+          text: "Happy Friday!",
+          authorId: "usr-1",
+        },
         weight: 1.0,
         description: "Message exists in #random",
       },
@@ -62,7 +85,11 @@ export const messageTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "message_in_channel",
-        expected: { channelId: "ch-4", text: "RFC review at 3pm", authorId: "usr-1" },
+        expected: {
+          channelId: "ch-4",
+          text: "RFC review at 3pm",
+          authorId: "usr-1",
+        },
         weight: 1.0,
         description: "RFC message in #engineering",
       },
@@ -260,7 +287,11 @@ export const messageTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "message_in_channel",
-        expected: { channelId: "ch-4", text: "export const RATE_LIMIT = 100;", authorId: "usr-1" },
+        expected: {
+          channelId: "ch-4",
+          text: "export const RATE_LIMIT = 100;",
+          authorId: "usr-1",
+        },
         weight: 1.0,
         description: "Code message in #engineering",
       },
@@ -404,7 +435,10 @@ export const messageTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "message_in_channel",
-        expected: { channelId: "ch-6", text: "Team, we shipped v2.3.0 :rocket: congrats everyone!" },
+        expected: {
+          channelId: "ch-6",
+          text: "Team, we shipped v2.3.0 :rocket: congrats everyone!",
+        },
         weight: 1.0,
         description: "Forwarded message exists in #product",
       },
@@ -486,7 +520,11 @@ export const messageTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "message_in_channel",
-        expected: { channelId: "ch-1", text: "All caught up!", authorId: "usr-1" },
+        expected: {
+          channelId: "ch-1",
+          text: "All caught up!",
+          authorId: "usr-1",
+        },
         weight: 0.5,
         description: "Message posted",
       },
@@ -508,7 +546,11 @@ export const messageTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "message_in_channel",
-        expected: { channelId: "ch-7", text: "Standup in 5 minutes! @channel", authorId: "usr-1" },
+        expected: {
+          channelId: "ch-7",
+          text: "Standup in 5 minutes! @channel",
+          authorId: "usr-1",
+        },
         weight: 1.0,
         description: "Channel-wide announcement posted",
       },
@@ -540,4 +582,4 @@ export const messageTasks: TaskDefinition[] = [
     rewardProfile: R8,
     tags: ["thread", "incidents"],
   },
-];
+]

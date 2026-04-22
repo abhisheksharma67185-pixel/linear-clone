@@ -9,7 +9,10 @@ export default function InventoryPage() {
   return (
     <Page title="Inventory">
       <Card>
-        <EmptyState heading="Keep track of your inventory" image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png">
+        <EmptyState
+          heading="Keep track of your inventory"
+          image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+        >
           <Text as="p" variant="bodyMd" tone="subdued">
             When you enable inventory tracking on your products, you can view and adjust their
             inventory counts here.

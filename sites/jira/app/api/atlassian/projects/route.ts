@@ -7,7 +7,11 @@ export async function GET() {
 
   if (!baseUrl || !email || !token) {
     return NextResponse.json(
-      { error: "Missing ATLASSIAN_BASE_URL, ATLASSIAN_EMAIL, or ATLASSIAN_API_TOKEN env vars", values: [] },
+      {
+        error:
+          "Missing ATLASSIAN_BASE_URL, ATLASSIAN_EMAIL, or ATLASSIAN_API_TOKEN env vars",
+        values: [],
+      },
       { status: 503 }
     )
   }
@@ -26,12 +30,18 @@ export async function GET() {
 
     if (!res.ok) {
       const text = await res.text()
-      return NextResponse.json({ error: `Atlassian API error ${res.status}: ${text}`, values: [] }, { status: res.status })
+      return NextResponse.json(
+        { error: `Atlassian API error ${res.status}: ${text}`, values: [] },
+        { status: res.status }
+      )
     }
 
     const data = await res.json()
     return NextResponse.json(data)
   } catch (err) {
-    return NextResponse.json({ error: String(err), values: [] }, { status: 500 })
+    return NextResponse.json(
+      { error: String(err), values: [] },
+      { status: 500 }
+    )
   }
 }

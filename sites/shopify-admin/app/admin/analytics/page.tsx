@@ -15,14 +15,7 @@ import {
   DatePicker,
 } from "@shopify/polaris";
 import { CalendarIcon, MoneyFilledIcon } from "@shopify/polaris-icons";
-import {
-  AreaChart,
-  Area,
-  LineChart,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { AreaChart, Area, LineChart, Line, ResponsiveContainer, Tooltip } from "recharts";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Range } from "@shopify/polaris";
@@ -108,7 +101,8 @@ const RANGES: RangeItem[] = [
   { label: "Today", value: "today" },
   { label: "Yesterday", value: "yesterday" },
   {
-    label: "Last", value: "last",
+    label: "Last",
+    value: "last",
     children: [
       { label: "Last 7 days", value: "last-7" },
       { label: "Last 30 days", value: "last-30" },
@@ -117,7 +111,8 @@ const RANGES: RangeItem[] = [
     ],
   },
   {
-    label: "Period to date", value: "period-to-date",
+    label: "Period to date",
+    value: "period-to-date",
     children: [
       { label: "Week to date", value: "week-to-date" },
       { label: "Month to date", value: "month-to-date" },
@@ -126,7 +121,8 @@ const RANGES: RangeItem[] = [
     ],
   },
   {
-    label: "Black Friday Cyber Monday", value: "bfcm",
+    label: "Black Friday Cyber Monday",
+    value: "bfcm",
     children: [
       { label: `This year (${_thisYear})`, value: "bfcm-this" },
       { label: `Last year (${_thisYear - 1})`, value: "bfcm-last" },
@@ -134,7 +130,8 @@ const RANGES: RangeItem[] = [
     ],
   },
   {
-    label: "Quarters", value: "quarters",
+    label: "Quarters",
+    value: "quarters",
     children: [
       { label: "This quarter", value: "this-quarter" },
       { label: "Last quarter", value: "last-quarter" },
@@ -171,23 +168,58 @@ const COMPARISONS = [
   { label: "Custom", value: "custom" },
 ];
 
-
 const SPARK_DATA = [
-  { h: 0, v: 120 }, { h: 1, v: 95 }, { h: 2, v: 80 }, { h: 3, v: 70 },
-  { h: 4, v: 85 }, { h: 5, v: 110 }, { h: 6, v: 160 }, { h: 7, v: 230 },
-  { h: 8, v: 310 }, { h: 9, v: 420 }, { h: 10, v: 510 }, { h: 11, v: 580 },
-  { h: 12, v: 620 }, { h: 13, v: 590 }, { h: 14, v: 560 }, { h: 15, v: 610 },
-  { h: 16, v: 670 }, { h: 17, v: 720 }, { h: 18, v: 690 }, { h: 19, v: 640 },
-  { h: 20, v: 580 }, { h: 21, v: 490 }, { h: 22, v: 380 }, { h: 23, v: 250 },
+  { h: 0, v: 120 },
+  { h: 1, v: 95 },
+  { h: 2, v: 80 },
+  { h: 3, v: 70 },
+  { h: 4, v: 85 },
+  { h: 5, v: 110 },
+  { h: 6, v: 160 },
+  { h: 7, v: 230 },
+  { h: 8, v: 310 },
+  { h: 9, v: 420 },
+  { h: 10, v: 510 },
+  { h: 11, v: 580 },
+  { h: 12, v: 620 },
+  { h: 13, v: 590 },
+  { h: 14, v: 560 },
+  { h: 15, v: 610 },
+  { h: 16, v: 670 },
+  { h: 17, v: 720 },
+  { h: 18, v: 690 },
+  { h: 19, v: 640 },
+  { h: 20, v: 580 },
+  { h: 21, v: 490 },
+  { h: 22, v: 380 },
+  { h: 23, v: 250 },
 ];
 
 const COMPARE_SPARK_DATA = [
-  { h: 0, c: 90 }, { h: 1, c: 75 }, { h: 2, c: 60 }, { h: 3, c: 55 },
-  { h: 4, c: 65 }, { h: 5, c: 88 }, { h: 6, c: 130 }, { h: 7, c: 190 },
-  { h: 8, c: 260 }, { h: 9, c: 370 }, { h: 10, c: 450 }, { h: 11, c: 510 },
-  { h: 12, c: 540 }, { h: 13, c: 520 }, { h: 14, c: 495 }, { h: 15, c: 540 },
-  { h: 16, c: 600 }, { h: 17, c: 640 }, { h: 18, c: 610 }, { h: 19, c: 570 },
-  { h: 20, c: 510 }, { h: 21, c: 420 }, { h: 22, c: 320 }, { h: 23, c: 210 },
+  { h: 0, c: 90 },
+  { h: 1, c: 75 },
+  { h: 2, c: 60 },
+  { h: 3, c: 55 },
+  { h: 4, c: 65 },
+  { h: 5, c: 88 },
+  { h: 6, c: 130 },
+  { h: 7, c: 190 },
+  { h: 8, c: 260 },
+  { h: 9, c: 370 },
+  { h: 10, c: 450 },
+  { h: 11, c: 510 },
+  { h: 12, c: 540 },
+  { h: 13, c: 520 },
+  { h: 14, c: 495 },
+  { h: 15, c: 540 },
+  { h: 16, c: 600 },
+  { h: 17, c: 640 },
+  { h: 18, c: 610 },
+  { h: 19, c: 570 },
+  { h: 20, c: 510 },
+  { h: 21, c: 420 },
+  { h: 22, c: 320 },
+  { h: 23, c: 210 },
 ];
 
 const MERGED_DATA = SPARK_DATA.map((d, i) => ({ ...d, c: COMPARE_SPARK_DATA[i].c }));
@@ -252,7 +284,9 @@ function ChartCard({
   compDateLabel?: string;
 }) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const data = useMemo(() => MERGED_DATA, []);
 
   return (
@@ -279,9 +313,22 @@ function ChartCard({
                   {chartType === "line" ? (
                     <LineChart data={data}>
                       <Tooltip />
-                      <Line type="monotone" dataKey="v" stroke="#2C6ECB" strokeWidth={2} dot={false} />
+                      <Line
+                        type="monotone"
+                        dataKey="v"
+                        stroke="#2C6ECB"
+                        strokeWidth={2}
+                        dot={false}
+                      />
                       {showComparison && (
-                        <Line type="monotone" dataKey="c" stroke="#94A3B8" strokeWidth={2} dot={false} strokeDasharray="4 2" />
+                        <Line
+                          type="monotone"
+                          dataKey="c"
+                          stroke="#94A3B8"
+                          strokeWidth={2}
+                          dot={false}
+                          strokeDasharray="4 2"
+                        />
                       )}
                     </LineChart>
                   ) : (
@@ -293,9 +340,25 @@ function ChartCard({
                         </linearGradient>
                       </defs>
                       <Tooltip />
-                      <Area type="monotone" dataKey="v" stroke="#2C6ECB" fill="url(#cg)" fillOpacity={0.1} strokeWidth={2} dot={false} />
+                      <Area
+                        type="monotone"
+                        dataKey="v"
+                        stroke="#2C6ECB"
+                        fill="url(#cg)"
+                        fillOpacity={0.1}
+                        strokeWidth={2}
+                        dot={false}
+                      />
                       {showComparison && (
-                        <Area type="monotone" dataKey="c" stroke="#94A3B8" fill="none" strokeWidth={2} dot={false} strokeDasharray="4 2" />
+                        <Area
+                          type="monotone"
+                          dataKey="c"
+                          stroke="#94A3B8"
+                          fill="none"
+                          strokeWidth={2}
+                          dot={false}
+                          strokeDasharray="4 2"
+                        />
                       )}
                     </AreaChart>
                   )}
@@ -304,12 +367,46 @@ function ChartCard({
             </div>
             {showComparison && mainDateLabel && compDateLabel && (
               <div style={{ display: "flex", gap: 16, paddingTop: 4 }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#6D7175" }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#2C6ECB", display: "inline-block", flexShrink: 0 }} />
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 12,
+                    color: "#6D7175",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "#2C6ECB",
+                      display: "inline-block",
+                      flexShrink: 0,
+                    }}
+                  />
                   {mainDateLabel}
                 </span>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#6D7175" }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#94A3B8", display: "inline-block", flexShrink: 0 }} />
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 12,
+                    color: "#6D7175",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "#94A3B8",
+                      display: "inline-block",
+                      flexShrink: 0,
+                    }}
+                  />
                   {compDateLabel}
                 </span>
               </div>
@@ -481,7 +578,9 @@ export default function AnalyticsPage() {
   const rangeDropdownRef = useRef<HTMLDivElement>(null);
   const [rangePos, setRangePos] = useState({ top: 0, left: 0 });
   const [pageMounted, setPageMounted] = useState(false);
-  useEffect(() => { setPageMounted(true); }, []);
+  useEffect(() => {
+    setPageMounted(true);
+  }, []);
 
   const today = new Date();
   // Fix 2: left calendar = previous month, right = current month
@@ -497,10 +596,7 @@ export default function AnalyticsPage() {
   const [dateOpen, setDateOpen] = useState(false);
   const [selectedComparison, setSelectedComparison] = useState("yesterday");
 
-  const fmt = useCallback(
-    (amount: number) => formatCurrency(amount, currency),
-    [currency],
-  );
+  const fmt = useCallback((amount: number) => formatCurrency(amount, currency), [currency]);
 
   const rangeLabel = getRangeLabel(selectedRange);
   const activeParentValue = getParentValue(pendingRange);
@@ -510,13 +606,19 @@ export default function AnalyticsPage() {
   const prevYear = new Date(today);
   prevYear.setFullYear(today.getFullYear() - 1);
 
-  const fmt2 = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const fmt2 = (d: Date) =>
+    d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-  const compDateLabel = selectedComparison === "no-comparison" ? "No comparison"
-    : selectedComparison === "yesterday" ? fmt2(yesterday)
-    : selectedComparison === "previous-year" ? fmt2(prevYear)
-    : selectedComparison === "previous-year-match" ? fmt2(prevYear)
-    : fmt2(yesterday);
+  const compDateLabel =
+    selectedComparison === "no-comparison"
+      ? "No comparison"
+      : selectedComparison === "yesterday"
+        ? fmt2(yesterday)
+        : selectedComparison === "previous-year"
+          ? fmt2(prevYear)
+          : selectedComparison === "previous-year-match"
+            ? fmt2(prevYear)
+            : fmt2(yesterday);
 
   // Fix 7: pill shows the comparison type label, not the date
   const compPillLabel = COMPARISONS.find((c) => c.value === selectedComparison)?.label ?? "Compare";
@@ -551,22 +653,28 @@ export default function AnalyticsPage() {
     if (value === "today") {
       setRangeDates({ start: t, end: t });
     } else if (value === "yesterday") {
-      const y = new Date(t); y.setDate(t.getDate() - 1);
+      const y = new Date(t);
+      y.setDate(t.getDate() - 1);
       setRangeDates({ start: y, end: y });
     } else if (value === "last-7") {
-      const s = new Date(t); s.setDate(t.getDate() - 7);
+      const s = new Date(t);
+      s.setDate(t.getDate() - 7);
       setRangeDates({ start: s, end: t });
     } else if (value === "last-30") {
-      const s = new Date(t); s.setDate(t.getDate() - 30);
+      const s = new Date(t);
+      s.setDate(t.getDate() - 30);
       setRangeDates({ start: s, end: t });
     } else if (value === "last-90") {
-      const s = new Date(t); s.setDate(t.getDate() - 90);
+      const s = new Date(t);
+      s.setDate(t.getDate() - 90);
       setRangeDates({ start: s, end: t });
     } else if (value === "last-12m") {
-      const s = new Date(t); s.setMonth(t.getMonth() - 12);
+      const s = new Date(t);
+      s.setMonth(t.getMonth() - 12);
       setRangeDates({ start: s, end: t });
     } else if (value === "week-to-date") {
-      const s = new Date(t); s.setDate(t.getDate() - t.getDay());
+      const s = new Date(t);
+      s.setDate(t.getDate() - t.getDay());
       setRangeDates({ start: s, end: t });
     } else if (value === "month-to-date") {
       setRangeDates({ start: new Date(t.getFullYear(), t.getMonth(), 1), end: t });
@@ -577,7 +685,10 @@ export default function AnalyticsPage() {
       setRangeDates({ start: new Date(t.getFullYear(), 0, 1), end: t });
     } else if (value === "this-quarter") {
       const qm = Math.floor(t.getMonth() / 3) * 3;
-      setRangeDates({ start: new Date(t.getFullYear(), qm, 1), end: new Date(t.getFullYear(), qm + 3, 0) });
+      setRangeDates({
+        start: new Date(t.getFullYear(), qm, 1),
+        end: new Date(t.getFullYear(), qm + 3, 0),
+      });
     } else if (value === "last-quarter") {
       const qm = Math.floor(t.getMonth() / 3) * 3;
       const lqm = qm === 0 ? 9 : qm - 3;
@@ -587,7 +698,10 @@ export default function AnalyticsPage() {
       const qm = Math.floor(t.getMonth() / 3) * 3;
       let q2m = qm - 6;
       let q2y = t.getFullYear();
-      if (q2m < 0) { q2m += 12; q2y -= 1; }
+      if (q2m < 0) {
+        q2m += 12;
+        q2y -= 1;
+      }
       setRangeDates({ start: new Date(q2y, q2m, 1), end: new Date(q2y, q2m + 3, 0) });
     } else if (value === "bfcm-this") {
       setRangeDates(getBFCMRange(t.getFullYear()));
@@ -643,7 +757,17 @@ export default function AnalyticsPage() {
   );
 
   const CompareIcon = () => (
-    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      viewBox="0 0 16 16"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M1 5h11M9 3l3 2-3 2" />
       <path d="M15 11H4M7 9l-3 2 3 2" />
     </svg>
@@ -654,14 +778,24 @@ export default function AnalyticsPage() {
       onClick={() => setDateOpen((o) => !o)}
       aria-label="Select comparison period"
       style={{
-        display: "inline-flex", alignItems: "center", gap: 6,
-        padding: "5px 10px", background: "#ffffff", border: "1px solid #e1e3e5",
-        borderRadius: 20, fontSize: 13, cursor: "pointer", color: "#1a1a1a", fontFamily: "inherit",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "5px 10px",
+        background: "#ffffff",
+        border: "1px solid #e1e3e5",
+        borderRadius: 20,
+        fontSize: 13,
+        cursor: "pointer",
+        color: "#1a1a1a",
+        fontFamily: "inherit",
       }}
     >
       <CompareIcon />
       <span>{compPillLabel}</span>
-      <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M5 8l5 5 5-5H5z"/></svg>
+      <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor" aria-hidden="true">
+        <path d="M5 8l5 5 5-5H5z" />
+      </svg>
     </button>
   );
 
@@ -720,7 +854,10 @@ export default function AnalyticsPage() {
               style={{
                 position: "fixed",
                 top: rangePos.top,
-                left: Math.min(rangePos.left, Math.max(0, (typeof window !== "undefined" ? window.innerWidth : 1440) - 920 - 8)),
+                left: Math.min(
+                  rangePos.left,
+                  Math.max(0, (typeof window !== "undefined" ? window.innerWidth : 1440) - 920 - 8),
+                ),
                 width: 920,
                 zIndex: 700,
                 background: "#ffffff",
@@ -733,7 +870,16 @@ export default function AnalyticsPage() {
             >
               <div style={{ display: "flex" }}>
                 {/* Left: preset list with submenus (fixes 3–6) */}
-                <div style={{ width: 240, borderRight: "1px solid #e1e3e5", flexShrink: 0, paddingTop: 8, paddingBottom: 8, overflowY: "auto" }}>
+                <div
+                  style={{
+                    width: 240,
+                    borderRight: "1px solid #e1e3e5",
+                    flexShrink: 0,
+                    paddingTop: 8,
+                    paddingBottom: 8,
+                    overflowY: "auto",
+                  }}
+                >
                   {RANGES.map((r) => {
                     const isActiveParent = activeParentValue === r.value;
                     const isLeafActive = pendingRange === r.value;
@@ -758,26 +904,32 @@ export default function AnalyticsPage() {
                             fontFamily: "inherit",
                           }}
                         >
-                          <span style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            padding: "4px 8px",
-                            borderRadius: 6,
-                            background: isHighlighted ? "#f3f3f3" : "transparent",
-                          }}>
+                          <span
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              padding: "4px 8px",
+                              borderRadius: 6,
+                              background: isHighlighted ? "#f3f3f3" : "transparent",
+                            }}
+                          >
                             <span>{r.label}</span>
                             {r.children && (
                               <svg
-                                viewBox="0 0 20 20" width="14" height="14" fill="currentColor"
+                                viewBox="0 0 20 20"
+                                width="14"
+                                height="14"
+                                fill="currentColor"
                                 aria-hidden="true"
                                 style={{
-                                  flexShrink: 0, opacity: 0.5,
+                                  flexShrink: 0,
+                                  opacity: 0.5,
                                   transform: isExpanded ? "rotate(90deg)" : "none",
                                   transition: "transform 0.15s",
                                 }}
                               >
-                                <path d="M8 5l5 5-5 5V5z"/>
+                                <path d="M8 5l5 5-5 5V5z" />
                               </svg>
                             )}
                           </span>
@@ -803,12 +955,15 @@ export default function AnalyticsPage() {
                                   fontFamily: "inherit",
                                 }}
                               >
-                                <span style={{
-                                  display: "block",
-                                  padding: "3px 8px",
-                                  borderRadius: 6,
-                                  background: pendingRange === child.value ? "#f3f3f3" : "transparent",
-                                }}>
+                                <span
+                                  style={{
+                                    display: "block",
+                                    padding: "3px 8px",
+                                    borderRadius: 6,
+                                    background:
+                                      pendingRange === child.value ? "#f3f3f3" : "transparent",
+                                  }}
+                                >
                                   {child.label}
                                 </span>
                               </button>
@@ -826,53 +981,156 @@ export default function AnalyticsPage() {
                     <input
                       type="text"
                       readOnly
-                      value={rangeDates.start.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                      style={{ flex: 1, padding: "10px 14px", border: "1px solid #c9cccf", borderRadius: 8, fontSize: 14, background: "#fff", color: "#202223", fontFamily: "inherit" }}
+                      value={rangeDates.start.toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                      style={{
+                        flex: 1,
+                        padding: "10px 14px",
+                        border: "1px solid #c9cccf",
+                        borderRadius: 8,
+                        fontSize: 14,
+                        background: "#fff",
+                        color: "#202223",
+                        fontFamily: "inherit",
+                      }}
                     />
                     <span style={{ color: "#6d7175", fontSize: 18, flexShrink: 0 }}>→</span>
                     <input
                       type="text"
                       readOnly
-                      value={rangeDates.end.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                      style={{ flex: 1, padding: "10px 14px", border: "1px solid #c9cccf", borderRadius: 8, fontSize: 14, background: "#fff", color: "#202223", fontFamily: "inherit" }}
+                      value={rangeDates.end.toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                      style={{
+                        flex: 1,
+                        padding: "10px 14px",
+                        border: "1px solid #c9cccf",
+                        borderRadius: 8,
+                        fontSize: 14,
+                        background: "#fff",
+                        color: "#202223",
+                        fontFamily: "inherit",
+                      }}
                     />
                     <button
                       onClick={() => setShowTimeRow((v) => !v)}
                       style={{
-                        padding: "9px 10px", border: "1px solid #c9cccf", borderRadius: 8,
+                        padding: "9px 10px",
+                        border: "1px solid #c9cccf",
+                        borderRadius: 8,
                         background: showTimeRow ? "#f3f3f3" : "#fff",
-                        cursor: "pointer", display: "flex", alignItems: "center", flexShrink: 0,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        flexShrink: 0,
                       }}
                     >
-                      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke={showTimeRow ? "#202223" : "#6d7175"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/>
+                      <svg
+                        viewBox="0 0 20 20"
+                        width="18"
+                        height="18"
+                        fill="none"
+                        stroke={showTimeRow ? "#202223" : "#6d7175"}
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="10" cy="10" r="8" />
+                        <path d="M10 6v4l3 2" />
                       </svg>
                     </button>
                   </div>
                   {/* Time row */}
                   {showTimeRow && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                      <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", border: "1px solid #c9cccf", borderRadius: 8, background: "#fff" }}>
-                        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#6d7175" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                          <circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/>
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}
+                    >
+                      <div
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          padding: "10px 14px",
+                          border: "1px solid #c9cccf",
+                          borderRadius: 8,
+                          background: "#fff",
+                        }}
+                      >
+                        <svg
+                          viewBox="0 0 20 20"
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="#6d7175"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ flexShrink: 0 }}
+                        >
+                          <circle cx="10" cy="10" r="8" />
+                          <path d="M10 6v4l3 2" />
                         </svg>
                         <input
                           type="text"
                           value={startTime}
                           onChange={(e) => setStartTime(e.target.value)}
-                          style={{ border: "none", outline: "none", fontSize: 14, color: "#202223", fontFamily: "inherit", background: "transparent", width: "100%" }}
+                          style={{
+                            border: "none",
+                            outline: "none",
+                            fontSize: 14,
+                            color: "#202223",
+                            fontFamily: "inherit",
+                            background: "transparent",
+                            width: "100%",
+                          }}
                         />
                       </div>
                       <span style={{ color: "#6d7175", fontSize: 18, flexShrink: 0 }}>→</span>
-                      <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", border: "1px solid #c9cccf", borderRadius: 8, background: "#fff" }}>
-                        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#6d7175" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                          <circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/>
+                      <div
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          padding: "10px 14px",
+                          border: "1px solid #c9cccf",
+                          borderRadius: 8,
+                          background: "#fff",
+                        }}
+                      >
+                        <svg
+                          viewBox="0 0 20 20"
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="#6d7175"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ flexShrink: 0 }}
+                        >
+                          <circle cx="10" cy="10" r="8" />
+                          <path d="M10 6v4l3 2" />
                         </svg>
                         <input
                           type="text"
                           value={endTime}
                           onChange={(e) => setEndTime(e.target.value)}
-                          style={{ border: "none", outline: "none", fontSize: 14, color: "#202223", fontFamily: "inherit", background: "transparent", width: "100%" }}
+                          style={{
+                            border: "none",
+                            outline: "none",
+                            fontSize: 14,
+                            color: "#202223",
+                            fontFamily: "inherit",
+                            background: "transparent",
+                            width: "100%",
+                          }}
                         />
                       </div>
                     </div>
@@ -883,7 +1141,10 @@ export default function AnalyticsPage() {
                     month={rangeMonth}
                     year={rangeYear}
                     selected={rangeDates}
-                    onMonthChange={(m, y) => { setRangeMonth(m); setRangeYear(y); }}
+                    onMonthChange={(m, y) => {
+                      setRangeMonth(m);
+                      setRangeYear(y);
+                    }}
                     onChange={(range) => setRangeDates(range)}
                     allowRange
                     multiMonth
@@ -891,9 +1152,19 @@ export default function AnalyticsPage() {
                 </div>
               </div>
               {/* Footer */}
-              <div style={{ borderTop: "1px solid #e1e3e5", padding: "14px 20px", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <div
+                style={{
+                  borderTop: "1px solid #e1e3e5",
+                  padding: "14px 20px",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                }}
+              >
                 <Button onClick={() => setRangeOpen(false)}>Cancel</Button>
-                <Button variant="primary" onClick={handleRangeApply}>Apply</Button>
+                <Button variant="primary" onClick={handleRangeApply}>
+                  Apply
+                </Button>
               </div>
             </div>
           )}
@@ -909,7 +1180,10 @@ export default function AnalyticsPage() {
               {COMPARISONS.map((c) => (
                 <button
                   key={c.value}
-                  onClick={() => { setSelectedComparison(c.value); setDateOpen(false); }}
+                  onClick={() => {
+                    setSelectedComparison(c.value);
+                    setDateOpen(false);
+                  }}
                   style={{
                     display: "block",
                     width: "100%",

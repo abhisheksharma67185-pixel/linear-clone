@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
 
 const actionSpace = {
   version: "2.0",
@@ -6,7 +6,10 @@ const actionSpace = {
     {
       name: "navigate",
       description: "Navigate to a page in the Linear workspace",
-      params: { target: "string — e.g. /board, /backlog, /projects, /cycles, /labels, /teams, /views" },
+      params: {
+        target:
+          "string — e.g. /board, /backlog, /projects, /cycles, /labels, /teams, /views",
+      },
       reward: 0.0,
       example: { action: "navigate", target: "/board" },
     },
@@ -14,7 +17,8 @@ const actionSpace = {
       name: "create_issue",
       description: "Create a new issue",
       params: {
-        fields: "{ title, description?, status?, priority?, assigneeId?, teamId?, projectId?, cycleId?, labelIds?, estimate?, dueDate? }",
+        fields:
+          "{ title, description?, status?, priority?, assigneeId?, teamId?, projectId?, cycleId?, labelIds?, estimate?, dueDate? }",
       },
       reward: 0.5,
       example: {
@@ -27,10 +31,15 @@ const actionSpace = {
       description: "Update an existing issue",
       params: {
         issueId: "string",
-        fields: "{ title?, description?, status?, priority?, assigneeId?, teamId?, projectId?, cycleId?, labelIds?, estimate?, dueDate? }",
+        fields:
+          "{ title?, description?, status?, priority?, assigneeId?, teamId?, projectId?, cycleId?, labelIds?, estimate?, dueDate? }",
       },
       reward: 0.5,
-      example: { action: "update_issue", issueId: "iss-1", fields: { status: "in_progress" } },
+      example: {
+        action: "update_issue",
+        issueId: "iss-1",
+        fields: { status: "in_progress" },
+      },
     },
     {
       name: "delete_issue",
@@ -51,13 +60,18 @@ const actionSpace = {
       description: "Move an issue to a cycle",
       params: { issueId: "string", cycleId: "string" },
       reward: 0.3,
-      example: { action: "move_issue_to_cycle", issueId: "iss-1", cycleId: "cycle-2" },
+      example: {
+        action: "move_issue_to_cycle",
+        issueId: "iss-1",
+        cycleId: "cycle-2",
+      },
     },
     {
       name: "create_project",
       description: "Create a new project",
       params: {
-        fields: "{ name, description?, status?, leadId?, teamId?, targetDate? }",
+        fields:
+          "{ name, description?, status?, leadId?, teamId?, targetDate? }",
       },
       reward: 0.5,
       example: {
@@ -73,7 +87,11 @@ const actionSpace = {
         fields: "{ name?, description?, status?, leadId?, targetDate? }",
       },
       reward: 0.5,
-      example: { action: "update_project", projectId: "proj-1", fields: { name: "Updated Project" } },
+      example: {
+        action: "update_project",
+        projectId: "proj-1",
+        fields: { name: "Updated Project" },
+      },
     },
     {
       name: "create_cycle",
@@ -119,7 +137,11 @@ const actionSpace = {
         fields: "{ name?, color? }",
       },
       reward: 0.3,
-      example: { action: "update_label", labelId: "label-1", fields: { color: "#000000" } },
+      example: {
+        action: "update_label",
+        labelId: "label-1",
+        fields: { color: "#000000" },
+      },
     },
     {
       name: "create_team",
@@ -141,16 +163,25 @@ const actionSpace = {
         fields: "{ name?, description?, leadId?, memberIds? }",
       },
       reward: 0.5,
-      example: { action: "update_team", teamId: "team-1", fields: { name: "Core Engineering" } },
+      example: {
+        action: "update_team",
+        teamId: "team-1",
+        fields: { name: "Core Engineering" },
+      },
     },
     {
       name: "create_view",
       description: "Create a custom view",
-      params: { fields: "{ name, filterQuery, description?, ownerId?, teamId? }" },
+      params: {
+        fields: "{ name, filterQuery, description?, ownerId?, teamId? }",
+      },
       reward: 0.3,
       example: {
         action: "create_view",
-        fields: { name: "My Open Bugs", filterQuery: "label = bug AND status != done" },
+        fields: {
+          name: "My Open Bugs",
+          filterQuery: "label = bug AND status != done",
+        },
       },
     },
     {
@@ -165,7 +196,10 @@ const actionSpace = {
       description: "Provide a text response for retrieval tasks",
       params: { message: "string" },
       reward: 0.0,
-      example: { action: "respond", message: "There are 5 open issues assigned to Alex." },
+      example: {
+        action: "respond",
+        message: "There are 5 open issues assigned to Alex.",
+      },
     },
   ],
   rewards: {
@@ -174,8 +208,8 @@ const actionSpace = {
     unknownAction: -0.1,
   },
   episodeEnd: "Task goal achieved or max steps reached",
-};
+}
 
 export async function GET() {
-  return NextResponse.json(actionSpace);
+  return NextResponse.json(actionSpace)
 }

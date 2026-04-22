@@ -51,7 +51,11 @@ export function IssueLink({
 // We use a separate context just for detection so we don't change the provider API.
 const DrawerDetectContext = createContext(false)
 
-export function DrawerDetectProvider({ children }: { children: React.ReactNode }) {
+export function DrawerDetectProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <DrawerDetectContext.Provider value={true}>
       {children}

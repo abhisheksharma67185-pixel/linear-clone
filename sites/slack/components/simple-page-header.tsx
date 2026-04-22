@@ -3,9 +3,9 @@ export function SimplePageHeader({
   subtitle,
   action,
 }: {
-  title: string;
-  subtitle?: string;
-  action?: React.ReactNode;
+  title: string
+  subtitle?: string
+  action?: React.ReactNode
 }) {
   return (
     <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4">
@@ -17,5 +17,5 @@ export function SimplePageHeader({
       </div>
       {action}
     </header>
-  );
+  )
 }

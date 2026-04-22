@@ -43,7 +43,8 @@ export function CreateTeamDialog({
     .toUpperCase()
   const effectiveKey = keyDirty ? key : autoKey
 
-  const canSubmit = name.trim().length > 0 && effectiveKey.length > 0 && !submitting
+  const canSubmit =
+    name.trim().length > 0 && effectiveKey.length > 0 && !submitting
 
   const handleSubmit = async () => {
     setError(null)
@@ -88,7 +89,7 @@ export function CreateTeamDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Design"
-              className="h-8 rounded-md border bg-transparent px-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="focus:ring-ring h-8 rounded-md border bg-transparent px-2 text-sm outline-none focus:ring-2"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -103,13 +104,14 @@ export function CreateTeamDialog({
                 setKey(e.target.value.toUpperCase().slice(0, 5))
               }}
               placeholder="DES"
-              className="h-8 w-24 rounded-md border bg-transparent px-2 font-mono text-sm uppercase outline-none focus:ring-2 focus:ring-ring"
+              className="focus:ring-ring h-8 w-24 rounded-md border bg-transparent px-2 font-mono text-sm uppercase outline-none focus:ring-2"
             />
-            <p className="text-[11px] text-muted-foreground">
-              Used as the prefix on issue IDs (e.g. {effectiveKey || "ABC"}-123).
+            <p className="text-muted-foreground text-[11px]">
+              Used as the prefix on issue IDs (e.g. {effectiveKey || "ABC"}
+              -123).
             </p>
           </div>
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-xs">{error}</p>}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>

@@ -1,34 +1,36 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { UserAvatar } from "@/components/user-avatar";
+import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { UserAvatar } from "@/components/user-avatar"
 
 type User = {
-  id: string;
-  name: string;
-  title: string;
-  avatar: string;
-  presence: "active" | "away" | "offline" | "dnd";
-};
-type Channel = { id: string; name: string };
+  id: string
+  name: string
+  title: string
+  avatar: string
+  presence: "active" | "away" | "offline" | "dnd"
+}
+type Channel = { id: string; name: string }
 
 export default function ChannelMembersPage() {
-  const params = useParams<{ channelName: string }>();
-  const [members, setMembers] = useState<User[]>([]);
-  const [channel, setChannel] = useState<Channel | null>(null);
+  const params = useParams<{ channelName: string }>()
+  const [members, setMembers] = useState<User[]>([])
+  const [channel, setChannel] = useState<Channel | null>(null)
 
   useEffect(() => {
     Promise.all([
       fetch(`/api/data/channels/${params.channelName}`).then((r) => r.json()),
-      fetch(`/api/data/channels/${params.channelName}/members`).then((r) => r.json()),
+      fetch(`/api/data/channels/${params.channelName}/members`).then((r) =>
+        r.json()
+      ),
     ]).then(([c, m]) => {
-      setChannel(c);
-      setMembers(m);
-    });
-  }, [params.channelName]);
+      setChannel(c)
+      setMembers(m)
+    })
+  }, [params.channelName])
 
   return (
     <>
@@ -56,5 +58,5 @@ export default function ChannelMembersPage() {
         </div>
       </ScrollArea>
     </>
-  );
+  )
 }

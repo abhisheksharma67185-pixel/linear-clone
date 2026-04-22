@@ -1,11 +1,11 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R = {
   completion: 2.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 
 export const navigationTasks: TaskDefinition[] = [
   {
@@ -19,7 +19,8 @@ export const navigationTasks: TaskDefinition[] = [
     goal: "Navigate to the Linear dashboard and report what you see.",
     retrievalRubric: {
       question: "What content is on this page?",
-      groundTruth: "Linear Dashboard with issue stats, active cycles, and team overview",
+      groundTruth:
+        "Linear Dashboard with issue stats, active cycles, and team overview",
       acceptableVariations: ["dashboard", "Dashboard", "linear dashboard"],
       rubric: "Agent must navigate to the main Linear dashboard page.",
     },
@@ -40,7 +41,10 @@ export const navigationTasks: TaskDefinition[] = [
     retrievalRubric: {
       question: "What columns are on the board?",
       groundTruth: "Backlog, Todo, In Progress, Done, Cancelled",
-      acceptableVariations: ["5 columns", "Backlog, Todo, In Progress, Done, Cancelled"],
+      acceptableVariations: [
+        "5 columns",
+        "Backlog, Todo, In Progress, Done, Cancelled",
+      ],
       rubric: "Agent must navigate to the board view and list its columns.",
     },
     evalChecks: [],
@@ -59,9 +63,15 @@ export const navigationTasks: TaskDefinition[] = [
     goal: "Navigate to the Cycles page and report how many active cycles exist across all teams.",
     retrievalRubric: {
       question: "How many cycles are currently active?",
-      groundTruth: "3 active cycles: Sprint 13 (Platform), FE Sprint 13 (Frontend), Infra Sprint 13 (Infra)",
-      acceptableVariations: ["3", "3 active cycles", "Sprint 13, FE Sprint 13, Infra Sprint 13"],
-      rubric: "Agent must navigate to the cycles page and count cycles with state=active.",
+      groundTruth:
+        "3 active cycles: Sprint 13 (Platform), FE Sprint 13 (Frontend), Infra Sprint 13 (Infra)",
+      acceptableVariations: [
+        "3",
+        "3 active cycles",
+        "Sprint 13, FE Sprint 13, Infra Sprint 13",
+      ],
+      rubric:
+        "Agent must navigate to the cycles page and count cycles with state=active.",
     },
     evalChecks: [],
     maxSteps: 5,
@@ -80,8 +90,13 @@ export const navigationTasks: TaskDefinition[] = [
     retrievalRubric: {
       question: "What teams exist?",
       groundTruth: "Platform (PLT), Frontend (FE), Infra (INF), Legacy (LEG)",
-      acceptableVariations: ["4 teams", "Platform, Frontend, Infra, Legacy", "PLT, FE, INF, LEG"],
-      rubric: "Agent must navigate to the teams page and list all 4 team names.",
+      acceptableVariations: [
+        "4 teams",
+        "Platform, Frontend, Infra, Legacy",
+        "PLT, FE, INF, LEG",
+      ],
+      rubric:
+        "Agent must navigate to the teams page and list all 4 team names.",
     },
     evalChecks: [],
     maxSteps: 5,
@@ -99,13 +114,18 @@ export const navigationTasks: TaskDefinition[] = [
     goal: "Navigate to the Projects page and report the project names and their target dates.",
     retrievalRubric: {
       question: "What projects exist and when are they due?",
-      groundTruth: "Auth Service (2026-06-30), New Checkout Flow (2026-05-30), Payment API v2 (2026-06-15)",
-      acceptableVariations: ["3 projects", "Auth Service, New Checkout Flow, Payment API v2"],
-      rubric: "Agent must navigate to the projects page and list all 3 projects with dates.",
+      groundTruth:
+        "Auth Service (2026-06-30), New Checkout Flow (2026-05-30), Payment API v2 (2026-06-15)",
+      acceptableVariations: [
+        "3 projects",
+        "Auth Service, New Checkout Flow, Payment API v2",
+      ],
+      rubric:
+        "Agent must navigate to the projects page and list all 3 projects with dates.",
     },
     evalChecks: [],
     maxSteps: 5,
     rewardProfile: R,
     tags: ["navigation"],
   },
-];
+]

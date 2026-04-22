@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button"
 
 export default function ShadowItAppsPage() {
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="max-w-5xl p-8">
       <h1 className="mb-8 text-2xl font-semibold">Shadow IT apps</h1>
 
-      <div className="flex flex-col items-center text-center py-8">
+      <div className="flex flex-col items-center py-8 text-center">
         {/* Telescope illustration */}
         <svg
-          className="size-28 mb-6"
+          className="mb-6 size-28"
           viewBox="0 0 120 120"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -71,14 +71,23 @@ export default function ShadowItAppsPage() {
       </div>
 
       <div className="rounded-lg border p-6">
-        <p className="font-bold mb-1">You need to verify a domain</p>
-        <p className="text-sm text-muted-foreground mb-2">
-          To discover apps administered by managed accounts, you need to verify a domain.
+        <p className="mb-1 font-bold">You need to verify a domain</p>
+        <p className="mb-2 text-sm text-muted-foreground">
+          To discover apps administered by managed accounts, you need to verify
+          a domain.
         </p>
-        <a href="/admin/domains" className="text-sm text-blue-600 hover:underline mb-4 block">
+        <a
+          href="/admin/domains"
+          className="mb-4 block text-sm text-blue-600 hover:underline"
+        >
           Tell me more about discovered apps
         </a>
-        <Button className="bg-blue-600 text-white hover:bg-blue-700" onClick={() => window.location.href = '/admin/domains'}>Verify domain</Button>
+        <Button
+          className="bg-blue-600 text-white hover:bg-blue-700"
+          onClick={() => (window.location.href = "/admin/domains")}
+        >
+          Verify domain
+        </Button>
       </div>
     </div>
   )

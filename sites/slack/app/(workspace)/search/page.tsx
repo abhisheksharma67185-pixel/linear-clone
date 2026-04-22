@@ -1,55 +1,55 @@
-"use client";
+"use client"
 
-import { useEffect, useState, Suspense } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Hash, Lock } from "lucide-react";
+import { useEffect, useState, Suspense } from "react"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Hash, Lock } from "lucide-react"
 
 type Message = {
-  id: string;
-  text: string;
-  authorId: string;
-  channelId: string | null;
-  dmId: string | null;
-  createdAt: string;
-};
+  id: string
+  text: string
+  authorId: string
+  channelId: string | null
+  dmId: string | null
+  createdAt: string
+}
 type Channel = {
-  id: string;
-  name: string;
-  topic: string;
-  type: "public" | "private";
-};
+  id: string
+  name: string
+  topic: string
+  type: "public" | "private"
+}
 type User = {
-  id: string;
-  name: string;
-  displayName: string;
-  email: string;
-  title: string;
-};
+  id: string
+  name: string
+  displayName: string
+  email: string
+  title: string
+}
 
 type Results = {
-  query: string;
-  totalResults: number;
-  messages: Message[];
-  channels: Channel[];
-  users: User[];
-  files: unknown[];
-};
+  query: string
+  totalResults: number
+  messages: Message[]
+  channels: Channel[]
+  users: User[]
+  files: unknown[]
+}
 
 function SearchPageContent() {
-  const searchParams = useSearchParams();
-  const q = searchParams.get("q") ?? "";
-  const [results, setResults] = useState<Results | null>(null);
+  const searchParams = useSearchParams()
+  const q = searchParams.get("q") ?? ""
+  const [results, setResults] = useState<Results | null>(null)
 
   useEffect(() => {
-    if (!q) return;
+    if (!q) return
     fetch(`/api/data/search?q=${encodeURIComponent(q)}`)
       .then((r) => r.json())
-      .then(setResults);
-  }, [q]);
+      .then(setResults)
+  }, [q])
 
   return (
     <>
@@ -70,8 +70,12 @@ function SearchPageContent() {
             <TabsTrigger value="channels">
               Channels ({results.channels.length})
             </TabsTrigger>
-            <TabsTrigger value="users">People ({results.users.length})</TabsTrigger>
-            <TabsTrigger value="files">Files ({results.files.length})</TabsTrigger>
+            <TabsTrigger value="users">
+              People ({results.users.length})
+            </TabsTrigger>
+            <TabsTrigger value="files">
+              Files ({results.files.length})
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="messages" className="flex-1">
             <ScrollArea className="h-full">
@@ -92,7 +96,7 @@ function SearchPageContent() {
             <ScrollArea className="h-full">
               <div className="flex flex-col divide-y divide-border">
                 {results.channels.map((c) => {
-                  const Icon = c.type === "private" ? Lock : Hash;
+                  const Icon = c.type === "private" ? Lock : Hash
                   return (
                     <Link
                       key={c.id}
@@ -109,7 +113,7 @@ function SearchPageContent() {
                         </span>
                       </div>
                     </Link>
-                  );
+                  )
                 })}
               </div>
             </ScrollArea>
@@ -146,7 +150,7 @@ function SearchPageContent() {
         </div>
       )}
     </>
-  );
+  )
 }
 
 export default function SearchPage() {
@@ -154,5 +158,5 @@ export default function SearchPage() {
     <Suspense>
       <SearchPageContent />
     </Suspense>
-  );
+  )
 }

@@ -1,17 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R = {
   completion: 5.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const RH = {
   completion: 8.0,
   partialPerCheck: false,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.1,
-};
+}
 
 export const searchTasks: TaskDefinition[] = [
   {
@@ -27,7 +27,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many issues are assigned to Ravi Kumar?",
       groundTruth: "34",
       acceptableVariations: ["34", "34 issues", "thirty-four"],
-      rubric: "Ravi Kumar (usr-3) is assigned to 34 issues across PLAT (10) and Support projects (24 as default assignee round-robin).",
+      rubric:
+        "Ravi Kumar (usr-3) is assigned to 34 issues across PLAT (10) and Support projects (24 as default assignee round-robin).",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -47,7 +48,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many issues are in PLAT Sprint 13?",
       groundTruth: "19",
       acceptableVariations: ["19", "19 issues"],
-      rubric: "PLAT Sprint 13 (sprint-4) contains 19 issues: 10 stories + 5 bugs + 4 tasks.",
+      rubric:
+        "PLAT Sprint 13 (sprint-4) contains 19 issues: 10 stories + 5 bugs + 4 tasks.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -67,7 +69,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many issues are in the Auth Service Overhaul epic?",
       groundTruth: "8",
       acceptableVariations: ["eight", "8 issues"],
-      rubric: "Epic-1 (Auth Service Overhaul) has 8 issues: PLAT-10 through PLAT-17.",
+      rubric:
+        "Epic-1 (Auth Service Overhaul) has 8 issues: PLAT-10 through PLAT-17.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -107,7 +110,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many bugs are there?",
       groundTruth: "88",
       acceptableVariations: ["88", "88 bugs"],
-      rubric: "88 bugs across all projects — mostly LCRM (70) plus 15 in PLAT and some in FAPP.",
+      rubric:
+        "88 bugs across all projects — mostly LCRM (70) plus 15 in PLAT and some in FAPP.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -127,7 +131,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many issues are unestimated?",
       groundTruth: "193",
       acceptableVariations: ["193", "193 issues"],
-      rubric: "193 issues have null story points — bugs, tasks, and most LCRM/Support issues.",
+      rubric:
+        "193 issues have null story points — bugs, tasks, and most LCRM/Support issues.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -167,7 +172,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "Which issues have highest priority?",
       groundTruth: "PLAT-51, PLAT-56, PLAT-58, PLAT-64",
       acceptableVariations: ["4 issues", "PLAT-51, PLAT-56, PLAT-58, PLAT-64"],
-      rubric: "4 highest-priority bugs: PLAT-51 (webhook timeout), PLAT-56 (DB connection leak), PLAT-58 (payment overflow), PLAT-64 (duplicate payment events).",
+      rubric:
+        "4 highest-priority bugs: PLAT-51 (webhook timeout), PLAT-56 (DB connection leak), PLAT-58 (payment overflow), PLAT-64 (duplicate payment events).",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -207,7 +213,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many issues are in the LCRM project?",
       groundTruth: "214",
       acceptableVariations: ["214", "214 issues"],
-      rubric: "The LCRM project has 214 issues (legacy inherited backlog for migration).",
+      rubric:
+        "The LCRM project has 214 issues (legacy inherited backlog for migration).",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -227,11 +234,12 @@ export const searchTasks: TaskDefinition[] = [
       question: "How many Support issues total?",
       groundTruth: "90",
       acceptableVariations: ["90", "90 issues"],
-      rubric: "Each Support project has 30 issues: SUS=30, SEU=30, SAP=30 = 90 total.",
+      rubric:
+        "Each Support project has 30 issues: SUS=30, SEU=30, SAP=30 = 90 total.",
     },
     evalChecks: [],
     maxSteps: 15,
     rewardProfile: R,
     tags: ["retrieval", "counting"],
   },
-];
+]

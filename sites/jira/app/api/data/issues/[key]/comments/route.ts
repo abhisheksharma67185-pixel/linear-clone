@@ -3,7 +3,7 @@ import * as store from "../../../../../lib/store"
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ key: string }> },
+  { params }: { params: Promise<{ key: string }> }
 ) {
   const { key } = await params
   const issue = store.getIssueByKey(key) ?? store.getIssueById(key)
@@ -27,7 +27,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ key: string }> },
+  { params }: { params: Promise<{ key: string }> }
 ) {
   const { key } = await params
   const issue = store.getIssueByKey(key) ?? store.getIssueById(key)
@@ -57,7 +57,10 @@ export async function POST(
   const users = store.getUsers()
   const userMap = new Map(users.map((u) => [u.id, u]))
   return NextResponse.json(
-    { ...result.data, author: userMap.get(result.data.authorId as string) ?? null },
-    { status: 201 },
+    {
+      ...result.data,
+      author: userMap.get(result.data.authorId as string) ?? null,
+    },
+    { status: 201 }
   )
 }

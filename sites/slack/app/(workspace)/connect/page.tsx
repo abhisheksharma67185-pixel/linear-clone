@@ -1,25 +1,25 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Volume2 } from "lucide-react";
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Volume2 } from "lucide-react"
 
 type Channel = {
-  id: string;
-  name: string;
-  topic: string;
-  isShared: boolean;
-};
+  id: string
+  name: string
+  topic: string
+  isShared: boolean
+}
 
 export default function ConnectPage() {
-  const [channels, setChannels] = useState<Channel[]>([]);
+  const [channels, setChannels] = useState<Channel[]>([])
   useEffect(() => {
     fetch("/api/data/channels")
       .then((r) => r.json())
-      .then((c: Channel[]) => setChannels(c.filter((ch) => ch.isShared)));
-  }, []);
+      .then((c: Channel[]) => setChannels(c.filter((ch) => ch.isShared)))
+  }, [])
 
   return (
     <>
@@ -45,5 +45,5 @@ export default function ConnectPage() {
         </div>
       </ScrollArea>
     </>
-  );
+  )
 }

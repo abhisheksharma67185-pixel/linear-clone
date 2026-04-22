@@ -52,15 +52,17 @@ export default function DraftsPage() {
         <Text as="span">{draft.customer}</Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" numeric>{draft.items}</Text>
+        <Text as="span" numeric>
+          {draft.items}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" numeric>{draft.total}</Text>
+        <Text as="span" numeric>
+          {draft.total}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Badge tone={draft.status === "Open" ? "info" : "warning"}>
-          {draft.status}
-        </Badge>
+        <Badge tone={draft.status === "Open" ? "info" : "warning"}>{draft.status}</Badge>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));

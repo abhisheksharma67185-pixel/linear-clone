@@ -16,7 +16,12 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 14px;
 }
 
@@ -135,7 +140,9 @@ body {
 
 /* White pill style for filter row buttons */
 .Polaris-Button--sizeSlim.Polaris-Button--variantSecondary,
-.Polaris-Button--sizeSlim:not(.Polaris-Button--variantPrimary):not(.Polaris-Button--variantDestructive) {
+.Polaris-Button--sizeSlim:not(.Polaris-Button--variantPrimary):not(
+    .Polaris-Button--variantDestructive
+  ) {
   background-color: #ffffff !important;
   border: 1px solid #e1e3e5 !important;
   border-radius: 20px !important;

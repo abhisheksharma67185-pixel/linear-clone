@@ -15,18 +15,29 @@ const suggestedQuestions = [
 ]
 
 const knowledgeBase: Record<string, string> = {
-  "atlassian account": "An Atlassian account is a free account that gives you access to Atlassian products like Jira, Confluence, Trello, and more. Your account stores your profile information, preferences, and lets you manage your product access. You can create one at id.atlassian.com.",
-  "user access": "To control user access to products:\n\n1. Go to **Admin > Directory > Users**\n2. Select a user to view their product access\n3. Use **App access settings** to set default access for new users\n4. Create **Groups** to manage access for multiple users at once\n5. Use **Access policies** under Security to set organization-wide rules",
-  "smart links": "Smart Links are intelligent hyperlinks that display rich previews of content from Atlassian and third-party tools. When you paste a URL in Jira or Confluence, Smart Links automatically show a preview with the title, status, and other metadata. You can configure Smart Links under **Apps > App URLs**.",
-  "external user": "External users are people who collaborate with your team but have a different email address from your company domain. You can manage external user policies under **Security > User security > External users**. To unlock advanced external user settings, you need an Atlassian Guard subscription.",
-  "security": "Atlassian provides multiple security layers:\n\n- **Authentication policies**: Configure login requirements\n- **Access policies**: Control who can access what\n- **Identity providers**: Set up SSO with SAML or Google\n- **Data protection**: Classify data and set security policies\n- **Device security**: Manage IP allowlists and mobile policies\n\nVisit **Security > Security guide** for a comprehensive overview.",
-  "group": "Groups let you organize users and manage their product access collectively. To manage groups:\n\n1. Go to **Admin > Directory > Groups**\n2. Create a new group or select an existing one\n3. Add or remove members\n4. Assign product access to the entire group\n\nDefault groups like 'jira-software-users' are created automatically.",
-  "domain": "Domains help you verify ownership of your company's email domain. Once verified, you can:\n\n- Automatically claim accounts using your domain\n- Apply security policies to all users with your domain email\n- Manage external vs internal users\n\nGo to **Admin > Directory > Domains** to verify a domain.",
-  "billing": "Manage your billing and subscriptions under **Admin > Billing**. Here you can:\n\n- View current plans and usage\n- Update payment methods\n- Download invoices\n- Change subscription tiers\n- Manage user counts for billing purposes",
-  "api key": "API keys let you authenticate with Atlassian APIs programmatically. Manage them under **Organization settings > API keys**. You can also monitor API token usage under **Insights > API token activity**. Always keep your API keys secure and rotate them regularly.",
-  "rovo": "Rovo is Atlassian's AI-powered assistant that helps teams find information, learn, and take action. Configure Rovo under:\n\n- **Rovo access**: Control who can use Rovo\n- **Rovo MCP server**: Manage MCP server connections\n- **Rovo insights**: View usage analytics (Beta)\n- **Rovo settings**: Configure Rovo behavior",
-  "backup": "Data backup and restore lets you protect your organization's data. Go to **Data management > Backup and restore** to:\n\n- Create manual backups\n- Schedule automatic backups\n- Restore from a previous backup\n- Export data for compliance purposes",
-  "audit log": "The audit log records important actions in your organization. Find it under **Insights > Audit log**. You can:\n\n- Search for specific events\n- Filter by user, date, or action type\n- Export logs for compliance\n- Monitor admin changes and security events",
+  "atlassian account":
+    "An Atlassian account is a free account that gives you access to Atlassian products like Jira, Confluence, Trello, and more. Your account stores your profile information, preferences, and lets you manage your product access. You can create one at id.atlassian.com.",
+  "user access":
+    "To control user access to products:\n\n1. Go to **Admin > Directory > Users**\n2. Select a user to view their product access\n3. Use **App access settings** to set default access for new users\n4. Create **Groups** to manage access for multiple users at once\n5. Use **Access policies** under Security to set organization-wide rules",
+  "smart links":
+    "Smart Links are intelligent hyperlinks that display rich previews of content from Atlassian and third-party tools. When you paste a URL in Jira or Confluence, Smart Links automatically show a preview with the title, status, and other metadata. You can configure Smart Links under **Apps > App URLs**.",
+  "external user":
+    "External users are people who collaborate with your team but have a different email address from your company domain. You can manage external user policies under **Security > User security > External users**. To unlock advanced external user settings, you need an Atlassian Guard subscription.",
+  security:
+    "Atlassian provides multiple security layers:\n\n- **Authentication policies**: Configure login requirements\n- **Access policies**: Control who can access what\n- **Identity providers**: Set up SSO with SAML or Google\n- **Data protection**: Classify data and set security policies\n- **Device security**: Manage IP allowlists and mobile policies\n\nVisit **Security > Security guide** for a comprehensive overview.",
+  group:
+    "Groups let you organize users and manage their product access collectively. To manage groups:\n\n1. Go to **Admin > Directory > Groups**\n2. Create a new group or select an existing one\n3. Add or remove members\n4. Assign product access to the entire group\n\nDefault groups like 'jira-software-users' are created automatically.",
+  domain:
+    "Domains help you verify ownership of your company's email domain. Once verified, you can:\n\n- Automatically claim accounts using your domain\n- Apply security policies to all users with your domain email\n- Manage external vs internal users\n\nGo to **Admin > Directory > Domains** to verify a domain.",
+  billing:
+    "Manage your billing and subscriptions under **Admin > Billing**. Here you can:\n\n- View current plans and usage\n- Update payment methods\n- Download invoices\n- Change subscription tiers\n- Manage user counts for billing purposes",
+  "api key":
+    "API keys let you authenticate with Atlassian APIs programmatically. Manage them under **Organization settings > API keys**. You can also monitor API token usage under **Insights > API token activity**. Always keep your API keys secure and rotate them regularly.",
+  rovo: "Rovo is Atlassian's AI-powered assistant that helps teams find information, learn, and take action. Configure Rovo under:\n\n- **Rovo access**: Control who can use Rovo\n- **Rovo MCP server**: Manage MCP server connections\n- **Rovo insights**: View usage analytics (Beta)\n- **Rovo settings**: Configure Rovo behavior",
+  backup:
+    "Data backup and restore lets you protect your organization's data. Go to **Data management > Backup and restore** to:\n\n- Create manual backups\n- Schedule automatic backups\n- Restore from a previous backup\n- Export data for compliance purposes",
+  "audit log":
+    "The audit log records important actions in your organization. Find it under **Insights > Audit log**. You can:\n\n- Search for specific events\n- Filter by user, date, or action type\n- Export logs for compliance\n- Monitor admin changes and security events",
 }
 
 function getAIResponse(question: string): string {
@@ -44,11 +55,20 @@ function getAIResponse(question: string): string {
     return "For user management, go to **Admin > Directory > Users**. From there you can:\n\n- View all users in your organization\n- Manage individual user access\n- See user status (active, suspended, etc.)\n- Manage external users under **Security > User security > External users**\n\nWould you like to know more about a specific user management feature?"
   }
 
-  if (q.includes("app") || q.includes("integration") || q.includes("marketplace")) {
+  if (
+    q.includes("app") ||
+    q.includes("integration") ||
+    q.includes("marketplace")
+  ) {
     return "You can manage apps and integrations under **Admin > Apps**:\n\n- **Atlassian apps**: Browse and manage installed apps\n- **App access settings**: Control default app access\n- **User requests**: Review app access requests\n- **App URLs**: Configure application URLs\n\nFor third-party app management, check **Shadow IT** settings."
   }
 
-  if (q.includes("password") || q.includes("login") || q.includes("auth") || q.includes("sso")) {
+  if (
+    q.includes("password") ||
+    q.includes("login") ||
+    q.includes("auth") ||
+    q.includes("sso")
+  ) {
     return "For authentication and login settings:\n\n- **Authentication policies**: Set password requirements, 2FA, and session duration under **Security > User security > Authentication policies**\n- **Identity providers**: Configure SSO with SAML or Google under **Security > User security > Identity providers**\n- **Login page**: Customize your login page under **Organization settings > Login page**"
   }
 
@@ -84,22 +104,34 @@ export function AdminHelpPanel({
     setMessages((prev) => [...prev, { role: "user", content: userMessage }])
     setIsTyping(true)
 
-    setTimeout(() => {
-      const response = getAIResponse(userMessage)
-      setMessages((prev) => [...prev, { role: "assistant", content: response }])
-      setIsTyping(false)
-    }, 800 + 700 * 0.5)
+    setTimeout(
+      () => {
+        const response = getAIResponse(userMessage)
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: response },
+        ])
+        setIsTyping(false)
+      },
+      800 + 700 * 0.5
+    )
   }
 
   const handleSuggestion = (question: string) => {
     setMessages((prev) => [...prev, { role: "user", content: question }])
     setIsTyping(true)
 
-    setTimeout(() => {
-      const response = getAIResponse(question)
-      setMessages((prev) => [...prev, { role: "assistant", content: response }])
-      setIsTyping(false)
-    }, 800 + 700 * 0.5)
+    setTimeout(
+      () => {
+        const response = getAIResponse(question)
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: response },
+        ])
+        setIsTyping(false)
+      },
+      800 + 700 * 0.5
+    )
   }
 
   const handleNewChat = () => {
@@ -169,13 +201,15 @@ export function AdminHelpPanel({
               <div className="rounded-lg bg-blue-50 px-4 py-3 text-sm leading-relaxed text-foreground dark:bg-blue-900/20">
                 {msg.content.split("\n").map((line, j) => (
                   <p key={j} className={line === "" ? "h-2" : ""}>
-                    {line.split(/(\*\*.*?\*\*)/).map((part, k) =>
-                      part.startsWith("**") && part.endsWith("**") ? (
-                        <strong key={k}>{part.slice(2, -2)}</strong>
-                      ) : (
-                        <span key={k}>{part}</span>
-                      ),
-                    )}
+                    {line
+                      .split(/(\*\*.*?\*\*)/)
+                      .map((part, k) =>
+                        part.startsWith("**") && part.endsWith("**") ? (
+                          <strong key={k}>{part.slice(2, -2)}</strong>
+                        ) : (
+                          <span key={k}>{part}</span>
+                        )
+                      )}
                   </p>
                 ))}
               </div>
@@ -236,12 +270,12 @@ export function AdminHelpPanel({
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Ask a question to get started"
             disabled={isTyping}
-            className="w-full rounded-md border bg-background py-2 pl-3 pr-10 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring disabled:opacity-50"
+            className="w-full rounded-md border bg-background py-2 pr-10 pl-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring disabled:opacity-50"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isTyping}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
+            className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
           >
             <svg
               className="size-4"

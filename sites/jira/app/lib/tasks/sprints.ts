@@ -1,23 +1,23 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R5 = {
   completion: 5.0,
   partialPerCheck: true,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const R8 = {
   completion: 8.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 const R10 = {
   completion: 10.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 
 // Sprint reference (new CESS data):
 //   sprint-1 PLAT Sprint 10  closed
@@ -241,13 +241,62 @@ export const sprintTasks: TaskDefinition[] = [
     title: "Close sprint and move incomplete",
     goal: "Complete PLAT Sprint 13 (sprint-4), then move all incomplete issues (status not 'Done') from sprint-4 to PLAT Sprint 14 (sprint-5). Incomplete in sprint-4: PLAT-11 (iss-2), PLAT-12 (iss-3), PLAT-16 (iss-7), PLAT-19 (iss-10), PLAT-21 (iss-12), PLAT-28 (iss-19).",
     evalChecks: [
-      { type: "state_predicate", predicate: "sprint_has_state", id: "sprint-4", expected: "closed",  weight: 0.3, description: "Sprint 13 closed" },
-      { type: "state_predicate", predicate: "issue_in_sprint", id: "iss-2",  expected: "sprint-5", weight: 0.12, description: "PLAT-11 moved" },
-      { type: "state_predicate", predicate: "issue_in_sprint", id: "iss-3",  expected: "sprint-5", weight: 0.12, description: "PLAT-12 moved" },
-      { type: "state_predicate", predicate: "issue_in_sprint", id: "iss-7",  expected: "sprint-5", weight: 0.12, description: "PLAT-16 moved" },
-      { type: "state_predicate", predicate: "issue_in_sprint", id: "iss-10", expected: "sprint-5", weight: 0.12, description: "PLAT-19 moved" },
-      { type: "state_predicate", predicate: "issue_in_sprint", id: "iss-12", expected: "sprint-5", weight: 0.11, description: "PLAT-21 moved" },
-      { type: "state_predicate", predicate: "issue_in_sprint", id: "iss-19", expected: "sprint-5", weight: 0.11, description: "PLAT-28 moved" },
+      {
+        type: "state_predicate",
+        predicate: "sprint_has_state",
+        id: "sprint-4",
+        expected: "closed",
+        weight: 0.3,
+        description: "Sprint 13 closed",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_sprint",
+        id: "iss-2",
+        expected: "sprint-5",
+        weight: 0.12,
+        description: "PLAT-11 moved",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_sprint",
+        id: "iss-3",
+        expected: "sprint-5",
+        weight: 0.12,
+        description: "PLAT-12 moved",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_sprint",
+        id: "iss-7",
+        expected: "sprint-5",
+        weight: 0.12,
+        description: "PLAT-16 moved",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_sprint",
+        id: "iss-10",
+        expected: "sprint-5",
+        weight: 0.12,
+        description: "PLAT-19 moved",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_sprint",
+        id: "iss-12",
+        expected: "sprint-5",
+        weight: 0.11,
+        description: "PLAT-21 moved",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_in_sprint",
+        id: "iss-19",
+        expected: "sprint-5",
+        weight: 0.11,
+        description: "PLAT-28 moved",
+      },
     ],
     maxSteps: 30,
     rewardProfile: R10,
@@ -331,4 +380,4 @@ export const sprintTasks: TaskDefinition[] = [
     rewardProfile: R10,
     tags: ["sprint", "create", "bulk", "estimation"],
   },
-];
+]

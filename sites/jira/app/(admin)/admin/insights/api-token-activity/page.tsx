@@ -55,9 +55,9 @@ function TokenTypeDropdown({
         }}
         className={`inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors ${
           isOpen
-            ? "border-blue-600 text-blue-600 bg-blue-50 dark:bg-blue-950/30"
+            ? "border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-950/30"
             : selected.size > 0
-              ? "border-blue-600 text-blue-600 bg-blue-50 dark:bg-blue-950/30"
+              ? "border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-950/30"
               : "border-input text-foreground hover:bg-accent"
         }`}
       >
@@ -115,7 +115,7 @@ function TokenTypeDropdown({
               ))
             )}
           </div>
-          <div className="border-t px-2 py-1.5 text-xs text-muted-foreground text-right">
+          <div className="border-t px-2 py-1.5 text-right text-xs text-muted-foreground">
             {filtered.length} of {options.length}
           </div>
         </div>
@@ -191,9 +191,9 @@ function LastUsedDropdown({
         onClick={() => onOpenChange(!isOpen)}
         className={`inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors ${
           isOpen
-            ? "border-blue-600 text-blue-600 bg-blue-50 dark:bg-blue-950/30"
+            ? "border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-950/30"
             : hasFilter
-              ? "border-blue-600 text-blue-600 bg-blue-50 dark:bg-blue-950/30"
+              ? "border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-950/30"
               : "border-input text-foreground hover:bg-accent"
         }`}
       >
@@ -205,7 +205,7 @@ function LastUsedDropdown({
       {isOpen && (
         <div className="absolute top-full left-0 z-50 mt-1 w-80 rounded-md border bg-popover p-4 shadow-md">
           {/* Between */}
-          <label className="flex items-center gap-2 cursor-pointer mb-3">
+          <label className="mb-3 flex cursor-pointer items-center gap-2">
             <input
               type="radio"
               name="date-mode"
@@ -216,15 +216,21 @@ function LastUsedDropdown({
             <span className="text-sm font-medium">Between</span>
           </label>
           {mode === "between" && (
-            <div className="flex items-center gap-2 mb-4 ml-6">
+            <div className="mb-4 ml-6 flex items-center gap-2">
               <div className="relative">
                 <input
                   type="text"
                   value={dateFrom}
                   onChange={(e) => onDateFromChange(e.target.value)}
-                  className="w-28 rounded-md border px-2 py-1 text-sm pr-7 bg-transparent"
+                  className="w-28 rounded-md border bg-transparent px-2 py-1 pr-7 text-sm"
                 />
-                <svg className="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="absolute top-1/2 right-2 size-3.5 -translate-y-1/2 text-muted-foreground"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                   <line x1="16" y1="2" x2="16" y2="6" />
                   <line x1="8" y1="2" x2="8" y2="6" />
@@ -237,9 +243,15 @@ function LastUsedDropdown({
                   type="text"
                   value={dateTo}
                   onChange={(e) => onDateToChange(e.target.value)}
-                  className="w-28 rounded-md border px-2 py-1 text-sm pr-7 bg-transparent"
+                  className="w-28 rounded-md border bg-transparent px-2 py-1 pr-7 text-sm"
                 />
-                <svg className="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="absolute top-1/2 right-2 size-3.5 -translate-y-1/2 text-muted-foreground"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                   <line x1="16" y1="2" x2="16" y2="6" />
                   <line x1="8" y1="2" x2="8" y2="6" />
@@ -250,7 +262,7 @@ function LastUsedDropdown({
           )}
 
           {/* Within the last */}
-          <label className="flex items-center gap-2 cursor-pointer mb-3">
+          <label className="mb-3 flex cursor-pointer items-center gap-2">
             <input
               type="radio"
               name="date-mode"
@@ -261,18 +273,18 @@ function LastUsedDropdown({
             <span className="text-sm">Within the last</span>
           </label>
           {mode === "within" && (
-            <div className="flex items-center gap-2 mb-4 ml-6">
+            <div className="mb-4 ml-6 flex items-center gap-2">
               <input
                 type="number"
                 value={withinValue}
                 onChange={(e) => onWithinValueChange(e.target.value)}
-                className="w-16 rounded-md border px-2 py-1 text-sm bg-transparent"
+                className="w-16 rounded-md border bg-transparent px-2 py-1 text-sm"
                 min="1"
               />
               <select
                 value={withinUnit}
                 onChange={(e) => onWithinUnitChange(e.target.value)}
-                className="rounded-md border px-2 py-1 text-sm bg-transparent"
+                className="rounded-md border bg-transparent px-2 py-1 text-sm"
               >
                 <option value="days">days</option>
                 <option value="weeks">weeks</option>
@@ -282,7 +294,7 @@ function LastUsedDropdown({
           )}
 
           {/* More than */}
-          <label className="flex items-center gap-2 cursor-pointer mb-3">
+          <label className="mb-3 flex cursor-pointer items-center gap-2">
             <input
               type="radio"
               name="date-mode"
@@ -293,18 +305,18 @@ function LastUsedDropdown({
             <span className="text-sm">More than</span>
           </label>
           {mode === "more" && (
-            <div className="flex items-center gap-2 mb-4 ml-6">
+            <div className="mb-4 ml-6 flex items-center gap-2">
               <input
                 type="number"
                 value={moreThanValue}
                 onChange={(e) => onMoreThanValueChange(e.target.value)}
-                className="w-16 rounded-md border px-2 py-1 text-sm bg-transparent"
+                className="w-16 rounded-md border bg-transparent px-2 py-1 text-sm"
                 min="1"
               />
               <select
                 value={moreThanUnit}
                 onChange={(e) => onMoreThanUnitChange(e.target.value)}
-                className="rounded-md border px-2 py-1 text-sm bg-transparent"
+                className="rounded-md border bg-transparent px-2 py-1 text-sm"
               >
                 <option value="days">days ago</option>
                 <option value="weeks">weeks ago</option>
@@ -314,7 +326,7 @@ function LastUsedDropdown({
           )}
 
           {/* In the range */}
-          <label className="flex items-center gap-2 cursor-pointer mb-4">
+          <label className="mb-4 flex cursor-pointer items-center gap-2">
             <input
               type="radio"
               name="date-mode"
@@ -325,15 +337,21 @@ function LastUsedDropdown({
             <span className="text-sm">In the range</span>
           </label>
           {mode === "range" && (
-            <div className="flex items-center gap-2 mb-4 ml-6">
+            <div className="mb-4 ml-6 flex items-center gap-2">
               <div className="relative">
                 <input
                   type="text"
                   value={rangeFrom}
                   onChange={(e) => onRangeFromChange(e.target.value)}
-                  className="w-28 rounded-md border px-2 py-1 text-sm pr-7 bg-transparent"
+                  className="w-28 rounded-md border bg-transparent px-2 py-1 pr-7 text-sm"
                 />
-                <svg className="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="absolute top-1/2 right-2 size-3.5 -translate-y-1/2 text-muted-foreground"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                   <line x1="16" y1="2" x2="16" y2="6" />
                   <line x1="8" y1="2" x2="8" y2="6" />
@@ -346,9 +364,15 @@ function LastUsedDropdown({
                   type="text"
                   value={rangeTo}
                   onChange={(e) => onRangeToChange(e.target.value)}
-                  className="w-28 rounded-md border px-2 py-1 text-sm pr-7 bg-transparent"
+                  className="w-28 rounded-md border bg-transparent px-2 py-1 pr-7 text-sm"
                 />
-                <svg className="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="absolute top-1/2 right-2 size-3.5 -translate-y-1/2 text-muted-foreground"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                   <line x1="16" y1="2" x2="16" y2="6" />
                   <line x1="8" y1="2" x2="8" y2="6" />
@@ -379,10 +403,14 @@ function LastUsedDropdown({
 
 export default function ApiTokenActivityPage() {
   const [search, setSearch] = useState("")
-  const [openFilter, setOpenFilter] = useState<"tokenType" | "lastUsed" | null>(null)
+  const [openFilter, setOpenFilter] = useState<"tokenType" | "lastUsed" | null>(
+    null
+  )
 
   // Token type filter
-  const [selectedTokenTypes, setSelectedTokenTypes] = useState<Set<string>>(new Set())
+  const [selectedTokenTypes, setSelectedTokenTypes] = useState<Set<string>>(
+    new Set()
+  )
   const toggleTokenType = (value: string) => {
     const next = new Set(selectedTokenTypes)
     if (next.has(value)) next.delete(value)
@@ -391,7 +419,8 @@ export default function ApiTokenActivityPage() {
   }
 
   // Last used filter
-  const [dateFilterMode, setDateFilterMode] = useState<DateFilterMode>("between")
+  const [dateFilterMode, setDateFilterMode] =
+    useState<DateFilterMode>("between")
   const [dateFrom, setDateFrom] = useState("2/18/1993")
   const [dateTo, setDateTo] = useState("2/18/1993")
   const [withinValue, setWithinValue] = useState("30")
@@ -410,8 +439,8 @@ export default function ApiTokenActivityPage() {
   const [exportStarted, setExportStarted] = useState(false)
 
   return (
-    <div className="p-8 max-w-5xl">
-      <div className="flex items-center justify-between mb-4">
+    <div className="max-w-5xl p-8">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">API token activity</h1>
         <Button variant="outline" onClick={() => setExportOpen(true)}>
           Export token list
@@ -424,23 +453,39 @@ export default function ApiTokenActivityPage() {
           <DialogHeader>
             <DialogTitle>Export token list</DialogTitle>
             <DialogDescription>
-              Export your API token activity data as a CSV file. The export will include all tokens matching your current filters.
+              Export your API token activity data as a CSV file. The export will
+              include all tokens matching your current filters.
             </DialogDescription>
           </DialogHeader>
           {exportStarted ? (
             <div className="flex flex-col items-center gap-2 py-4">
-              <svg className="size-10 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-10 text-green-500"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
               <p className="text-sm font-medium">Export started!</p>
-              <p className="text-xs text-muted-foreground">Your CSV file will be downloaded shortly. If you have a large number of tokens, this may take a moment.</p>
+              <p className="text-xs text-muted-foreground">
+                Your CSV file will be downloaded shortly. If you have a large
+                number of tokens, this may take a moment.
+              </p>
             </div>
           ) : (
             <>
               <div className="rounded-lg border bg-muted/30 p-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="size-4 text-muted-foreground"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <circle cx="12" cy="12" r="10" />
                     <path d="M12 16v-4" />
                     <path d="M12 8h.01" />
@@ -455,7 +500,7 @@ export default function ApiTokenActivityPage() {
                   Cancel
                 </Button>
                 <Button
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
                   onClick={() => {
                     setExportStarted(true)
                     setTimeout(() => {
@@ -472,22 +517,28 @@ export default function ApiTokenActivityPage() {
         </DialogContent>
       </Dialog>
 
-      <p className="text-sm text-muted-foreground mb-1">
+      <p className="mb-1 text-sm text-muted-foreground">
         Track user API token activity in your organization.
       </p>
       <a
         href="https://support.atlassian.com/organization-administration/docs/track-user-api-token-activity/"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-sm text-blue-600 hover:underline mb-6 inline-block"
+        className="mb-6 inline-block text-sm text-blue-600 hover:underline"
       >
         How to track user API tokens
       </a>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 mb-4 mt-4">
-        <div className="relative flex-1 max-w-xs">
-          <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <div className="mt-4 mb-4 flex items-center gap-3">
+        <div className="relative max-w-xs flex-1">
+          <svg
+            className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
@@ -530,9 +581,15 @@ export default function ApiTokenActivityPage() {
         />
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+      <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
         <span>Showing 0 results out of 0 items</span>
-        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M21 12a9 9 0 1 1-6.219-8.56" />
         </svg>
       </div>
@@ -569,7 +626,10 @@ export default function ApiTokenActivityPage() {
           </thead>
           <tbody>
             <tr>
-              <td colSpan={6} className="px-4 py-8 text-center text-sm italic text-muted-foreground">
+              <td
+                colSpan={6}
+                className="px-4 py-8 text-center text-sm text-muted-foreground italic"
+              >
                 Users have no user API tokens
               </td>
             </tr>

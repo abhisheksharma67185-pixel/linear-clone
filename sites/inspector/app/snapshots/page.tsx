@@ -68,7 +68,7 @@ export default function SnapshotsIndexPage() {
                     >
                       {entry.taskTitle}
                     </Link>
-                    <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
                       <Badge variant="outline">{entry.siteId}</Badge>
                       <span>{relativeTime(entry.startedAt)}</span>
                       <span className="font-mono">{entry.episodeId}</span>

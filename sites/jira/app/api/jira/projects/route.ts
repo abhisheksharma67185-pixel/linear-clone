@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { getProjects, getUsers } from "@/app/lib/store"
 
-const PLACEHOLDER_AVATAR = "https://api.atlassian.com/ex/jira/10000/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium"
+const PLACEHOLDER_AVATAR =
+  "https://api.atlassian.com/ex/jira/10000/rest/api/3/universal_avatar/view/type/project/avatar/10415?size=medium"
 
 function storeProjectsToJiraFormat(sortOrder: string) {
   const allProjects = getProjects()
@@ -9,7 +10,9 @@ function storeProjectsToJiraFormat(sortOrder: string) {
   const BUSINESS_KEYS = new Set(["SUS", "SEU", "SAP"])
   const projects = allProjects.map((p) => {
     const lead = allUsers.find((u) => u.id === p.lead)
-    const projectTypeKey = BUSINESS_KEYS.has(p.key) ? "business" as const : "software" as const
+    const projectTypeKey = BUSINESS_KEYS.has(p.key)
+      ? ("business" as const)
+      : ("software" as const)
     return {
       id: p.id,
       key: p.key,
@@ -22,10 +25,12 @@ function storeProjectsToJiraFormat(sortOrder: string) {
         "32x32": PLACEHOLDER_AVATAR,
         "48x48": PLACEHOLDER_AVATAR,
       },
-      lead: lead ? {
-        displayName: lead.displayName,
-        avatarUrls: { "24x24": "", "32x32": "", "48x48": "" },
-      } : undefined,
+      lead: lead
+        ? {
+            displayName: lead.displayName,
+            avatarUrls: { "24x24": "", "32x32": "", "48x48": "" },
+          }
+        : undefined,
     }
   })
   if (sortOrder === "DESC") {
@@ -33,7 +38,12 @@ function storeProjectsToJiraFormat(sortOrder: string) {
   } else {
     projects.sort((a, b) => a.name.localeCompare(b.name))
   }
-  return { values: projects, total: projects.length, maxResults: 50, startAt: 0 }
+  return {
+    values: projects,
+    total: projects.length,
+    maxResults: 50,
+    startAt: 0,
+  }
 }
 
 export async function GET(request: Request) {
@@ -42,8 +52,8 @@ export async function GET(request: Request) {
   const sortOrder = searchParams.get("sortOrder") ?? "ASC"
 
   const baseUrl = process.env.ATLASSIAN_BASE_URL
-  const email   = process.env.ATLASSIAN_EMAIL
-  const token   = process.env.ATLASSIAN_API_TOKEN
+  const email = process.env.ATLASSIAN_EMAIL
+  const token = process.env.ATLASSIAN_API_TOKEN
 
   if (!baseUrl || !email || !token) {
     return NextResponse.json(storeProjectsToJiraFormat(sortOrder))
@@ -54,8 +64,8 @@ export async function GET(request: Request) {
   try {
     const res = await fetch(
       `${baseUrl}/rest/api/3/project/search` +
-      `?orderBy=${orderBy}&sortOrder=${sortOrder}&action=view` +
-      `&maxResults=50&expand=lead,description`,
+        `?orderBy=${orderBy}&sortOrder=${sortOrder}&action=view` +
+        `&maxResults=50&expand=lead,description`,
       {
         headers: {
           Authorization: `Basic ${credentials}`,
@@ -86,12 +96,15 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const { name, key, projectTypeKey = "software" } = await request.json()
 
-  const base  = process.env.ATLASSIAN_BASE_URL
+  const base = process.env.ATLASSIAN_BASE_URL
   const email = process.env.ATLASSIAN_EMAIL
   const token = process.env.ATLASSIAN_API_TOKEN
 
   if (!base || !email || !token) {
-    return NextResponse.json({ error: "Atlassian credentials not configured" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Atlassian credentials not configured" },
+      { status: 500 }
+    )
   }
 
   const auth = Buffer.from(`${email}:${token}`).toString("base64")

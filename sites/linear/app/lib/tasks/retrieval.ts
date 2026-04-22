@@ -1,17 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R = {
   completion: 2.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const R5 = {
   completion: 5.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 
 export const retrievalTasks: TaskDefinition[] = [
   {
@@ -46,8 +46,12 @@ export const retrievalTasks: TaskDefinition[] = [
     retrievalRubric: {
       question: "What is Sprint 13's description?",
       groundTruth: "Pre-release hardening for v2.3.0",
-      acceptableVariations: ["Pre-release hardening for v2.3.0", "pre-release hardening"],
-      rubric: "Sprint 13 (cycle-6) has description 'Pre-release hardening for v2.3.0'.",
+      acceptableVariations: [
+        "Pre-release hardening for v2.3.0",
+        "pre-release hardening",
+      ],
+      rubric:
+        "Sprint 13 (cycle-6) has description 'Pre-release hardening for v2.3.0'.",
     },
     evalChecks: [],
     maxSteps: 10,
@@ -67,7 +71,8 @@ export const retrievalTasks: TaskDefinition[] = [
       question: "What is the New Checkout Flow project status?",
       groundTruth: "in_progress",
       acceptableVariations: ["in_progress", "In Progress", "in progress"],
-      rubric: "The New Checkout Flow project (proj-2) has status 'in_progress'.",
+      rubric:
+        "The New Checkout Flow project (proj-2) has status 'in_progress'.",
     },
     evalChecks: [],
     maxSteps: 10,
@@ -88,7 +93,8 @@ export const retrievalTasks: TaskDefinition[] = [
       // done in proj-1: PLT-101(8)+PLT-110(3)+PLT-116(2) = 13
       groundTruth: "13",
       acceptableVariations: ["13", "13 points", "thirteen"],
-      rubric: "Auth Service done issues: PLT-101(8)+PLT-110(3)+PLT-116(2) = 13.",
+      rubric:
+        "Auth Service done issues: PLT-101(8)+PLT-110(3)+PLT-116(2) = 13.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -172,7 +178,8 @@ export const retrievalTasks: TaskDefinition[] = [
       question: "What labels are on PLT-101?",
       groundTruth: "backend, feature",
       acceptableVariations: ["backend and feature", "label-2, label-6"],
-      rubric: "PLT-101 (iss-1) has labelIds ['label-2', 'label-6'] = backend + feature.",
+      rubric:
+        "PLT-101 (iss-1) has labelIds ['label-2', 'label-6'] = backend + feature.",
     },
     evalChecks: [],
     maxSteps: 10,
@@ -192,7 +199,8 @@ export const retrievalTasks: TaskDefinition[] = [
       question: "How many issues are unassigned?",
       groundTruth: "127",
       acceptableVariations: ["127", "127 issues"],
-      rubric: "127 of 180 issues have null assigneeId — mostly triage backlog + legacy.",
+      rubric:
+        "127 of 180 issues have null assigneeId — mostly triage backlog + legacy.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -212,7 +220,8 @@ export const retrievalTasks: TaskDefinition[] = [
       question: "How many issues are in the Legacy team?",
       groundTruth: "85",
       acceptableVariations: ["85", "85 issues"],
-      rubric: "The Legacy team (team-4) has 85 inherited issues: LEG-001 through LEG-085.",
+      rubric:
+        "The Legacy team (team-4) has 85 inherited issues: LEG-001 through LEG-085.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -251,7 +260,11 @@ export const retrievalTasks: TaskDefinition[] = [
     retrievalRubric: {
       question: "What is the workspace name?",
       groundTruth: "Theta Engineering",
-      acceptableVariations: ["Theta Engineering", "theta-eng", "theta engineering"],
+      acceptableVariations: [
+        "Theta Engineering",
+        "theta-eng",
+        "theta engineering",
+      ],
       rubric: "The workspace is 'Theta Engineering' with URL key 'theta-eng'.",
     },
     evalChecks: [],
@@ -259,4 +272,4 @@ export const retrievalTasks: TaskDefinition[] = [
     rewardProfile: R,
     tags: ["retrieval"],
   },
-];
+]

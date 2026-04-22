@@ -70,10 +70,14 @@ export default function FilesPage() {
         <Badge tone={typeTone(file.type)}>{file.type}</Badge>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{file.size}</Text>
+        <Text as="span" tone="subdued">
+          {file.size}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{file.uploaded}</Text>
+        <Text as="span" tone="subdued">
+          {file.uploaded}
+        </Text>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));

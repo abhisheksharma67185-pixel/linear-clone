@@ -1,34 +1,40 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { Send, Clock } from "lucide-react";
+import { useEffect, useState } from "react"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { Send, Clock } from "lucide-react"
 
 type Message = {
-  id: string;
-  text: string;
-  authorId: string;
-  scheduledFor: string | null;
-  createdAt: string;
-  channelId: string | null;
-};
+  id: string
+  text: string
+  authorId: string
+  scheduledFor: string | null
+  createdAt: string
+  channelId: string | null
+}
 
-type Channel = { id: string; name: string };
+type Channel = { id: string; name: string }
 
 export default function DraftsPage() {
-  const [scheduled, setScheduled] = useState<Message[]>([]);
-  const [channels, setChannels] = useState<Channel[]>([]);
+  const [scheduled, setScheduled] = useState<Message[]>([])
+  const [channels, setChannels] = useState<Channel[]>([])
   useEffect(() => {
     Promise.all([
       fetch("/api/data/scheduled").then((r) => r.json()),
       fetch("/api/data/channels").then((r) => r.json()),
     ]).then(([s, c]) => {
-      setScheduled(s);
-      setChannels(c);
-    });
-  }, []);
+      setScheduled(s)
+      setChannels(c)
+    })
+  }, [])
 
   return (
     <>
@@ -52,7 +58,7 @@ export default function DraftsPage() {
         ) : (
           <div className="flex flex-col divide-y divide-border">
             {scheduled.map((m) => {
-              const ch = channels.find((c) => c.id === m.channelId);
+              const ch = channels.find((c) => c.id === m.channelId)
               return (
                 <div key={m.id} className="flex items-start gap-3 px-4 py-3">
                   <Clock className="size-4 text-muted-foreground" />
@@ -67,11 +73,11 @@ export default function DraftsPage() {
                     <span className="text-sm text-foreground">{m.text}</span>
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         )}
       </ScrollArea>
     </>
-  );
+  )
 }

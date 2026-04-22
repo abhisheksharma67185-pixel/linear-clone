@@ -1,35 +1,35 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R2 = {
   completion: 2.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const R5 = {
   completion: 5.0,
   partialPerCheck: true,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const R8 = {
   completion: 8.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 const R10 = {
   completion: 10.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 const R15 = {
   completion: 15.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 
 // Key issue reference (new CESS data — PLAT project, proj-4):
 //   iss-1  PLAT-10  Implement PKCE auth flow      Done            sprint-2
@@ -426,7 +426,8 @@ export const issueTasks: TaskDefinition[] = [
         predicate: "issue_has_fields",
         id: "iss-6",
         expected: {
-          description: "FIDO2/WebAuthn enrollment with platform and cross-platform authenticators",
+          description:
+            "FIDO2/WebAuthn enrollment with platform and cross-platform authenticators",
           componentIds: ["cmp-2"],
         },
         weight: 1.0,
@@ -482,10 +483,38 @@ export const issueTasks: TaskDefinition[] = [
     title: "Bulk priority for critical bugs",
     goal: "Set priority to 'Highest' for PLAT's first 4 open bugs: PLAT-50 (iss-31), PLAT-52 (iss-33), PLAT-53 (iss-34), PLAT-57 (iss-38).",
     evalChecks: [
-      { type: "state_predicate", predicate: "issue_has_priority", id: "iss-31", expected: "highest", weight: 0.25, description: "PLAT-50 highest" },
-      { type: "state_predicate", predicate: "issue_has_priority", id: "iss-33", expected: "highest", weight: 0.25, description: "PLAT-52 highest" },
-      { type: "state_predicate", predicate: "issue_has_priority", id: "iss-34", expected: "highest", weight: 0.25, description: "PLAT-53 highest" },
-      { type: "state_predicate", predicate: "issue_has_priority", id: "iss-38", expected: "highest", weight: 0.25, description: "PLAT-57 highest" },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_priority",
+        id: "iss-31",
+        expected: "highest",
+        weight: 0.25,
+        description: "PLAT-50 highest",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_priority",
+        id: "iss-33",
+        expected: "highest",
+        weight: 0.25,
+        description: "PLAT-52 highest",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_priority",
+        id: "iss-34",
+        expected: "highest",
+        weight: 0.25,
+        description: "PLAT-53 highest",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_priority",
+        id: "iss-38",
+        expected: "highest",
+        weight: 0.25,
+        description: "PLAT-57 highest",
+      },
     ],
     maxSteps: 25,
     rewardProfile: R10,
@@ -501,9 +530,30 @@ export const issueTasks: TaskDefinition[] = [
     title: "Set points for unestimated PLAT tasks",
     goal: "Set story points to 3 for three unestimated PLAT tasks: PLAT-70 (iss-46), PLAT-73 (iss-49), PLAT-75 (iss-51).",
     evalChecks: [
-      { type: "state_predicate", predicate: "issue_has_story_points", id: "iss-46", expected: 3, weight: 0.34, description: "PLAT-70 has 3 pts" },
-      { type: "state_predicate", predicate: "issue_has_story_points", id: "iss-49", expected: 3, weight: 0.33, description: "PLAT-73 has 3 pts" },
-      { type: "state_predicate", predicate: "issue_has_story_points", id: "iss-51", expected: 3, weight: 0.33, description: "PLAT-75 has 3 pts" },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_story_points",
+        id: "iss-46",
+        expected: 3,
+        weight: 0.34,
+        description: "PLAT-70 has 3 pts",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_story_points",
+        id: "iss-49",
+        expected: 3,
+        weight: 0.33,
+        description: "PLAT-73 has 3 pts",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_story_points",
+        id: "iss-51",
+        expected: 3,
+        weight: 0.33,
+        description: "PLAT-75 has 3 pts",
+      },
     ],
     maxSteps: 25,
     rewardProfile: R10,
@@ -757,4 +807,4 @@ export const issueTasks: TaskDefinition[] = [
     rewardProfile: R10,
     tags: ["create", "multi-field"],
   },
-];
+]

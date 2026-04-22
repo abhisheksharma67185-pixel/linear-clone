@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { evaluate } from "./evaluator";
-import { registerPredicate, clearPredicates } from "./predicates";
-import type { TaskDefinition, EvalCheck } from "./tasks/types";
-import type { GenericSnapshot } from "./snapshot";
-import type { StateDiff } from "./types";
+import { describe, it, expect, beforeEach } from "vitest"
+import { evaluate } from "./evaluator"
+import { registerPredicate, clearPredicates } from "./predicates"
+import type { TaskDefinition, EvalCheck } from "./tasks/types"
+import type { GenericSnapshot } from "./snapshot"
+import type { StateDiff } from "./types"
 
-const emptyDiff: StateDiff = { added: [], removed: [], modified: [] };
+const emptyDiff: StateDiff = { added: [], removed: [], modified: [] }
 
 const task = (evalChecks: EvalCheck[]): TaskDefinition => ({
   id: "t1",
@@ -19,12 +19,12 @@ const task = (evalChecks: EvalCheck[]): TaskDefinition => ({
   maxSteps: 10,
   tags: [],
   evalChecks,
-});
+})
 
 const snap = (data: Record<string, unknown>): GenericSnapshot => ({
   capturedAt: new Date().toISOString(),
   ...data,
-});
+})
 
 describe("evaluate (state_diff)", () => {
   it("passes when actual matches expected", () => {
@@ -37,14 +37,14 @@ describe("evaluate (state_diff)", () => {
         field: "price",
         expected: "34.99",
       },
-    ]);
-    const initial = snap({ products: [{ id: "1", price: "29.99" }] });
-    const final = snap({ products: [{ id: "1", price: "34.99" }] });
-    const result = evaluate(t, initial, final, emptyDiff);
-    expect(result.passed).toBe(1);
-    expect(result.score).toBe(1);
-    expect(result.checks[0].passed).toBe(true);
-  });
+    ])
+    const initial = snap({ products: [{ id: "1", price: "29.99" }] })
+    const final = snap({ products: [{ id: "1", price: "34.99" }] })
+    const result = evaluate(t, initial, final, emptyDiff)
+    expect(result.passed).toBe(1)
+    expect(result.score).toBe(1)
+    expect(result.checks[0].passed).toBe(true)
+  })
 
   it("fails and includes initial value in failure message", () => {
     const t = task([
@@ -56,14 +56,14 @@ describe("evaluate (state_diff)", () => {
         field: "price",
         expected: "34.99",
       },
-    ]);
-    const initial = snap({ products: [{ id: "1", price: "29.99" }] });
-    const final = snap({ products: [{ id: "1", price: "29.99" }] });
-    const result = evaluate(t, initial, final, emptyDiff);
-    expect(result.passed).toBe(0);
-    expect(result.score).toBe(0);
-    expect(result.checks[0].message).toContain("29.99");
-  });
+    ])
+    const initial = snap({ products: [{ id: "1", price: "29.99" }] })
+    const final = snap({ products: [{ id: "1", price: "29.99" }] })
+    const result = evaluate(t, initial, final, emptyDiff)
+    expect(result.passed).toBe(0)
+    expect(result.score).toBe(0)
+    expect(result.checks[0].message).toContain("29.99")
+  })
 
   it("uses deep equality for object expected values", () => {
     const t = task([
@@ -75,12 +75,12 @@ describe("evaluate (state_diff)", () => {
         field: "tags",
         expected: ["a", "b"],
       },
-    ]);
-    const initial = snap({ products: [{ id: "1", tags: [] }] });
-    const final = snap({ products: [{ id: "1", tags: ["a", "b"] }] });
-    expect(evaluate(t, initial, final, emptyDiff).passed).toBe(1);
-  });
-});
+    ])
+    const initial = snap({ products: [{ id: "1", tags: [] }] })
+    const final = snap({ products: [{ id: "1", tags: ["a", "b"] }] })
+    expect(evaluate(t, initial, final, emptyDiff).passed).toBe(1)
+  })
+})
 
 describe("evaluate (state_exists)", () => {
   it("passes when an item with the matching field value exists", () => {
@@ -92,15 +92,15 @@ describe("evaluate (state_exists)", () => {
         field: "status",
         expected: "active",
       },
-    ]);
+    ])
     const final = snap({
       products: [
         { id: "1", status: "draft" },
         { id: "2", status: "active" },
       ],
-    });
-    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(1);
-  });
+    })
+    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(1)
+  })
 
   it("fails when no item matches", () => {
     const t = task([
@@ -111,11 +111,11 @@ describe("evaluate (state_exists)", () => {
         field: "status",
         expected: "active",
       },
-    ]);
-    const final = snap({ products: [{ id: "1", status: "draft" }] });
-    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(0);
-  });
-});
+    ])
+    const final = snap({ products: [{ id: "1", status: "draft" }] })
+    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(0)
+  })
+})
 
 describe("evaluate (state_absent)", () => {
   it("passes when the id is not in the collection", () => {
@@ -126,10 +126,10 @@ describe("evaluate (state_absent)", () => {
         entity: "products",
         id: "99",
       },
-    ]);
-    const final = snap({ products: [{ id: "1" }] });
-    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(1);
-  });
+    ])
+    const final = snap({ products: [{ id: "1" }] })
+    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(1)
+  })
 
   it("fails when the id is still present", () => {
     const t = task([
@@ -139,11 +139,11 @@ describe("evaluate (state_absent)", () => {
         entity: "products",
         id: "1",
       },
-    ]);
-    const final = snap({ products: [{ id: "1" }] });
-    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(0);
-  });
-});
+    ])
+    const final = snap({ products: [{ id: "1" }] })
+    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(0)
+  })
+})
 
 describe("evaluate (state_count)", () => {
   it("passes when count matches", () => {
@@ -154,10 +154,10 @@ describe("evaluate (state_count)", () => {
         entity: "products",
         expected: 3,
       },
-    ]);
-    const final = snap({ products: [{ id: "1" }, { id: "2" }, { id: "3" }] });
-    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(1);
-  });
+    ])
+    const final = snap({ products: [{ id: "1" }, { id: "2" }, { id: "3" }] })
+    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(1)
+  })
 
   it("fails when count differs", () => {
     const t = task([
@@ -167,30 +167,30 @@ describe("evaluate (state_count)", () => {
         entity: "products",
         expected: 3,
       },
-    ]);
-    const final = snap({ products: [{ id: "1" }] });
-    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(0);
-  });
-});
+    ])
+    const final = snap({ products: [{ id: "1" }] })
+    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(0)
+  })
+})
 
 describe("evaluate (state_predicate)", () => {
-  beforeEach(() => clearPredicates());
+  beforeEach(() => clearPredicates())
 
   it("uses registered predicate", () => {
     registerPredicate("hasActiveProduct", (state) => {
-      const products = state.products as { status: string }[];
-      return products.some((p) => p.status === "active");
-    });
+      const products = state.products as { status: string }[]
+      return products.some((p) => p.status === "active")
+    })
     const t = task([
       {
         type: "state_predicate",
         description: "at least one active product",
         predicate: "hasActiveProduct",
       },
-    ]);
-    const final = snap({ products: [{ id: "1", status: "active" }] });
-    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(1);
-  });
+    ])
+    const final = snap({ products: [{ id: "1", status: "active" }] })
+    expect(evaluate(t, snap({}), final, emptyDiff).passed).toBe(1)
+  })
 
   it("fails gracefully when predicate is not registered", () => {
     const t = task([
@@ -199,12 +199,12 @@ describe("evaluate (state_predicate)", () => {
         description: "ghost predicate",
         predicate: "nonexistent",
       },
-    ]);
-    const result = evaluate(t, snap({}), snap({}), emptyDiff);
-    expect(result.passed).toBe(0);
-    expect(result.checks[0].message).toContain("not registered");
-  });
-});
+    ])
+    const result = evaluate(t, snap({}), snap({}), emptyDiff)
+    expect(result.passed).toBe(0)
+    expect(result.checks[0].message).toContain("not registered")
+  })
+})
 
 describe("evaluate (weighted scoring)", () => {
   it("computes weighted average across mixed pass/fail checks", () => {
@@ -223,12 +223,12 @@ describe("evaluate (weighted scoring)", () => {
         expected: 99,
         weight: 1,
       },
-    ]);
-    const final = snap({ products: [{ id: "1" }] });
-    const result = evaluate(t, snap({}), final, emptyDiff);
+    ])
+    const final = snap({ products: [{ id: "1" }] })
+    const result = evaluate(t, snap({}), final, emptyDiff)
     // pass: weight 3 (out of 4) → score 0.75
-    expect(result.score).toBeCloseTo(0.75);
-    expect(result.passed).toBe(1);
-    expect(result.total).toBe(2);
-  });
-});
+    expect(result.score).toBeCloseTo(0.75)
+    expect(result.passed).toBe(1)
+    expect(result.total).toBe(2)
+  })
+})

@@ -1,17 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R10 = {
   completion: 10.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 const R15 = {
   completion: 15.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 
 export const multiDomainTasks: TaskDefinition[] = [
   {
@@ -71,13 +71,62 @@ export const multiDomainTasks: TaskDefinition[] = [
     title: "Release hardening",
     goal: "Prepare v2.3.0 release: transition Auth Service in_progress issues (PLT-102 iss-2, PLT-103 iss-3, PLT-105 iss-5, PLT-107 iss-7, PLT-112 iss-12, PLT-118 iss-18) to 'done', then complete Sprint 13 (cycle-6).",
     evalChecks: [
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-2",  expected: "done", weight: 0.1, description: "PLT-102 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-3",  expected: "done", weight: 0.1, description: "PLT-103 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-5",  expected: "done", weight: 0.1, description: "PLT-105 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-7",  expected: "done", weight: 0.1, description: "PLT-107 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-12", expected: "done", weight: 0.1, description: "PLT-112 done" },
-      { type: "state_predicate", predicate: "issue_has_status", id: "iss-18", expected: "done", weight: 0.1, description: "PLT-118 done" },
-      { type: "state_predicate", predicate: "cycle_has_state",  id: "cycle-6", expected: "completed", weight: 0.4, description: "Sprint 13 completed" },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-2",
+        expected: "done",
+        weight: 0.1,
+        description: "PLT-102 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-3",
+        expected: "done",
+        weight: 0.1,
+        description: "PLT-103 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-5",
+        expected: "done",
+        weight: 0.1,
+        description: "PLT-105 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-7",
+        expected: "done",
+        weight: 0.1,
+        description: "PLT-107 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-12",
+        expected: "done",
+        weight: 0.1,
+        description: "PLT-112 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "issue_has_status",
+        id: "iss-18",
+        expected: "done",
+        weight: 0.1,
+        description: "PLT-118 done",
+      },
+      {
+        type: "state_predicate",
+        predicate: "cycle_has_state",
+        id: "cycle-6",
+        expected: "completed",
+        weight: 0.4,
+        description: "Sprint 13 completed",
+      },
     ],
     maxSteps: 30,
     rewardProfile: R10,
@@ -352,4 +401,4 @@ export const multiDomainTasks: TaskDefinition[] = [
     rewardProfile: R10,
     tags: ["create", "transition", "emergency"],
   },
-];
+]

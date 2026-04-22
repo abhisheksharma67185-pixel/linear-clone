@@ -34,10 +34,10 @@ function SiteCard({ site }: { site: SiteConnection }) {
   const status = isLoading
     ? "loading"
     : isError
-    ? "error"
-    : data?.status === "ok"
-    ? "ok"
-    : "warn"
+      ? "error"
+      : data?.status === "ok"
+        ? "ok"
+        : "warn"
 
   return (
     <Card className="overflow-hidden">
@@ -51,7 +51,7 @@ function SiteCard({ site }: { site: SiteConnection }) {
             {site.id}
           </Badge>
         </div>
-        <CardDescription className="font-mono text-xs truncate">
+        <CardDescription className="truncate font-mono text-xs">
           {site.url}
         </CardDescription>
       </CardHeader>
@@ -64,10 +64,8 @@ function SiteCard({ site }: { site: SiteConnection }) {
         )}
         {isError && (
           <div className="text-xs text-muted-foreground">
-            <p className="text-destructive font-medium">
-              Site unreachable
-            </p>
-            <p className="font-mono mt-1 break-words">
+            <p className="font-medium text-destructive">Site unreachable</p>
+            <p className="mt-1 font-mono break-words">
               {error instanceof Error ? error.message : "Unknown error"}
             </p>
           </div>
@@ -78,13 +76,13 @@ function SiteCard({ site }: { site: SiteConnection }) {
               <div className="text-xl font-semibold">
                 {compactNumber(data.tasks)}
               </div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              <div className="text-[10px] tracking-wide text-muted-foreground uppercase">
                 tasks
               </div>
             </div>
             <div>
               <div className="text-xl font-semibold">{data.domains}</div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              <div className="text-[10px] tracking-wide text-muted-foreground uppercase">
                 domains
               </div>
             </div>
@@ -92,17 +90,22 @@ function SiteCard({ site }: { site: SiteConnection }) {
               <div className="text-xl font-semibold">
                 {data.curriculum_stages}
               </div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              <div className="text-[10px] tracking-wide text-muted-foreground uppercase">
                 stages
               </div>
             </div>
           </div>
         )}
         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>last seen: {dataUpdatedAt ? relativeTime(new Date(dataUpdatedAt).toISOString()) : "—"}</span>
+          <span>
+            last seen:{" "}
+            {dataUpdatedAt
+              ? relativeTime(new Date(dataUpdatedAt).toISOString())
+              : "—"}
+          </span>
           <button
             onClick={() => refetch()}
-            className="hover:text-foreground transition-colors"
+            className="transition-colors hover:text-foreground"
           >
             refresh
           </button>
@@ -118,7 +121,12 @@ function SiteCard({ site }: { site: SiteConnection }) {
               Start episode
             </Link>
           </Button>
-          <Button asChild variant="ghost" size="icon-sm" aria-label="Open site in new tab">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Open site in new tab"
+          >
             <a href={site.url} target="_blank" rel="noopener noreferrer">
               <IconExternalLink className="size-4" />
             </a>
@@ -189,11 +197,11 @@ function RecentEpisodes() {
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/episodes/${encodeURIComponent(entry.siteId)}/${encodeURIComponent(entry.episodeId)}`}
-                  className="text-sm font-medium hover:underline truncate block"
+                  className="block truncate text-sm font-medium hover:underline"
                 >
                   {entry.taskTitle}
                 </Link>
-                <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="font-mono">{entry.siteId}</span>
                   <span>·</span>
                   <span>{relativeTime(entry.startedAt)}</span>
@@ -210,10 +218,10 @@ function RecentEpisodes() {
                   entry.status === "completed"
                     ? "success"
                     : entry.status === "failed" || entry.status === "timeout"
-                    ? "destructive"
-                    : entry.status === "running"
-                    ? "default"
-                    : "secondary"
+                      ? "destructive"
+                      : entry.status === "running"
+                        ? "default"
+                        : "secondary"
                 }
               >
                 {entry.status}
@@ -278,7 +286,8 @@ export default function HomePage() {
             <IconCheck className="size-4" />
             <AlertTitle>Tip</AlertTitle>
             <AlertDescription>
-              Run a site with <code className="font-mono">pnpm --filter &lt;site&gt; dev</code>{" "}
+              Run a site with{" "}
+              <code className="font-mono">pnpm --filter &lt;site&gt; dev</code>{" "}
               and refresh — the card flips green and the task counts populate.
             </AlertDescription>
           </Alert>

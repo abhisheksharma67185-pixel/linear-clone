@@ -1,16 +1,16 @@
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { TopSearchBar } from "@/components/top-search-bar";
-import { ThreadPanelProvider } from "@/components/thread-panel-provider";
-import { ThreadPanel } from "@/components/thread-panel";
-import { HuddleBar } from "@/components/huddle-bar";
-import { CommandPalette } from "@/components/command-palette";
-import { Toaster } from "@/components/ui/sonner";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
+import { TopSearchBar } from "@/components/top-search-bar"
+import { ThreadPanelProvider } from "@/components/thread-panel-provider"
+import { ThreadPanel } from "@/components/thread-panel"
+import { HuddleBar } from "@/components/huddle-bar"
+import { CommandPalette } from "@/components/command-palette"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function WorkspaceLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <ThreadPanelProvider>
@@ -28,5 +28,5 @@ export default function WorkspaceLayout({
         <Toaster />
       </SidebarProvider>
     </ThreadPanelProvider>
-  );
+  )
 }

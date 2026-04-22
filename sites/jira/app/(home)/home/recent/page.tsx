@@ -44,7 +44,11 @@ function getTimeGroup(dateStr: string): "Today" | "This week" | "This month" {
   const now = new Date()
   const date = new Date(dateStr)
 
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  )
   if (date >= startOfToday) return "Today"
 
   const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay()
@@ -59,7 +63,11 @@ function IssueTypeIcon({ type }: { type?: string }) {
   if (type === "bug") {
     return (
       <div className="flex size-8 items-center justify-center rounded-full bg-red-100">
-        <svg className="size-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+        <svg
+          className="size-4 text-red-500"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
           <circle cx="12" cy="12" r="10" />
         </svg>
       </div>
@@ -68,7 +76,11 @@ function IssueTypeIcon({ type }: { type?: string }) {
   if (type === "story") {
     return (
       <div className="flex size-8 items-center justify-center rounded-full bg-green-100">
-        <svg className="size-4 text-green-600" viewBox="0 0 24 24" fill="currentColor">
+        <svg
+          className="size-4 text-green-600"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
           <path d="M5 2h14a1 1 0 011 1v18a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1zm1 2v16h12V4H6z" />
         </svg>
       </div>
@@ -76,7 +88,11 @@ function IssueTypeIcon({ type }: { type?: string }) {
   }
   return (
     <div className="flex size-8 items-center justify-center rounded-full bg-blue-100">
-      <svg className="size-4 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+      <svg
+        className="size-4 text-blue-600"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
         <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
       </svg>
     </div>
@@ -86,7 +102,13 @@ function IssueTypeIcon({ type }: { type?: string }) {
 function ProjectIcon() {
   return (
     <div className="flex size-8 items-center justify-center rounded-full bg-purple-100">
-      <svg className="size-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="size-4 text-purple-600"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
       </svg>
     </div>
@@ -108,7 +130,8 @@ export default function RecentPage() {
 
       const issueItems: RecentItem[] = issues.map((issue) => {
         const project = projectMap.get(issue.projectId)
-        const typeName = issue.type.charAt(0).toUpperCase() + issue.type.slice(1)
+        const typeName =
+          issue.type.charAt(0).toUpperCase() + issue.type.slice(1)
         return {
           id: issue.id,
           key: issue.key,
@@ -136,7 +159,8 @@ export default function RecentPage() {
       }))
 
       const all = [...issueItems, ...projectItems].sort(
-        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       )
 
       setItems(all)
@@ -172,7 +196,7 @@ export default function RecentPage() {
   }, [filtered])
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="mx-auto max-w-5xl p-8">
       <h1 className="mb-6 text-2xl font-semibold">Recent</h1>
 
       {/* Tabs */}
@@ -203,7 +227,7 @@ export default function RecentPage() {
       <div className="mb-6">
         <div className="relative w-56">
           <svg
-            className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -223,22 +247,32 @@ export default function RecentPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="py-8 text-center text-sm text-muted-foreground">Loading...</div>
+        <div className="py-8 text-center text-sm text-muted-foreground">
+          Loading...
+        </div>
       ) : grouped.length === 0 ? (
         <div className="rounded-lg border bg-muted/30 px-6 py-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <svg className="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="size-5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="12" r="10" />
               <path d="M9 12l2 2 4-4" />
             </svg>
-            {search ? "No items match your search." : "You\u2019re all done for now. Check back soon to find out what\u2019s next."}
+            {search
+              ? "No items match your search."
+              : "You\u2019re all done for now. Check back soon to find out what\u2019s next."}
           </div>
         </div>
       ) : (
         <div className="space-y-6">
           {grouped.map((group) => (
             <div key={group.label}>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 {group.label}
               </p>
               <div className="flex flex-col">
@@ -246,7 +280,7 @@ export default function RecentPage() {
                   <Link
                     key={item.id}
                     href={item.href}
-                    className="flex items-center gap-3 rounded-md px-2 py-3 hover:bg-accent/50 transition-colors border-b last:border-b-0"
+                    className="flex items-center gap-3 rounded-md border-b px-2 py-3 transition-colors last:border-b-0 hover:bg-accent/50"
                   >
                     {/* Icon */}
                     <div className="shrink-0">
@@ -258,13 +292,17 @@ export default function RecentPage() {
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.title}</p>
-                      <p className="text-xs text-muted-foreground">{item.subtitle}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {item.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.subtitle}
+                      </p>
                     </div>
 
                     {/* Status badge + time */}
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex shrink-0 items-center gap-3">
                       {item.kind === "issue" ? (
                         <span
                           className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
@@ -274,11 +312,11 @@ export default function RecentPage() {
                           {item.statusLabel}
                         </span>
                       ) : (
-                        <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase bg-gray-100 text-gray-700 border border-gray-300">
+                        <span className="rounded border border-gray-300 bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-700 uppercase">
                           PENDING
                         </span>
                       )}
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      <span className="text-xs whitespace-nowrap text-muted-foreground">
                         {timeAgo(item.updatedAt)}
                       </span>
                     </div>

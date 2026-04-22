@@ -6,10 +6,18 @@ import { CreateSiteDialog } from "@/components/create-site-dialog"
 function SparkleDecoration() {
   return (
     <div className="flex items-center gap-1">
-      <svg className="size-5 text-[#F5A623]" viewBox="0 0 24 24" fill="currentColor">
+      <svg
+        className="size-5 text-[#F5A623]"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
         <path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2z" />
       </svg>
-      <svg className="size-8 text-[#F5A623]" viewBox="0 0 24 24" fill="currentColor">
+      <svg
+        className="size-8 text-[#F5A623]"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
         <path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2z" />
       </svg>
     </div>
@@ -26,7 +34,7 @@ export default function WelcomePage() {
         <div className="mx-auto max-w-[800px] px-6 py-16">
           {/* Welcome heading */}
           <div className="mb-8">
-            <h1 className="text-[40px] font-bold leading-tight text-slate-800">
+            <h1 className="text-[40px] leading-tight font-bold text-slate-800">
               <span className="relative inline-block">
                 Welcome back, Abhishek.
                 <svg
@@ -87,7 +95,7 @@ export default function WelcomePage() {
           </div>
 
           {/* Sparkle decoration */}
-          <div className="flex justify-end pr-12 py-4">
+          <div className="flex justify-end py-4 pr-12">
             <SparkleDecoration />
           </div>
         </div>

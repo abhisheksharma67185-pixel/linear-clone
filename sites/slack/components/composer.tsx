@@ -1,11 +1,20 @@
-"use client";
+"use client"
 
-import { useState, type KeyboardEvent } from "react";
-import { Bold, Italic, Link as LinkIcon, Paperclip, Send, Smile, Strikethrough, Code } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { useState, type KeyboardEvent } from "react"
+import {
+  Bold,
+  Italic,
+  Link as LinkIcon,
+  Paperclip,
+  Send,
+  Smile,
+  Strikethrough,
+  Code,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
 
 export function Composer({
   placeholder,
@@ -13,38 +22,38 @@ export function Composer({
   disabled,
   compact,
 }: {
-  placeholder: string;
-  onSend: (text: string) => Promise<void> | void;
-  disabled?: boolean;
-  compact?: boolean;
+  placeholder: string
+  onSend: (text: string) => Promise<void> | void
+  disabled?: boolean
+  compact?: boolean
 }) {
-  const [text, setText] = useState("");
-  const [sending, setSending] = useState(false);
+  const [text, setText] = useState("")
+  const [sending, setSending] = useState(false)
 
   const submit = async () => {
-    const trimmed = text.trim();
-    if (!trimmed || sending || disabled) return;
-    setSending(true);
+    const trimmed = text.trim()
+    if (!trimmed || sending || disabled) return
+    setSending(true)
     try {
-      await onSend(trimmed);
-      setText("");
+      await onSend(trimmed)
+      setText("")
     } finally {
-      setSending(false);
+      setSending(false)
     }
-  };
+  }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      submit();
+      e.preventDefault()
+      submit()
     }
-  };
+  }
 
   return (
     <div
       className={cn(
         "m-4 mt-2 flex flex-col rounded-lg border border-border bg-background shadow-sm focus-within:border-primary/40",
-        compact && "m-2",
+        compact && "m-2"
       )}
     >
       <div className="flex items-center gap-0.5 border-b border-border px-2 py-1">
@@ -99,5 +108,5 @@ export function Composer({
         </Button>
       </div>
     </div>
-  );
+  )
 }

@@ -4,14 +4,14 @@ import Link from "next/link"
 
 export default function SitesPage() {
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="max-w-5xl p-8">
       <h1 className="mb-2 text-2xl font-semibold">Sites</h1>
       <p className="mb-6 text-sm text-muted-foreground">
         Manage your Atlassian sites.
       </p>
 
       <Link href="/admin/sites/abhisheksharma67185" className="block">
-        <div className="rounded-lg border p-5 hover:bg-accent/30 transition-colors cursor-pointer">
+        <div className="cursor-pointer rounded-lg border p-5 transition-colors hover:bg-accent/30">
           <div className="flex items-center gap-3">
             <div className="flex size-8 items-center justify-center rounded bg-gradient-to-br from-blue-500 to-blue-700">
               <svg className="size-4" viewBox="0 0 32 32" fill="white">

@@ -1,31 +1,39 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { FileText } from "lucide-react";
+import { useEffect, useState } from "react"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { FileText } from "lucide-react"
 
 type Attachment = {
-  id: string;
-  type: "file" | "image" | "link";
-  name: string;
-  url: string;
-};
-type Message = { id: string; attachments: Attachment[]; authorId: string };
+  id: string
+  type: "file" | "image" | "link"
+  name: string
+  url: string
+}
+type Message = { id: string; attachments: Attachment[]; authorId: string }
 
 export default function FilesPage() {
-  const [files, setFiles] = useState<Array<Attachment & { messageId: string }>>([]);
+  const [files, setFiles] = useState<Array<Attachment & { messageId: string }>>(
+    []
+  )
   useEffect(() => {
     fetch("/api/data/messages")
       .then((r) => r.json())
       .then((msgs: Message[]) => {
         const all = msgs.flatMap((m) =>
-          m.attachments.map((a) => ({ ...a, messageId: m.id })),
-        );
-        setFiles(all);
-      });
-  }, []);
+          m.attachments.map((a) => ({ ...a, messageId: m.id }))
+        )
+        setFiles(all)
+      })
+  }, [])
 
   return (
     <>
@@ -56,7 +64,7 @@ export default function FilesPage() {
                   <span className="truncate text-sm font-semibold">
                     {f.name}
                   </span>
-                  <span className="text-xs uppercase text-muted-foreground">
+                  <span className="text-xs text-muted-foreground uppercase">
                     {f.type}
                   </span>
                 </div>
@@ -66,5 +74,5 @@ export default function FilesPage() {
         )}
       </ScrollArea>
     </>
-  );
+  )
 }

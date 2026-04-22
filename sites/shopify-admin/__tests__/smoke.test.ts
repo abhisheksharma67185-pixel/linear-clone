@@ -4,12 +4,7 @@ import { describe, expect, it } from "vitest";
 // with @thetabench/core. Must come before any core lookup.
 import "../app/lib/init-sim";
 
-import {
-  getAllTasks,
-  getTaskCount,
-  getCurriculum,
-  hasActiveEpisode,
-} from "@thetabench/core";
+import { getAllTasks, getTaskCount, getCurriculum, hasActiveEpisode } from "@thetabench/core";
 
 describe("shopify-admin engine smoke", () => {
   it("registers a non-empty task catalog", () => {

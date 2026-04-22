@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
 
 const actionSpace = {
   version: "2.0",
@@ -6,7 +6,10 @@ const actionSpace = {
     {
       name: "navigate",
       description: "Navigate to a page in the Jira workspace",
-      params: { target: "string — e.g. /board, /backlog, /projects, /sprints, /epics, /filters" },
+      params: {
+        target:
+          "string — e.g. /board, /backlog, /projects, /sprints, /epics, /filters",
+      },
       reward: 0.0,
       example: { action: "navigate", target: "/board" },
     },
@@ -14,12 +17,17 @@ const actionSpace = {
       name: "create_issue",
       description: "Create a new issue",
       params: {
-        fields: "{ summary, description?, issueType?, status?, priority?, assigneeId?, labels?, projectKey?, sprintId?, epicId?, storyPoints? }",
+        fields:
+          "{ summary, description?, issueType?, status?, priority?, assigneeId?, labels?, projectKey?, sprintId?, epicId?, storyPoints? }",
       },
       reward: 0.5,
       example: {
         action: "create_issue",
-        fields: { summary: "Fix login bug", issueType: "bug", priority: "high" },
+        fields: {
+          summary: "Fix login bug",
+          issueType: "bug",
+          priority: "high",
+        },
       },
     },
     {
@@ -27,10 +35,15 @@ const actionSpace = {
       description: "Update an existing issue",
       params: {
         issueId: "string",
-        fields: "{ summary?, description?, issueType?, status?, priority?, assigneeId?, labels?, projectKey?, sprintId?, epicId?, storyPoints? }",
+        fields:
+          "{ summary?, description?, issueType?, status?, priority?, assigneeId?, labels?, projectKey?, sprintId?, epicId?, storyPoints? }",
       },
       reward: 0.5,
-      example: { action: "update_issue", issueId: "iss-1", fields: { status: "in_progress" } },
+      example: {
+        action: "update_issue",
+        issueId: "iss-1",
+        fields: { status: "in_progress" },
+      },
     },
     {
       name: "delete_issue",
@@ -66,7 +79,11 @@ const actionSpace = {
         fields: "{ name?, key?, description?, projectType?, leadId? }",
       },
       reward: 0.5,
-      example: { action: "update_project", projectId: "proj-1", fields: { name: "Updated Project" } },
+      example: {
+        action: "update_project",
+        projectId: "proj-1",
+        fields: { name: "Updated Project" },
+      },
     },
     {
       name: "create_sprint",
@@ -99,14 +116,21 @@ const actionSpace = {
       description: "Move an issue to a sprint",
       params: { sprintId: "string", issueId: "string" },
       reward: 0.3,
-      example: { action: "move_issue_to_sprint", sprintId: "sprint-1", issueId: "iss-1" },
+      example: {
+        action: "move_issue_to_sprint",
+        sprintId: "sprint-1",
+        issueId: "iss-1",
+      },
     },
     {
       name: "create_epic",
       description: "Create a new epic",
       params: { fields: "{ name, summary?, projectKey? }" },
       reward: 0.5,
-      example: { action: "create_epic", fields: { name: "User Authentication", projectKey: "PROJ" } },
+      example: {
+        action: "create_epic",
+        fields: { name: "User Authentication", projectKey: "PROJ" },
+      },
     },
     {
       name: "update_epic",
@@ -116,7 +140,11 @@ const actionSpace = {
         fields: "{ name?, summary?, status? }",
       },
       reward: 0.5,
-      example: { action: "update_epic", epicId: "epic-1", fields: { status: "done" } },
+      example: {
+        action: "update_epic",
+        epicId: "epic-1",
+        fields: { status: "done" },
+      },
     },
     {
       name: "create_filter",
@@ -140,7 +168,10 @@ const actionSpace = {
       description: "Provide a text response for retrieval tasks",
       params: { message: "string" },
       reward: 0.0,
-      example: { action: "respond", message: "There are 5 open issues assigned to Alice." },
+      example: {
+        action: "respond",
+        message: "There are 5 open issues assigned to Alice.",
+      },
     },
   ],
   rewards: {
@@ -149,8 +180,8 @@ const actionSpace = {
     unknownAction: -0.1,
   },
   episodeEnd: "Task goal achieved or max steps reached",
-};
+}
 
 export async function GET() {
-  return NextResponse.json(actionSpace);
+  return NextResponse.json(actionSpace)
 }

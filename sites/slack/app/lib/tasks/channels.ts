@@ -1,7 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
-const R5 = { completion: 5.0, partialPerCheck: true, stepPenalty: -0.01, invalidActionPenalty: -0.1 };
-const R8 = { completion: 8.0, partialPerCheck: true, stepPenalty: -0.02, invalidActionPenalty: -0.2 };
+const R5 = {
+  completion: 5.0,
+  partialPerCheck: true,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+}
+const R8 = {
+  completion: 8.0,
+  partialPerCheck: true,
+  stepPenalty: -0.02,
+  invalidActionPenalty: -0.2,
+}
 
 export const channelTasks: TaskDefinition[] = [
   {
@@ -17,7 +27,11 @@ export const channelTasks: TaskDefinition[] = [
       {
         type: "state_predicate",
         predicate: "channel_exists",
-        expected: { name: "q2-launch", type: "public", topic: "Q2 product launch coordination" },
+        expected: {
+          name: "q2-launch",
+          type: "public",
+          topic: "Q2 product launch coordination",
+        },
         weight: 1.0,
         description: "q2-launch public channel exists",
       },
@@ -357,4 +371,4 @@ export const channelTasks: TaskDefinition[] = [
     rewardProfile: R8,
     tags: ["update", "multi-field"],
   },
-];
+]

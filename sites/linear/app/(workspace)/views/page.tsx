@@ -8,7 +8,11 @@ import { CreateViewDialog } from "@/components/create-view-dialog"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { IconPickerPopover } from "@/components/icon-picker-popover"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -52,7 +56,12 @@ export default function ViewsPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-2.5">
         <h1 className="text-sm font-medium">Views</h1>
-        <Button variant="ghost" size="icon" className="size-7" onClick={() => setDialogOpen(true)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={() => setDialogOpen(true)}
+        >
           <HugeiconsIcon icon={PlusSignIcon} className="size-4" />
         </Button>
       </header>
@@ -89,10 +98,16 @@ export default function ViewsPage() {
         ) : tab === "issues" ? (
           <>
             {/* Column header */}
-            <div className="flex items-center border-b px-5 py-2 text-[11px] text-muted-foreground">
-              <button type="button" className="flex flex-1 items-center gap-1 hover:text-foreground">
+            <div className="text-muted-foreground flex items-center border-b px-5 py-2 text-[11px]">
+              <button
+                type="button"
+                className="hover:text-foreground flex flex-1 items-center gap-1"
+              >
                 Name
-                <svg viewBox="0 0 10 10" className="size-2.5 fill-current opacity-60">
+                <svg
+                  viewBox="0 0 10 10"
+                  className="size-2.5 fill-current opacity-60"
+                >
                   <path d="M5 7L1 3h8z" />
                 </svg>
               </button>
@@ -100,20 +115,22 @@ export default function ViewsPage() {
             </div>
 
             {/* Personal views section header */}
-            <div className="group flex items-center gap-2 border-b bg-accent/20 px-5 py-2">
+            <div className="group bg-accent/20 flex items-center gap-2 border-b px-5 py-2">
               <Avatar className="size-5 shrink-0">
-                <AvatarFallback className="text-[9px] bg-violet-600 text-white">
+                <AvatarFallback className="bg-violet-600 text-[9px] text-white">
                   {WORKSPACE_INITIALS}
                 </AvatarFallback>
               </Avatar>
-              <span className="flex-1 text-xs font-medium text-muted-foreground">
+              <span className="text-muted-foreground flex-1 text-xs font-medium">
                 Personal views
-                <span className="ml-1.5 font-normal opacity-60">· Only visible to you</span>
+                <span className="ml-1.5 font-normal opacity-60">
+                  · Only visible to you
+                </span>
               </span>
               <button
                 type="button"
                 onClick={() => setDialogOpen(true)}
-                className="flex size-5 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
+                className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-5 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100"
               >
                 <HugeiconsIcon icon={PlusSignIcon} className="size-3" />
               </button>
@@ -126,7 +143,7 @@ export default function ViewsPage() {
                 <Link
                   key={view.id}
                   href={`/views/${view.id}`}
-                  className="flex items-center border-b px-5 py-2.5 transition-colors hover:bg-accent/40"
+                  className="hover:bg-accent/40 flex items-center border-b px-5 py-2.5 transition-colors"
                 >
                   <div className="flex flex-1 items-center gap-2">
                     <div onClick={(e) => e.stopPropagation()}>
@@ -139,18 +156,24 @@ export default function ViewsPage() {
                       <>
                         <Avatar className="size-5">
                           <AvatarImage src={owner.avatar} />
-                          <AvatarFallback className="text-[9px]">{owner.name[0]}</AvatarFallback>
+                          <AvatarFallback className="text-[9px]">
+                            {owner.name[0]}
+                          </AvatarFallback>
                         </Avatar>
-                        <span className="truncate text-xs text-muted-foreground">{owner.name}</span>
+                        <span className="text-muted-foreground truncate text-xs">
+                          {owner.name}
+                        </span>
                       </>
                     ) : (
                       <>
                         <Avatar className="size-5">
-                          <AvatarFallback className="text-[9px] bg-violet-600 text-white">
+                          <AvatarFallback className="bg-violet-600 text-[9px] text-white">
                             {WORKSPACE_INITIALS}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="truncate text-xs text-muted-foreground">{WORKSPACE_NAME}</span>
+                        <span className="text-muted-foreground truncate text-xs">
+                          {WORKSPACE_NAME}
+                        </span>
                       </>
                     )}
                   </div>
@@ -160,7 +183,9 @@ export default function ViewsPage() {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center gap-2 py-20 text-center">
-            <p className="text-sm text-muted-foreground">No project views yet</p>
+            <p className="text-muted-foreground text-sm">
+              No project views yet
+            </p>
           </div>
         )}
       </div>
@@ -180,29 +205,54 @@ function ViewsDisplayPopover() {
         render={
           <button
             type="button"
-            className="flex size-7 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground"
+            className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
           />
         }
       >
         <HugeiconsIcon icon={SlidersHorizontalIcon} className="size-3.5" />
       </PopoverTrigger>
-      <PopoverContent side="bottom" align="end" sideOffset={6} className="w-72 gap-0 p-0">
+      <PopoverContent
+        side="bottom"
+        align="end"
+        sideOffset={6}
+        className="w-72 gap-0 p-0"
+      >
         <div className="flex flex-col px-2.5 py-2">
           {[
-            { label: "Grouping", value: grouping, options: ["No grouping", "Owner"], set: setGrouping },
-            { label: "Ordering", value: ordering, options: ["Last updated", "Name", "Created"], set: setOrdering },
+            {
+              label: "Grouping",
+              value: grouping,
+              options: ["No grouping", "Owner"],
+              set: setGrouping,
+            },
+            {
+              label: "Ordering",
+              value: ordering,
+              options: ["Last updated", "Name", "Created"],
+              set: setOrdering,
+            },
           ].map(({ label, value, options, set }) => (
-            <div key={label} className="flex items-center justify-between py-1.5">
-              <span className="text-xs text-muted-foreground">{label}</span>
+            <div
+              key={label}
+              className="flex items-center justify-between py-1.5"
+            >
+              <span className="text-muted-foreground text-xs">{label}</span>
               <div className="relative">
                 <select
                   value={value}
                   onChange={(e) => set(e.target.value)}
-                  className="appearance-none rounded-full bg-muted px-3 py-1 pr-6 text-xs font-medium text-foreground focus:outline-none cursor-pointer"
+                  className="bg-muted text-foreground cursor-pointer appearance-none rounded-full px-3 py-1 pr-6 text-xs font-medium focus:outline-none"
                 >
-                  {options.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {options.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
                 </select>
-                <HugeiconsIcon icon={ArrowDown01Icon} className="pointer-events-none absolute right-2 top-1/2 size-3 -translate-y-1/2 text-muted-foreground" />
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  className="text-muted-foreground pointer-events-none absolute top-1/2 right-2 size-3 -translate-y-1/2"
+                />
               </div>
             </div>
           ))}
@@ -216,8 +266,17 @@ function ViewIconPicker() {
   return (
     <IconPickerPopover
       trigger={
-        <svg viewBox="0 0 16 16" className="size-4 shrink-0 text-muted-foreground" fill="none">
-          <path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <svg
+          viewBox="0 0 16 16"
+          className="text-muted-foreground size-4 shrink-0"
+          fill="none"
+        >
+          <path
+            d="M2 4h12M2 8h8M2 12h5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       }
     />

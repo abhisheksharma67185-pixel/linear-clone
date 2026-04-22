@@ -71,7 +71,7 @@ export default function NewEpisodePage() {
       (t) =>
         t.title.toLowerCase().includes(needle) ||
         t.id.toLowerCase().includes(needle) ||
-        t.goal.toLowerCase().includes(needle),
+        t.goal.toLowerCase().includes(needle)
     )
   }, [tasksQuery.data, taskQuery])
 
@@ -100,7 +100,7 @@ export default function NewEpisodePage() {
       })
       toast.success("Episode started")
       router.push(
-        `/episodes/${encodeURIComponent(site.id)}/${encodeURIComponent(resp.episode_id)}`,
+        `/episodes/${encodeURIComponent(site.id)}/${encodeURIComponent(resp.episode_id)}`
       )
     },
     onError: (err) => {
@@ -179,7 +179,7 @@ export default function NewEpisodePage() {
               <div className="space-y-1.5">
                 <Label htmlFor="ep-task-search">Task</Label>
                 <div className="relative">
-                  <IconSearch className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                  <IconSearch className="absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="ep-task-search"
                     className="pl-7"
@@ -189,9 +189,9 @@ export default function NewEpisodePage() {
                     disabled={!site || tasksQuery.isLoading}
                   />
                 </div>
-                <div className="rounded-md border max-h-72 overflow-y-auto bg-background">
+                <div className="max-h-72 overflow-y-auto rounded-md border bg-background">
                   {tasksQuery.isLoading && (
-                    <div className="p-3 space-y-2">
+                    <div className="space-y-2 p-3">
                       {[0, 1, 2].map((i) => (
                         <Skeleton key={i} className="h-10 w-full" />
                       ))}
@@ -234,14 +234,18 @@ export default function NewEpisodePage() {
                                 aria-hidden
                               />
                               <div className="min-w-0 flex-1">
-                                <div className="font-medium truncate">{t.title}</div>
-                                <div className="text-[11px] font-mono text-muted-foreground truncate">
+                                <div className="truncate font-medium">
+                                  {t.title}
+                                </div>
+                                <div className="truncate font-mono text-[11px] text-muted-foreground">
                                   {t.id}
                                 </div>
                               </div>
-                              <div className="flex flex-wrap gap-1 shrink-0">
+                              <div className="flex shrink-0 flex-wrap gap-1">
                                 <Badge variant="secondary">{t.domain}</Badge>
-                                <Badge variant={difficultyVariant(t.difficulty)}>
+                                <Badge
+                                  variant={difficultyVariant(t.difficulty)}
+                                >
                                   {t.difficulty}
                                 </Badge>
                               </div>
@@ -250,7 +254,7 @@ export default function NewEpisodePage() {
                         )
                       })}
                       {filteredTasks.length > 200 && (
-                        <li className="p-2 text-[11px] text-muted-foreground text-center">
+                        <li className="p-2 text-center text-[11px] text-muted-foreground">
                           Showing first 200 of {filteredTasks.length}; refine
                           the search.
                         </li>
@@ -268,8 +272,8 @@ export default function NewEpisodePage() {
                     {start.error instanceof ApiError
                       ? start.error.message
                       : start.error instanceof Error
-                      ? start.error.message
-                      : "Unknown error"}
+                        ? start.error.message
+                        : "Unknown error"}
                   </AlertDescription>
                 </Alert>
               )}

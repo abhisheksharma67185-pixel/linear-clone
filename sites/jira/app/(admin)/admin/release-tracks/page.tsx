@@ -12,7 +12,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 export default function ReleaseTracksPage() {
   const [showBanner, setShowBanner] = useState(true)
@@ -26,7 +32,7 @@ export default function ReleaseTracksPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="max-w-5xl p-8">
       <h1 className="mb-4 text-2xl font-semibold">Release tracks</h1>
 
       <p className="mb-6 text-sm text-muted-foreground">
@@ -46,12 +52,13 @@ export default function ReleaseTracksPage() {
         </p>
         <p>
           <span className="font-bold text-foreground">Preview track:</span>{" "}
-          Bundled changes are available early in sandboxes before their release date.
+          Bundled changes are available early in sandboxes before their release
+          date.
         </p>
       </div>
 
       {showBanner && (
-        <div className="mb-6 flex items-start gap-3 rounded-lg bg-purple-50 border border-purple-200 p-4 dark:bg-purple-950/30 dark:border-purple-800">
+        <div className="mb-6 flex items-start gap-3 rounded-lg border border-purple-200 bg-purple-50 p-4 dark:border-purple-800 dark:bg-purple-950/30">
           <svg
             className="mt-0.5 size-6 shrink-0 text-blue-600"
             viewBox="0 0 24 24"
@@ -64,7 +71,9 @@ export default function ReleaseTracksPage() {
               Jira seasonal releases are coming soon
             </p>
             <p className="mt-1 text-sm text-purple-800 dark:text-purple-300">
-              The first set of features will roll out in seasonal releases. Bundled changes will be available to test in sandboxes on the preview track from May 9, 2026.
+              The first set of features will roll out in seasonal releases.
+              Bundled changes will be available to test in sandboxes on the
+              preview track from May 9, 2026.
             </p>
             <button className="mt-1 text-sm text-blue-600 hover:underline">
               More about seasonal releases
@@ -74,7 +83,13 @@ export default function ReleaseTracksPage() {
             onClick={() => setShowBanner(false)}
             className="shrink-0 p-1 text-purple-600 hover:text-purple-800 dark:text-purple-400"
           >
-            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M18 6 6 18M6 6l12 12" />
             </svg>
           </button>
@@ -112,7 +127,11 @@ export default function ReleaseTracksPage() {
             <TableCell>-</TableCell>
             <TableCell>-</TableCell>
             <TableCell>
-              <Button variant="outline" size="sm" onClick={() => setChangeTrackOpen(true)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setChangeTrackOpen(true)}
+              >
                 Change track
               </Button>
             </TableCell>
@@ -124,30 +143,36 @@ export default function ReleaseTracksPage() {
       <Dialog open={changeTrackOpen} onOpenChange={setChangeTrackOpen}>
         <DialogContent className="sm:max-w-md" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Select release track</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">
+              Select release track
+            </DialogTitle>
           </DialogHeader>
 
           <p className="text-sm text-muted-foreground">
-            Changes you make here will affect all users with Jira using abhisheksharma67185.atlassian.net.
+            Changes you make here will affect all users with Jira using
+            abhisheksharma67185.atlassian.net.
           </p>
 
           <div>
-            <p className="text-sm font-medium mb-3">Release tracks</p>
+            <p className="mb-3 text-sm font-medium">Release tracks</p>
             <RadioGroup value={selectedTrack} onValueChange={setSelectedTrack}>
               <div className="flex items-start gap-2">
                 <RadioGroupItem value="continuous" className="mt-0.5" />
                 <div>
-                  <Label className="font-medium">Continuous release track</Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Receive app changes and features as soon as they become available.
+                  <Label className="font-medium">
+                    Continuous release track
+                  </Label>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Receive app changes and features as soon as they become
+                    available.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2 mt-3">
+              <div className="mt-3 flex items-start gap-2">
                 <RadioGroupItem value="bundled" className="mt-0.5" />
                 <div>
                   <Label className="font-medium">Bundled release track</Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     Receive app changes and features as a bundle, once a month
                   </p>
                 </div>
@@ -156,8 +181,16 @@ export default function ReleaseTracksPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setChangeTrackOpen(false)}>Cancel</Button>
-            <Button variant="ghost" className="text-muted-foreground" onClick={handleSaveTrack}>Next</Button>
+            <Button variant="ghost" onClick={() => setChangeTrackOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="ghost"
+              className="text-muted-foreground"
+              onClick={handleSaveTrack}
+            >
+              Next
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

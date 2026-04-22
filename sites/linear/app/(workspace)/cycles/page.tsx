@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import type { Cycle, Issue, Member, Team } from "@/app/lib/mock-data"
-import { statusStyle, priorityStyle, cycleStateStyle } from "@/lib/status-styles"
+import {
+  statusStyle,
+  priorityStyle,
+  cycleStateStyle,
+} from "@/lib/status-styles"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -69,7 +73,9 @@ export default function CyclesPage() {
     })
   }
 
-  useEffect(() => { fetchAll() }, [])
+  useEffect(() => {
+    fetchAll()
+  }, [])
 
   const handleCreate = async () => {
     const res = await fetch("/api/data/cycles", {
@@ -96,16 +102,28 @@ export default function CyclesPage() {
   }
 
   const handleComplete = async (cycleId: string) => {
-    const res = await fetch(`/api/data/cycles/${cycleId}/complete`, { method: "POST" })
+    const res = await fetch(`/api/data/cycles/${cycleId}/complete`, {
+      method: "POST",
+    })
     if (res.ok) {
-      setCycles((prev) => prev.map((c) => (c.id === cycleId ? { ...c, state: "completed" as const } : c)))
+      setCycles((prev) =>
+        prev.map((c) =>
+          c.id === cycleId ? { ...c, state: "completed" as const } : c
+        )
+      )
     }
   }
 
   const handleStart = async (cycleId: string) => {
-    const res = await fetch(`/api/data/cycles/${cycleId}/start`, { method: "POST" })
+    const res = await fetch(`/api/data/cycles/${cycleId}/start`, {
+      method: "POST",
+    })
     if (res.ok) {
-      setCycles((prev) => prev.map((c) => (c.id === cycleId ? { ...c, state: "active" as const } : c)))
+      setCycles((prev) =>
+        prev.map((c) =>
+          c.id === cycleId ? { ...c, state: "active" as const } : c
+        )
+      )
     }
   }
 
@@ -157,17 +175,17 @@ export default function CyclesPage() {
                         {cycle.state}
                       </Badge>
                       {team && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-muted-foreground text-xs">
                           {team.name}
                         </span>
                       )}
-                      <span className="text-xs text-muted-foreground ml-auto">
+                      <span className="text-muted-foreground ml-auto text-xs">
                         {cycle.startDate} - {cycle.endDate}
                       </span>
                     </div>
                   </CardHeader>
                   <CardContent className="pb-3">
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-4 text-xs">
                       <span>{cycleIssues.length} issues</span>
                       <span>{totalEstimate} points</span>
                       {cycle.state === "active" && (
@@ -175,7 +193,10 @@ export default function CyclesPage() {
                           variant="outline"
                           size="sm"
                           className="ml-auto h-6 text-[10px]"
-                          onClick={(e) => { e.stopPropagation(); handleComplete(cycle.id) }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleComplete(cycle.id)
+                          }}
                         >
                           Complete Cycle
                         </Button>
@@ -185,7 +206,10 @@ export default function CyclesPage() {
                           variant="outline"
                           size="sm"
                           className="ml-auto h-6 text-[10px]"
-                          onClick={(e) => { e.stopPropagation(); handleStart(cycle.id) }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleStart(cycle.id)
+                          }}
                         >
                           Start Cycle
                         </Button>
@@ -195,9 +219,9 @@ export default function CyclesPage() {
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <CardContent className="pt-0">
-                    <div className="border-t pt-3 flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 border-t pt-3">
                       {cycleIssues.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           No issues in this cycle.
                         </p>
                       ) : (
@@ -209,9 +233,9 @@ export default function CyclesPage() {
                             <Link
                               key={issue.id}
                               href={`/issues/${issue.identifier}`}
-                              className="flex items-center gap-3 px-2 py-1.5 rounded-md hover:bg-accent/50 transition-colors text-sm"
+                              className="hover:bg-accent/50 flex items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors"
                             >
-                              <span className="font-mono text-xs text-muted-foreground w-16 shrink-0">
+                              <span className="text-muted-foreground w-16 shrink-0 font-mono text-xs">
                                 {issue.identifier}
                               </span>
                               <span className="flex-1 truncate">
@@ -219,25 +243,31 @@ export default function CyclesPage() {
                               </span>
                               <Badge
                                 variant="secondary"
-                                className={`text-[10px] shrink-0 ${priorityStyle[issue.priority]}`}
+                                className={`shrink-0 text-[10px] ${priorityStyle[issue.priority]}`}
                               >
                                 {issue.priority}
                               </Badge>
                               <Badge
                                 variant="secondary"
-                                className={`text-[10px] shrink-0 ${statusStyle[issue.status]}`}
+                                className={`shrink-0 text-[10px] ${statusStyle[issue.status]}`}
                               >
                                 {issue.status.replace("_", " ")}
                               </Badge>
                               {assignee ? (
                                 <Tooltip>
-                                  <TooltipTrigger render={<span className="shrink-0" />}>
+                                  <TooltipTrigger
+                                    render={<span className="shrink-0" />}
+                                  >
                                     <Avatar className="size-5">
                                       <AvatarImage src={assignee.avatar} />
-                                      <AvatarFallback className="text-[8px]">{assignee.name.charAt(0)}</AvatarFallback>
+                                      <AvatarFallback className="text-[8px]">
+                                        {assignee.name.charAt(0)}
+                                      </AvatarFallback>
                                     </Avatar>
                                   </TooltipTrigger>
-                                  <TooltipContent>{assignee.name}</TooltipContent>
+                                  <TooltipContent>
+                                    {assignee.name}
+                                  </TooltipContent>
                                 </Tooltip>
                               ) : (
                                 <div className="size-5 shrink-0" />
@@ -259,69 +289,103 @@ export default function CyclesPage() {
 
   return (
     <TooltipProvider>
-    <div className="flex flex-col gap-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Cycles</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            All cycles across your teams.
-          </p>
+      <div className="flex flex-col gap-6 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Cycles</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              All cycles across your teams.
+            </p>
+          </div>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger render={<Button />}>New Cycle</DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Cycle</DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-col gap-4 py-2">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="cycle-name">Name</Label>
+                  <Input
+                    id="cycle-name"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="Cycle 15"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="cycle-desc">Description</Label>
+                  <Textarea
+                    id="cycle-desc"
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    rows={2}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label>Team</Label>
+                  <Select
+                    value={newTeamId}
+                    onValueChange={(v) => v && setNewTeamId(v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select team" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teams.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="cycle-start">Start Date</Label>
+                    <Input
+                      id="cycle-start"
+                      type="date"
+                      value={newStartDate}
+                      onChange={(e) => setNewStartDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="cycle-end">End Date</Label>
+                    <Input
+                      id="cycle-end"
+                      type="date"
+                      value={newEndDate}
+                      onChange={(e) => setNewEndDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose render={<Button variant="outline" />}>
+                  Cancel
+                </DialogClose>
+                <Button
+                  onClick={handleCreate}
+                  disabled={!newName.trim() || !newTeamId}
+                >
+                  Create
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger render={<Button />}>New Cycle</DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create Cycle</DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-col gap-4 py-2">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="cycle-name">Name</Label>
-                <Input id="cycle-name" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Cycle 15" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="cycle-desc">Description</Label>
-                <Textarea id="cycle-desc" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} rows={2} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label>Team</Label>
-                <Select value={newTeamId} onValueChange={(v) => v && setNewTeamId(v)}>
-                  <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
-                  <SelectContent>
-                    {teams.map((t) => (
-                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="cycle-start">Start Date</Label>
-                  <Input id="cycle-start" type="date" value={newStartDate} onChange={(e) => setNewStartDate(e.target.value)} />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="cycle-end">End Date</Label>
-                  <Input id="cycle-end" type="date" value={newEndDate} onChange={(e) => setNewEndDate(e.target.value)} />
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-              <Button onClick={handleCreate} disabled={!newName.trim() || !newTeamId}>Create</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
 
-      {cycles.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No cycles found.</p>
-      ) : (
-        <>
-          {renderCycleGroup("Active", activeCycles)}
-          {renderCycleGroup("Upcoming", upcomingCycles)}
-          {renderCycleGroup("Completed", completedCycles)}
-        </>
-      )}
-    </div>
+        {cycles.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No cycles found.</p>
+        ) : (
+          <>
+            {renderCycleGroup("Active", activeCycles)}
+            {renderCycleGroup("Upcoming", upcomingCycles)}
+            {renderCycleGroup("Completed", completedCycles)}
+          </>
+        )}
+      </div>
     </TooltipProvider>
   )
 }

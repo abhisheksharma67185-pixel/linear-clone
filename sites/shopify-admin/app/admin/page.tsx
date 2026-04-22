@@ -120,7 +120,7 @@ export default function AdminDashboard() {
                 Get 3 months for $1/month
               </Text>
               <InlineStack gap="200" blockAlign="center">
-                <Button size="slim" onClick={() => router.push('/admin/settings')}>
+                <Button size="slim" onClick={() => router.push("/admin/settings")}>
                   Select a plan
                 </Button>
                 <Button

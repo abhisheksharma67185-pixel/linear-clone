@@ -37,7 +37,6 @@ import {
 type Status = "backlog" | "todo" | "in_progress" | "done" | "cancelled"
 type Priority = "urgent" | "high" | "medium" | "low" | "none"
 
-
 const STATUS_OPTIONS: { value: Status; label: string; shortcut: string }[] = [
   { value: "backlog", label: "Backlog", shortcut: "1" },
   { value: "todo", label: "Todo", shortcut: "2" },
@@ -46,14 +45,14 @@ const STATUS_OPTIONS: { value: Status; label: string; shortcut: string }[] = [
   { value: "cancelled", label: "Canceled", shortcut: "6" },
 ]
 
-const PRIORITY_OPTIONS: { value: Priority; label: string; shortcut: string }[] = [
-  { value: "none", label: "No priority", shortcut: "0" },
-  { value: "urgent", label: "Urgent", shortcut: "1" },
-  { value: "high", label: "High", shortcut: "2" },
-  { value: "medium", label: "Medium", shortcut: "3" },
-  { value: "low", label: "Low", shortcut: "4" },
-]
-
+const PRIORITY_OPTIONS: { value: Priority; label: string; shortcut: string }[] =
+  [
+    { value: "none", label: "No priority", shortcut: "0" },
+    { value: "urgent", label: "Urgent", shortcut: "1" },
+    { value: "high", label: "High", shortcut: "2" },
+    { value: "medium", label: "Medium", shortcut: "3" },
+    { value: "low", label: "Low", shortcut: "4" },
+  ]
 
 export function CreateIssueDialog({
   open,
@@ -88,10 +87,20 @@ export function CreateIssueDialog({
         fetch("/api/data/teams").then((r) => r.json()),
         fetch("/api/data/members").then((r) => r.json()),
         fetch("/api/data/projects").then((r) => r.json()),
-        fetch("/api/data/labels").then((r) => r.json()).catch(() => []),
-        fetch("/api/data/cycles").then((r) => r.json()).catch(() => []),
+        fetch("/api/data/labels")
+          .then((r) => r.json())
+          .catch(() => []),
+        fetch("/api/data/cycles")
+          .then((r) => r.json())
+          .catch(() => []),
       ]).then(
-        ([t, m, p, l, c]: [Team[], Member[], Project[], IssueLabel[], Cycle[]]) => {
+        ([t, m, p, l, c]: [
+          Team[],
+          Member[],
+          Project[],
+          IssueLabel[],
+          Cycle[],
+        ]) => {
           setTeams(t)
           setMembers(m)
           setProjects(p)
@@ -99,7 +108,7 @@ export function CreateIssueDialog({
           setCycles(c)
           if (t.length > 0) setTeamId(t[0].id)
           setLoaded(true)
-        },
+        }
       )
     }
   }, [open, loaded])
@@ -109,14 +118,18 @@ export function CreateIssueDialog({
   const project = projects.find((p) => p.id === projectId) ?? null
   const cycle = cycles.find((c) => c.id === cycleId) ?? null
   const selectedLabels = labels.filter((l) => labelIds.includes(l.id))
-  const statusLabel = STATUS_OPTIONS.find((s) => s.value === status)?.label ?? "Backlog"
-  const priorityLabel = PRIORITY_OPTIONS.find((p) => p.value === priority)?.label ?? "Priority"
+  const statusLabel =
+    STATUS_OPTIONS.find((s) => s.value === status)?.label ?? "Backlog"
+  const priorityLabel =
+    PRIORITY_OPTIONS.find((p) => p.value === priority)?.label ?? "Priority"
 
   // Cycles visible for the current team, split by state.
   const teamCycles = cycles.filter((c) => c.teamId === teamId)
   const currentCycle = teamCycles.find((c) => c.state === "active") ?? null
   const upcomingCycles = teamCycles.filter((c) => c.state === "upcoming")
-  const previousCycles = teamCycles.filter((c) => c.state === "completed").slice(-1)
+  const previousCycles = teamCycles
+    .filter((c) => c.state === "completed")
+    .slice(-1)
 
   const resetForm = () => {
     setTitle("")
@@ -166,11 +179,13 @@ export function CreateIssueDialog({
         }
       >
         <header className="flex items-center justify-between px-3 py-2">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
             <span className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-pink-500/70 text-pink-500">
               <HugeiconsIcon icon={UserIcon} className="size-2.5" />
             </span>
-            <span className="font-medium text-foreground">{team ? team.key : "ABH"}</span>
+            <span className="text-foreground font-medium">
+              {team ? team.key : "ABH"}
+            </span>
             <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" />
             <span>New issue</span>
           </div>
@@ -179,15 +194,22 @@ export function CreateIssueDialog({
             <Button
               variant="ghost"
               size="icon"
-              className="size-6 text-muted-foreground"
+              className="text-muted-foreground size-6"
               onClick={() => setFullscreen((v) => !v)}
               aria-label="Toggle fullscreen"
             >
-              <HugeiconsIcon icon={ArrowExpandDiagonal01Icon} className="size-3.5" />
+              <HugeiconsIcon
+                icon={ArrowExpandDiagonal01Icon}
+                className="size-3.5"
+              />
             </Button>
             <DialogClose
               render={
-                <Button variant="ghost" size="icon" className="size-6 text-muted-foreground" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground size-6"
+                />
               }
             >
               <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" />
@@ -200,13 +222,13 @@ export function CreateIssueDialog({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Issue title"
-            className="w-full bg-transparent text-lg font-semibold placeholder:text-muted-foreground/50 focus:outline-none"
+            className="placeholder:text-muted-foreground/50 w-full bg-transparent text-lg font-semibold focus:outline-none"
           />
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add description..."
-            className={`w-full flex-1 resize-none bg-transparent text-sm placeholder:text-muted-foreground/50 focus:outline-none ${
+            className={`placeholder:text-muted-foreground/50 w-full flex-1 resize-none bg-transparent text-sm focus:outline-none ${
               fullscreen ? "min-h-[300px]" : "min-h-[48px]"
             }`}
           />
@@ -227,7 +249,9 @@ export function CreateIssueDialog({
                   icon={<StatusIcon status={s.value} />}
                   checked={s.value === status}
                   right={
-                    <span className="text-[10px] text-muted-foreground">{s.shortcut}</span>
+                    <span className="text-muted-foreground text-[10px]">
+                      {s.shortcut}
+                    </span>
                   }
                   onClick={() => setStatus(s.value)}
                 >
@@ -251,7 +275,9 @@ export function CreateIssueDialog({
                   icon={<PriorityIcon priority={p.value} />}
                   checked={p.value === priority}
                   right={
-                    <span className="text-[10px] text-muted-foreground">{p.shortcut}</span>
+                    <span className="text-muted-foreground text-[10px]">
+                      {p.shortcut}
+                    </span>
                   }
                   onClick={() => setPriority(p.value)}
                 >
@@ -267,7 +293,7 @@ export function CreateIssueDialog({
               {assignee ? (
                 <Avatar src={assignee.avatar} name={assignee.name} />
               ) : (
-                <div className="size-4 rounded-full border border-dashed border-muted-foreground/50" />
+                <div className="border-muted-foreground/50 size-4 rounded-full border border-dashed" />
               )}
               <span>{assignee ? assignee.email : "Assignee"}</span>
             </DropdownMenuTrigger>
@@ -275,10 +301,12 @@ export function CreateIssueDialog({
               <MenuHeader title="Assign to..." shortcut="A" />
               <MenuRow
                 icon={
-                  <div className="size-4 rounded-full border border-dashed border-muted-foreground/50" />
+                  <div className="border-muted-foreground/50 size-4 rounded-full border border-dashed" />
                 }
                 checked={assigneeId === null}
-                right={<span className="text-[10px] text-muted-foreground">0</span>}
+                right={
+                  <span className="text-muted-foreground text-[10px]">0</span>
+                }
                 onClick={() => setAssigneeId(null)}
               >
                 No assignee
@@ -302,7 +330,10 @@ export function CreateIssueDialog({
           {/* Project */}
           <DropdownMenu>
             <DropdownMenuTrigger render={<PillButton />}>
-              <HugeiconsIcon icon={Hexagon01Icon} className="size-3.5 text-muted-foreground" />
+              <HugeiconsIcon
+                icon={Hexagon01Icon}
+                className="text-muted-foreground size-3.5"
+              />
               <span>{project ? project.name : "Project"}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-72">
@@ -311,11 +342,13 @@ export function CreateIssueDialog({
                 icon={
                   <HugeiconsIcon
                     icon={Hexagon01Icon}
-                    className="size-3.5 text-muted-foreground"
+                    className="text-muted-foreground size-3.5"
                   />
                 }
                 checked={projectId === null}
-                right={<span className="text-[10px] text-muted-foreground">0</span>}
+                right={
+                  <span className="text-muted-foreground text-[10px]">0</span>
+                }
                 onClick={() => setProjectId(null)}
               >
                 No project
@@ -326,7 +359,7 @@ export function CreateIssueDialog({
                   icon={
                     <HugeiconsIcon
                       icon={Hexagon01Icon}
-                      className="size-3.5 text-muted-foreground"
+                      className="text-muted-foreground size-3.5"
                     />
                   }
                   checked={p.id === projectId}
@@ -341,7 +374,10 @@ export function CreateIssueDialog({
           {/* Labels */}
           <DropdownMenu>
             <DropdownMenuTrigger render={<PillButton />}>
-              <HugeiconsIcon icon={Tag01Icon} className="size-3.5 text-muted-foreground" />
+              <HugeiconsIcon
+                icon={Tag01Icon}
+                className="text-muted-foreground size-3.5"
+              />
               <span>
                 {selectedLabels.length === 0
                   ? "Labels"
@@ -361,7 +397,9 @@ export function CreateIssueDialog({
                     checked={labelIds.includes(l.id)}
                     onToggle={() =>
                       setLabelIds((prev) =>
-                        prev.includes(l.id) ? prev.filter((x) => x !== l.id) : [...prev, l.id],
+                        prev.includes(l.id)
+                          ? prev.filter((x) => x !== l.id)
+                          : [...prev, l.id]
                       )
                     }
                   />
@@ -374,7 +412,9 @@ export function CreateIssueDialog({
                     checked={labelIds.includes(l.id)}
                     onToggle={() =>
                       setLabelIds((prev) =>
-                        prev.includes(l.id) ? prev.filter((x) => x !== l.id) : [...prev, l.id],
+                        prev.includes(l.id)
+                          ? prev.filter((x) => x !== l.id)
+                          : [...prev, l.id]
                       )
                     }
                   />
@@ -389,7 +429,7 @@ export function CreateIssueDialog({
               render={
                 <button
                   type="button"
-                  className="flex size-6 items-center justify-center rounded-md border text-muted-foreground hover:bg-muted/60"
+                  className="text-muted-foreground hover:bg-muted/60 flex size-6 items-center justify-center rounded-md border"
                   aria-label="Cycle"
                 />
               }
@@ -399,10 +439,12 @@ export function CreateIssueDialog({
             <DropdownMenuContent align="start" className="w-80">
               <MenuRow
                 icon={
-                  <div className="size-3.5 rounded-full border border-dashed border-muted-foreground/50" />
+                  <div className="border-muted-foreground/50 size-3.5 rounded-full border border-dashed" />
                 }
                 checked={cycleId === null}
-                right={<span className="text-[10px] text-muted-foreground">0</span>}
+                right={
+                  <span className="text-muted-foreground text-[10px]">0</span>
+                }
                 onClick={() => setCycleId(null)}
               >
                 No cycle
@@ -425,7 +467,7 @@ export function CreateIssueDialog({
                 />
               ))}
               {previousCycles.length > 0 && (
-                <div className="my-1 border-t border-border" />
+                <div className="border-border my-1 border-t" />
               )}
               {previousCycles.map((c) => (
                 <CycleRow
@@ -445,7 +487,7 @@ export function CreateIssueDialog({
               render={
                 <button
                   type="button"
-                  className="flex size-6 items-center justify-center rounded-md border text-muted-foreground hover:bg-muted/60"
+                  className="text-muted-foreground hover:bg-muted/60 flex size-6 items-center justify-center rounded-md border"
                   aria-label="More options"
                 />
               }
@@ -456,7 +498,7 @@ export function CreateIssueDialog({
               <DropdownMenuItem>
                 <HugeiconsIcon icon={Calendar01Icon} className="size-4" />
                 <span className="flex-1">Set due date</span>
-                <span className="text-[10px] text-muted-foreground">⇧D</span>
+                <span className="text-muted-foreground text-[10px]">⇧D</span>
                 <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" />
               </DropdownMenuItem>
               <DropdownMenuItem>
@@ -466,12 +508,14 @@ export function CreateIssueDialog({
               <DropdownMenuItem>
                 <HugeiconsIcon icon={Link01Icon} className="size-4" />
                 <span className="flex-1">Add link...</span>
-                <span className="text-[10px] text-muted-foreground">Ctrl L</span>
+                <span className="text-muted-foreground text-[10px]">
+                  Ctrl L
+                </span>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <HugeiconsIcon icon={PlusSignSquareIcon} className="size-4" />
                 <span className="flex-1">Add sub-issue</span>
-                <span className="text-[10px] text-muted-foreground">⌘⇧O</span>
+                <span className="text-muted-foreground text-[10px]">⌘⇧O</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -481,13 +525,13 @@ export function CreateIssueDialog({
           <Button
             variant="ghost"
             size="icon"
-            className="size-7 text-muted-foreground"
+            className="text-muted-foreground size-7"
             aria-label="Attach file"
           >
             <HugeiconsIcon icon={Attachment01Icon} className="size-4" />
           </Button>
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <label className="text-muted-foreground flex items-center gap-2 text-xs">
               <Switch
                 checked={createMore}
                 onCheckedChange={setCreateMore}
@@ -519,7 +563,7 @@ function PillButton({
   return (
     <button
       type="button"
-      className={`flex h-6 items-center gap-1 rounded-md border px-1.5 text-xs text-foreground hover:bg-muted/60 ${className ?? ""}`}
+      className={`text-foreground hover:bg-muted/60 flex h-6 items-center gap-1 rounded-md border px-1.5 text-xs ${className ?? ""}`}
       {...props}
     >
       {children}
@@ -529,10 +573,12 @@ function PillButton({
 
 function MenuHeader({ title, shortcut }: { title: string; shortcut?: string }) {
   return (
-    <div className="flex items-center justify-between px-2 py-1.5 text-xs text-muted-foreground">
+    <div className="text-muted-foreground flex items-center justify-between px-2 py-1.5 text-xs">
       <span>{title}</span>
       {shortcut && (
-        <span className="rounded border px-1 font-mono text-[10px]">{shortcut}</span>
+        <span className="rounded border px-1 font-mono text-[10px]">
+          {shortcut}
+        </span>
       )}
     </div>
   )
@@ -540,7 +586,7 @@ function MenuHeader({ title, shortcut }: { title: string; shortcut?: string }) {
 
 function MenuSection({ label }: { label: string }) {
   return (
-    <div className="mt-1 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="text-muted-foreground mt-1 px-2 py-1 text-[10px] font-medium tracking-wide uppercase">
       {label}
     </div>
   )
@@ -563,9 +609,13 @@ function MenuRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs hover:bg-accent"
+      className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs"
     >
-      {icon && <span className="flex size-4 shrink-0 items-center justify-center">{icon}</span>}
+      {icon && (
+        <span className="flex size-4 shrink-0 items-center justify-center">
+          {icon}
+        </span>
+      )}
       <span className="flex-1 truncate">{children}</span>
       {checked && <span className="text-[10px]">✓</span>}
       {right}
@@ -586,9 +636,12 @@ function LabelRow({
     <button
       type="button"
       onClick={onToggle}
-      className="flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs hover:bg-accent"
+      className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs"
     >
-      <span className="size-2 rounded-full" style={{ backgroundColor: label.color }} />
+      <span
+        className="size-2 rounded-full"
+        style={{ backgroundColor: label.color }}
+      />
       <span className="flex-1 truncate">{label.name}</span>
       {checked && <span className="text-[10px]">✓</span>}
     </button>
@@ -607,14 +660,20 @@ function CycleRow({
   onClick: () => void
 }) {
   const fmt = (iso: string) =>
-    new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    new Date(iso).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs hover:bg-accent"
+      className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs"
     >
-      <HugeiconsIcon icon={PlayCircleIcon} className="size-3.5 shrink-0 text-muted-foreground" />
+      <HugeiconsIcon
+        icon={PlayCircleIcon}
+        className="text-muted-foreground size-3.5 shrink-0"
+      />
       <span className="font-medium">{cycle.name}</span>
       <span className="text-muted-foreground">
         {fmt(cycle.startDate)} - {fmt(cycle.endDate)}
@@ -636,16 +695,25 @@ function Avatar({ src, name }: { src: string; name: string }) {
 function StatusIcon({ status }: { status: Status }) {
   if (status === "backlog") {
     return (
-      <span className="size-3.5 rounded-full border border-dashed border-muted-foreground/60" />
+      <span className="border-muted-foreground/60 size-3.5 rounded-full border border-dashed" />
     )
   }
   if (status === "todo") {
-    return <span className="size-3.5 rounded-full border border-muted-foreground/70" />
+    return (
+      <span className="border-muted-foreground/70 size-3.5 rounded-full border" />
+    )
   }
   if (status === "in_progress") {
     return (
       <svg viewBox="0 0 16 16" className="size-3.5">
-        <circle cx="8" cy="8" r="7" fill="none" stroke="#eab308" strokeWidth="1.5" />
+        <circle
+          cx="8"
+          cy="8"
+          r="7"
+          fill="none"
+          stroke="#eab308"
+          strokeWidth="1.5"
+        />
         <path d="M8 8 L8 2 A6 6 0 0 1 13.2 11 Z" fill="#eab308" />
       </svg>
     )
@@ -654,7 +722,14 @@ function StatusIcon({ status }: { status: Status }) {
     return (
       <svg viewBox="0 0 16 16" className="size-3.5">
         <circle cx="8" cy="8" r="7" fill="#6366f1" />
-        <path d="M5 8 L7 10 L11 6" stroke="white" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M5 8 L7 10 L11 6"
+          stroke="white"
+          strokeWidth="1.6"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     )
   }
@@ -662,7 +737,12 @@ function StatusIcon({ status }: { status: Status }) {
   return (
     <svg viewBox="0 0 16 16" className="size-3.5">
       <circle cx="8" cy="8" r="7" fill="#9ca3af" />
-      <path d="M5 5 L11 11 M11 5 L5 11" stroke="white" strokeWidth="1.6" strokeLinecap="round" />
+      <path
+        d="M5 5 L11 11 M11 5 L5 11"
+        stroke="white"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
@@ -670,10 +750,34 @@ function StatusIcon({ status }: { status: Status }) {
 function PriorityIcon({ priority }: { priority: Priority }) {
   if (priority === "none") {
     return (
-      <svg viewBox="0 0 16 16" className="size-3.5 text-muted-foreground">
-        <line x1="3" y1="8" x2="5" y2="8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        <line x1="7" y1="8" x2="9" y2="8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        <line x1="11" y1="8" x2="13" y2="8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <svg viewBox="0 0 16 16" className="text-muted-foreground size-3.5">
+        <line
+          x1="3"
+          y1="8"
+          x2="5"
+          y2="8"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+        <line
+          x1="7"
+          y1="8"
+          x2="9"
+          y2="8"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+        <line
+          x1="11"
+          y1="8"
+          x2="13"
+          y2="8"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
       </svg>
     )
   }
@@ -700,10 +804,34 @@ function PriorityIcon({ priority }: { priority: Priority }) {
   const h = heights[priority] ?? [4, 4, 4]
   const o = opacity[priority] ?? [1, 1, 1]
   return (
-    <svg viewBox="0 0 16 16" className="size-3.5 text-foreground">
-      <rect x="2" y={14 - h[0]} width="3" height={h[0]} rx="0.5" fill="currentColor" opacity={o[0]} />
-      <rect x="6.5" y={14 - h[1]} width="3" height={h[1]} rx="0.5" fill="currentColor" opacity={o[1]} />
-      <rect x="11" y={14 - h[2]} width="3" height={h[2]} rx="0.5" fill="currentColor" opacity={o[2]} />
+    <svg viewBox="0 0 16 16" className="text-foreground size-3.5">
+      <rect
+        x="2"
+        y={14 - h[0]}
+        width="3"
+        height={h[0]}
+        rx="0.5"
+        fill="currentColor"
+        opacity={o[0]}
+      />
+      <rect
+        x="6.5"
+        y={14 - h[1]}
+        width="3"
+        height={h[1]}
+        rx="0.5"
+        fill="currentColor"
+        opacity={o[1]}
+      />
+      <rect
+        x="11"
+        y={14 - h[2]}
+        width="3"
+        height={h[2]}
+        rx="0.5"
+        fill="currentColor"
+        opacity={o[2]}
+      />
     </svg>
   )
 }

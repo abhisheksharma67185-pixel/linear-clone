@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   CommandDialog,
   CommandEmpty,
@@ -9,49 +9,49 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { Hash, Users, AtSign } from "lucide-react";
+} from "@/components/ui/command"
+import { Hash, Users, AtSign } from "lucide-react"
 
 type User = {
-  id: string;
-  name: string;
-  displayName: string;
-  avatar: string;
-};
-type Channel = { id: string; name: string; isArchived: boolean };
+  id: string
+  name: string
+  displayName: string
+  avatar: string
+}
+type Channel = { id: string; name: string; isArchived: boolean }
 
 export function CommandPalette() {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [channels, setChannels] = useState<Channel[]>([])
+  const [users, setUsers] = useState<User[]>([])
 
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setOpen((o) => !o);
+        e.preventDefault()
+        setOpen((o) => !o)
       }
-    };
-    window.addEventListener("keydown", listener);
-    return () => window.removeEventListener("keydown", listener);
-  }, []);
+    }
+    window.addEventListener("keydown", listener)
+    return () => window.removeEventListener("keydown", listener)
+  }, [])
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) return
     Promise.all([
       fetch("/api/data/channels").then((r) => r.json()),
       fetch("/api/data/users").then((r) => r.json()),
     ]).then(([c, u]) => {
-      setChannels(c);
-      setUsers(u);
-    });
-  }, [open]);
+      setChannels(c)
+      setUsers(u)
+    })
+  }, [open])
 
   const go = (href: string) => {
-    setOpen(false);
-    router.push(href);
-  };
+    setOpen(false)
+    router.push(href)
+  }
 
   return (
     <CommandDialog
@@ -110,5 +110,5 @@ export function CommandPalette() {
         </CommandGroup>
       </CommandList>
     </CommandDialog>
-  );
+  )
 }

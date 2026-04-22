@@ -217,7 +217,8 @@ export const retrievalTasks: TaskDefinition[] = [
       question: "Total inventory value?",
       groundTruth: "$103,513.38",
       acceptableVariations: ["103513.38", "$103,513.38", "103513", "about $103,500"],
-      rubric: "Sum each product's price*inventory. 29.99*245 + 59.99*128 + 79.99*67 + 119.99*312 + 199.99*43 + 45.99*0 + 69.99*89 + 24.99*534 + 149.99*76 + 54.99*12 + 39.99*0 + 34.99*156 = $103,513.38",
+      rubric:
+        "Sum each product's price*inventory. 29.99*245 + 59.99*128 + 79.99*67 + 119.99*312 + 199.99*43 + 45.99*0 + 69.99*89 + 24.99*534 + 149.99*76 + 54.99*12 + 39.99*0 + 34.99*156 = $103,513.38",
     },
     evalChecks: [],
     maxSteps: 25,

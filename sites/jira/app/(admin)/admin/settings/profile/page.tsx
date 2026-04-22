@@ -15,7 +15,9 @@ import {
 export default function ProfilePage() {
   const [orgName, setOrgName] = useState("abhisheksharma67185")
   const [savedOrgName, setSavedOrgName] = useState("abhisheksharma67185")
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  )
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState("")
 
@@ -37,13 +39,15 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl">
-      <h1 className="text-2xl font-semibold mb-8">Profile</h1>
+    <div className="max-w-5xl p-8">
+      <h1 className="mb-8 text-2xl font-semibold">Profile</h1>
 
       {/* Change organization name */}
-      <h2 className="text-base font-semibold mb-2">Change organization name</h2>
-      <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
-        Your organization name is displayed in headings, navigation, and emails sent to managed accounts. It will usually be the name of your company or organization.
+      <h2 className="mb-2 text-base font-semibold">Change organization name</h2>
+      <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
+        Your organization name is displayed in headings, navigation, and emails
+        sent to managed accounts. It will usually be the name of your company or
+        organization.
       </p>
 
       <div className="mb-2">
@@ -54,39 +58,49 @@ export default function ProfilePage() {
       <Input
         value={orgName}
         onChange={(e) => setOrgName(e.target.value)}
-        className="max-w-sm mb-4"
+        className="mb-4 max-w-sm"
       />
 
-      <div className="flex items-center gap-2 mb-10">
+      <div className="mb-10 flex items-center gap-2">
         <Button
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className="bg-blue-600 text-white hover:bg-blue-700"
           onClick={handleSave}
           disabled={!orgName.trim() || saveStatus === "saving"}
         >
-          {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved!" : "Save"}
+          {saveStatus === "saving"
+            ? "Saving..."
+            : saveStatus === "saved"
+              ? "Saved!"
+              : "Save"}
         </Button>
-        <Button
-          variant="ghost"
-          onClick={handleCancel}
-          disabled={!isDirty}
-        >
+        <Button variant="ghost" onClick={handleCancel} disabled={!isDirty}>
           Cancel
         </Button>
       </div>
 
       {/* Transfer section */}
-      <h2 className="text-base font-semibold mb-2">Transfer all apps to another organization you administer</h2>
-      <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
-        Move all apps from this organization to another so that you can administer all users from the same place. Users will retain all existing app access and roles.
+      <h2 className="mb-2 text-base font-semibold">
+        Transfer all apps to another organization you administer
+      </h2>
+      <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
+        Move all apps from this organization to another so that you can
+        administer all users from the same place. Users will retain all existing
+        app access and roles.
       </p>
 
-      <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800 px-4 py-3 mb-10">
-        <svg className="size-5 text-yellow-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
+      <div className="mb-10 flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 dark:border-yellow-800 dark:bg-yellow-950/20">
+        <svg
+          className="mt-0.5 size-5 shrink-0 text-yellow-600"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
           <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
         </svg>
         <div>
           <p className="text-sm">
-            This feature is unavailable for your organization. To transfer your apps to another organization, contact support and raise a ticket under the category <strong>Technical issues and bugs.</strong>
+            This feature is unavailable for your organization. To transfer your
+            apps to another organization, contact support and raise a ticket
+            under the category <strong>Technical issues and bugs.</strong>
           </p>
           <a
             href="https://support.atlassian.com/contact/"
@@ -100,9 +114,11 @@ export default function ProfilePage() {
       </div>
 
       {/* Delete organization */}
-      <h2 className="text-base font-semibold mb-2">Delete organization</h2>
-      <p className="text-sm text-muted-foreground mb-2 max-w-3xl">
-        We recommend that you delete this organization only if you no longer need it. Make sure you&apos;ve backed up any data that you would like to keep.{" "}
+      <h2 className="mb-2 text-base font-semibold">Delete organization</h2>
+      <p className="mb-2 max-w-3xl text-sm text-muted-foreground">
+        We recommend that you delete this organization only if you no longer
+        need it. Make sure you&apos;ve backed up any data that you would like to
+        keep.{" "}
         <a
           href="https://support.atlassian.com/organization-administration/docs/delete-an-organization/"
           target="_blank"
@@ -112,10 +128,10 @@ export default function ProfilePage() {
           How to delete an organization
         </a>
       </p>
-      <p className="text-sm text-muted-foreground mb-2 max-w-3xl">
+      <p className="mb-2 max-w-3xl text-sm text-muted-foreground">
         Before you can delete the organization, you&apos;ll need to:
       </p>
-      <ul className="list-disc pl-6 mb-4 max-w-3xl">
+      <ul className="mb-4 max-w-3xl list-disc pl-6">
         <li className="text-sm text-muted-foreground">
           Remove all apps included in your active subscriptions.{" "}
           <a
@@ -139,7 +155,9 @@ export default function ProfilePage() {
           <DialogHeader>
             <DialogTitle>Delete organization</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the organization <strong>{savedOrgName}</strong> and all associated data.
+              This action cannot be undone. This will permanently delete the
+              organization <strong>{savedOrgName}</strong> and all associated
+              data.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2">
@@ -163,7 +181,7 @@ export default function ProfilePage() {
               Cancel
             </Button>
             <Button
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 text-white hover:bg-red-700"
               disabled={!canDelete}
               onClick={() => {
                 setDeleteOpen(false)

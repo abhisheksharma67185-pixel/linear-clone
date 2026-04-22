@@ -43,17 +43,14 @@ type FetchedTask =
 
 async function fetchTask(
   site: { id: string; url: string },
-  id: string,
+  id: string
 ): Promise<FetchedTask> {
   try {
     const task = await api.get<TaskDefinition>(site, `/api/sim/tasks/${id}`)
     return { kind: "full", task }
   } catch (err) {
     // 404 from the per-id endpoint, OR the route doesn't exist on this site.
-    if (
-      err instanceof ApiError &&
-      (err.status === 404 || err.status === 405)
-    ) {
+    if (err instanceof ApiError && (err.status === 404 || err.status === 405)) {
       const list = await api.get<TasksResponse>(site, "/api/sim/tasks")
       const summary = list.tasks.find((t) => t.id === id)
       if (!summary) throw new ApiError("Task not found", 404, null)
@@ -65,7 +62,7 @@ async function fetchTask(
 
 function CheckCard({ check, idx }: { check: EvalCheck; idx: number }) {
   return (
-    <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+    <div className="space-y-2 rounded-md border bg-muted/30 p-3">
       <div className="flex items-center justify-between gap-2">
         <Badge variant="outline" className="font-mono">
           #{idx + 1} · {check.type}
@@ -145,7 +142,7 @@ export default function TaskDetailPage({ params }: { params: Params }) {
 
   return (
     <PageShell
-      title={data?.kind === "full" ? data.task.title : data?.task.title ?? id}
+      title={data?.kind === "full" ? data.task.title : (data?.task.title ?? id)}
       description={
         site && (
           <span className="font-mono text-xs">
@@ -174,7 +171,7 @@ export default function TaskDetailPage({ params }: { params: Params }) {
     >
       {!hydrated || isLoading ? (
         <div className="grid gap-4 lg:grid-cols-3">
-          <Skeleton className="lg:col-span-2 h-96" />
+          <Skeleton className="h-96 lg:col-span-2" />
           <Skeleton className="h-96" />
         </div>
       ) : error ? (
@@ -198,7 +195,7 @@ export default function TaskDetailPage({ params }: { params: Params }) {
                     variant={difficultyVariant(
                       data.kind === "full"
                         ? data.task.difficulty
-                        : data.task.difficulty,
+                        : data.task.difficulty
                     )}
                   >
                     {data.kind === "full"
@@ -223,24 +220,24 @@ export default function TaskDetailPage({ params }: { params: Params }) {
                     steps
                   </Badge>
                 </div>
-                <CardTitle className="text-xl pt-2">
+                <CardTitle className="pt-2 text-xl">
                   {data.kind === "full" ? data.task.title : data.task.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                   Goal
                 </h3>
-                <p className="text-sm leading-relaxed mt-1">
+                <p className="mt-1 text-sm leading-relaxed">
                   {data.kind === "full" ? data.task.goal : data.task.goal}
                 </p>
                 {data.kind === "full" && data.task.hint && (
                   <>
                     <Separator className="my-4" />
-                    <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                       Hint
                     </h3>
-                    <p className="text-sm leading-relaxed mt-1">
+                    <p className="mt-1 text-sm leading-relaxed">
                       {data.task.hint}
                     </p>
                   </>
@@ -266,13 +263,15 @@ export default function TaskDetailPage({ params }: { params: Params }) {
                 {data.task.evalChecks?.length > 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Eval checks ({data.task.evalChecks.length})</CardTitle>
+                      <CardTitle>
+                        Eval checks ({data.task.evalChecks.length})
+                      </CardTitle>
                       <CardDescription>
                         Conditions evaluated when the episode finishes. Total
                         weight:{" "}
                         {data.task.evalChecks.reduce(
                           (a, c) => a + (c.weight ?? 0),
-                          0,
+                          0
                         )}
                         .
                       </CardDescription>
@@ -295,7 +294,7 @@ export default function TaskDetailPage({ params }: { params: Params }) {
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm">
                       <div>
-                        <div className="text-xs uppercase text-muted-foreground tracking-wide">
+                        <div className="text-xs tracking-wide text-muted-foreground uppercase">
                           Question
                         </div>
                         <p className="mt-0.5">
@@ -303,31 +302,32 @@ export default function TaskDetailPage({ params }: { params: Params }) {
                         </p>
                       </div>
                       <div>
-                        <div className="text-xs uppercase text-muted-foreground tracking-wide">
+                        <div className="text-xs tracking-wide text-muted-foreground uppercase">
                           Ground truth
                         </div>
-                        <p className="mt-0.5 font-mono text-xs bg-muted/40 rounded p-2">
+                        <p className="mt-0.5 rounded bg-muted/40 p-2 font-mono text-xs">
                           {data.task.retrievalRubric.groundTruth}
                         </p>
                       </div>
-                      {data.task.retrievalRubric.acceptableVariations?.length > 0 && (
+                      {data.task.retrievalRubric.acceptableVariations?.length >
+                        0 && (
                         <div>
-                          <div className="text-xs uppercase text-muted-foreground tracking-wide">
+                          <div className="text-xs tracking-wide text-muted-foreground uppercase">
                             Acceptable variations
                           </div>
-                          <ul className="mt-0.5 list-disc pl-4 space-y-0.5">
+                          <ul className="mt-0.5 list-disc space-y-0.5 pl-4">
                             {data.task.retrievalRubric.acceptableVariations.map(
                               (v, i) => (
                                 <li key={i} className="font-mono text-xs">
                                   {v}
                                 </li>
-                              ),
+                              )
                             )}
                           </ul>
                         </div>
                       )}
                       <div>
-                        <div className="text-xs uppercase text-muted-foreground tracking-wide">
+                        <div className="text-xs tracking-wide text-muted-foreground uppercase">
                           Rubric
                         </div>
                         <p className="mt-0.5 text-xs">
@@ -359,15 +359,15 @@ export default function TaskDetailPage({ params }: { params: Params }) {
                 <CardContent>
                   <dl className="grid grid-cols-2 gap-y-2 text-sm">
                     <dt className="text-muted-foreground">completion</dt>
-                    <dd className="font-mono text-right">
+                    <dd className="text-right font-mono">
                       {data.task.rewardProfile.completion}
                     </dd>
                     <dt className="text-muted-foreground">step penalty</dt>
-                    <dd className="font-mono text-right">
+                    <dd className="text-right font-mono">
                       {data.task.rewardProfile.stepPenalty}
                     </dd>
                     <dt className="text-muted-foreground">invalid penalty</dt>
-                    <dd className="font-mono text-right">
+                    <dd className="text-right font-mono">
                       {data.task.rewardProfile.invalidActionPenalty}
                     </dd>
                     <dt className="text-muted-foreground">partial</dt>
@@ -399,11 +399,13 @@ export default function TaskDetailPage({ params }: { params: Params }) {
                     <Badge key={t} variant="secondary">
                       {t}
                     </Badge>
-                  ),
+                  )
                 )}
                 {(data.kind === "full" ? data.task.tags : data.task.tags)
                   .length === 0 && (
-                  <span className="text-muted-foreground text-xs">No tags.</span>
+                  <span className="text-xs text-muted-foreground">
+                    No tags.
+                  </span>
                 )}
               </CardContent>
             </Card>
@@ -411,9 +413,7 @@ export default function TaskDetailPage({ params }: { params: Params }) {
             <Card>
               <CardHeader>
                 <CardTitle>Raw definition</CardTitle>
-                <CardDescription>
-                  As returned by the engine.
-                </CardDescription>
+                <CardDescription>As returned by the engine.</CardDescription>
               </CardHeader>
               <CardContent>
                 <JsonView data={data.task} defaultCollapsedDepth={2} />

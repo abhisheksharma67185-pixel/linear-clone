@@ -1,11 +1,11 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R = {
   completion: 2.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 
 export const navigationTasks: TaskDefinition[] = [
   {
@@ -19,7 +19,8 @@ export const navigationTasks: TaskDefinition[] = [
     goal: "Navigate to the Jira dashboard and report what you see.",
     retrievalRubric: {
       question: "What content is on this page?",
-      groundTruth: "Jira Dashboard with project stats, open issues, and active sprints",
+      groundTruth:
+        "Jira Dashboard with project stats, open issues, and active sprints",
       acceptableVariations: ["dashboard", "Dashboard", "jira dashboard"],
       rubric: "Agent must navigate to the main Jira dashboard page.",
     },
@@ -40,8 +41,12 @@ export const navigationTasks: TaskDefinition[] = [
     retrievalRubric: {
       question: "What columns are on the PLAT board?",
       groundTruth: "Open, In Development, Code Review, QA, Staging, Done",
-      acceptableVariations: ["6 columns", "Open, In Development, Code Review, QA, Staging, Done"],
-      rubric: "Agent must navigate to the PLAT scrum board and list its workflow columns.",
+      acceptableVariations: [
+        "6 columns",
+        "Open, In Development, Code Review, QA, Staging, Done",
+      ],
+      rubric:
+        "Agent must navigate to the PLAT scrum board and list its workflow columns.",
     },
     evalChecks: [],
     maxSteps: 5,
@@ -61,7 +66,8 @@ export const navigationTasks: TaskDefinition[] = [
       question: "How many issues are in the PLAT project?",
       groundTruth: "55",
       acceptableVariations: ["55", "55 issues"],
-      rubric: "Agent must navigate to PLAT backlog. Platform has 55 issues total (30 stories + 15 bugs + 10 tasks).",
+      rubric:
+        "Agent must navigate to PLAT backlog. Platform has 55 issues total (30 stories + 15 bugs + 10 tasks).",
     },
     evalChecks: [],
     maxSteps: 5,
@@ -79,8 +85,12 @@ export const navigationTasks: TaskDefinition[] = [
     goal: "Navigate to the Saved Filters page and report the filter names.",
     retrievalRubric: {
       question: "What saved filters exist?",
-      groundTruth: "My Open Issues, PLAT — Release v2.3.0, All Critical Bugs, Sprint 13 — Active, Unassigned Backlog, This Week's Resolved",
-      acceptableVariations: ["6 filters", "My Open Issues, PLAT — Release v2.3.0, All Critical Bugs, Sprint 13 — Active, Unassigned Backlog, This Week's Resolved"],
+      groundTruth:
+        "My Open Issues, PLAT — Release v2.3.0, All Critical Bugs, Sprint 13 — Active, Unassigned Backlog, This Week's Resolved",
+      acceptableVariations: [
+        "6 filters",
+        "My Open Issues, PLAT — Release v2.3.0, All Critical Bugs, Sprint 13 — Active, Unassigned Backlog, This Week's Resolved",
+      ],
       rubric: "Agent must navigate to the saved filters list (6 total).",
     },
     evalChecks: [],
@@ -101,7 +111,8 @@ export const navigationTasks: TaskDefinition[] = [
       question: "What type is the Platform Engineering project?",
       groundTruth: "scrum",
       acceptableVariations: ["scrum", "Scrum"],
-      rubric: "Agent must navigate to the PLAT project settings. PLAT is a scrum project.",
+      rubric:
+        "Agent must navigate to the PLAT project settings. PLAT is a scrum project.",
     },
     evalChecks: [],
     maxSteps: 5,
@@ -120,7 +131,10 @@ export const navigationTasks: TaskDefinition[] = [
     retrievalRubric: {
       question: "What project keys exist?",
       groundTruth: "SUS, SEU, SAP, PLAT, FAPP, MOB, DEVOPS, LCRM",
-      acceptableVariations: ["8 projects", "SUS, SEU, SAP, PLAT, FAPP, MOB, DEVOPS, LCRM"],
+      acceptableVariations: [
+        "8 projects",
+        "SUS, SEU, SAP, PLAT, FAPP, MOB, DEVOPS, LCRM",
+      ],
       rubric: "Agent must navigate to projects page. 8 projects exist.",
     },
     evalChecks: [],
@@ -128,4 +142,4 @@ export const navigationTasks: TaskDefinition[] = [
     rewardProfile: R,
     tags: ["navigation"],
   },
-];
+]

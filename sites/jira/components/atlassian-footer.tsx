@@ -50,7 +50,7 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-800">
+      <h3 className="mb-4 text-xs font-bold tracking-wider text-slate-800 uppercase">
         {title}
       </h3>
       <ul className="space-y-3">
@@ -134,25 +134,51 @@ export function AtlassianFooter() {
       {/* Bottom bar */}
       <div className="border-t border-slate-200">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between px-8 py-4">
-          <p className="text-xs text-slate-500">Copyright &copy; 2026 Atlassian</p>
+          <p className="text-xs text-slate-500">
+            Copyright &copy; 2026 Atlassian
+          </p>
           <div className="flex items-center gap-6">
-            <Link href="/admin/security" className="text-xs text-slate-500 hover:text-slate-700 transition-colors">
+            <Link
+              href="/admin/security"
+              className="text-xs text-slate-500 transition-colors hover:text-slate-700"
+            >
               Privacy policy
             </Link>
-            <Link href="/admin/settings" className="text-xs text-slate-500 hover:text-slate-700 transition-colors">
+            <Link
+              href="/admin/settings"
+              className="text-xs text-slate-500 transition-colors hover:text-slate-700"
+            >
               Terms
             </Link>
-            <Link href="/products" className="text-xs text-slate-500 hover:text-slate-700 transition-colors">
+            <Link
+              href="/products"
+              className="text-xs text-slate-500 transition-colors hover:text-slate-700"
+            >
               Impressum
             </Link>
-            <Link href="/admin/settings" className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 transition-colors">
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <Link
+              href="/admin/settings"
+              className="flex items-center gap-1.5 text-xs text-slate-500 transition-colors hover:text-slate-700"
+            >
+              <svg
+                className="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <line x1="2" y1="12" x2="22" y2="12" />
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
               </svg>
               English
-              <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-3"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </Link>

@@ -9,7 +9,13 @@ const filterApps = [
     name: "Projects",
     icon: (
       <div className="flex size-6 items-center justify-center rounded bg-pink-100 dark:bg-pink-900/30">
-        <svg className="size-3.5 text-pink-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-3.5 text-pink-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
         </svg>
       </div>
@@ -19,7 +25,13 @@ const filterApps = [
     name: "Goals",
     icon: (
       <div className="flex size-6 items-center justify-center rounded bg-purple-100 dark:bg-purple-900/30">
-        <svg className="size-3.5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-3.5 text-purple-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <circle cx="12" cy="12" r="10" />
           <circle cx="12" cy="12" r="3" />
         </svg>
@@ -30,7 +42,13 @@ const filterApps = [
     name: "Teams",
     icon: (
       <div className="flex size-6 items-center justify-center rounded bg-teal-100 dark:bg-teal-900/30">
-        <svg className="size-3.5 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-3.5 text-teal-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
           <circle cx="9" cy="7" r="4" />
         </svg>
@@ -41,7 +59,13 @@ const filterApps = [
     name: "Filters",
     icon: (
       <div className="flex size-6 items-center justify-center rounded bg-blue-100 dark:bg-blue-900/30">
-        <svg className="size-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-3.5 text-blue-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
         </svg>
       </div>
@@ -51,7 +75,13 @@ const filterApps = [
     name: "Dashboards",
     icon: (
       <div className="flex size-6 items-center justify-center rounded bg-green-100 dark:bg-green-900/30">
-        <svg className="size-3.5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-3.5 text-green-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <path d="M3 9h18" />
           <path d="M9 21V9" />
@@ -79,7 +109,13 @@ const initialStarredItems: StarredItem[] = [
     app: "Projects",
     typeIcon: (
       <div className="flex size-8 items-center justify-center rounded bg-pink-100 dark:bg-pink-900/30">
-        <svg className="size-4 text-pink-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-4 text-pink-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
         </svg>
       </div>
@@ -93,7 +129,13 @@ const initialStarredItems: StarredItem[] = [
     app: "Filters",
     typeIcon: (
       <div className="flex size-8 items-center justify-center rounded bg-blue-100 dark:bg-blue-900/30">
-        <svg className="size-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-4 text-blue-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
         </svg>
       </div>
@@ -107,7 +149,13 @@ const initialStarredItems: StarredItem[] = [
     app: "Dashboards",
     typeIcon: (
       <div className="flex size-8 items-center justify-center rounded bg-green-100 dark:bg-green-900/30">
-        <svg className="size-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-4 text-green-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <path d="M3 9h18" />
           <path d="M9 21V9" />
@@ -123,7 +171,13 @@ const initialStarredItems: StarredItem[] = [
     app: "Goals",
     typeIcon: (
       <div className="flex size-8 items-center justify-center rounded bg-purple-100 dark:bg-purple-900/30">
-        <svg className="size-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-4 text-purple-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <circle cx="12" cy="12" r="10" />
           <circle cx="12" cy="12" r="3" />
         </svg>
@@ -138,7 +192,13 @@ const initialStarredItems: StarredItem[] = [
     app: "Projects",
     typeIcon: (
       <div className="flex size-8 items-center justify-center rounded bg-pink-100 dark:bg-pink-900/30">
-        <svg className="size-4 text-pink-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg
+          className="size-4 text-pink-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
         </svg>
       </div>
@@ -150,12 +210,16 @@ export default function StarredPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filterOpen, setFilterOpen] = useState(false)
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
-  const [starredItems, setStarredItems] = useState<StarredItem[]>(initialStarredItems)
+  const [starredItems, setStarredItems] =
+    useState<StarredItem[]>(initialStarredItems)
   const filterRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+      if (
+        filterRef.current &&
+        !filterRef.current.contains(event.target as Node)
+      ) {
         setFilterOpen(false)
       }
     }
@@ -166,7 +230,9 @@ export default function StarredPage() {
   }, [filterOpen])
 
   const filteredItems = starredItems.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
     const matchesFilter = activeFilter ? item.app === activeFilter : true
     return matchesSearch && matchesFilter
   })
@@ -183,7 +249,7 @@ export default function StarredPage() {
       <div className="mb-8 flex items-center gap-3">
         <div className="relative w-56">
           <svg
-            className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -206,14 +272,26 @@ export default function StarredPage() {
               onClick={() => setActiveFilter(null)}
               className="flex items-center gap-1.5 rounded-md border-2 border-blue-600 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
             >
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <rect x="3" y="3" width="7" height="7" />
                 <rect x="14" y="3" width="7" height="7" />
                 <rect x="14" y="14" width="7" height="7" />
                 <rect x="3" y="14" width="7" height="7" />
               </svg>
               App is {activeFilter}
-              <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -223,7 +301,13 @@ export default function StarredPage() {
               onClick={() => setFilterOpen(!filterOpen)}
               className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent"
             >
-              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <rect x="3" y="3" width="7" height="7" />
                 <rect x="14" y="3" width="7" height="7" />
                 <rect x="14" y="14" width="7" height="7" />
@@ -234,7 +318,7 @@ export default function StarredPage() {
           )}
 
           {filterOpen && (
-            <div className="absolute left-0 top-full z-10 mt-1 w-48 rounded-lg border bg-background py-1 shadow-lg">
+            <div className="absolute top-full left-0 z-10 mt-1 w-48 rounded-lg border bg-background py-1 shadow-lg">
               {filterApps.map((app) => (
                 <button
                   key={app.name}
@@ -288,11 +372,21 @@ export default function StarredPage() {
 
               {/* Unstar button */}
               <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleUnstar(item.id) }}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleUnstar(item.id)
+                }}
                 className="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-yellow-500"
                 title="Remove star"
               >
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>

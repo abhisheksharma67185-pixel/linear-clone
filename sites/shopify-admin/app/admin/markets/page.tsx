@@ -28,9 +28,7 @@ interface Market {
   includes: string;
 }
 
-const initialMarkets: Market[] = [
-  { id: "1", name: "India", status: "Active", includes: "India" },
-];
+const initialMarkets: Market[] = [{ id: "1", name: "India", status: "Active", includes: "India" }];
 
 export default function MarketsPage() {
   const [searchValue, setSearchValue] = useState("");
@@ -62,22 +60,19 @@ export default function MarketsPage() {
     setDismissedSuggestions((prev) => [...prev, suggestion]);
   }, []);
 
-  const handleCreateSuggested = useCallback(
-    (name: string) => {
-      setMarkets((prev) => [
-        ...prev,
-        {
-          id: String(Date.now()),
-          name,
-          status: "Active",
-          includes: name,
-        },
-      ]);
-      setDismissedSuggestions((prev) => [...prev, name]);
-      setToastMessage(`Market "${name}" created`);
-    },
-    []
-  );
+  const handleCreateSuggested = useCallback((name: string) => {
+    setMarkets((prev) => [
+      ...prev,
+      {
+        id: String(Date.now()),
+        name,
+        status: "Active",
+        includes: name,
+      },
+    ]);
+    setDismissedSuggestions((prev) => [...prev, name]);
+    setToastMessage(`Market "${name}" created`);
+  }, []);
 
   const suggestions = [
     { label: "Create United States Market", name: "United States" },
@@ -163,16 +158,9 @@ export default function MarketsPage() {
 
               {/* Market rows */}
               {markets
-                .filter((m) =>
-                  m.name.toLowerCase().includes(searchValue.toLowerCase())
-                )
+                .filter((m) => m.name.toLowerCase().includes(searchValue.toLowerCase()))
                 .map((market) => (
-                  <Box
-                    key={market.id}
-                    padding="300"
-                    borderBlockEndWidth="025"
-                    borderColor="border"
-                  >
+                  <Box key={market.id} padding="300" borderBlockEndWidth="025" borderColor="border">
                     <InlineGrid columns="2fr 1fr 1fr 1fr" gap="200" alignItems="center">
                       <InlineStack gap="200" blockAlign="center">
                         <Icon source={GlobeIcon} tone="base" />
@@ -237,9 +225,7 @@ export default function MarketsPage() {
           onAction: handleCreateMarket,
           disabled: !newMarketName.trim(),
         }}
-        secondaryActions={[
-          { content: "Cancel", onAction: () => setShowCreateModal(false) },
-        ]}
+        secondaryActions={[{ content: "Cancel", onAction: () => setShowCreateModal(false) }]}
       >
         <Modal.Section>
           <TextField
@@ -252,9 +238,7 @@ export default function MarketsPage() {
         </Modal.Section>
       </Modal>
 
-      {toastMessage && (
-        <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />
-      )}
+      {toastMessage && <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />}
     </Frame>
   );
 }

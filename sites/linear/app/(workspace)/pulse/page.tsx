@@ -51,7 +51,8 @@ function buildFeed(issues: Issue[], members: Member[]): ActivityItem[] {
     let kind: ActivityKind = "status"
     if (issue.status === "done") kind = "completed"
     else if (issue.createdAt === issue.updatedAt) kind = "created"
-    else if (issue.priority === "urgent" || issue.priority === "high") kind = "comment"
+    else if (issue.priority === "urgent" || issue.priority === "high")
+      kind = "comment"
     feed.push({
       id: `${issue.id}-${issue.updatedAt}`,
       kind,
@@ -90,7 +91,7 @@ export default function PulsePage() {
     <div className="flex h-full min-h-0 flex-col">
       <header className="flex items-center justify-between px-6 py-3">
         <h1 className="text-sm font-medium">Pulse</h1>
-        <div className="flex items-center gap-0.5 text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-0.5">
           <Button variant="ghost" size="icon" className="size-7">
             <HugeiconsIcon icon={FilterIcon} className="size-4" />
           </Button>
@@ -100,7 +101,10 @@ export default function PulsePage() {
         </div>
       </header>
 
-      <Tabs defaultValue="following" className="flex min-h-0 flex-1 flex-col gap-0">
+      <Tabs
+        defaultValue="following"
+        className="flex min-h-0 flex-1 flex-col gap-0"
+      >
         <div className="px-4">
           <TabsList className="h-10 gap-1 bg-transparent p-0">
             <TabPill value="following">Following</TabPill>
@@ -115,11 +119,7 @@ export default function PulsePage() {
           ) : feed.length === 0 ? (
             <EmptyState />
           ) : (
-            <FeedList
-              items={feed.slice(0, 30)}
-              teamById={teamById}
-              now={now}
-            />
+            <FeedList items={feed.slice(0, 30)} teamById={teamById} now={now} />
           )}
         </TabsContent>
 
@@ -127,11 +127,7 @@ export default function PulsePage() {
           {loading ? (
             <LoadingRows />
           ) : (
-            <FeedList
-              items={feed.slice(0, 12)}
-              teamById={teamById}
-              now={now}
-            />
+            <FeedList items={feed.slice(0, 12)} teamById={teamById} now={now} />
           )}
         </TabsContent>
 
@@ -147,11 +143,17 @@ export default function PulsePage() {
   )
 }
 
-function TabPill({ value, children }: { value: string; children: React.ReactNode }) {
+function TabPill({
+  value,
+  children,
+}: {
+  value: string
+  children: React.ReactNode
+}) {
   return (
     <TabsTrigger
       value={value}
-      className="rounded-full border-0 bg-transparent px-3 py-1 text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-accent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+      className="text-muted-foreground data-[state=active]:bg-accent data-[state=active]:text-foreground rounded-full border-0 bg-transparent px-3 py-1 text-xs font-medium shadow-none data-[state=active]:shadow-none"
     >
       {children}
     </TabsTrigger>
@@ -170,7 +172,7 @@ function LoadingRows() {
 
 function EmptyState() {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 py-24 text-sm text-muted-foreground">
+    <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-3 py-24 text-sm">
       <HugeiconsIcon icon={Activity03Icon} className="size-8 opacity-60" />
       <p>No recent activity</p>
     </div>
@@ -194,7 +196,7 @@ function FeedList({
           <li key={item.id}>
             <Link
               href={`/issues/${item.issue.identifier}`}
-              className="flex items-start gap-3 px-6 py-3 transition-colors hover:bg-accent/50"
+              className="hover:bg-accent/50 flex items-start gap-3 px-6 py-3 transition-colors"
             >
               <Avatar className="size-7 shrink-0">
                 <AvatarImage src={item.actor.avatar} alt={item.actor.name} />
@@ -209,15 +211,17 @@ function FeedList({
                     {verbFor(item.kind, item.issue.status)}
                   </span>
                   <KindIcon kind={item.kind} />
-                  <span className="ml-auto shrink-0 text-muted-foreground">
+                  <span className="text-muted-foreground ml-auto shrink-0">
                     {timeAgo(item.at, now)}
                   </span>
                 </div>
                 <div className="mt-1 flex items-center gap-2">
-                  <span className="font-mono text-xs text-muted-foreground">
+                  <span className="text-muted-foreground font-mono text-xs">
                     {item.issue.identifier}
                   </span>
-                  <span className="flex-1 truncate text-sm">{item.issue.title}</span>
+                  <span className="flex-1 truncate text-sm">
+                    {item.issue.title}
+                  </span>
                 </div>
                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                   <Badge
@@ -234,7 +238,7 @@ function FeedList({
                     {item.issue.priority}
                   </Badge>
                   {team && (
-                    <span className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                    <span className="bg-muted text-muted-foreground rounded-sm px-1.5 py-0.5 font-mono text-[10px]">
                       {team.key}
                     </span>
                   )}
@@ -272,15 +276,24 @@ function KindIcon({ kind }: { kind: ActivityKind }) {
       )
     case "comment":
       return (
-        <HugeiconsIcon icon={BubbleChatIcon} className="size-3 text-muted-foreground" />
+        <HugeiconsIcon
+          icon={BubbleChatIcon}
+          className="text-muted-foreground size-3"
+        />
       )
     case "created":
       return (
-        <HugeiconsIcon icon={ArrowUp01Icon} className="size-3 text-muted-foreground" />
+        <HugeiconsIcon
+          icon={ArrowUp01Icon}
+          className="text-muted-foreground size-3"
+        />
       )
     case "status":
       return (
-        <HugeiconsIcon icon={Activity03Icon} className="size-3 text-muted-foreground" />
+        <HugeiconsIcon
+          icon={Activity03Icon}
+          className="text-muted-foreground size-3"
+        />
       )
   }
 }

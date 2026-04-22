@@ -27,10 +27,17 @@ function UserDropdown() {
             AS
           </AvatarFallback>
         </Avatar>
-        <span className="text-sm font-medium text-[#0052CC]">Abhishek Sharma</span>
+        <span className="text-sm font-medium text-[#0052CC]">
+          Abhishek Sharma
+        </span>
       </PopoverTrigger>
-      <PopoverContent side="bottom" align="end" sideOffset={8} className="w-[280px] p-0">
-        <div className="px-4 py-3 border-b">
+      <PopoverContent
+        side="bottom"
+        align="end"
+        sideOffset={8}
+        className="w-[280px] p-0"
+      >
+        <div className="border-b px-4 py-3">
           <p className="truncate text-sm font-bold text-slate-800">
             ABHISHEKSHARMA67185@GMAIL.COM
           </p>
@@ -40,7 +47,7 @@ function UserDropdown() {
             <button
               key={item.label}
               onClick={() => router.push(item.href)}
-              className="w-full px-4 py-2.5 text-left text-sm text-slate-600 hover:bg-accent transition-colors"
+              className="w-full px-4 py-2.5 text-left text-sm text-slate-600 transition-colors hover:bg-accent"
             >
               {item.label}
             </button>
@@ -59,8 +66,15 @@ export function WelcomeHeader() {
           {/* Atlassian logo mark */}
           <Link href="/" className="flex items-center">
             <div className="flex size-8 items-center justify-center rounded bg-[#1868db]">
-              <svg className="size-5 text-white" viewBox="0 0 32 32" fill="currentColor">
-                <path d="M10.543 18.17a.86.86 0 0 0-1.478.147L4.076 28.204A.86.86 0 0 0 4.85 29.5h7.956a.86.86 0 0 0 .774-.491c1.806-3.763.62-8.928-3.037-10.839z" opacity="0.7" />
+              <svg
+                className="size-5 text-white"
+                viewBox="0 0 32 32"
+                fill="currentColor"
+              >
+                <path
+                  d="M10.543 18.17a.86.86 0 0 0-1.478.147L4.076 28.204A.86.86 0 0 0 4.85 29.5h7.956a.86.86 0 0 0 .774-.491c1.806-3.763.62-8.928-3.037-10.839z"
+                  opacity="0.7"
+                />
                 <path d="M15.593 3.09a14.58 14.58 0 0 0-.98 14.79l4.56 9.13a.86.86 0 0 0 1.538 0l5.213-10.42a.86.86 0 0 0 0-.77L18.67 3.09a1.63 1.63 0 0 0-3.076 0z" />
               </svg>
             </div>
@@ -90,7 +104,10 @@ export function WelcomeHeader() {
       <div className="flex items-center justify-center gap-2 border-b border-blue-200 bg-blue-50 px-6 py-2.5 text-sm">
         <span className="text-base">👋</span>
         <span className="text-slate-800">Introducing agents in Jira</span>
-        <Link href="/products" className="font-medium text-[#0052CC] hover:underline">
+        <Link
+          href="/products"
+          className="font-medium text-[#0052CC] hover:underline"
+        >
           Learn more
         </Link>
       </div>

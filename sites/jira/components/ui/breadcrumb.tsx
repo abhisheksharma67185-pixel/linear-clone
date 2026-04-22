@@ -4,7 +4,10 @@ import { useRender } from "@base-ui/react/use-render"
 
 import { cn } from "@/lib/utils"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowRight01Icon, MoreHorizontalCircle01Icon } from "@hugeicons/core-free-icons"
+import {
+  ArrowRight01Icon,
+  MoreHorizontalCircle01Icon,
+} from "@hugeicons/core-free-icons"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -87,7 +90,11 @@ function BreadcrumbSeparator({
       {...props}
     >
       {children ?? (
-        <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="rtl:rotate-180" />
+        <HugeiconsIcon
+          icon={ArrowRight01Icon}
+          strokeWidth={2}
+          className="rtl:rotate-180"
+        />
       )}
     </li>
   )

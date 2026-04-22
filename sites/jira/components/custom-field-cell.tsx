@@ -60,7 +60,8 @@ export function CustomFieldCell({
   if (type === "Select") {
     const toArray = (v: unknown): string[] => {
       if (!v) return []
-      if (Array.isArray(v)) return v.filter((x) => typeof x === "string") as string[]
+      if (Array.isArray(v))
+        return v.filter((x) => typeof x === "string") as string[]
       if (typeof v === "string") return v ? [v] : []
       return []
     }
@@ -90,8 +91,8 @@ export function CustomFieldCell({
       >
         <button
           onClick={() => setSelectOpen((v) => !v)}
-          className={`flex items-center gap-1 rounded px-2 py-0.5 text-xs border border-transparent hover:border-[#dfe1e6] hover:bg-[#f4f5f7] transition-colors min-w-[60px] ${
-            detailView ? "w-full justify-between text-[13px] py-1 px-2" : ""
+          className={`flex min-w-[60px] items-center gap-1 rounded border border-transparent px-2 py-0.5 text-xs transition-colors hover:border-[#dfe1e6] hover:bg-[#f4f5f7] ${
+            detailView ? "w-full justify-between px-2 py-1 text-[13px]" : ""
           }`}
         >
           {selectedArr.length > 0 ? (
@@ -99,7 +100,7 @@ export function CustomFieldCell({
               {selectedArr.map((s) => (
                 <span
                   key={s}
-                  className="rounded bg-[#e9f2ff] text-[#0052cc] px-2 py-0.5 text-xs font-medium"
+                  className="rounded bg-[#e9f2ff] px-2 py-0.5 text-xs font-medium text-[#0052cc]"
                 >
                   {s}
                 </span>
@@ -109,7 +110,7 @@ export function CustomFieldCell({
             <span className="text-[#626f86]">—</span>
           )}
           <svg
-            className="size-3 text-[#626f86] shrink-0"
+            className="size-3 shrink-0 text-[#626f86]"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -120,15 +121,21 @@ export function CustomFieldCell({
         </button>
         {selectOpen && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setSelectOpen(false)} />
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setSelectOpen(false)}
+            />
             <div
               ref={selectRef}
-              className="absolute left-0 top-full z-50 mt-1 min-w-[140px] rounded-md border border-[#dfe1e6] bg-white dark:bg-popover shadow-[0_4px_16px_rgba(9,30,66,0.15)] py-1"
+              className="absolute top-full left-0 z-50 mt-1 min-w-[140px] rounded-md border border-[#dfe1e6] bg-white py-1 shadow-[0_4px_16px_rgba(9,30,66,0.15)] dark:bg-popover"
             >
               {!multi && (
                 <button
-                  onClick={() => { setDraft(""); commit("") }}
-                  className="flex w-full items-center px-3 py-1.5 text-[13px] text-[#626f86] hover:bg-[#f4f5f7] transition-colors"
+                  onClick={() => {
+                    setDraft("")
+                    commit("")
+                  }}
+                  className="flex w-full items-center px-3 py-1.5 text-[13px] text-[#626f86] transition-colors hover:bg-[#f4f5f7]"
                 >
                   — None
                 </button>
@@ -139,7 +146,7 @@ export function CustomFieldCell({
                   onClick={() => toggleOption(opt)}
                   className={`flex w-full items-center gap-2 px-3 py-1.5 text-[13px] transition-colors hover:bg-[#f4f5f7] ${
                     isSelected(opt)
-                      ? "text-[#0052cc] font-medium bg-[#e9f2ff]"
+                      ? "bg-[#e9f2ff] font-medium text-[#0052cc]"
                       : "text-[#172b4d] dark:text-foreground"
                   }`}
                 >
@@ -192,10 +199,13 @@ export function CustomFieldCell({
             onBlur={() => commit(draft)}
             onKeyDown={(e) => {
               if (e.key === "Enter") commit(draft)
-              if (e.key === "Escape") { setDraft(value); setEditing(false) }
+              if (e.key === "Escape") {
+                setDraft(value)
+                setEditing(false)
+              }
             }}
             className={`rounded border border-[#0052cc] bg-background px-2 py-0.5 text-[13px] outline-none focus:ring-1 focus:ring-[#0052cc] ${
-              detailView ? "w-full py-1.5 px-3 text-sm" : "w-32"
+              detailView ? "w-full px-3 py-1.5 text-sm" : "w-32"
             }`}
             placeholder="User name"
           />
@@ -205,8 +215,11 @@ export function CustomFieldCell({
     return (
       <div
         title={description}
-        className="flex items-center gap-1.5 cursor-pointer group/user"
-        onClick={(e) => { e.stopPropagation(); setEditing(true) }}
+        className="group/user flex cursor-pointer items-center gap-1.5"
+        onClick={(e) => {
+          e.stopPropagation()
+          setEditing(true)
+        }}
       >
         {userVal ? (
           <>
@@ -218,12 +231,14 @@ export function CustomFieldCell({
                 .toUpperCase()
                 .slice(0, 2)}
             </span>
-            <span className="truncate text-xs text-[#172b4d] dark:text-foreground max-w-[80px] hover:underline">
+            <span className="max-w-[80px] truncate text-xs text-[#172b4d] hover:underline dark:text-foreground">
               {userVal}
             </span>
           </>
         ) : (
-          <span className="text-xs text-[#626f86] group-hover/user:text-[#172b4d]">—</span>
+          <span className="text-xs text-[#626f86] group-hover/user:text-[#172b4d]">
+            —
+          </span>
         )}
       </div>
     )
@@ -232,9 +247,7 @@ export function CustomFieldCell({
   // ── Number ───────────────────────────────────────────────────────────────────
   if (type === "Number") {
     const numVal =
-      draft !== undefined && draft !== null && draft !== ""
-        ? String(draft)
-        : ""
+      draft !== undefined && draft !== null && draft !== "" ? String(draft) : ""
     if (editing) {
       return (
         <div
@@ -252,10 +265,15 @@ export function CustomFieldCell({
             onBlur={() => commit(draft === "" ? null : Number(draft))}
             onKeyDown={(e) => {
               if (e.key === "Enter") commit(draft === "" ? null : Number(draft))
-              if (e.key === "Escape") { setDraft(value); setEditing(false) }
+              if (e.key === "Escape") {
+                setDraft(value)
+                setEditing(false)
+              }
             }}
             className={`rounded border border-[#0052cc] bg-background text-right outline-none focus:ring-1 focus:ring-[#0052cc] ${
-              detailView ? "w-full py-1.5 px-3 text-sm" : "w-20 px-2 py-0.5 text-[13px]"
+              detailView
+                ? "w-full px-3 py-1.5 text-sm"
+                : "w-20 px-2 py-0.5 text-[13px]"
             }`}
           />
         </div>
@@ -264,15 +282,20 @@ export function CustomFieldCell({
     return (
       <div
         title={description}
-        className="text-right cursor-pointer group/num"
-        onClick={(e) => { e.stopPropagation(); setEditing(true) }}
+        className="group/num cursor-pointer text-right"
+        onClick={(e) => {
+          e.stopPropagation()
+          setEditing(true)
+        }}
       >
         {numVal !== "" ? (
-          <span className="text-xs text-[#172b4d] dark:text-foreground font-mono">
+          <span className="font-mono text-xs text-[#172b4d] dark:text-foreground">
             {numVal}
           </span>
         ) : (
-          <span className="text-xs text-[#626f86] group-hover/num:text-[#172b4d]">—</span>
+          <span className="text-xs text-[#626f86] group-hover/num:text-[#172b4d]">
+            —
+          </span>
         )}
       </div>
     )
@@ -295,10 +318,13 @@ export function CustomFieldCell({
           onBlur={() => commit(draft)}
           onKeyDown={(e) => {
             if (e.key === "Enter") commit(draft)
-            if (e.key === "Escape") { setDraft(value); setEditing(false) }
+            if (e.key === "Escape") {
+              setDraft(value)
+              setEditing(false)
+            }
           }}
           className={`rounded border border-[#0052cc] bg-background px-2 py-0.5 text-[13px] outline-none focus:ring-1 focus:ring-[#0052cc] ${
-            detailView ? "w-full py-1.5 px-3 text-sm" : "w-28"
+            detailView ? "w-full px-3 py-1.5 text-sm" : "w-28"
           }`}
         />
       </div>
@@ -307,18 +333,23 @@ export function CustomFieldCell({
   return (
     <div
       title={description}
-      className="cursor-pointer group/text relative"
-      onClick={(e) => { e.stopPropagation(); setEditing(true) }}
+      className="group/text relative cursor-pointer"
+      onClick={(e) => {
+        e.stopPropagation()
+        setEditing(true)
+      }}
     >
       {textVal ? (
         <span
-          className="block truncate text-xs text-[#172b4d] dark:text-foreground max-w-[110px] hover:underline"
+          className="block max-w-[110px] truncate text-xs text-[#172b4d] hover:underline dark:text-foreground"
           title={textVal}
         >
           {textVal}
         </span>
       ) : (
-        <span className="text-xs text-[#626f86] group-hover/text:text-[#172b4d]">—</span>
+        <span className="text-xs text-[#626f86] group-hover/text:text-[#172b4d]">
+          —
+        </span>
       )}
     </div>
   )

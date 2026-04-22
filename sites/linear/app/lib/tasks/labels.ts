@@ -1,17 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R5 = {
   completion: 5.0,
   partialPerCheck: true,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const R8 = {
   completion: 8.0,
   partialPerCheck: true,
   stepPenalty: -0.02,
   invalidActionPenalty: -0.2,
-};
+}
 
 // Label reference (new CESS data):
 //   label-1  frontend          (Area)
@@ -180,4 +180,4 @@ export const labelTasks: TaskDefinition[] = [
     rewardProfile: R5,
     tags: ["label", "issue"],
   },
-];
+]

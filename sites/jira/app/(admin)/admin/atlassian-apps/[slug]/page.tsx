@@ -6,41 +6,164 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 
-const appData: Record<string, { name: string; icon: string; url: string; plan: string; users: number; groups: { name: string; desc: string; members: number; defaultGroup: boolean; role: string }[] }> = {
+const appData: Record<
+  string,
+  {
+    name: string
+    icon: string
+    url: string
+    plan: string
+    users: number
+    groups: {
+      name: string
+      desc: string
+      members: number
+      defaultGroup: boolean
+      role: string
+    }[]
+  }
+> = {
   goals: {
-    name: "Goals", icon: "◎", url: "abhisheksharma67185.atlassian.net", plan: "Free", users: 1,
+    name: "Goals",
+    icon: "◎",
+    url: "abhisheksharma67185.atlassian.net",
+    plan: "Free",
+    users: 1,
     groups: [
-      { name: "goals-admins-abhisheksharma67185", desc: "Grants access to Goals and Goals administration features on abhisheksharma67185", members: 0, defaultGroup: true, role: "App admin" },
-      { name: "goals-user-access-admins-abhisheksharma67185", desc: "Grants access to administer users and groups for Goals on abhisheksharma67185.\nDoesn't grant any product access.", members: 0, defaultGroup: true, role: "User access admin" },
-      { name: "goals-users-abhisheksharma67185", desc: "Grants access to Goals on abhisheksharma67185", members: 0, defaultGroup: true, role: "User" },
-      { name: "org-admins", desc: "Grants access to administer org-level settings, users, and groups, and to view billing", members: 1, defaultGroup: false, role: "App admin" },
+      {
+        name: "goals-admins-abhisheksharma67185",
+        desc: "Grants access to Goals and Goals administration features on abhisheksharma67185",
+        members: 0,
+        defaultGroup: true,
+        role: "App admin",
+      },
+      {
+        name: "goals-user-access-admins-abhisheksharma67185",
+        desc: "Grants access to administer users and groups for Goals on abhisheksharma67185.\nDoesn't grant any product access.",
+        members: 0,
+        defaultGroup: true,
+        role: "User access admin",
+      },
+      {
+        name: "goals-users-abhisheksharma67185",
+        desc: "Grants access to Goals on abhisheksharma67185",
+        members: 0,
+        defaultGroup: true,
+        role: "User",
+      },
+      {
+        name: "org-admins",
+        desc: "Grants access to administer org-level settings, users, and groups, and to view billing",
+        members: 1,
+        defaultGroup: false,
+        role: "App admin",
+      },
     ],
   },
   "jira-administration": {
-    name: "Jira Administration", icon: "⚙", url: "abhisheksharma67185.atlassian.net", plan: "", users: 0,
+    name: "Jira Administration",
+    icon: "⚙",
+    url: "abhisheksharma67185.atlassian.net",
+    plan: "",
+    users: 0,
     groups: [
-      { name: "jira-admins-abhisheksharma67185", desc: "Grants access to the administration features for all Jira products", members: 0, defaultGroup: true, role: "App admin" },
-      { name: "org-admins", desc: "Grants access to administer org-level settings", members: 1, defaultGroup: false, role: "App admin" },
+      {
+        name: "jira-admins-abhisheksharma67185",
+        desc: "Grants access to the administration features for all Jira products",
+        members: 0,
+        defaultGroup: true,
+        role: "App admin",
+      },
+      {
+        name: "org-admins",
+        desc: "Grants access to administer org-level settings",
+        members: 1,
+        defaultGroup: false,
+        role: "App admin",
+      },
     ],
   },
   jira: {
-    name: "Jira", icon: "◆", url: "abhisheksharma67185.atlassian.net", plan: "Premium", users: 1,
+    name: "Jira",
+    icon: "◆",
+    url: "abhisheksharma67185.atlassian.net",
+    plan: "Premium",
+    users: 1,
     groups: [
-      { name: "jira-admins-abhisheksharma67185", desc: "Grants access to the administration features for all Jira products", members: 0, defaultGroup: true, role: "App admin" },
-      { name: "jira-user-access-admins-abhisheksharma67185", desc: "Grants access to administer users and groups for Jira", members: 0, defaultGroup: true, role: "User access admin" },
-      { name: "jira-users-abhisheksharma67185", desc: "Grants access to Jira on abhisheksharma67185", members: 1, defaultGroup: true, role: "User" },
-      { name: "org-admins", desc: "Grants access to administer org-level settings", members: 1, defaultGroup: false, role: "App admin" },
+      {
+        name: "jira-admins-abhisheksharma67185",
+        desc: "Grants access to the administration features for all Jira products",
+        members: 0,
+        defaultGroup: true,
+        role: "App admin",
+      },
+      {
+        name: "jira-user-access-admins-abhisheksharma67185",
+        desc: "Grants access to administer users and groups for Jira",
+        members: 0,
+        defaultGroup: true,
+        role: "User access admin",
+      },
+      {
+        name: "jira-users-abhisheksharma67185",
+        desc: "Grants access to Jira on abhisheksharma67185",
+        members: 1,
+        defaultGroup: true,
+        role: "User",
+      },
+      {
+        name: "org-admins",
+        desc: "Grants access to administer org-level settings",
+        members: 1,
+        defaultGroup: false,
+        role: "App admin",
+      },
     ],
   },
   projects: {
-    name: "Projects", icon: "✦", url: "abhisheksharma67185.atlassian.net", plan: "Free", users: 1,
+    name: "Projects",
+    icon: "✦",
+    url: "abhisheksharma67185.atlassian.net",
+    plan: "Free",
+    users: 1,
     groups: [
-      { name: "projects-admins-abhisheksharma67185", desc: "Grants access to Projects and Projects administration features", members: 0, defaultGroup: true, role: "App admin" },
-      { name: "projects-user-access-admins-abhisheksharma67185", desc: "Grants access to administer users and groups for Projects", members: 0, defaultGroup: true, role: "User access admin" },
-      { name: "projects-users-abhisheksharma67185", desc: "Grants access to Projects on abhisheksharma67185", members: 0, defaultGroup: true, role: "User" },
-      { name: "org-admins", desc: "Grants access to administer org-level settings", members: 1, defaultGroup: false, role: "App admin" },
+      {
+        name: "projects-admins-abhisheksharma67185",
+        desc: "Grants access to Projects and Projects administration features",
+        members: 0,
+        defaultGroup: true,
+        role: "App admin",
+      },
+      {
+        name: "projects-user-access-admins-abhisheksharma67185",
+        desc: "Grants access to administer users and groups for Projects",
+        members: 0,
+        defaultGroup: true,
+        role: "User access admin",
+      },
+      {
+        name: "projects-users-abhisheksharma67185",
+        desc: "Grants access to Projects on abhisheksharma67185",
+        members: 0,
+        defaultGroup: true,
+        role: "User",
+      },
+      {
+        name: "org-admins",
+        desc: "Grants access to administer org-level settings",
+        members: 1,
+        defaultGroup: false,
+        role: "App admin",
+      },
     ],
   },
 }
@@ -56,7 +179,9 @@ function AppIcon({ icon }: { icon: string }) {
     )
   }
   return (
-    <div className="size-10 rounded-full bg-muted flex items-center justify-center text-lg">{icon}</div>
+    <div className="flex size-10 items-center justify-center rounded-full bg-muted text-lg">
+      {icon}
+    </div>
   )
 }
 
@@ -75,7 +200,12 @@ export default function AppDetailPage() {
     return (
       <div className="p-8">
         <h1 className="text-2xl font-semibold">App not found</h1>
-        <Link href="/admin/atlassian-apps" className="text-blue-600 hover:underline mt-2 inline-block">Back to Atlassian apps</Link>
+        <Link
+          href="/admin/atlassian-apps"
+          className="mt-2 inline-block text-blue-600 hover:underline"
+        >
+          Back to Atlassian apps
+        </Link>
       </div>
     )
   }
@@ -85,27 +215,37 @@ export default function AppDetailPage() {
       {/* Main content */}
       <div className="flex-1 overflow-y-auto p-8">
         {/* Breadcrumb */}
-        <p className="text-xs text-muted-foreground mb-1">Apps</p>
+        <p className="mb-1 text-xs text-muted-foreground">Apps</p>
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <AppIcon icon={app.icon} />
             <h1 className="text-2xl font-semibold">{app.name}</h1>
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setAddGroupOpen(true)}>Add groups</Button>
+          <Button
+            className="bg-blue-600 text-white hover:bg-blue-700"
+            onClick={() => setAddGroupOpen(true)}
+          >
+            Add groups
+          </Button>
         </div>
 
-        <button type="button" className="text-sm text-blue-600 hover:underline mb-4 inline-block">{app.url}</button>
+        <button
+          type="button"
+          className="mb-4 inline-block text-sm text-blue-600 hover:underline"
+        >
+          {app.url}
+        </button>
 
         {/* Plan / Users */}
-        <div className="flex items-start gap-12 mb-6">
+        <div className="mb-6 flex items-start gap-12">
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Plan</p>
+            <p className="mb-1 text-xs text-muted-foreground">Plan</p>
             <p className="text-2xl font-bold">{app.plan || "—"}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Users</p>
+            <p className="mb-1 text-xs text-muted-foreground">Users</p>
             <p className="text-2xl font-bold text-blue-600">{app.users}</p>
           </div>
         </div>
@@ -116,27 +256,56 @@ export default function AppDetailPage() {
             <thead>
               <tr className="border-b bg-muted/30">
                 <th className="px-4 py-2.5 text-left font-medium">Group</th>
-                <th className="px-4 py-2.5 text-left font-medium w-[80px]">Members</th>
-                <th className="px-4 py-2.5 text-left font-medium w-[100px]">Default group</th>
-                <th className="px-4 py-2.5 text-left font-medium w-[160px]">Roles</th>
-                <th className="px-4 py-2.5 text-left font-medium w-[60px]">Actions</th>
+                <th className="w-[80px] px-4 py-2.5 text-left font-medium">
+                  Members
+                </th>
+                <th className="w-[100px] px-4 py-2.5 text-left font-medium">
+                  Default group
+                </th>
+                <th className="w-[160px] px-4 py-2.5 text-left font-medium">
+                  Roles
+                </th>
+                <th className="w-[60px] px-4 py-2.5 text-left font-medium">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {app.groups.map((group) => (
-                <tr key={group.name} className="border-b last:border-b-0 hover:bg-accent/30 transition-colors">
+                <tr
+                  key={group.name}
+                  className="border-b transition-colors last:border-b-0 hover:bg-accent/30"
+                >
                   <td className="px-4 py-3">
-                    <Link href="/admin/groups" className="text-sm font-medium text-blue-600 hover:underline">{group.name}</Link>
-                    <p className="text-xs text-muted-foreground mt-0.5 whitespace-pre-line">{group.desc}</p>
+                    <Link
+                      href="/admin/groups"
+                      className="text-sm font-medium text-blue-600 hover:underline"
+                    >
+                      {group.name}
+                    </Link>
+                    <p className="mt-0.5 text-xs whitespace-pre-line text-muted-foreground">
+                      {group.desc}
+                    </p>
                   </td>
-                  <td className="px-4 py-3 text-sm text-center">{group.members}</td>
+                  <td className="px-4 py-3 text-center text-sm">
+                    {group.members}
+                  </td>
                   <td className="px-4 py-3 text-center">
                     {group.defaultGroup && (
-                      <svg className="size-5 text-green-600 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                      <svg
+                        className="mx-auto size-5 text-green-600"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                      </svg>
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <select className="w-full rounded-md border px-2 py-1.5 text-sm bg-background">
+                    <select className="w-full rounded-md border bg-background px-2 py-1.5 text-sm">
                       <option>{group.role}</option>
                       <option>App admin</option>
                       <option>User access admin</option>
@@ -146,7 +315,15 @@ export default function AppDetailPage() {
                   </td>
                   <td className="px-4 py-3">
                     <button className="rounded p-1 text-muted-foreground hover:bg-accent">
-                      <svg className="size-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" /></svg>
+                      <svg
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <circle cx="12" cy="5" r="1.5" />
+                        <circle cx="12" cy="12" r="1.5" />
+                        <circle cx="12" cy="19" r="1.5" />
+                      </svg>
                     </button>
                   </td>
                 </tr>
@@ -160,8 +337,12 @@ export default function AppDetailPage() {
       <Dialog open={addGroupOpen} onOpenChange={setAddGroupOpen}>
         <DialogContent className="sm:max-w-md" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Add groups to this app</DialogTitle>
-            <DialogDescription>Grant roles to all the users in a group.</DialogDescription>
+            <DialogTitle className="text-xl font-semibold">
+              Add groups to this app
+            </DialogTitle>
+            <DialogDescription>
+              Grant roles to all the users in a group.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -181,7 +362,7 @@ export default function AppDetailPage() {
                 Role <span className="text-red-500">*</span>
               </Label>
               <select
-                className="w-full rounded-md border px-3 py-2 text-sm bg-background"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
                 value={groupRole}
                 onChange={(e) => setGroupRole(e.target.value)}
               >
@@ -222,13 +403,44 @@ export default function AppDetailPage() {
 
       {/* Help sidebar toggle */}
       {!helpOpen && (
-        <div className="border-l flex flex-col items-center py-4 px-2 gap-4">
-          <button onClick={() => { setHelpOpen(true); setHelpTab("help") }} className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+        <div className="flex flex-col items-center gap-4 border-l px-2 py-4">
+          <button
+            onClick={() => {
+              setHelpOpen(true)
+              setHelpTab("help")
+            }}
+            className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <svg
+              className="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
             Help
           </button>
-          <button onClick={() => { setHelpOpen(true); setHelpTab("search") }} className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+          <button
+            onClick={() => {
+              setHelpOpen(true)
+              setHelpTab("search")
+            }}
+            className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <svg
+              className="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
             Search
           </button>
         </div>
@@ -236,27 +448,53 @@ export default function AppDetailPage() {
 
       {/* Help sidebar expanded */}
       {helpOpen && (
-        <div className="w-80 border-l flex flex-col shrink-0">
+        <div className="flex w-80 shrink-0 flex-col border-l">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b">
+          <div className="flex items-center justify-between border-b px-4 py-3">
             <h2 className="text-lg font-semibold">Help</h2>
             <div className="flex items-center gap-2">
-              <button className="rounded border px-2 py-1 text-xs flex items-center gap-1">
-                <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 4 12 14.01 9 11.01" /></svg>
+              <button className="flex items-center gap-1 rounded border px-2 py-1 text-xs">
+                <svg
+                  className="size-3"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
                 Close
               </button>
-              <button onClick={() => setHelpOpen(false)} className="text-muted-foreground hover:text-foreground">
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              <button
+                onClick={() => setHelpOpen(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
           </div>
 
           {/* Tab bar */}
           <div className="flex border-b">
-            <button onClick={() => setHelpTab("help")} className={`flex-1 py-2 text-sm font-medium text-center ${helpTab === "help" ? "border-b-2 border-blue-600 text-blue-600" : "text-muted-foreground"}`}>
+            <button
+              onClick={() => setHelpTab("help")}
+              className={`flex-1 py-2 text-center text-sm font-medium ${helpTab === "help" ? "border-b-2 border-blue-600 text-blue-600" : "text-muted-foreground"}`}
+            >
               Help
             </button>
-            <button onClick={() => setHelpTab("search")} className={`flex-1 py-2 text-sm font-medium text-center ${helpTab === "search" ? "border-b-2 border-blue-600 text-blue-600" : "text-muted-foreground"}`}>
+            <button
+              onClick={() => setHelpTab("search")}
+              className={`flex-1 py-2 text-center text-sm font-medium ${helpTab === "search" ? "border-b-2 border-blue-600 text-blue-600" : "text-muted-foreground"}`}
+            >
               Search
             </button>
           </div>
@@ -264,13 +502,20 @@ export default function AppDetailPage() {
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-4">
             {helpTab === "help" && (
-              <div className="flex flex-col h-full">
+              <div className="flex h-full flex-col">
                 {/* AI chat area */}
                 <div className="flex-1">
-                  <div className="rounded-lg bg-muted/50 p-4 mb-4">
-                    <p className="text-sm mb-2">Hi, welcome to Atlassian Support.</p>
-                    <p className="text-sm mb-2">You can get help with any of our apps in this AI-powered chat.</p>
-                    <p className="text-sm font-medium">How can I assist you today?</p>
+                  <div className="mb-4 rounded-lg bg-muted/50 p-4">
+                    <p className="mb-2 text-sm">
+                      Hi, welcome to Atlassian Support.
+                    </p>
+                    <p className="mb-2 text-sm">
+                      You can get help with any of our apps in this AI-powered
+                      chat.
+                    </p>
+                    <p className="text-sm font-medium">
+                      How can I assist you today?
+                    </p>
                   </div>
 
                   {/* Suggested questions */}
@@ -280,8 +525,17 @@ export default function AppDetailPage() {
                       "How do I control user access to products?",
                       "What are Smart Links?",
                     ].map((q) => (
-                      <button key={q} className="flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-sm hover:bg-accent transition-colors">
-                        <svg className="size-4 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <button
+                        key={q}
+                        className="flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent"
+                      >
+                        <svg
+                          className="size-4 shrink-0 text-muted-foreground"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                           <polyline points="14 2 14 8 20 8" />
                         </svg>
@@ -296,10 +550,24 @@ export default function AppDetailPage() {
             {helpTab === "search" && (
               <div>
                 <div className="relative mb-4">
-                  <svg className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                  <Input placeholder="Search help articles..." className="pl-9" />
+                  <svg
+                    className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <Input
+                    placeholder="Search help articles..."
+                    className="pl-9"
+                  />
                 </div>
-                <p className="text-sm text-muted-foreground text-center py-8">Search for help articles and documentation</p>
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  Search for help articles and documentation
+                </p>
               </div>
             )}
           </div>
@@ -314,12 +582,31 @@ export default function AppDetailPage() {
                   onChange={(e) => setChatInput(e.target.value)}
                   className="pr-10"
                 />
-                <button className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+                <button className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <svg
+                    className="size-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
                 </button>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                <svg className="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+              <p className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
+                <svg
+                  className="size-2.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
                 Uses AI. Verify results.
               </p>
             </div>

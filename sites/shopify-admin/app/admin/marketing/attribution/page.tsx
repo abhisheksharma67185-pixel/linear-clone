@@ -47,31 +47,71 @@ export default function AttributionPage() {
             >
               <BlockStack gap="200">
                 <InlineStack align="space-between">
-                  <Text as="span" variant="bodySm" tone="subdued">Sessions</Text>
-                  <Text as="span" variant="bodySm" tone="subdued">Last 30 days</Text>
+                  <Text as="span" variant="bodySm" tone="subdued">
+                    Sessions
+                  </Text>
+                  <Text as="span" variant="bodySm" tone="subdued">
+                    Last 30 days
+                  </Text>
                 </InlineStack>
                 {/* Simple bar representation */}
                 <Box paddingBlockStart="200">
                   <BlockStack gap="200">
                     <InlineStack gap="200" blockAlign="center">
-                      <Text as="span" variant="bodySm">Organic search</Text>
-                      <Box background="bg-fill-success" borderRadius="100" minHeight="12px" minWidth="178px" />
-                      <Text as="span" variant="bodySm" fontWeight="semibold">89</Text>
+                      <Text as="span" variant="bodySm">
+                        Organic search
+                      </Text>
+                      <Box
+                        background="bg-fill-success"
+                        borderRadius="100"
+                        minHeight="12px"
+                        minWidth="178px"
+                      />
+                      <Text as="span" variant="bodySm" fontWeight="semibold">
+                        89
+                      </Text>
                     </InlineStack>
                     <InlineStack gap="200" blockAlign="center">
-                      <Text as="span" variant="bodySm">Email</Text>
-                      <Box background="bg-fill-info" borderRadius="100" minHeight="12px" minWidth="134px" />
-                      <Text as="span" variant="bodySm" fontWeight="semibold">67</Text>
+                      <Text as="span" variant="bodySm">
+                        Email
+                      </Text>
+                      <Box
+                        background="bg-fill-info"
+                        borderRadius="100"
+                        minHeight="12px"
+                        minWidth="134px"
+                      />
+                      <Text as="span" variant="bodySm" fontWeight="semibold">
+                        67
+                      </Text>
                     </InlineStack>
                     <InlineStack gap="200" blockAlign="center">
-                      <Text as="span" variant="bodySm">Direct</Text>
-                      <Box background="bg-fill-warning" borderRadius="100" minHeight="12px" minWidth="90px" />
-                      <Text as="span" variant="bodySm" fontWeight="semibold">45</Text>
+                      <Text as="span" variant="bodySm">
+                        Direct
+                      </Text>
+                      <Box
+                        background="bg-fill-warning"
+                        borderRadius="100"
+                        minHeight="12px"
+                        minWidth="90px"
+                      />
+                      <Text as="span" variant="bodySm" fontWeight="semibold">
+                        45
+                      </Text>
                     </InlineStack>
                     <InlineStack gap="200" blockAlign="center">
-                      <Text as="span" variant="bodySm">Social</Text>
-                      <Box background="bg-fill-critical" borderRadius="100" minHeight="12px" minWidth="56px" />
-                      <Text as="span" variant="bodySm" fontWeight="semibold">28</Text>
+                      <Text as="span" variant="bodySm">
+                        Social
+                      </Text>
+                      <Box
+                        background="bg-fill-critical"
+                        borderRadius="100"
+                        minHeight="12px"
+                        minWidth="56px"
+                      />
+                      <Text as="span" variant="bodySm" fontWeight="semibold">
+                        28
+                      </Text>
                     </InlineStack>
                   </BlockStack>
                 </Box>

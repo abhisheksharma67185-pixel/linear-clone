@@ -100,7 +100,7 @@ export default function TagsPage() {
   }, [everything, query, sortBy, sortAsc])
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="mx-auto max-w-5xl p-8">
       {/* Banner */}
       <div className="mb-8 flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50/60 px-6 py-4 dark:border-blue-800 dark:bg-blue-950/20">
         <div className="flex items-center gap-2">
@@ -134,7 +134,7 @@ export default function TagsPage() {
       {/* Search */}
       <div className="relative mb-8 max-w-md">
         <svg
-          className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"

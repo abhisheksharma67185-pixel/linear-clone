@@ -47,7 +47,9 @@ function JsonNode({
 }: NodeProps) {
   const isObject = value !== null && typeof value === "object"
   const isArray = Array.isArray(value)
-  const [collapsed, setCollapsed] = React.useState(depth >= defaultCollapsedDepth)
+  const [collapsed, setCollapsed] = React.useState(
+    depth >= defaultCollapsedDepth
+  )
 
   if (!isObject) {
     return (
@@ -55,7 +57,7 @@ function JsonNode({
         {name !== undefined && (
           <>
             <span className="text-foreground/80">&quot;{name}&quot;</span>
-            <span className="text-muted-foreground mr-1">:</span>
+            <span className="mr-1 text-muted-foreground">:</span>
           </>
         )}
         <PrimitiveValue value={value} />
@@ -75,7 +77,7 @@ function JsonNode({
   return (
     <div>
       <div
-        className="flex cursor-pointer items-baseline gap-1 hover:bg-muted/40 rounded-sm"
+        className="flex cursor-pointer items-baseline gap-1 rounded-sm hover:bg-muted/40"
         style={{ paddingLeft: depth * 12 }}
         onClick={() => !empty && setCollapsed((c) => !c)}
       >
@@ -83,7 +85,7 @@ function JsonNode({
           <IconChevronRight
             className={cn(
               "size-3 shrink-0 self-center transition-transform",
-              !collapsed && "rotate-90",
+              !collapsed && "rotate-90"
             )}
           />
         )}
@@ -91,14 +93,14 @@ function JsonNode({
         {name !== undefined && (
           <>
             <span className="text-foreground/80">&quot;{name}&quot;</span>
-            <span className="text-muted-foreground mr-1">:</span>
+            <span className="mr-1 text-muted-foreground">:</span>
           </>
         )}
         <span className="text-muted-foreground">{open}</span>
         {(empty || collapsed) && (
           <>
             {!empty && (
-              <span className="text-muted-foreground/60 text-xs">
+              <span className="text-xs text-muted-foreground/60">
                 {entries.length} {isArray ? "items" : "keys"}
               </span>
             )}
@@ -173,7 +175,7 @@ export function JsonView({
           )}
         </Button>
       )}
-      <pre className="bg-muted/30 text-foreground max-h-[60vh] overflow-auto rounded-md border p-3 font-mono text-xs leading-relaxed">
+      <pre className="max-h-[60vh] overflow-auto rounded-md border bg-muted/30 p-3 font-mono text-xs leading-relaxed text-foreground">
         <JsonNode
           value={data}
           depth={0}

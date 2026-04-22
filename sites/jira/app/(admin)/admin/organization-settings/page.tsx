@@ -25,9 +25,15 @@ const timezones = [
 export default function OrganizationSettingsPage() {
   const [orgName, setOrgName] = useState("abhisheksharma67185")
   const [savedOrgName, setSavedOrgName] = useState("abhisheksharma67185")
-  const [timezone, setTimezone] = useState("(GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi")
-  const [savedTimezone, setSavedTimezone] = useState("(GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi")
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
+  const [timezone, setTimezone] = useState(
+    "(GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi"
+  )
+  const [savedTimezone, setSavedTimezone] = useState(
+    "(GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi"
+  )
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  )
 
   const isDirty = orgName !== savedOrgName || timezone !== savedTimezone
 
@@ -48,14 +54,16 @@ export default function OrganizationSettingsPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl">
-      <h1 className="text-2xl font-semibold mb-8">Workspace settings</h1>
+    <div className="max-w-5xl p-8">
+      <h1 className="mb-8 text-2xl font-semibold">Workspace settings</h1>
 
       {/* Workspace name */}
       <section className="mb-10">
-        <h2 className="text-base font-semibold mb-2">Workspace name</h2>
-        <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
-          Your workspace name is displayed across Atlassian products in headings and navigation. It&apos;s usually the name of your company or organization.
+        <h2 className="mb-2 text-base font-semibold">Workspace name</h2>
+        <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
+          Your workspace name is displayed across Atlassian products in headings
+          and navigation. It&apos;s usually the name of your company or
+          organization.
         </p>
         <div className="mb-2">
           <label className="text-sm font-medium">
@@ -71,20 +79,25 @@ export default function OrganizationSettingsPage() {
 
       {/* Domains */}
       <section className="mb-10">
-        <h2 className="text-base font-semibold mb-2">Domains</h2>
-        <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
-          Verified domains allow you to manage accounts that use email addresses from your domains. Users who sign up with a verified domain are automatically added to your organization.
+        <h2 className="mb-2 text-base font-semibold">Domains</h2>
+        <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
+          Verified domains allow you to manage accounts that use email addresses
+          from your domains. Users who sign up with a verified domain are
+          automatically added to your organization.
         </p>
         <div className="rounded-lg border p-4">
-          <p className="text-sm text-muted-foreground">No domains verified yet.</p>
+          <p className="text-sm text-muted-foreground">
+            No domains verified yet.
+          </p>
         </div>
       </section>
 
       {/* User groups */}
       <section className="mb-10">
-        <h2 className="text-base font-semibold mb-2">User groups</h2>
-        <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
-          Organize users into groups to manage permissions and access across your Atlassian products more efficiently.
+        <h2 className="mb-2 text-base font-semibold">User groups</h2>
+        <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
+          Organize users into groups to manage permissions and access across
+          your Atlassian products more efficiently.
         </p>
         <div className="rounded-lg border p-4">
           <div className="flex items-center justify-between">
@@ -92,16 +105,19 @@ export default function OrganizationSettingsPage() {
               <p className="text-sm font-medium">Default group</p>
               <p className="text-xs text-muted-foreground">1 member</p>
             </div>
-            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">Active</span>
+            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+              Active
+            </span>
           </div>
         </div>
       </section>
 
       {/* Time zone */}
       <section className="mb-10">
-        <h2 className="text-base font-semibold mb-2">Time zone</h2>
-        <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
-          Set the default time zone for your workspace. This affects how dates and times are displayed across products.
+        <h2 className="mb-2 text-base font-semibold">Time zone</h2>
+        <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
+          Set the default time zone for your workspace. This affects how dates
+          and times are displayed across products.
         </p>
         <div className="mb-2">
           <label className="text-sm font-medium">Workspace time zone</label>
@@ -112,7 +128,9 @@ export default function OrganizationSettingsPage() {
           className="w-full max-w-sm rounded-md border bg-background px-3 py-2 text-sm"
         >
           {timezones.map((tz) => (
-            <option key={tz} value={tz}>{tz}</option>
+            <option key={tz} value={tz}>
+              {tz}
+            </option>
           ))}
         </select>
       </section>
@@ -120,17 +138,17 @@ export default function OrganizationSettingsPage() {
       {/* Save / Cancel */}
       <div className="flex items-center gap-2">
         <Button
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className="bg-blue-600 text-white hover:bg-blue-700"
           onClick={handleSave}
           disabled={!isDirty || !orgName.trim() || saveStatus === "saving"}
         >
-          {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved!" : "Save"}
+          {saveStatus === "saving"
+            ? "Saving..."
+            : saveStatus === "saved"
+              ? "Saved!"
+              : "Save"}
         </Button>
-        <Button
-          variant="ghost"
-          onClick={handleCancel}
-          disabled={!isDirty}
-        >
+        <Button variant="ghost" onClick={handleCancel} disabled={!isDirty}>
           Cancel
         </Button>
       </div>

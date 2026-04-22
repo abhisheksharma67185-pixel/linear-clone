@@ -55,8 +55,8 @@ export default function MetaobjectsPage() {
             }}
           >
             <Text as="p" variant="bodyMd" tone="subdued">
-              Metaobjects allow you to group fields and connect them to different parts of your store.
-              Use them to create custom content or data structures.
+              Metaobjects allow you to group fields and connect them to different parts of your
+              store. Use them to create custom content or data structures.
             </Text>
           </EmptyState>
         </Card>
@@ -78,9 +78,7 @@ export default function MetaobjectsPage() {
           onAction: handleCreate,
           disabled: !defName.trim(),
         }}
-        secondaryActions={[
-          { content: "Cancel", onAction: () => setShowModal(false) },
-        ]}
+        secondaryActions={[{ content: "Cancel", onAction: () => setShowModal(false) }]}
       >
         <Modal.Section>
           <BlockStack gap="300">
@@ -102,9 +100,7 @@ export default function MetaobjectsPage() {
         </Modal.Section>
       </Modal>
 
-      {toastMessage && (
-        <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />
-      )}
+      {toastMessage && <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />}
     </Frame>
   );
 }

@@ -1,6 +1,6 @@
-import { getAllTasks } from "./registry";
-import type { TaskDefinition } from "./types";
-import type { CurriculumStage } from "../types";
+import { getAllTasks } from "./registry"
+import type { TaskDefinition } from "./types"
+import type { CurriculumStage } from "../types"
 
 // ---------------------------------------------------------------------------
 // Generic curriculum builder — builds stages from registered tasks
@@ -77,27 +77,27 @@ const STAGE_DEFINITIONS: Omit<CurriculumStage, "taskIds">[] = [
     domains: ["multi-domain"],
     difficultyRange: ["expert", "expert"],
   },
-];
+]
 
 export function getCurriculum(): CurriculumStage[] {
-  const tasks = getAllTasks();
-  const byStage = new Map<number, TaskDefinition[]>();
+  const tasks = getAllTasks()
+  const byStage = new Map<number, TaskDefinition[]>()
 
   for (const task of tasks) {
-    const existing = byStage.get(task.curriculumStage) ?? [];
-    existing.push(task);
-    byStage.set(task.curriculumStage, existing);
+    const existing = byStage.get(task.curriculumStage) ?? []
+    existing.push(task)
+    byStage.set(task.curriculumStage, existing)
   }
 
   return STAGE_DEFINITIONS.map((def) => ({
     ...def,
     taskIds: (byStage.get(def.stage) ?? []).map((t) => t.id),
-  }));
+  }))
 }
 
 export function getStageForTask(taskId: string): CurriculumStage | undefined {
-  const tasks = getAllTasks();
-  const task = tasks.find((t) => t.id === taskId);
-  if (!task) return undefined;
-  return getCurriculum().find((s) => s.stage === task.curriculumStage);
+  const tasks = getAllTasks()
+  const task = tasks.find((t) => t.id === taskId)
+  if (!task) return undefined
+  return getCurriculum().find((s) => s.stage === task.curriculumStage)
 }

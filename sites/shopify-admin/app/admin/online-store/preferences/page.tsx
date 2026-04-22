@@ -1,6 +1,16 @@
 "use client";
 
-import { Page, Layout, Card, FormLayout, TextField, BlockStack, Text, Banner, Box } from "@shopify/polaris";
+import {
+  Page,
+  Layout,
+  Card,
+  FormLayout,
+  TextField,
+  BlockStack,
+  Text,
+  Banner,
+  Box,
+} from "@shopify/polaris";
 import { useState, useCallback } from "react";
 
 export default function PreferencesPage() {

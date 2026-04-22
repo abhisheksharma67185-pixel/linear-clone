@@ -13,7 +13,7 @@ export function buildUserMap(users: User[]): Map<string, User> {
  */
 export function resolveUser(
   userId: string | null | undefined,
-  users: User[] | Map<string, User>,
+  users: User[] | Map<string, User>
 ): User | undefined {
   if (!userId) return undefined
   if (users instanceof Map) return users.get(userId)
@@ -27,7 +27,7 @@ export function resolveUser(
 export function resolveUserName(
   userId: string | null | undefined,
   users: User[] | Map<string, User>,
-  fallback = "Unassigned",
+  fallback = "Unassigned"
 ): string {
   const user = resolveUser(userId, users)
   return user?.displayName ?? user?.name ?? fallback
@@ -48,7 +48,7 @@ export function buildSprintMap(sprints: Sprint[]): Map<string, Sprint> {
  */
 export function resolveSprint(
   sprintId: string | null | undefined,
-  sprints: Sprint[] | Map<string, Sprint>,
+  sprints: Sprint[] | Map<string, Sprint>
 ): Sprint | undefined {
   if (!sprintId) return undefined
   if (sprints instanceof Map) return sprints.get(sprintId)
@@ -62,7 +62,7 @@ export function resolveSprint(
 export function resolveSprintName(
   sprintId: string | null | undefined,
   sprints: Sprint[] | Map<string, Sprint>,
-  fallback = "Backlog",
+  fallback = "Backlog"
 ): string {
   return resolveSprint(sprintId, sprints)?.name ?? fallback
 }
@@ -74,7 +74,7 @@ export function resolveSprintName(
  */
 export function resolveEpic(
   epicId: string | null | undefined,
-  epics: Epic[] | Map<string, Epic>,
+  epics: Epic[] | Map<string, Epic>
 ): Epic | undefined {
   if (!epicId) return undefined
   if (epics instanceof Map) return epics.get(epicId)
@@ -87,7 +87,7 @@ export function resolveEpic(
 export function resolveEpicName(
   epicId: string | null | undefined,
   epics: Epic[] | Map<string, Epic>,
-  fallback = "None",
+  fallback = "None"
 ): string {
   return resolveEpic(epicId, epics)?.name ?? fallback
 }

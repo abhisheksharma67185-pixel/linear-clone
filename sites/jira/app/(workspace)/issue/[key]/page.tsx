@@ -19,7 +19,11 @@ import {
 import { statusDisplayLabel } from "@/lib/badge-styles"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { UserProfileCard } from "@/components/user-profile-card"
-import type { Comment, IssueHistoryEntry, User as UserType } from "@/app/lib/mock-data"
+import type {
+  Comment,
+  IssueHistoryEntry,
+  User as UserType,
+} from "@/app/lib/mock-data"
 
 const statusOptions = [
   { value: "to_do", label: statusDisplayLabel.to_do },
@@ -46,7 +50,8 @@ const typeOptions = [
 const statusStyle: Record<string, string> = {
   to_do: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
   in_progress: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  in_review: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+  in_review:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
   done: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
 }
 
@@ -79,14 +84,14 @@ const FIELD_LABELS: Record<string, string> = {
 function formatFieldValue(field: string, value: string | null): string {
   if (value === null) return "None"
   if (field === "status") return statusDisplayLabel[value] ?? value
-  if (field === "priority") return value.charAt(0).toUpperCase() + value.slice(1)
+  if (field === "priority")
+    return value.charAt(0).toUpperCase() + value.slice(1)
   return value
 }
 
 // Types kept for compatibility
 type PopulatedComment = Comment & { author: UserType | null }
 type PopulatedHistory = IssueHistoryEntry & { author: UserType | null }
-
 
 // ─── Issue detail page ───────────────────────────────────────────────────────
 
@@ -101,14 +106,27 @@ export default function IssueDetailPage() {
   const [sprints, setSprints] = useState<Sprint[]>([])
   const [epics, setEpics] = useState<Epic[]>([])
   const [loading, setLoading] = useState(true)
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  )
 
   // Comment state — inline (not a separate component) for reliability
-  const [comments, setComments] = useState<Array<{ id: string; body: string; authorId: string; createdAt: string; updatedAt: string; author: { name: string; displayName?: string; email?: string } | null }>>([])
+  const [comments, setComments] = useState<
+    Array<{
+      id: string
+      body: string
+      authorId: string
+      createdAt: string
+      updatedAt: string
+      author: { name: string; displayName?: string; email?: string } | null
+    }>
+  >([])
   const [commentBody, setCommentBody] = useState("")
   const [commentPosting, setCommentPosting] = useState(false)
   const [history, setHistory] = useState<PopulatedHistory[]>([])
-  const [activityTab, setActivityTab] = useState<"all" | "comments" | "history">("all")
+  const [activityTab, setActivityTab] = useState<
+    "all" | "comments" | "history"
+  >("all")
 
   // Editable fields
   const [summary, setSummary] = useState("")
@@ -135,8 +153,12 @@ export default function IssueDetailPage() {
       fetch("/api/data/projects").then((r) => r.json()),
       fetch("/api/data/sprints").then((r) => r.json()),
       fetch("/api/data/epics").then((r) => r.json()),
-      fetch(`/api/data/issues/${issueKey}/comments`).then((r) => r.json()).catch(() => []),
-      fetch(`/api/data/issues/${issueKey}/history`).then((r) => r.json()).catch(() => []),
+      fetch(`/api/data/issues/${issueKey}/comments`)
+        .then((r) => r.json())
+        .catch(() => []),
+      fetch(`/api/data/issues/${issueKey}/history`)
+        .then((r) => r.json())
+        .catch(() => []),
     ]).then(([i, u, p, s, e, c, h]) => {
       setIssue(i)
       setUsers(u)
@@ -158,7 +180,9 @@ export default function IssueDetailPage() {
       setLabelsStr(Array.isArray(i.labels) ? i.labels.join(", ") : "")
       setLoading(false)
       // Mark loaded after a tick so the first useEffect for auto-save skips
-      setTimeout(() => { loadedRef.current = true }, 0)
+      setTimeout(() => {
+        loadedRef.current = true
+      }, 0)
     })
   }, [issueKey])
 
@@ -180,20 +204,38 @@ export default function IssueDetailPage() {
         sprintId: sprintId && sprintId !== "__none__" ? sprintId : null,
         epicId: epicId && epicId !== "__none__" ? epicId : null,
         storyPoints: storyPoints ? Number(storyPoints) : null,
-        labels: labelsStr.split(",").map((l) => l.trim()).filter(Boolean),
+        labels: labelsStr
+          .split(",")
+          .map((l) => l.trim())
+          .filter(Boolean),
       }),
     }).then(() => {
       setSaveStatus("saved")
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
       savedTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000)
     })
-  }, [issueKey, summary, description, status, priority, type, assigneeId, reporterId, sprintId, epicId, storyPoints, labelsStr])
+  }, [
+    issueKey,
+    summary,
+    description,
+    status,
+    priority,
+    type,
+    assigneeId,
+    reporterId,
+    sprintId,
+    epicId,
+    storyPoints,
+    labelsStr,
+  ])
 
   useEffect(() => {
     if (!loadedRef.current) return
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(persistToApi, 800)
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
   }, [persistToApi])
 
   // Comment submit — reads from DOM as fallback, zero external dependencies
@@ -208,14 +250,17 @@ export default function IssueDetailPage() {
     if (!text) return
 
     // 1. Add to state immediately
-    setComments((prev) => [...prev, {
-      id: `cmt-local-${Date.now()}`,
-      body: text,
-      authorId: "usr-1",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      author: { name: "Abhishek Sharma", displayName: "Abhishek Sharma" },
-    }])
+    setComments((prev) => [
+      ...prev,
+      {
+        id: `cmt-local-${Date.now()}`,
+        body: text,
+        authorId: "usr-1",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        author: { name: "Abhishek Sharma", displayName: "Abhishek Sharma" },
+      },
+    ])
 
     // 2. Clear both state and DOM
     setCommentBody("")
@@ -248,13 +293,13 @@ export default function IssueDetailPage() {
   const project = projects.find((p) => p.id === issue.projectId)
 
   return (
-    <div className="flex flex-col gap-6 p-6 overflow-hidden">
+    <div className="flex flex-col gap-6 overflow-hidden p-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Badge variant="secondary" className={statusStyle[status]}>
           {statusDisplayLabel[status] ?? status.replace(/_/g, " ")}
         </Badge>
-        <h1 className="text-xl font-semibold font-mono">{issue.key}</h1>
+        <h1 className="font-mono text-xl font-semibold">{issue.key}</h1>
         {project && (
           <span className="text-sm text-muted-foreground">
             in {project.name}
@@ -262,7 +307,7 @@ export default function IssueDetailPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 overflow-hidden">
+      <div className="grid grid-cols-1 gap-6 overflow-hidden lg:grid-cols-[1fr_320px]">
         {/* Left column - Main content + Activity */}
         <div className="min-w-0 space-y-4">
           <Card>
@@ -303,73 +348,118 @@ export default function IssueDetailPage() {
                       onClick={() => setActivityTab(tab)}
                       className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${activityTab === tab ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" : "text-muted-foreground hover:bg-accent"}`}
                     >
-                      {tab === "all" ? "All" : tab === "comments" ? `Comments (${comments.length})` : `History (${history.length})`}
+                      {tab === "all"
+                        ? "All"
+                        : tab === "comments"
+                          ? `Comments (${comments.length})`
+                          : `History (${history.length})`}
                     </button>
                   ))}
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 mb-4">
+              <div className="mb-4 space-y-3">
                 {(() => {
-                  const items: Array<{ type: "comment" | "history"; date: string; data: (typeof comments)[number] | PopulatedHistory }> = []
+                  const items: Array<{
+                    type: "comment" | "history"
+                    date: string
+                    data: (typeof comments)[number] | PopulatedHistory
+                  }> = []
                   if (activityTab === "all" || activityTab === "comments") {
-                    comments.forEach((c) => items.push({ type: "comment", date: c.createdAt, data: c }))
+                    comments.forEach((c) =>
+                      items.push({
+                        type: "comment",
+                        date: c.createdAt,
+                        data: c,
+                      })
+                    )
                   }
                   if (activityTab === "all" || activityTab === "history") {
-                    history.forEach((h) => items.push({ type: "history", date: h.createdAt, data: h }))
+                    history.forEach((h) =>
+                      items.push({
+                        type: "history",
+                        date: h.createdAt,
+                        data: h,
+                      })
+                    )
                   }
-                  items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  items.sort(
+                    (a, b) =>
+                      new Date(b.date).getTime() - new Date(a.date).getTime()
+                  )
 
                   if (items.length === 0) {
-                    return <p className="text-sm text-muted-foreground py-2">No activity yet.</p>
+                    return (
+                      <p className="py-2 text-sm text-muted-foreground">
+                        No activity yet.
+                      </p>
+                    )
                   }
 
                   return items.map((item) => {
                     if (item.type === "comment") {
                       const c = item.data as (typeof comments)[number]
-                      const authorName = c.author?.displayName ?? c.author?.name ?? "Unknown"
+                      const authorName =
+                        c.author?.displayName ?? c.author?.name ?? "Unknown"
                       return (
                         <div key={`c-${c.id}`} className="flex gap-3">
-                          <div className="shrink-0 mt-0.5">
+                          <div className="mt-0.5 shrink-0">
                             <UserProfileCard
                               name={authorName}
                               email={c.author?.email}
                             />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-medium">{authorName}</span>
-                              <span className="text-xs text-muted-foreground">{new Date(c.createdAt).toLocaleDateString()}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="mb-1 flex items-center gap-2">
+                              <span className="text-sm font-medium">
+                                {authorName}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(c.createdAt).toLocaleDateString()}
+                              </span>
                             </div>
                             <div className="rounded-md border bg-muted/30 px-3 py-2">
-                              <p className="text-sm whitespace-pre-wrap">{c.body}</p>
+                              <p className="text-sm whitespace-pre-wrap">
+                                {c.body}
+                              </p>
                             </div>
                           </div>
                         </div>
                       )
                     }
                     const h = item.data as PopulatedHistory
-                    const authorName = h.author?.displayName ?? h.author?.name ?? "System"
+                    const authorName =
+                      h.author?.displayName ?? h.author?.name ?? "System"
                     const fieldLabel = FIELD_LABELS[h.field] ?? h.field
                     return (
                       <div key={`h-${h.id}`} className="flex gap-3">
-                        <div className="shrink-0 mt-0.5">
+                        <div className="mt-0.5 shrink-0">
                           <UserProfileCard
                             name={authorName}
                             email={h.author?.email}
                           />
                         </div>
-                        <div className="flex-1 min-w-0 py-0.5">
+                        <div className="min-w-0 flex-1 py-0.5">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">{authorName}</span>
-                            <span className="text-xs text-muted-foreground">changed {fieldLabel}</span>
-                            <span className="text-xs text-muted-foreground">{timeAgo(h.createdAt)}</span>
+                            <span className="text-sm font-medium">
+                              {authorName}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              changed {fieldLabel}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {timeAgo(h.createdAt)}
+                            </span>
                           </div>
-                          <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
-                            <span className="line-through">{formatFieldValue(h.field, h.oldValue)}</span>
+                          <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <span className="line-through">
+                              {formatFieldValue(h.field, h.oldValue)}
+                            </span>
                             <span>→</span>
-                            <span className="font-medium text-foreground">{formatFieldValue(h.field, h.newValue)}</span>
+                            <span className="font-medium text-foreground">
+                              {formatFieldValue(h.field, h.newValue)}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -379,15 +469,17 @@ export default function IssueDetailPage() {
               </div>
               {/* New comment form */}
               <div className="flex gap-3">
-                <Avatar className="size-7 shrink-0 mt-0.5">
-                  <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">A</AvatarFallback>
+                <Avatar className="mt-0.5 size-7 shrink-0">
+                  <AvatarFallback className="bg-blue-100 text-[10px] text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                    A
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-2">
                   <textarea
                     ref={commentRef}
                     defaultValue=""
                     placeholder="Add a comment..."
-                    className="w-full rounded-md border bg-background px-3 py-2 text-sm min-h-[80px] resize-none outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                    className="min-h-[80px] w-full resize-none rounded-md border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                         e.preventDefault()
@@ -397,7 +489,11 @@ export default function IssueDetailPage() {
                   />
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
-                      {typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent) ? "⌘" : "Ctrl"}+Enter to submit
+                      {typeof navigator !== "undefined" &&
+                      /Mac/.test(navigator.userAgent)
+                        ? "⌘"
+                        : "Ctrl"}
+                      +Enter to submit
                     </span>
                     <button
                       type="button"
@@ -428,15 +524,21 @@ export default function IssueDetailPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {(() => {
-                      const proj = projects.find((p) => p.id === issue.projectId)
+                      const proj = projects.find(
+                        (p) => p.id === issue.projectId
+                      )
                       const workflow = proj?.workflow ?? []
                       if (workflow.length > 0) {
                         return workflow.map((w) => (
-                          <SelectItem key={w} value={w}>{w}</SelectItem>
+                          <SelectItem key={w} value={w}>
+                            {w}
+                          </SelectItem>
                         ))
                       }
                       return statusOptions.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
                       ))
                     })()}
                   </SelectContent>
@@ -444,8 +546,13 @@ export default function IssueDetailPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Priority</Label>
-                <Select value={priority} onValueChange={(v) => v && setPriority(v)}>
+                <Label className="text-xs text-muted-foreground">
+                  Priority
+                </Label>
+                <Select
+                  value={priority}
+                  onValueChange={(v) => v && setPriority(v)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -476,25 +583,48 @@ export default function IssueDetailPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Assignee</Label>
-                <Select value={assigneeId} onValueChange={(v) => v && setAssigneeId(v)}>
+                <Label className="text-xs text-muted-foreground">
+                  Assignee
+                </Label>
+                <Select
+                  value={assigneeId}
+                  onValueChange={(v) => v && setAssigneeId(v)}
+                >
                   <SelectTrigger>
                     {(() => {
                       const u = users.find((u) => u.id === assigneeId)
                       return u ? (
                         <span className="flex items-center gap-2">
-                          <Avatar className="size-5"><AvatarFallback className="text-[8px] bg-blue-100 text-blue-700">{(u.displayName ?? u.name).charAt(0)}</AvatarFallback></Avatar>
+                          <Avatar className="size-5">
+                            <AvatarFallback className="bg-blue-100 text-[8px] text-blue-700">
+                              {(u.displayName ?? u.name).charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
                           {u.displayName ?? u.name}
                         </span>
-                      ) : <span className="text-muted-foreground">Unassigned</span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Unassigned
+                        </span>
+                      )
                     })()}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__" label="Unassigned">Unassigned</SelectItem>
+                    <SelectItem value="__none__" label="Unassigned">
+                      Unassigned
+                    </SelectItem>
                     {users.map((u) => (
-                      <SelectItem key={u.id} value={u.id} label={u.displayName ?? u.name}>
+                      <SelectItem
+                        key={u.id}
+                        value={u.id}
+                        label={u.displayName ?? u.name}
+                      >
                         <span className="flex items-center gap-2">
-                          <Avatar className="size-5"><AvatarFallback className="text-[8px] bg-blue-100 text-blue-700">{(u.displayName ?? u.name).charAt(0)}</AvatarFallback></Avatar>
+                          <Avatar className="size-5">
+                            <AvatarFallback className="bg-blue-100 text-[8px] text-blue-700">
+                              {(u.displayName ?? u.name).charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
                           {u.displayName ?? u.name}
                         </span>
                       </SelectItem>
@@ -504,24 +634,45 @@ export default function IssueDetailPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Reporter</Label>
-                <Select value={reporterId} onValueChange={(v) => v && setReporterId(v)}>
+                <Label className="text-xs text-muted-foreground">
+                  Reporter
+                </Label>
+                <Select
+                  value={reporterId}
+                  onValueChange={(v) => v && setReporterId(v)}
+                >
                   <SelectTrigger>
                     {(() => {
                       const u = users.find((u) => u.id === reporterId)
                       return u ? (
                         <span className="flex items-center gap-2">
-                          <Avatar className="size-5"><AvatarFallback className="text-[8px] bg-blue-100 text-blue-700">{(u.displayName ?? u.name).charAt(0)}</AvatarFallback></Avatar>
+                          <Avatar className="size-5">
+                            <AvatarFallback className="bg-blue-100 text-[8px] text-blue-700">
+                              {(u.displayName ?? u.name).charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
                           {u.displayName ?? u.name}
                         </span>
-                      ) : <span className="text-muted-foreground">Select reporter</span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Select reporter
+                        </span>
+                      )
                     })()}
                   </SelectTrigger>
                   <SelectContent>
                     {users.map((u) => (
-                      <SelectItem key={u.id} value={u.id} label={u.displayName ?? u.name}>
+                      <SelectItem
+                        key={u.id}
+                        value={u.id}
+                        label={u.displayName ?? u.name}
+                      >
                         <span className="flex items-center gap-2">
-                          <Avatar className="size-5"><AvatarFallback className="text-[8px] bg-blue-100 text-blue-700">{(u.displayName ?? u.name).charAt(0)}</AvatarFallback></Avatar>
+                          <Avatar className="size-5">
+                            <AvatarFallback className="bg-blue-100 text-[8px] text-blue-700">
+                              {(u.displayName ?? u.name).charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
                           {u.displayName ?? u.name}
                         </span>
                       </SelectItem>
@@ -532,17 +683,32 @@ export default function IssueDetailPage() {
 
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Sprint</Label>
-                <Select value={sprintId} onValueChange={(v) => v && setSprintId(v)}>
+                <Select
+                  value={sprintId}
+                  onValueChange={(v) => v && setSprintId(v)}
+                >
                   <SelectTrigger>
                     {(() => {
                       const s = sprints.find((s) => s.id === sprintId)
-                      return s ? <span>{s.name} ({s.state})</span> : <span className="text-muted-foreground">No sprint</span>
+                      return s ? (
+                        <span>
+                          {s.name} ({s.state})
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">No sprint</span>
+                      )
                     })()}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__" label="No sprint">No sprint</SelectItem>
+                    <SelectItem value="__none__" label="No sprint">
+                      No sprint
+                    </SelectItem>
                     {sprints.map((s) => (
-                      <SelectItem key={s.id} value={s.id} label={`${s.name} (${s.state})`}>
+                      <SelectItem
+                        key={s.id}
+                        value={s.id}
+                        label={`${s.name} (${s.state})`}
+                      >
                         {s.name} ({s.state})
                       </SelectItem>
                     ))}
@@ -556,11 +722,17 @@ export default function IssueDetailPage() {
                   <SelectTrigger>
                     {(() => {
                       const ep = epics.find((e) => e.id === epicId)
-                      return ep ? <span>{ep.name}</span> : <span className="text-muted-foreground">No epic</span>
+                      return ep ? (
+                        <span>{ep.name}</span>
+                      ) : (
+                        <span className="text-muted-foreground">No epic</span>
+                      )
                     })()}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__" label="No epic">No epic</SelectItem>
+                    <SelectItem value="__none__" label="No epic">
+                      No epic
+                    </SelectItem>
                     {epics.map((e) => (
                       <SelectItem key={e.id} value={e.id} label={e.name}>
                         {e.name}
@@ -571,7 +743,9 @@ export default function IssueDetailPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Story Points</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Story Points
+                </Label>
                 <Input
                   type="number"
                   value={storyPoints}
@@ -592,7 +766,7 @@ export default function IssueDetailPage() {
           </Card>
 
           {/* Auto-save indicator */}
-          <div className="flex items-center justify-end h-6">
+          <div className="flex h-6 items-center justify-end">
             {saveStatus === "saving" && (
               <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <div className="size-3 animate-spin rounded-full border-[1.5px] border-muted-foreground/30 border-t-muted-foreground" />
@@ -601,7 +775,17 @@ export default function IssueDetailPage() {
             )}
             {saveStatus === "saved" && (
               <span className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
-                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <svg
+                  className="size-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
                 Changes saved
               </span>
             )}

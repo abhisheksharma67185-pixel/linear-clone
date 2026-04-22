@@ -1,7 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
-const R2 = { completion: 2.0, partialPerCheck: false, stepPenalty: -0.01, invalidActionPenalty: -0.1 };
-const R5 = { completion: 5.0, partialPerCheck: true, stepPenalty: -0.01, invalidActionPenalty: -0.1 };
+const R2 = {
+  completion: 2.0,
+  partialPerCheck: false,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+}
+const R5 = {
+  completion: 5.0,
+  partialPerCheck: true,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+}
 
 export const retrievalTasks: TaskDefinition[] = [
   {
@@ -15,7 +25,8 @@ export const retrievalTasks: TaskDefinition[] = [
     goal: "What is the topic of the #engineering channel?",
     retrievalRubric: {
       question: "#engineering topic",
-      groundTruth: "Engineering org discussions, PR reviews, and incident response",
+      groundTruth:
+        "Engineering org discussions, PR reviews, and incident response",
       acceptableVariations: [
         "engineering discussions",
         "PR reviews",
@@ -212,4 +223,4 @@ export const retrievalTasks: TaskDefinition[] = [
     rewardProfile: R5,
     tags: ["retrieval", "list"],
   },
-];
+]

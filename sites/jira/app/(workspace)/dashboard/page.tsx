@@ -18,12 +18,23 @@ function IssueTypeIcon({ type }: { type: string }) {
     epic: "bg-purple-500",
   }
   return (
-    <span className={`flex size-5 items-center justify-center rounded-sm ${colors[type] ?? "bg-blue-500"} shrink-0`}>
-      <svg className="size-3 text-white" viewBox="0 0 16 16" fill="currentColor">
+    <span
+      className={`flex size-5 items-center justify-center rounded-sm ${colors[type] ?? "bg-blue-500"} shrink-0`}
+    >
+      <svg
+        className="size-3 text-white"
+        viewBox="0 0 16 16"
+        fill="currentColor"
+      >
         {type === "bug" ? (
           <circle cx="8" cy="8" r="4" />
         ) : type === "story" ? (
-          <path d="M4 8l3 3 5-5" stroke="currentColor" strokeWidth="2" fill="none" />
+          <path
+            d="M4 8l3 3 5-5"
+            stroke="currentColor"
+            strokeWidth="2"
+            fill="none"
+          />
         ) : type === "subtask" ? (
           <path d="M3 3h10v10H3z" opacity="0.5" />
         ) : (
@@ -85,7 +96,9 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabKey>("worked_on")
-  const [spacesFilter, setSpacesFilter] = useState<"recommended" | "recent">("recommended")
+  const [spacesFilter, setSpacesFilter] = useState<"recommended" | "recent">(
+    "recommended"
+  )
   const { openIssue } = useIssueDrawer()
 
   useEffect(() => {
@@ -108,7 +121,8 @@ export default function DashboardPage() {
   const CURRENT_USER = "usr-1"
   const filteredIssues = (() => {
     const sorted = [...issues].sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     )
     switch (activeTab) {
       case "assigned":
@@ -129,7 +143,8 @@ export default function DashboardPage() {
         // Issues the current user is directly involved in.
         return sorted
           .filter(
-            (i) => i.assigneeId === CURRENT_USER || i.reporterId === CURRENT_USER
+            (i) =>
+              i.assigneeId === CURRENT_USER || i.reporterId === CURRENT_USER
           )
           .slice(0, 20)
     }
@@ -146,18 +161,20 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-[860px] mx-auto px-6 py-8">
+    <div className="mx-auto max-w-[860px] px-6 py-8">
       {/* Header */}
-      <h1 className="text-2xl font-semibold mb-6">For you</h1>
+      <h1 className="mb-6 text-2xl font-semibold">For you</h1>
 
       {/* Recommended spaces */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-foreground">Recommended spaces</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-foreground">
+            Recommended spaces
+          </h2>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setSpacesFilter("recommended")}
-              className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                 spacesFilter === "recommended"
                   ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
                   : "text-muted-foreground hover:bg-accent"
@@ -167,7 +184,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setSpacesFilter("recent")}
-              className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                 spacesFilter === "recent"
                   ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
                   : "text-muted-foreground hover:bg-accent"
@@ -175,47 +192,62 @@ export default function DashboardPage() {
             >
               Recent
             </button>
-            <Link href="/projects" className="px-2.5 py-1 text-xs text-blue-600 hover:underline ml-2">
+            <Link
+              href="/projects"
+              className="ml-2 px-2.5 py-1 text-xs text-blue-600 hover:underline"
+            >
               View all spaces
             </Link>
           </div>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-1">
           {(spacesFilter === "recent"
-            ? [...projects].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 4)
+            ? [...projects]
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
+                )
+                .slice(0, 4)
             : projects.slice(0, 4)
           ).map((project) => (
-              <Link
-                key={project.id}
-                href={`/projects/${project.key}/board`}
-                className="flex flex-col items-center gap-2 rounded-lg border p-4 min-w-[140px] hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex size-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white text-sm font-bold">
-                  {project.key.charAt(0)}
-                </div>
-                <div className="text-center">
-                  <p className="text-xs font-medium text-foreground truncate max-w-[120px]">{project.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{project.type === "scrum" ? "Software project" : "Service project"}</p>
-                </div>
-                <p className="text-[10px] text-muted-foreground">
-                  All Popular with teammates
+            <Link
+              key={project.id}
+              href={`/projects/${project.key}/board`}
+              className="flex min-w-[140px] flex-col items-center gap-2 rounded-lg border p-4 transition-colors hover:bg-accent/50"
+            >
+              <div className="flex size-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-sm font-bold text-white">
+                {project.key.charAt(0)}
+              </div>
+              <div className="text-center">
+                <p className="max-w-[120px] truncate text-xs font-medium text-foreground">
+                  {project.name}
                 </p>
-              </Link>
-            ))}
+                <p className="text-[10px] text-muted-foreground">
+                  {project.type === "scrum"
+                    ? "Software project"
+                    : "Service project"}
+                </p>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                All Popular with teammates
+              </p>
+            </Link>
+          ))}
         </div>
       </div>
 
       {/* Activity Tabs */}
-      <div className="border-b mb-1">
+      <div className="mb-1 border-b">
         <div className="flex items-center gap-0">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-3 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              className={`border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
                 activeTab === tab.key
                   ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-gray-300"
+                  : "border-transparent text-muted-foreground hover:border-gray-300 hover:text-foreground"
               }`}
             >
               {tab.label}
@@ -232,14 +264,16 @@ export default function DashboardPage() {
               <Link
                 key={project.id}
                 href={`/projects/${project.key}/board`}
-                className="flex items-center gap-3 rounded-lg border p-3 hover:bg-accent/50 transition-colors"
+                className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/50"
               >
-                <div className="flex size-8 items-center justify-center rounded bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs font-bold shrink-0">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded bg-gradient-to-br from-blue-500 to-blue-600 text-xs font-bold text-white">
                   {project.key.charAt(0)}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{project.name}</p>
-                  <p className="text-xs text-muted-foreground">{project.key} board</p>
+                  <p className="truncate text-sm font-medium">{project.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {project.key} board
+                  </p>
                 </div>
               </Link>
             ))}
@@ -254,7 +288,7 @@ export default function DashboardPage() {
           {timeGroups.map((group) => (
             <div key={group.label}>
               <div className="px-1 pt-5 pb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
                   {group.label}
                 </span>
               </div>
@@ -264,12 +298,12 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={issue.id}
-                    className="flex items-center gap-3 px-1 py-2.5 hover:bg-accent/50 rounded-md transition-colors group cursor-pointer"
+                    className="group flex cursor-pointer items-center gap-3 rounded-md px-1 py-2.5 transition-colors hover:bg-accent/50"
                     onClick={() => openIssue(issue.key)}
                   >
                     {/* Checkbox */}
                     <Checkbox
-                      className="size-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="size-4 opacity-0 transition-opacity group-hover:opacity-100"
                       onClick={(e) => e.stopPropagation()}
                     />
 
@@ -277,21 +311,29 @@ export default function DashboardPage() {
                     <IssueTypeIcon type={issue.type} />
 
                     {/* Issue info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-foreground truncate">{issue.summary}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm text-foreground">
+                        {issue.summary}
+                      </p>
                       <p className="text-[11px] text-muted-foreground">
                         {issue.key} - {project?.name ?? "Unknown project"}
                       </p>
                     </div>
 
                     {/* Action label */}
-                    <span className="text-xs text-muted-foreground shrink-0">Created</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      Created
+                    </span>
 
                     {/* Avatar */}
                     <Avatar className="size-7 shrink-0">
-                      {assignee?.avatar && <AvatarImage src={assignee.avatar} />}
-                      <AvatarFallback className="text-[10px] bg-blue-500 text-white">
-                        {(assignee?.name ?? issue.reporterId).charAt(0).toUpperCase()}
+                      {assignee?.avatar && (
+                        <AvatarImage src={assignee.avatar} />
+                      )}
+                      <AvatarFallback className="bg-blue-500 text-[10px] text-white">
+                        {(assignee?.name ?? issue.reporterId)
+                          .charAt(0)
+                          .toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </div>

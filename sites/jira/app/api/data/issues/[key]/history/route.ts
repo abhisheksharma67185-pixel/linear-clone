@@ -3,7 +3,7 @@ import * as store from "../../../../../lib/store"
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ key: string }> },
+  { params }: { params: Promise<{ key: string }> }
 ) {
   const { key } = await params
   const issue = store.getIssueByKey(key) ?? store.getIssueById(key)

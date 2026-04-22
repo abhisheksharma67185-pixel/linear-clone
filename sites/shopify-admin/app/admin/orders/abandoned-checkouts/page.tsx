@@ -69,13 +69,19 @@ export default function AbandonedCheckoutsPage() {
         <Text as="span">{checkout.customer}</Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{checkout.email}</Text>
+        <Text as="span" tone="subdued">
+          {checkout.email}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{checkout.date}</Text>
+        <Text as="span" tone="subdued">
+          {checkout.date}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" numeric>{checkout.total}</Text>
+        <Text as="span" numeric>
+          {checkout.total}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
         <Badge tone={statusTone(checkout.status)}>{checkout.status}</Badge>

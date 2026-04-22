@@ -4,9 +4,11 @@ export const metadata: Metadata = { title: "Emails" }
 
 export default function Page() {
   return (
-    <div className="p-8 max-w-5xl">
-      <h1 className="text-2xl font-semibold mb-4">Emails</h1>
-      <p className="text-sm text-muted-foreground">This section is coming soon.</p>
+    <div className="max-w-5xl p-8">
+      <h1 className="mb-4 text-2xl font-semibold">Emails</h1>
+      <p className="text-sm text-muted-foreground">
+        This section is coming soon.
+      </p>
     </div>
   )
 }

@@ -25,7 +25,7 @@ async function request<T>(
   path: string,
   init: RequestInit & {
     query?: Record<string, string | number | undefined | null>
-  } = {},
+  } = {}
 ): Promise<T> {
   const { query, headers, ...rest } = init
   const url = proxyUrl(site.id, path, query)
@@ -66,12 +66,12 @@ export const api = {
   get: <T>(
     site: Pick<SiteConnection, "id" | "url">,
     path: string,
-    query?: Record<string, string | number | undefined | null>,
+    query?: Record<string, string | number | undefined | null>
   ) => request<T>(site, path, { method: "GET", query }),
   post: <T>(
     site: Pick<SiteConnection, "id" | "url">,
     path: string,
-    body?: unknown,
+    body?: unknown
   ) =>
     request<T>(site, path, {
       method: "POST",

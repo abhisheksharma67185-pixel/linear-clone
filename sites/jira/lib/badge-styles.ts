@@ -1,8 +1,10 @@
 // Status badges for issues
 export const statusVariant: Record<string, string> = {
   to_do: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-  in_progress: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-  in_review: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
+  in_progress:
+    "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+  in_review:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
   done: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
 }
 
@@ -10,7 +12,8 @@ export const statusVariant: Record<string, string> = {
 export const priorityVariant: Record<string, string> = {
   highest: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
   high: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
-  medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
+  medium:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
   low: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
   lowest: "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
 }
@@ -42,7 +45,8 @@ export const priorityDisplayLabel: Record<string, string> = {
 
 // Sprint state badges
 export const sprintStateVariant: Record<string, string> = {
-  active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+  active:
+    "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
   closed: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
   future: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
 }
@@ -68,9 +72,12 @@ export const projectTypeLabel: Record<string, string> = {
 
 // Project status badges (for project directory)
 export const projectStatusVariant: Record<string, string> = {
-  "ON TRACK": "border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
-  "AT RISK": "border-yellow-300 text-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400",
-  "OFF TRACK": "border-red-300 text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400",
+  "ON TRACK":
+    "border-green-300 text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
+  "AT RISK":
+    "border-yellow-300 text-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 dark:text-yellow-400",
+  "OFF TRACK":
+    "border-red-300 text-red-700 bg-red-50 dark:bg-red-900/20 dark:text-red-400",
 }
 
 // Goal status styles
@@ -90,5 +97,8 @@ export const statusDisplayLabel: Record<string, string> = {
 
 // Format status for display — uses the canonical map, falls back to title-casing
 export function formatStatus(status: string): string {
-  return statusDisplayLabel[status] ?? status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+  return (
+    statusDisplayLabel[status] ??
+    status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+  )
 }

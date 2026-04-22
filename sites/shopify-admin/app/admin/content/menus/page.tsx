@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Page,
-  Card,
-  DataTable,
-  Modal,
-  TextField,
-  Toast,
-  Frame,
-} from "@shopify/polaris";
+import { Page, Card, DataTable, Modal, TextField, Toast, Frame } from "@shopify/polaris";
 import { useState, useCallback } from "react";
 
 const initialMenus: [string, string][] = [
@@ -65,9 +57,7 @@ export default function MenusPage() {
           onAction: handleCreate,
           disabled: !newMenuTitle.trim(),
         }}
-        secondaryActions={[
-          { content: "Cancel", onAction: () => setShowModal(false) },
-        ]}
+        secondaryActions={[{ content: "Cancel", onAction: () => setShowModal(false) }]}
       >
         <Modal.Section>
           <TextField
@@ -80,9 +70,7 @@ export default function MenusPage() {
         </Modal.Section>
       </Modal>
 
-      {toastMessage && (
-        <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />
-      )}
+      {toastMessage && <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />}
     </Frame>
   );
 }

@@ -1,6 +1,17 @@
 "use client";
 
-import { Page, Card, BlockStack, Text, InlineStack, Button, TextField, Select, Divider, Box } from "@shopify/polaris";
+import {
+  Page,
+  Card,
+  BlockStack,
+  Text,
+  InlineStack,
+  Button,
+  TextField,
+  Select,
+  Divider,
+  Box,
+} from "@shopify/polaris";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -39,14 +50,14 @@ export default function NewExplorationPage() {
         content: "Save exploration",
         onAction: () => router.push("/admin/analytics"),
       }}
-      secondaryActions={[
-        { content: "Cancel", onAction: () => router.push("/admin/analytics") },
-      ]}
+      secondaryActions={[{ content: "Cancel", onAction: () => router.push("/admin/analytics") }]}
     >
       <BlockStack gap="400">
         <Card>
           <BlockStack gap="400">
-            <Text as="h2" variant="headingMd">Exploration settings</Text>
+            <Text as="h2" variant="headingMd">
+              Exploration settings
+            </Text>
             <TextField
               label="Name"
               value={name}
@@ -77,7 +88,9 @@ export default function NewExplorationPage() {
 
         <Card>
           <BlockStack gap="300">
-            <Text as="h2" variant="headingMd">Preview</Text>
+            <Text as="h2" variant="headingMd">
+              Preview
+            </Text>
             <Divider />
             <Box minHeight="200px" padding="800">
               <BlockStack gap="200" align="center">

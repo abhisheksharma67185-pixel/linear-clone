@@ -1,11 +1,11 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R = {
   completion: 5.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 
 export const impossibleTasks: TaskDefinition[] = [
   {
@@ -104,4 +104,4 @@ export const impossibleTasks: TaskDefinition[] = [
     rewardProfile: R,
     tags: ["impossible", "error-recognition", "versions"],
   },
-];
+]

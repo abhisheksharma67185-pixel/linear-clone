@@ -100,7 +100,7 @@ export default function TasksPage() {
       }
       router.replace(`/tasks${next.toString() ? `?${next.toString()}` : ""}`)
     },
-    [params, router],
+    [params, router]
   )
 
   // Debounce text search → URL.
@@ -113,9 +113,8 @@ export default function TasksPage() {
   }, [search])
 
   const targetedSites: SiteConnection[] = React.useMemo(
-    () =>
-      urlSite === ALL ? sites : sites.filter((s) => s.id === urlSite),
-    [sites, urlSite],
+    () => (urlSite === ALL ? sites : sites.filter((s) => s.id === urlSite)),
+    [sites, urlSite]
   )
 
   // Run one query per site, in parallel.
@@ -166,7 +165,7 @@ export default function TasksPage() {
           (t) =>
             t.id.toLowerCase().includes(needle) ||
             t.title.toLowerCase().includes(needle) ||
-            t.goal.toLowerCase().includes(needle),
+            t.goal.toLowerCase().includes(needle)
         )
       : out
   }, [queries, targetedSites, search])
@@ -185,7 +184,10 @@ export default function TasksPage() {
     tasks.length,
   ])
   const pageCount = Math.max(1, Math.ceil(tasks.length / pageSize))
-  const pagedTasks = tasks.slice(pageIdx * pageSize, pageIdx * pageSize + pageSize)
+  const pagedTasks = tasks.slice(
+    pageIdx * pageSize,
+    pageIdx * pageSize + pageSize
+  )
 
   return (
     <PageShell
@@ -198,7 +200,7 @@ export default function TasksPage() {
             <div className="space-y-1.5 lg:col-span-2">
               <Label htmlFor="task-search">Search</Label>
               <div className="relative">
-                <IconSearch className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <IconSearch className="absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="task-search"
                   className="pl-7"
@@ -212,13 +214,19 @@ export default function TasksPage() {
               label="Site"
               value={urlSite}
               onChange={(v) => setParam("site", v)}
-              options={[{ value: ALL, label: "All sites" }, ...sites.map((s) => ({ value: s.id, label: s.name }))]}
+              options={[
+                { value: ALL, label: "All sites" },
+                ...sites.map((s) => ({ value: s.id, label: s.name })),
+              ]}
             />
             <FilterSelect
               label="Domain"
               value={urlDomain}
               onChange={(v) => setParam("domain", v)}
-              options={[{ value: ALL, label: "All domains" }, ...DOMAINS.map((d) => ({ value: d, label: d }))]}
+              options={[
+                { value: ALL, label: "All domains" },
+                ...DOMAINS.map((d) => ({ value: d, label: d })),
+              ]}
             />
             <FilterSelect
               label="Difficulty"
@@ -233,13 +241,19 @@ export default function TasksPage() {
               label="Type"
               value={urlType}
               onChange={(v) => setParam("type", v)}
-              options={[{ value: ALL, label: "All types" }, ...TYPES.map((d) => ({ value: d, label: d }))]}
+              options={[
+                { value: ALL, label: "All types" },
+                ...TYPES.map((d) => ({ value: d, label: d })),
+              ]}
             />
             <FilterSelect
               label="Stage"
               value={urlStage}
               onChange={(v) => setParam("stage", v)}
-              options={[{ value: ALL, label: "All stages" }, ...STAGES.map((d) => ({ value: d, label: `Stage ${d}` }))]}
+              options={[
+                { value: ALL, label: "All stages" },
+                ...STAGES.map((d) => ({ value: d, label: `Stage ${d}` })),
+              ]}
             />
           </CardContent>
         </Card>
@@ -264,7 +278,8 @@ export default function TasksPage() {
             <AlertTitle>No sites are reachable</AlertTitle>
             <AlertDescription>
               Start a site dev server and refresh, e.g.{" "}
-              <code className="font-mono">pnpm --filter shopify-admin dev</code>.
+              <code className="font-mono">pnpm --filter shopify-admin dev</code>
+              .
             </AlertDescription>
           </Alert>
         ) : (
@@ -277,16 +292,16 @@ export default function TasksPage() {
                 {someError && (
                   <Badge variant="destructive">
                     {queries.filter((q) => q.isError).length} site
-                    {queries.filter((q) => q.isError).length === 1 ? "" : "s"} unreachable
+                    {queries.filter((q) => q.isError).length === 1
+                      ? ""
+                      : "s"}{" "}
+                    unreachable
                   </Badge>
                 )}
               </CardTitle>
               <CardDescription>
-                Showing{" "}
-                {tasks.length === 0
-                  ? 0
-                  : pageIdx * pageSize + 1}
-                –{Math.min(tasks.length, (pageIdx + 1) * pageSize)} of{" "}
+                Showing {tasks.length === 0 ? 0 : pageIdx * pageSize + 1}–
+                {Math.min(tasks.length, (pageIdx + 1) * pageSize)} of{" "}
                 {tasks.length}.
               </CardDescription>
             </CardHeader>
@@ -298,7 +313,7 @@ export default function TasksPage() {
                   ))}
                 </div>
               ) : tasks.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   No tasks match these filters.
                 </p>
               ) : (
@@ -322,20 +337,20 @@ export default function TasksPage() {
                           className="cursor-pointer"
                           onClick={() =>
                             router.push(
-                              `/tasks/${encodeURIComponent(t._siteId)}/${encodeURIComponent(t.id)}`,
+                              `/tasks/${encodeURIComponent(t._siteId)}/${encodeURIComponent(t.id)}`
                             )
                           }
                         >
                           <TableCell className="max-w-[420px]">
-                            <div className="flex flex-col gap-0.5 min-w-0">
+                            <div className="flex min-w-0 flex-col gap-0.5">
                               <Link
                                 href={`/tasks/${encodeURIComponent(t._siteId)}/${encodeURIComponent(t.id)}`}
                                 onClick={(e) => e.stopPropagation()}
-                                className="font-medium hover:underline truncate"
+                                className="truncate font-medium hover:underline"
                               >
                                 {t.title}
                               </Link>
-                              <span className="text-[11px] font-mono text-muted-foreground truncate">
+                              <span className="truncate font-mono text-[11px] text-muted-foreground">
                                 {t.id}
                               </span>
                             </div>
@@ -351,7 +366,7 @@ export default function TasksPage() {
                               {t.difficulty}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-muted-foreground text-xs font-mono">
+                          <TableCell className="font-mono text-xs text-muted-foreground">
                             {t.type}
                           </TableCell>
                           <TableCell className="font-mono text-xs">
@@ -365,7 +380,7 @@ export default function TasksPage() {
                     </TableBody>
                   </Table>
                   {pageCount > 1 && (
-                    <div className="flex items-center justify-between mt-4">
+                    <div className="mt-4 flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">
                         Page {pageIdx + 1} of {pageCount}
                       </span>
@@ -404,7 +419,9 @@ export default function TasksPage() {
                       .map(({ q, site }) => (
                         <div key={site.id} className="text-xs">
                           <span className="font-mono">{site.id}</span>:{" "}
-                          {q.error instanceof ApiError ? q.error.message : String(q.error)}
+                          {q.error instanceof ApiError
+                            ? q.error.message
+                            : String(q.error)}
                         </div>
                       ))}
                   </AlertDescription>

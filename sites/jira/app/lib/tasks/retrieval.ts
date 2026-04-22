@@ -1,17 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
 const R = {
   completion: 2.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 const R5 = {
   completion: 5.0,
   partialPerCheck: false,
   stepPenalty: -0.01,
   invalidActionPenalty: -0.1,
-};
+}
 
 export const retrievalTasks: TaskDefinition[] = [
   {
@@ -46,7 +46,10 @@ export const retrievalTasks: TaskDefinition[] = [
     retrievalRubric: {
       question: "What is Sprint 13's goal?",
       groundTruth: "Pre-release hardening",
-      acceptableVariations: ["Pre-release hardening", "pre-release hardening for v2.3.0"],
+      acceptableVariations: [
+        "Pre-release hardening",
+        "pre-release hardening for v2.3.0",
+      ],
       rubric: "PLAT Sprint 13 (sprint-4) has goal 'Pre-release hardening'.",
     },
     evalChecks: [],
@@ -66,8 +69,13 @@ export const retrievalTasks: TaskDefinition[] = [
     retrievalRubric: {
       question: "What is the Payment API v2 epic status?",
       groundTruth: "In Development",
-      acceptableVariations: ["In Development", "in development", "In development"],
-      rubric: "The Payment API v2 epic (epic-2, PLAT-2) has status 'In Development'.",
+      acceptableVariations: [
+        "In Development",
+        "in development",
+        "In development",
+      ],
+      rubric:
+        "The Payment API v2 epic (epic-2, PLAT-2) has status 'In Development'.",
     },
     evalChecks: [],
     maxSteps: 10,
@@ -131,7 +139,8 @@ export const retrievalTasks: TaskDefinition[] = [
       question: "Who leads the FAPP project?",
       groundTruth: "Sneha Reddy",
       acceptableVariations: ["Sneha Reddy", "sneha reddy", "usr-4"],
-      rubric: "The Frontend App project (proj-5, FAPP) lead is Sneha Reddy (usr-4).",
+      rubric:
+        "The Frontend App project (proj-5, FAPP) lead is Sneha Reddy (usr-4).",
     },
     evalChecks: [],
     maxSteps: 10,
@@ -151,7 +160,8 @@ export const retrievalTasks: TaskDefinition[] = [
       question: "What priority is PLAT-58?",
       groundTruth: "highest",
       acceptableVariations: ["highest", "Highest"],
-      rubric: "PLAT-58 (iss-39, payment overflow bug from MegaCorp) has priority 'highest'.",
+      rubric:
+        "PLAT-58 (iss-39, payment overflow bug from MegaCorp) has priority 'highest'.",
     },
     evalChecks: [],
     maxSteps: 10,
@@ -169,9 +179,11 @@ export const retrievalTasks: TaskDefinition[] = [
     goal: "List all child issues in the 'Auth Service Overhaul' epic (epic-1, PLAT-1).",
     retrievalRubric: {
       question: "What issues are in the Auth Service Overhaul epic?",
-      groundTruth: "PLAT-10, PLAT-11, PLAT-12, PLAT-13, PLAT-14, PLAT-15, PLAT-16, PLAT-17",
+      groundTruth:
+        "PLAT-10, PLAT-11, PLAT-12, PLAT-13, PLAT-14, PLAT-15, PLAT-16, PLAT-17",
       acceptableVariations: ["8 issues", "PLAT-10 through PLAT-17"],
-      rubric: "Auth Service Overhaul epic contains 8 stories: PLAT-10..PLAT-17.",
+      rubric:
+        "Auth Service Overhaul epic contains 8 stories: PLAT-10..PLAT-17.",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -191,7 +203,8 @@ export const retrievalTasks: TaskDefinition[] = [
       question: "What components are on PLAT-58?",
       groundTruth: "Payment Service",
       acceptableVariations: ["Payment Service", "cmp-1"],
-      rubric: "PLAT-58 (payment overflow bug) is in the 'Payment Service' component.",
+      rubric:
+        "PLAT-58 (payment overflow bug) is in the 'Payment Service' component.",
     },
     evalChecks: [],
     maxSteps: 10,
@@ -231,7 +244,8 @@ export const retrievalTasks: TaskDefinition[] = [
       question: "Which Zendesk ticket is referenced in PLAT-58?",
       groundTruth: "ZD-1001",
       acceptableVariations: ["ZD-1001", "MegaCorp ticket ZD-1001"],
-      rubric: "PLAT-58's description mentions 'Zendesk ticket ZD-1001 from MegaCorp'.",
+      rubric:
+        "PLAT-58's description mentions 'Zendesk ticket ZD-1001 from MegaCorp'.",
     },
     evalChecks: [],
     maxSteps: 10,
@@ -251,11 +265,12 @@ export const retrievalTasks: TaskDefinition[] = [
       question: "How many PLAT fix versions exist?",
       groundTruth: "5",
       acceptableVariations: ["5", "5 versions", "five"],
-      rubric: "PLAT has 5 versions: v2.1.0, v2.2.0, v2.2.1 (released), v2.3.0, v2.3.1 (unreleased).",
+      rubric:
+        "PLAT has 5 versions: v2.1.0, v2.2.0, v2.2.1 (released), v2.3.0, v2.3.1 (unreleased).",
     },
     evalChecks: [],
     maxSteps: 10,
     rewardProfile: R,
     tags: ["retrieval", "versions"],
   },
-];
+]

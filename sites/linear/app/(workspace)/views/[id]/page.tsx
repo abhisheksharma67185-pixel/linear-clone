@@ -88,11 +88,11 @@ export default function ViewDetailPage() {
   const view = views.find((v) => v.id === viewId) ?? null
   const owner = useMemo(
     () => (view ? members.find((m) => m.id === view.ownerId) : null),
-    [view, members],
+    [view, members]
   )
   const team = useMemo(
     () => (view ? teams.find((t) => t.id === view.teamId) : null),
-    [view, teams],
+    [view, teams]
   )
 
   const filtered = useMemo(() => {
@@ -125,7 +125,7 @@ export default function ViewDetailPage() {
 
   if (!view) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 py-24 text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-3 py-24 text-sm">
         <p>View not found.</p>
         <Link href="/views" className="text-xs underline">
           Back to views
@@ -151,11 +151,11 @@ export default function ViewDetailPage() {
             </Button>
             <ViewIcon name={view.name} />
             <h1 className="truncate text-sm font-medium">{view.name}</h1>
-            <span className="shrink-0 text-xs text-muted-foreground">
+            <span className="text-muted-foreground shrink-0 text-xs">
               {filtered.length}
             </span>
           </div>
-          <div className="flex items-center gap-0.5 text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-0.5">
             <Button variant="ghost" size="icon" className="size-7">
               <HugeiconsIcon icon={FilterIcon} className="size-4" />
             </Button>
@@ -168,7 +168,7 @@ export default function ViewDetailPage() {
           </div>
         </header>
 
-        <div className="flex flex-wrap items-center gap-2 px-6 pb-3 text-xs text-muted-foreground">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-2 px-6 pb-3 text-xs">
           {owner && (
             <span className="flex items-center gap-1.5">
               <Avatar className="size-4">
@@ -183,20 +183,20 @@ export default function ViewDetailPage() {
           {team && (
             <>
               <span className="text-border">·</span>
-              <span className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-[10px]">
+              <span className="bg-muted rounded-sm px-1.5 py-0.5 font-mono text-[10px]">
                 {team.key}
               </span>
             </>
           )}
           <span className="text-border">·</span>
-          <code className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-[10px]">
+          <code className="bg-muted rounded-sm px-1.5 py-0.5 font-mono text-[10px]">
             {view.filterQuery}
           </code>
         </div>
 
         <div className="min-h-0 flex-1 overflow-auto">
           {filtered.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center gap-2 py-24 text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-2 py-24 text-sm">
               <p>No issues match this view.</p>
             </div>
           ) : (
@@ -206,10 +206,12 @@ export default function ViewDetailPage() {
                 if (items.length === 0) return null
                 return (
                   <Collapsible key={status} defaultOpen>
-                    <CollapsibleTrigger className="sticky top-0 z-10 flex w-full items-center gap-2 border-b bg-muted/50 px-6 py-1.5 text-left text-xs font-medium backdrop-blur">
+                    <CollapsibleTrigger className="bg-muted/50 sticky top-0 z-10 flex w-full items-center gap-2 border-b px-6 py-1.5 text-left text-xs font-medium backdrop-blur">
                       <StatusDot status={status} />
                       <span>{STATUS_LABEL[status]}</span>
-                      <span className="text-muted-foreground">{items.length}</span>
+                      <span className="text-muted-foreground">
+                        {items.length}
+                      </span>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <ul className="divide-y">
@@ -239,15 +241,15 @@ function IssueRow({ issue, members }: { issue: Issue; members: Member[] }) {
     <li>
       <Link
         href={`/issues/${issue.identifier}`}
-        className="flex items-center gap-3 px-6 py-2 text-sm transition-colors hover:bg-accent/50"
+        className="hover:bg-accent/50 flex items-center gap-3 px-6 py-2 text-sm transition-colors"
       >
         <Badge
           variant="secondary"
-          className={`min-w-14 justify-center text-[10px] shrink-0 ${priorityStyle[issue.priority]}`}
+          className={`min-w-14 shrink-0 justify-center text-[10px] ${priorityStyle[issue.priority]}`}
         >
           {issue.priority}
         </Badge>
-        <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">
+        <span className="text-muted-foreground w-16 shrink-0 font-mono text-xs">
           {issue.identifier}
         </span>
         <span className="flex-1 truncate">{issue.title}</span>

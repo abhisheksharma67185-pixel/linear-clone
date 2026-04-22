@@ -1,47 +1,56 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { UserAvatar } from "@/components/user-avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users } from "lucide-react";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { UserAvatar } from "@/components/user-avatar"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Users } from "lucide-react"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 
 type User = {
-  id: string;
-  name: string;
-  displayName: string;
-  avatar: string;
-  presence: "active" | "away" | "offline" | "dnd";
-};
+  id: string
+  name: string
+  displayName: string
+  avatar: string
+  presence: "active" | "away" | "offline" | "dnd"
+}
 
 type DirectMessage = {
-  id: string;
-  participantIds: string[];
-  isGroup: boolean;
-  lastMessageAt: string;
-};
+  id: string
+  participantIds: string[]
+  isGroup: boolean
+  lastMessageAt: string
+}
 
-const CURRENT_USER_ID = "usr-1";
+const CURRENT_USER_ID = "usr-1"
 
 export default function DmsPage() {
-  const [dms, setDms] = useState<DirectMessage[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [dms, setDms] = useState<DirectMessage[]>([])
+  const [users, setUsers] = useState<User[]>([])
 
   useEffect(() => {
     Promise.all([
       fetch("/api/data/dms").then((r) => r.json()),
       fetch("/api/data/users").then((r) => r.json()),
     ]).then(([d, u]) => {
-      setDms(d);
-      setUsers(u);
-    });
-  }, []);
+      setDms(d)
+      setUsers(u)
+    })
+  }, [])
 
   return (
     <>
-      <SimplePageHeader title="Direct messages" subtitle={`${dms.length} conversations`} />
+      <SimplePageHeader
+        title="Direct messages"
+        subtitle={`${dms.length} conversations`}
+      />
       <ScrollArea className="flex-1">
         {dms.length === 0 ? (
           <Empty className="flex-1">
@@ -62,16 +71,16 @@ export default function DmsPage() {
               .sort(
                 (a, b) =>
                   new Date(b.lastMessageAt).getTime() -
-                  new Date(a.lastMessageAt).getTime(),
+                  new Date(a.lastMessageAt).getTime()
               )
               .map((dm) => {
                 const others = dm.participantIds
                   .filter((id) => id !== CURRENT_USER_ID)
                   .map((id) => users.find((u) => u.id === id))
-                  .filter((u): u is User => Boolean(u));
+                  .filter((u): u is User => Boolean(u))
                 const title = dm.isGroup
                   ? others.map((u) => u.displayName).join(", ")
-                  : others[0]?.name ?? "Unknown";
+                  : (others[0]?.name ?? "Unknown")
                 return (
                   <Link
                     key={dm.id}
@@ -100,11 +109,11 @@ export default function DmsPage() {
                       </span>
                     </div>
                   </Link>
-                );
+                )
               })}
           </div>
         )}
       </ScrollArea>
     </>
-  );
+  )
 }

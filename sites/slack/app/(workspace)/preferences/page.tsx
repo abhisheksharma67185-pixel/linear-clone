@@ -1,49 +1,59 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEffect, useState } from "react"
+import { useTheme } from "next-themes"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 type Preferences = {
-  theme: string;
+  theme: string
   notifications: {
-    desktop: "all" | "mentions" | "nothing";
-    mobile: "all" | "mentions" | "nothing";
-    dnd: { enabled: boolean; start: string; end: string };
-    sound: string;
-  };
-  sidebar: { showUnreadOnly: boolean; showProfilePhotos: boolean; listMode: "compact" | "clean" };
-  language: string;
-  timezone: string;
-  keyboardShortcuts: boolean;
-  markAsReadOnEnter: boolean;
-};
+    desktop: "all" | "mentions" | "nothing"
+    mobile: "all" | "mentions" | "nothing"
+    dnd: { enabled: boolean; start: string; end: string }
+    sound: string
+  }
+  sidebar: {
+    showUnreadOnly: boolean
+    showProfilePhotos: boolean
+    listMode: "compact" | "clean"
+  }
+  language: string
+  timezone: string
+  keyboardShortcuts: boolean
+  markAsReadOnEnter: boolean
+}
 
 export default function PreferencesPage() {
-  const { theme, setTheme } = useTheme();
-  const [prefs, setPrefs] = useState<Preferences | null>(null);
+  const { theme, setTheme } = useTheme()
+  const [prefs, setPrefs] = useState<Preferences | null>(null)
 
   useEffect(() => {
     fetch("/api/data/preferences")
       .then((r) => r.json())
-      .then(setPrefs);
-  }, []);
+      .then(setPrefs)
+  }, [])
 
   const update = async (key: string, value: unknown) => {
     const res = await fetch("/api/data/preferences", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ [key]: value }),
-    });
-    if (res.ok) setPrefs(await res.json());
-  };
+    })
+    if (res.ok) setPrefs(await res.json())
+  }
 
-  if (!prefs) return null;
+  if (!prefs) return null
 
   return (
     <>
@@ -122,7 +132,10 @@ export default function PreferencesPage() {
                 <Switch
                   checked={prefs.sidebar.showProfilePhotos}
                   onCheckedChange={(v) =>
-                    update("sidebar", { ...prefs.sidebar, showProfilePhotos: v })
+                    update("sidebar", {
+                      ...prefs.sidebar,
+                      showProfilePhotos: v,
+                    })
                   }
                 />
               </div>
@@ -198,5 +211,5 @@ export default function PreferencesPage() {
         </ScrollArea>
       </Tabs>
     </>
-  );
+  )
 }

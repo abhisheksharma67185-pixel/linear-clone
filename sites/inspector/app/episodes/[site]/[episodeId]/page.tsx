@@ -42,11 +42,7 @@ import {
 import { JsonView } from "@/components/json-view"
 import { PageShell } from "@/components/page-shell"
 import { useSitesStore } from "@/lib/sites-store"
-import {
-  useRLObservation,
-  useEpisodeMeta,
-  useActionSpace,
-} from "@/lib/hooks"
+import { useRLObservation, useEpisodeMeta, useActionSpace } from "@/lib/hooks"
 import { api, ApiError } from "@/lib/api-client"
 import { qk } from "@/lib/query-keys"
 import type {
@@ -68,7 +64,7 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
 
   const [autoRefresh, setAutoRefresh] = React.useState(true)
   const [actionInput, setActionInput] = React.useState(
-    JSON.stringify({ action: "navigate", target: "/" }, null, 2),
+    JSON.stringify({ action: "navigate", target: "/" }, null, 2)
   )
   const [history, setHistory] = React.useState<ActionHistoryEntry[]>([])
   const [finishOpen, setFinishOpen] = React.useState(false)
@@ -116,7 +112,7 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
       }
       if (resp.done || resp.truncated) {
         toast.message(
-          resp.done ? "Episode reports done" : "Episode reports truncated",
+          resp.done ? "Episode reports done" : "Episode reports truncated"
         )
       }
     },
@@ -125,8 +121,8 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
         err instanceof ApiError
           ? err.message
           : err instanceof Error
-          ? err.message
-          : "Step failed"
+            ? err.message
+            : "Step failed"
       setHistory((h) => [
         {
           at: new Date().toISOString(),
@@ -158,10 +154,10 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
           resp.status === "completed"
             ? "completed"
             : resp.status === "failed"
-            ? "failed"
-            : resp.status === "timeout"
-            ? "timeout"
-            : "completed",
+              ? "failed"
+              : resp.status === "timeout"
+                ? "timeout"
+                : "completed",
         score: resp.score,
       })
       toast.success(`Episode finished — score ${resp.score?.toFixed(2)}`)
@@ -177,7 +173,7 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
       parsed = JSON.parse(actionInput)
     } catch (e) {
       toast.error(
-        `Invalid JSON: ${e instanceof Error ? e.message : "unknown error"}`,
+        `Invalid JSON: ${e instanceof Error ? e.message : "unknown error"}`
       )
       return
     }
@@ -245,9 +241,8 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
                 <DialogTitle>Finish episode</DialogTitle>
                 <DialogDescription>
                   Submits an optional final agent response to{" "}
-                  <code className="font-mono">/api/sim/finish</code>. The
-                  engine evaluates state diff and rubric checks, then returns
-                  a score.
+                  <code className="font-mono">/api/sim/finish</code>. The engine
+                  evaluates state diff and rubric checks, then returns a score.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-2">
@@ -372,8 +367,9 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
             <CardHeader>
               <CardTitle>Step</CardTitle>
               <CardDescription>
-                POST a JSON action to <code className="font-mono">/api/rl</code>.
-                Must include an <code className="font-mono">action</code> string.
+                POST a JSON action to <code className="font-mono">/api/rl</code>
+                . Must include an <code className="font-mono">action</code>{" "}
+                string.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -384,10 +380,7 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
                 placeholder='{"action": "navigate", "target": "/board"}'
               />
               <div className="flex items-center gap-2">
-                <Button
-                  onClick={onStep}
-                  disabled={stepMutation.isPending}
-                >
+                <Button onClick={onStep} disabled={stepMutation.isPending}>
                   <IconArrowRight className="size-4" />
                   {stepMutation.isPending ? "Stepping…" : "Step"}
                 </Button>
@@ -400,8 +393,8 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
                       JSON.stringify(
                         { action: "navigate", target: "/" },
                         null,
-                        2,
-                      ),
+                        2
+                      )
                     )
                   }
                 >
@@ -415,20 +408,20 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
               {history[0] && (
                 <div className="rounded-md border bg-muted/30 p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={history[0].error ? "destructive" : "secondary"}>
+                    <Badge
+                      variant={history[0].error ? "destructive" : "secondary"}
+                    >
                       latest
                     </Badge>
                     <span className="font-mono text-xs">
                       reward {history[0].reward.toFixed(3)}
                     </span>
-                    {history[0].done && (
-                      <Badge variant="success">done</Badge>
-                    )}
+                    {history[0].done && <Badge variant="success">done</Badge>}
                     {history[0].truncated && (
                       <Badge variant="warning">truncated</Badge>
                     )}
                     {history[0].error && (
-                      <span className="text-destructive text-xs">
+                      <span className="text-xs text-destructive">
                         {history[0].error}
                       </span>
                     )}
@@ -451,7 +444,7 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
             </CardHeader>
             <CardContent>
               {history.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   No steps yet. Try one in the Step tab.
                 </p>
               ) : (
@@ -459,7 +452,7 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
                   {history.map((h, i) => (
                     <li
                       key={`${h.at}-${i}`}
-                      className="rounded-md border bg-card p-3 space-y-2"
+                      className="space-y-2 rounded-md border bg-card p-3"
                     >
                       <div className="flex flex-wrap items-center gap-2 text-xs">
                         <span className="font-mono text-muted-foreground">
@@ -470,19 +463,17 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
                             h.error
                               ? "destructive"
                               : h.reward >= 0
-                              ? "success"
-                              : "warning"
+                                ? "success"
+                                : "warning"
                           }
                         >
-                          {h.error
-                            ? "error"
-                            : `reward ${h.reward.toFixed(3)}`}
+                          {h.error ? "error" : `reward ${h.reward.toFixed(3)}`}
                         </Badge>
                         {h.done && <Badge variant="success">done</Badge>}
                         {h.truncated && (
                           <Badge variant="warning">truncated</Badge>
                         )}
-                        <span className="text-muted-foreground ml-auto">
+                        <span className="ml-auto text-muted-foreground">
                           {new Date(h.at).toLocaleTimeString()}
                         </span>
                       </div>
@@ -493,7 +484,7 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
                         className="[&>pre]:max-h-40"
                       />
                       {h.error && (
-                        <p className="text-destructive text-xs flex items-center gap-1">
+                        <p className="flex items-center gap-1 text-xs text-destructive">
                           <IconX className="size-3" /> {h.error}
                         </p>
                       )}
@@ -544,7 +535,8 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
               <CardHeader>
                 <CardTitle>Final result</CardTitle>
                 <CardDescription>
-                  Returned by <code className="font-mono">POST /api/sim/finish</code>.
+                  Returned by{" "}
+                  <code className="font-mono">POST /api/sim/finish</code>.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -589,10 +581,10 @@ export default function EpisodeRunnerPage({ params }: { params: Params }) {
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-md border bg-muted/40 p-3">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+      <div className="text-[10px] tracking-wide text-muted-foreground uppercase">
         {label}
       </div>
-      <div className="text-lg font-mono">{value}</div>
+      <div className="font-mono text-lg">{value}</div>
     </div>
   )
 }
@@ -616,7 +608,9 @@ function ActionSpaceList({
     if (!Array.isArray(arr)) return []
     return arr.filter(
       (a): a is ActionSpaceItem =>
-        !!a && typeof a === "object" && typeof (a as ActionSpaceItem).name === "string",
+        !!a &&
+        typeof a === "object" &&
+        typeof (a as ActionSpaceItem).name === "string"
     )
   }, [data])
 
@@ -629,7 +623,7 @@ function ActionSpaceList({
       {actions.map((a) => (
         <li
           key={a.name}
-          className="rounded-md border bg-card p-3 flex flex-col gap-1.5"
+          className="flex flex-col gap-1.5 rounded-md border bg-card p-3"
         >
           <div className="flex items-center justify-between gap-2">
             <span className="font-mono text-sm font-semibold">{a.name}</span>

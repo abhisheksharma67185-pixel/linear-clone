@@ -1,1 +1,1 @@
-import "./sim-adapter";
+import "./sim-adapter"

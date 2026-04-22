@@ -2,15 +2,20 @@
 
 export default function PlatformUsagePage() {
   return (
-    <div className="p-8 max-w-5xl">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="max-w-5xl p-8">
+      <div className="mb-4 flex items-center gap-2">
         <h1 className="text-2xl font-semibold">Platform usage</h1>
-        <span className="rounded border px-1.5 py-0.5 text-[10px] font-bold">NEW</span>
+        <span className="rounded border px-1.5 py-0.5 text-[10px] font-bold">
+          NEW
+        </span>
       </div>
 
-      <p className="text-sm text-muted-foreground mb-6 max-w-3xl">
-        Track usage of Rovo credits and other usage types across your organization.{" "}
-        <button type="button" className="text-blue-600 hover:underline">More information about platform usage</button>
+      <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
+        Track usage of Rovo credits and other usage types across your
+        organization.{" "}
+        <button type="button" className="text-blue-600 hover:underline">
+          More information about platform usage
+        </button>
       </p>
 
       {/* Table */}
@@ -28,7 +33,10 @@ export default function PlatformUsagePage() {
           </thead>
           <tbody>
             <tr>
-              <td colSpan={6} className="px-4 py-8 text-center text-sm italic text-muted-foreground">
+              <td
+                colSpan={6}
+                className="px-4 py-8 text-center text-sm text-muted-foreground italic"
+              >
                 Your platform usage data is coming soon
               </td>
             </tr>

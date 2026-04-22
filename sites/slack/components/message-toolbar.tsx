@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   Bookmark,
@@ -8,20 +8,20 @@ import {
   Share2,
   SmilePlus,
   Trash2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/ui/tooltip"
 
 export function MessageToolbar({
   onReact,
@@ -32,13 +32,13 @@ export function MessageToolbar({
   onDelete,
   canEdit,
 }: {
-  onReact: () => void;
-  onReplyInThread: () => void;
-  onSave: () => void;
-  onForward: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-  canEdit: boolean;
+  onReact: () => void
+  onReplyInThread: () => void
+  onSave: () => void
+  onForward: () => void
+  onEdit: () => void
+  onDelete: () => void
+  canEdit: boolean
 }) {
   return (
     <div className="absolute -top-4 right-6 hidden items-center rounded-md border border-border bg-background shadow-sm group-hover:flex">
@@ -105,11 +105,7 @@ export function MessageToolbar({
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 rounded-none"
-            >
+            <Button variant="ghost" size="icon" className="size-7 rounded-none">
               <MoreHorizontal className="size-4" />
             </Button>
           }
@@ -135,5 +131,5 @@ export function MessageToolbar({
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  );
+  )
 }

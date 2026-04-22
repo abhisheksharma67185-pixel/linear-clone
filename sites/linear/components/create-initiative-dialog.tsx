@@ -31,7 +31,11 @@ import {
   Attachment01Icon,
 } from "@hugeicons/core-free-icons"
 
-export type InitiativeHealth = "on_track" | "at_risk" | "off_track" | "no_update"
+export type InitiativeHealth =
+  | "on_track"
+  | "at_risk"
+  | "off_track"
+  | "no_update"
 
 export interface NewInitiative {
   id: string
@@ -50,7 +54,11 @@ export const HEALTH_OPTIONS: {
   label: string
   dot: string
 }[] = [
-  { value: "no_update", label: "No update", dot: "border-dashed border-muted-foreground/60" },
+  {
+    value: "no_update",
+    label: "No update",
+    dot: "border-dashed border-muted-foreground/60",
+  },
   { value: "on_track", label: "On track", dot: "bg-emerald-500" },
   { value: "at_risk", label: "At risk", dot: "bg-amber-500" },
   { value: "off_track", label: "Off track", dot: "bg-rose-500" },
@@ -89,7 +97,8 @@ export function CreateInitiativeDialog({
   }, [open, loaded])
 
   const owner = members.find((m) => m.id === ownerId) ?? null
-  const healthMeta = HEALTH_OPTIONS.find((h) => h.value === health) ?? HEALTH_OPTIONS[0]
+  const healthMeta =
+    HEALTH_OPTIONS.find((h) => h.value === health) ?? HEALTH_OPTIONS[0]
 
   const resetForm = () => {
     setName("")
@@ -129,7 +138,10 @@ export function CreateInitiativeDialog({
         <header className="flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-1.5 text-xs">
             <div className="flex items-center gap-1 rounded-md border px-1.5 py-0.5">
-              <HugeiconsIcon icon={Satellite01Icon} className="size-3 text-orange-500" />
+              <HugeiconsIcon
+                icon={Satellite01Icon}
+                className="size-3 text-orange-500"
+              />
               <span className="font-medium">Initiative</span>
             </div>
           </div>
@@ -137,18 +149,21 @@ export function CreateInitiativeDialog({
             <Button
               variant="ghost"
               size="icon"
-              className="size-6 text-muted-foreground"
+              className="text-muted-foreground size-6"
               onClick={() => setFullscreen((v) => !v)}
               aria-label="Toggle fullscreen"
             >
-              <HugeiconsIcon icon={ArrowExpandDiagonal01Icon} className="size-3.5" />
+              <HugeiconsIcon
+                icon={ArrowExpandDiagonal01Icon}
+                className="size-3.5"
+              />
             </Button>
             <DialogClose
               render={
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-6 text-muted-foreground"
+                  className="text-muted-foreground size-6"
                 />
               }
             >
@@ -163,13 +178,13 @@ export function CreateInitiativeDialog({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Initiative name"
-            className="w-full bg-transparent text-lg font-semibold placeholder:text-muted-foreground/50 focus:outline-none"
+            className="placeholder:text-muted-foreground/50 w-full bg-transparent text-lg font-semibold focus:outline-none"
           />
           <textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             placeholder="Add a short summary..."
-            className={`w-full flex-1 resize-none bg-transparent text-sm placeholder:text-muted-foreground/50 focus:outline-none ${
+            className={`placeholder:text-muted-foreground/50 w-full flex-1 resize-none bg-transparent text-sm focus:outline-none ${
               fullscreen ? "min-h-[300px]" : "min-h-[48px]"
             }`}
           />
@@ -181,18 +196,27 @@ export function CreateInitiativeDialog({
               {owner ? (
                 <Avatar src={owner.avatar} name={owner.name} />
               ) : (
-                <div className="flex size-4 items-center justify-center rounded-full border border-dashed border-muted-foreground/60">
-                  <HugeiconsIcon icon={UserIcon} className="size-2.5 text-muted-foreground" />
+                <div className="border-muted-foreground/60 flex size-4 items-center justify-center rounded-full border border-dashed">
+                  <HugeiconsIcon
+                    icon={UserIcon}
+                    className="text-muted-foreground size-2.5"
+                  />
                 </div>
               )}
               <span>{owner ? owner.name : "Owner"}</span>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="max-h-80 w-64 overflow-auto">
+            <DropdownMenuContent
+              align="start"
+              className="max-h-80 w-64 overflow-auto"
+            >
               <MenuHeader title="Set owner..." shortcut="N then O" />
               <MenuRow
                 icon={
-                  <div className="flex size-4 items-center justify-center rounded-full border border-dashed border-muted-foreground/60">
-                    <HugeiconsIcon icon={UserIcon} className="size-2.5 text-muted-foreground" />
+                  <div className="border-muted-foreground/60 flex size-4 items-center justify-center rounded-full border border-dashed">
+                    <HugeiconsIcon
+                      icon={UserIcon}
+                      className="text-muted-foreground size-2.5"
+                    />
                   </div>
                 }
                 checked={ownerId === null}
@@ -220,7 +244,9 @@ export function CreateInitiativeDialog({
                 icon={targetDate ? CalendarBlock01Icon : Calendar01Icon}
                 className={`size-3.5 ${targetDate ? "text-rose-500" : "text-muted-foreground"}`}
               />
-              <span>{targetDate ? formatTargetDate(targetDate) : "Target date"}</span>
+              <span>
+                {targetDate ? formatTargetDate(targetDate) : "Target date"}
+              </span>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-[320px] p-3">
               <div className="mb-2 text-xs font-medium">Target date</div>
@@ -238,7 +264,7 @@ export function CreateInitiativeDialog({
                 <button
                   type="button"
                   onClick={() => setTargetDate(null)}
-                  className="mt-2 w-full rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-muted/50"
+                  className="text-muted-foreground hover:bg-muted/50 mt-2 w-full rounded-md border px-2 py-1 text-xs"
                 >
                   Clear target date
                 </button>
@@ -267,7 +293,10 @@ export function CreateInitiativeDialog({
           </DropdownMenu>
 
           <PillButton disabled>
-            <HugeiconsIcon icon={UserMultiple02Icon} className="size-3.5 text-muted-foreground" />
+            <HugeiconsIcon
+              icon={UserMultiple02Icon}
+              className="text-muted-foreground size-3.5"
+            />
             <span>Teams</span>
           </PillButton>
         </div>
@@ -276,13 +305,13 @@ export function CreateInitiativeDialog({
           <Button
             variant="ghost"
             size="icon"
-            className="size-7 text-muted-foreground"
+            className="text-muted-foreground size-7"
             aria-label="Attach file"
           >
             <HugeiconsIcon icon={Attachment01Icon} className="size-4" />
           </Button>
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <label className="text-muted-foreground flex items-center gap-2 text-xs">
               <Switch
                 checked={createMore}
                 onCheckedChange={setCreateMore}
@@ -312,7 +341,7 @@ function PillButton({
   return (
     <button
       type="button"
-      className={`flex h-6 items-center gap-1 rounded-md border px-1.5 text-xs text-foreground hover:bg-muted/60 disabled:opacity-60 ${className ?? ""}`}
+      className={`text-foreground hover:bg-muted/60 flex h-6 items-center gap-1 rounded-md border px-1.5 text-xs disabled:opacity-60 ${className ?? ""}`}
       {...props}
     >
       {children}
@@ -322,10 +351,12 @@ function PillButton({
 
 function MenuHeader({ title, shortcut }: { title: string; shortcut?: string }) {
   return (
-    <div className="flex items-center justify-between px-2 py-1.5 text-xs text-muted-foreground">
+    <div className="text-muted-foreground flex items-center justify-between px-2 py-1.5 text-xs">
       <span>{title}</span>
       {shortcut && (
-        <span className="rounded border px-1 font-mono text-[10px]">{shortcut}</span>
+        <span className="rounded border px-1 font-mono text-[10px]">
+          {shortcut}
+        </span>
       )}
     </div>
   )
@@ -333,7 +364,7 @@ function MenuHeader({ title, shortcut }: { title: string; shortcut?: string }) {
 
 function MenuSection({ label }: { label: string }) {
   return (
-    <div className="mt-1 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="text-muted-foreground mt-1 px-2 py-1 text-[10px] font-medium tracking-wide uppercase">
       {label}
     </div>
   )
@@ -354,10 +385,12 @@ function MenuRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs hover:bg-accent"
+      className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1 text-left text-xs"
     >
       {icon && (
-        <span className="flex size-4 shrink-0 items-center justify-center">{icon}</span>
+        <span className="flex size-4 shrink-0 items-center justify-center">
+          {icon}
+        </span>
       )}
       <span className="flex-1 truncate">{children}</span>
       {checked && <span className="text-[10px]">✓</span>}

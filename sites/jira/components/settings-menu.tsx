@@ -51,7 +51,8 @@ const categories: SettingsCategory[] = [
     items: [
       {
         title: "Workspace settings",
-        description: "Manage workspace name, domains, user groups and time zone",
+        description:
+          "Manage workspace name, domains, user groups and time zone",
         icon: ComputerIcon,
         href: "/admin/organization-settings",
         external: true,
@@ -86,7 +87,8 @@ const categories: SettingsCategory[] = [
       },
       {
         title: "Billing",
-        description: "Update your billing details, manage subscriptions, and more",
+        description:
+          "Update your billing details, manage subscriptions, and more",
         icon: CreditCardIcon,
         href: "/admin/billing",
         testId: "settings-item-billing",
@@ -98,7 +100,7 @@ const categories: SettingsCategory[] = [
 function ExternalIcon() {
   return (
     <svg
-      className="size-4 shrink-0 text-[#626f86] dark:text-muted-foreground mt-0.5"
+      className="mt-0.5 size-4 shrink-0 text-[#626f86] dark:text-muted-foreground"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -112,7 +114,13 @@ function ExternalIcon() {
   )
 }
 
-function SettingsRow({ item, onClose }: { item: SettingsItem; onClose: () => void }) {
+function SettingsRow({
+  item,
+  onClose,
+}: {
+  item: SettingsItem
+  onClose: () => void
+}) {
   return (
     <Link
       href={item.href}
@@ -120,18 +128,18 @@ function SettingsRow({ item, onClose }: { item: SettingsItem; onClose: () => voi
       onClick={onClose}
       target={item.external ? "_blank" : undefined}
       rel={item.external ? "noopener noreferrer" : undefined}
-      className="group flex items-start gap-3 px-4 py-3 hover:bg-[#f4f5f7] dark:hover:bg-accent focus:bg-[#f4f5f7] focus:outline-none transition-colors"
+      className="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-[#f4f5f7] focus:bg-[#f4f5f7] focus:outline-none dark:hover:bg-accent"
     >
       <HugeiconsIcon
         icon={item.icon}
-        className="size-5 shrink-0 text-[#44546f] dark:text-foreground mt-0.5"
+        className="mt-0.5 size-5 shrink-0 text-[#44546f] dark:text-foreground"
         aria-hidden="true"
       />
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-semibold text-[#172b4d] dark:text-foreground leading-snug">
+        <p className="text-[13px] leading-snug font-semibold text-[#172b4d] dark:text-foreground">
           {item.title}
         </p>
-        <p className="text-[12px] text-[#626f86] dark:text-muted-foreground leading-snug mt-0.5">
+        <p className="mt-0.5 text-[12px] leading-snug text-[#626f86] dark:text-muted-foreground">
           {item.description}
         </p>
       </div>
@@ -148,15 +156,19 @@ export function SettingsMenu() {
       <PopoverTrigger
         aria-label="Settings"
         data-testid="settings-menu-trigger"
-        className="rounded-full p-1.5 text-[#626f86] dark:text-muted-foreground hover:bg-[#f4f5f7] dark:hover:bg-accent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="rounded-full p-1.5 text-[#626f86] transition-colors hover:bg-[#f4f5f7] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-muted-foreground dark:hover:bg-accent"
       >
-        <HugeiconsIcon icon={Settings02Icon} className="size-5" aria-hidden="true" />
+        <HugeiconsIcon
+          icon={Settings02Icon}
+          className="size-5"
+          aria-hidden="true"
+        />
       </PopoverTrigger>
 
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[360px] p-0 overflow-hidden rounded-[3px] border border-[#dfe1e6] shadow-[0_8px_24px_rgba(9,30,66,0.15)]"
+        className="w-[360px] overflow-hidden rounded-[3px] border border-[#dfe1e6] p-0 shadow-[0_8px_24px_rgba(9,30,66,0.15)]"
       >
         <div className="py-2">
           {categories.map((cat, i) => (
@@ -167,7 +179,11 @@ export function SettingsMenu() {
                 </p>
               )}
               {cat.items.map((item) => (
-                <SettingsRow key={item.testId} item={item} onClose={() => setOpen(false)} />
+                <SettingsRow
+                  key={item.testId}
+                  item={item}
+                  onClose={() => setOpen(false)}
+                />
               ))}
               {i < categories.length - 1 && (
                 <div className="my-1 border-t border-[#dfe1e6] dark:border-border" />

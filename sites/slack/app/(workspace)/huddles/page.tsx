@@ -1,27 +1,27 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Headphones } from "lucide-react";
+import { useEffect, useState } from "react"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Headphones } from "lucide-react"
 
 type Huddle = {
-  id: string;
-  channelId: string | null;
-  dmId: string | null;
-  topic: string;
-  startedAt: string;
-  endedAt: string | null;
-  participantIds: string[];
-};
+  id: string
+  channelId: string | null
+  dmId: string | null
+  topic: string
+  startedAt: string
+  endedAt: string | null
+  participantIds: string[]
+}
 
 export default function HuddlesPage() {
-  const [huddles, setHuddles] = useState<Huddle[]>([]);
+  const [huddles, setHuddles] = useState<Huddle[]>([])
   useEffect(() => {
     fetch("/api/data/huddles")
       .then((r) => r.json())
-      .then(setHuddles);
-  }, []);
+      .then(setHuddles)
+  }, [])
 
   return (
     <>
@@ -63,5 +63,5 @@ export default function HuddlesPage() {
         </div>
       </ScrollArea>
     </>
-  );
+  )
 }

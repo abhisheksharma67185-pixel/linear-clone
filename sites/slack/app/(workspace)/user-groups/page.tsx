@@ -1,26 +1,26 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users } from "lucide-react";
+import { useEffect, useState } from "react"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Users } from "lucide-react"
 
 type UserGroup = {
-  id: string;
-  handle: string;
-  name: string;
-  description: string;
-  memberIds: string[];
-  isEnabled: boolean;
-};
+  id: string
+  handle: string
+  name: string
+  description: string
+  memberIds: string[]
+  isEnabled: boolean
+}
 
 export default function UserGroupsPage() {
-  const [groups, setGroups] = useState<UserGroup[]>([]);
+  const [groups, setGroups] = useState<UserGroup[]>([])
   useEffect(() => {
     fetch("/api/data/user-groups")
       .then((r) => r.json())
-      .then(setGroups);
-  }, []);
+      .then(setGroups)
+  }, [])
 
   return (
     <>
@@ -31,15 +31,10 @@ export default function UserGroupsPage() {
       <ScrollArea className="flex-1">
         <div className="flex flex-col divide-y divide-border">
           {groups.map((g) => (
-            <div
-              key={g.id}
-              className="flex items-center gap-3 px-4 py-3"
-            >
+            <div key={g.id} className="flex items-center gap-3 px-4 py-3">
               <Users className="size-4 text-muted-foreground" />
               <div className="flex flex-1 flex-col">
-                <span className="text-sm font-semibold">
-                  @{g.handle}
-                </span>
+                <span className="text-sm font-semibold">@{g.handle}</span>
                 <span className="text-xs text-muted-foreground">
                   {g.name} · {g.memberIds.length} members
                 </span>
@@ -52,5 +47,5 @@ export default function UserGroupsPage() {
         </div>
       </ScrollArea>
     </>
-  );
+  )
 }

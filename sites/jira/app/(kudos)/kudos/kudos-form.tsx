@@ -22,32 +22,149 @@ const samplePeople = [
 ]
 
 const recentLinks = [
-  { url: "https://myproject.atlassian.net/browse/SCRUM-1", title: "SCRUM-1: Set up project", source: "jira" },
-  { url: "https://myproject.atlassian.net/browse/SCRUM-2", title: "SCRUM-2: Create backlog", source: "jira" },
-  { url: "https://myproject.atlassian.net/browse/SCRUM-3", title: "SCRUM-3: Sprint planning", source: "jira" },
+  {
+    url: "https://myproject.atlassian.net/browse/SCRUM-1",
+    title: "SCRUM-1: Set up project",
+    source: "jira",
+  },
+  {
+    url: "https://myproject.atlassian.net/browse/SCRUM-2",
+    title: "SCRUM-2: Create backlog",
+    source: "jira",
+  },
+  {
+    url: "https://myproject.atlassian.net/browse/SCRUM-3",
+    title: "SCRUM-3: Sprint planning",
+    source: "jira",
+  },
 ]
 
 const defaultGifs = [
-  { id: "1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDd6OHRyMnBzMmx5a2I3OGFhYzFiMzR5czh6YWRyZHB5ZXVkZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oz8xAFtqoOUUrsh7W/giphy.gif", title: "Thank You" },
-  { id: "2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnE4ZGd4czVhNmRrOXBxYjBzb2w0c2JhcHRhMjFqNTJ2OHNyMHZnaCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3q2XhfQ8oCkm1Ts4/giphy.gif", title: "Celebration" },
-  { id: "3", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWVlcnl2cDhreGx2NzlsMHc1YjdrZmpjbmRkZjgybjZyZGV4cjRsZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26u4cqiYI30juCOGY/giphy.gif", title: "Awesome" },
-  { id: "4", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2w1NmtjdnN4NWVqMHFsMjQ0cGg4bTlpcWFtczBqNGpzNHA3c3I3aCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xT77XWum9yH7zNkFW0/giphy.gif", title: "High Five" },
-  { id: "5", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdTZtcXFkOGRxaHM2MjF0NnA3b2k3dGJ2ZXR1ZGtyMWh6ZjcwNyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYt5jPR6QX5pnqM/giphy.gif", title: "Applause" },
-  { id: "6", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2d0cHdsMGZ6dTk3Y3c2NmFtbXY5NWY0ZWpwOXF3d2ZhOWdkbCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6fJ1BM7R2EBRDnxK/giphy.gif", title: "Star" },
-  { id: "7", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcmQ4OWlvbGV4dGpzcmRiYWl5dzJlbjI2N2t2bTlrMzR6cHV1b3NnZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26gsjCZpPolPr3sBy/giphy.gif", title: "Congrats" },
-  { id: "8", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGl3Z3FlOGx2MHVjMW95ZmhvdmEyNHdyemRhcjdqaG9zdW9rOGpnbSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0HlHFRbmaZtBRhf2/giphy.gif", title: "Well Done" },
-  { id: "9", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmVqanN1OGFyN2k0aWFzcjhwbGxpcXN4ZW43MWgxOHY3bHZqemFuZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oEjI5VtIhHvK37XYQ/giphy.gif", title: "Party" },
+  {
+    id: "1",
+    url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDd6OHRyMnBzMmx5a2I3OGFhYzFiMzR5czh6YWRyZHB5ZXVkZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oz8xAFtqoOUUrsh7W/giphy.gif",
+    title: "Thank You",
+  },
+  {
+    id: "2",
+    url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNnE4ZGd4czVhNmRrOXBxYjBzb2w0c2JhcHRhMjFqNTJ2OHNyMHZnaCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3q2XhfQ8oCkm1Ts4/giphy.gif",
+    title: "Celebration",
+  },
+  {
+    id: "3",
+    url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWVlcnl2cDhreGx2NzlsMHc1YjdrZmpjbmRkZjgybjZyZGV4cjRsZSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26u4cqiYI30juCOGY/giphy.gif",
+    title: "Awesome",
+  },
+  {
+    id: "4",
+    url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExY2w1NmtjdnN4NWVqMHFsMjQ0cGg4bTlpcWFtczBqNGpzNHA3c3I3aCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/xT77XWum9yH7zNkFW0/giphy.gif",
+    title: "High Five",
+  },
+  {
+    id: "5",
+    url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdTZtcXFkOGRxaHM2MjF0NnA3b2k3dGJ2ZXR1ZGtyMWh6ZjcwNyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0MYt5jPR6QX5pnqM/giphy.gif",
+    title: "Applause",
+  },
+  {
+    id: "6",
+    url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2d0cHdsMGZ6dTk3Y3c2NmFtbXY5NWY0ZWpwOXF3d2ZhOWdkbCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3o6fJ1BM7R2EBRDnxK/giphy.gif",
+    title: "Star",
+  },
+  {
+    id: "7",
+    url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcmQ4OWlvbGV4dGpzcmRiYWl5dzJlbjI2N2t2bTlrMzR6cHV1b3NnZyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/26gsjCZpPolPr3sBy/giphy.gif",
+    title: "Congrats",
+  },
+  {
+    id: "8",
+    url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGl3Z3FlOGx2MHVjMW95ZmhvdmEyNHdyemRhcjdqaG9zdW9rOGpnbSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l0HlHFRbmaZtBRhf2/giphy.gif",
+    title: "Well Done",
+  },
+  {
+    id: "9",
+    url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmVqanN1OGFyN2k0aWFzcjhwbGxpcXN4ZW43MWgxOHY3bHZqemFuZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/3oEjI5VtIhHvK37XYQ/giphy.gif",
+    title: "Party",
+  },
 ]
 
-function EmojiPicker({ onSelect, onClose }: { onSelect: (emoji: string) => void; onClose: () => void }) {
+function EmojiPicker({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (emoji: string) => void
+  onClose: () => void
+}) {
   const emojis = [
-    "😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "🙃",
-    "😉", "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "😚", "😙",
-    "🥲", "😋", "😛", "😜", "🤪", "😝", "🤑", "🤗", "🤭", "🫢",
-    "🫣", "🤫", "🤔", "🫡", "🤐", "🤨", "😐", "😑", "😶", "🫥",
-    "😏", "😒", "🙄", "😬", "🤥", "😌", "😔", "😪", "🤤", "😴",
-    "👍", "👏", "🙌", "🤝", "💪", "🎉", "🎊", "🏆", "⭐", "🌟",
-    "💯", "🔥", "❤️", "💙", "💜", "💚", "💛", "🧡", "🤎", "🖤",
+    "😀",
+    "😃",
+    "😄",
+    "😁",
+    "😆",
+    "😅",
+    "🤣",
+    "😂",
+    "🙂",
+    "🙃",
+    "😉",
+    "😊",
+    "😇",
+    "🥰",
+    "😍",
+    "🤩",
+    "😘",
+    "😗",
+    "😚",
+    "😙",
+    "🥲",
+    "😋",
+    "😛",
+    "😜",
+    "🤪",
+    "😝",
+    "🤑",
+    "🤗",
+    "🤭",
+    "🫢",
+    "🫣",
+    "🤫",
+    "🤔",
+    "🫡",
+    "🤐",
+    "🤨",
+    "😐",
+    "😑",
+    "😶",
+    "🫥",
+    "😏",
+    "😒",
+    "🙄",
+    "😬",
+    "🤥",
+    "😌",
+    "😔",
+    "😪",
+    "🤤",
+    "😴",
+    "👍",
+    "👏",
+    "🙌",
+    "🤝",
+    "💪",
+    "🎉",
+    "🎊",
+    "🏆",
+    "⭐",
+    "🌟",
+    "💯",
+    "🔥",
+    "❤️",
+    "💙",
+    "💜",
+    "💚",
+    "💛",
+    "🧡",
+    "🤎",
+    "🖤",
   ]
   const ref = useRef<HTMLDivElement>(null)
 
@@ -60,13 +177,19 @@ function EmojiPicker({ onSelect, onClose }: { onSelect: (emoji: string) => void;
   }, [onClose])
 
   return (
-    <div ref={ref} className="absolute bottom-10 left-0 z-50 w-72 rounded-lg border bg-popover p-3 shadow-lg">
+    <div
+      ref={ref}
+      className="absolute bottom-10 left-0 z-50 w-72 rounded-lg border bg-popover p-3 shadow-lg"
+    >
       <div className="grid grid-cols-10 gap-0.5">
         {emojis.map((emoji) => (
           <button
             key={emoji}
-            onClick={() => { onSelect(emoji); onClose() }}
-            className="flex size-7 items-center justify-center rounded text-base hover:bg-accent transition-colors"
+            onClick={() => {
+              onSelect(emoji)
+              onClose()
+            }}
+            className="flex size-7 items-center justify-center rounded text-base transition-colors hover:bg-accent"
           >
             {emoji}
           </button>
@@ -76,7 +199,11 @@ function EmojiPicker({ onSelect, onClose }: { onSelect: (emoji: string) => void;
   )
 }
 
-function LinkDialog({ open, onClose, onInsert }: {
+function LinkDialog({
+  open,
+  onClose,
+  onInsert,
+}: {
   open: boolean
   onClose: () => void
   onInsert: (url: string, text: string) => void
@@ -91,16 +218,25 @@ function LinkDialog({ open, onClose, onInsert }: {
   const filteredLinks = recentLinks.filter((l) => {
     const matchesTab = linkTab === "jira" ? l.source === "jira" : true
     const matchesSearch = searchQuery
-      ? l.title.toLowerCase().includes(searchQuery.toLowerCase()) || l.url.toLowerCase().includes(searchQuery.toLowerCase())
+      ? l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        l.url.toLowerCase().includes(searchQuery.toLowerCase())
       : true
     return matchesTab && matchesSearch
   })
 
-  const isUrl = linkUrl.startsWith("http://") || linkUrl.startsWith("https://") || linkUrl.startsWith("www.")
+  const isUrl =
+    linkUrl.startsWith("http://") ||
+    linkUrl.startsWith("https://") ||
+    linkUrl.startsWith("www.")
 
   return (
-    <Dialog open onOpenChange={(o) => { if (!o) onClose() }}>
-      <DialogContent className="sm:max-w-[480px] p-0">
+    <Dialog
+      open
+      onOpenChange={(o) => {
+        if (!o) onClose()
+      }}
+    >
+      <DialogContent className="p-0 sm:max-w-[480px]">
         <div className="p-5">
           <div className="mb-4">
             <label className="mb-1.5 block text-sm font-medium">
@@ -132,7 +268,9 @@ function LinkDialog({ open, onClose, onInsert }: {
               onChange={(e) => setLinkText(e.target.value)}
               className="h-10"
             />
-            <p className="mt-1 text-xs text-muted-foreground">Give this link a title or description</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Give this link a title or description
+            </p>
           </div>
 
           {/* Tabs */}
@@ -156,39 +294,98 @@ function LinkDialog({ open, onClose, onInsert }: {
             {isUrl ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <div className="mb-2 flex size-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20">
-                  <svg className="size-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+                  <svg
+                    className="size-5 text-blue-600"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                  </svg>
                 </div>
                 <p className="text-sm font-medium">Link ready to insert</p>
-                <p className="text-xs text-muted-foreground mt-1">Click Insert to add this link</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Click Insert to add this link
+                </p>
               </div>
             ) : filteredLinks.length > 0 && !searchQuery ? (
               <div className="space-y-1">
                 {filteredLinks.map((link) => (
                   <button
                     key={link.url}
-                    onClick={() => { setLinkUrl(link.url); setLinkText(link.title) }}
-                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-accent transition-colors"
+                    onClick={() => {
+                      setLinkUrl(link.url)
+                      setLinkText(link.title)
+                    }}
+                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-accent"
                   >
                     <div className="flex size-8 items-center justify-center rounded bg-blue-50 dark:bg-blue-900/20">
-                      <svg className="size-4 text-blue-600" viewBox="0 0 32 32" fill="currentColor"><path d="M27.545 15.2L16.8 4.454 16 3.654l-8.345 8.346-.855.854L4.454 15.2a1.547 1.547 0 000 2.189L12.2 25.135 16 28.935l8.345-8.346.354-.354 2.846-2.846a1.547 1.547 0 000-2.189zM16 20.6l-4.254-4.254L16 12.092l4.254 4.254L16 20.6z" /></svg>
+                      <svg
+                        className="size-4 text-blue-600"
+                        viewBox="0 0 32 32"
+                        fill="currentColor"
+                      >
+                        <path d="M27.545 15.2L16.8 4.454 16 3.654l-8.345 8.346-.855.854L4.454 15.2a1.547 1.547 0 000 2.189L12.2 25.135 16 28.935l8.345-8.346.354-.354 2.846-2.846a1.547 1.547 0 000-2.189zM16 20.6l-4.254-4.254L16 12.092l4.254 4.254L16 20.6z" />
+                      </svg>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{link.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">{link.url}</p>
+                      <p className="truncate text-sm font-medium">
+                        {link.title}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {link.url}
+                      </p>
                     </div>
                   </button>
                 ))}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <svg className="mb-3 size-16 text-muted-foreground/30" viewBox="0 0 64 64" fill="none">
-                  <circle cx="28" cy="28" r="18" stroke="currentColor" strokeWidth="3" />
-                  <line x1="40" y1="40" x2="54" y2="54" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                  <circle cx="28" cy="24" r="4" stroke="currentColor" strokeWidth="2" />
-                  <path d="M22 34c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <svg
+                  className="mb-3 size-16 text-muted-foreground/30"
+                  viewBox="0 0 64 64"
+                  fill="none"
+                >
+                  <circle
+                    cx="28"
+                    cy="28"
+                    r="18"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  />
+                  <line
+                    x1="40"
+                    y1="40"
+                    x2="54"
+                    y2="54"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                  <circle
+                    cx="28"
+                    cy="24"
+                    r="4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d="M22 34c0-3.3 2.7-6 6-6s6 2.7 6 6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
                 </svg>
-                <p className="text-sm font-semibold">We couldn&apos;t find anything<br />matching your search.</p>
-                <p className="mt-1 text-xs text-muted-foreground">Try again with a different term.</p>
+                <p className="text-sm font-semibold">
+                  We couldn&apos;t find anything
+                  <br />
+                  matching your search.
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Try again with a different term.
+                </p>
               </div>
             )}
           </div>
@@ -226,7 +423,15 @@ function LinkDialog({ open, onClose, onInsert }: {
   )
 }
 
-function GifPicker({ onSelect, onClose, inline }: { onSelect: (url: string) => void; onClose: () => void; inline?: boolean }) {
+function GifPicker({
+  onSelect,
+  onClose,
+  inline,
+}: {
+  onSelect: (url: string) => void
+  onClose: () => void
+  inline?: boolean
+}) {
   const [search, setSearch] = useState("")
   const ref = useRef<HTMLDivElement>(null)
 
@@ -240,7 +445,9 @@ function GifPicker({ onSelect, onClose, inline }: { onSelect: (url: string) => v
   }, [onClose, inline])
 
   const filtered = search
-    ? defaultGifs.filter((g) => g.title.toLowerCase().includes(search.toLowerCase()))
+    ? defaultGifs.filter((g) =>
+        g.title.toLowerCase().includes(search.toLowerCase())
+      )
     : defaultGifs
 
   const content = (
@@ -253,19 +460,31 @@ function GifPicker({ onSelect, onClose, inline }: { onSelect: (url: string) => v
           onChange={(e) => setSearch(e.target.value)}
           className="h-9 pr-9"
         />
-        <svg className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        <svg
+          className="absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
       </div>
-      <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+      <div className="grid max-h-48 grid-cols-3 gap-2 overflow-y-auto">
         {filtered.map((gif) => (
           <button
             key={gif.id}
-            onClick={() => { onSelect(gif.url); onClose() }}
-            className="group relative aspect-square overflow-hidden rounded-md border hover:ring-2 hover:ring-blue-500 transition-all"
+            onClick={() => {
+              onSelect(gif.url)
+              onClose()
+            }}
+            className="group relative aspect-square overflow-hidden rounded-md border transition-all hover:ring-2 hover:ring-blue-500"
           >
             <div className="flex size-full items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
-              <span className="text-xs text-muted-foreground text-center px-1">{gif.title}</span>
+              <span className="px-1 text-center text-xs text-muted-foreground">
+                {gif.title}
+              </span>
             </div>
           </button>
         ))}
@@ -281,7 +500,10 @@ function GifPicker({ onSelect, onClose, inline }: { onSelect: (url: string) => v
   if (inline) return <div>{content}</div>
 
   return (
-    <div ref={ref} className="absolute right-0 top-12 z-50 w-80 rounded-lg border bg-popover p-4 shadow-lg">
+    <div
+      ref={ref}
+      className="absolute top-12 right-0 z-50 w-80 rounded-lg border bg-popover p-4 shadow-lg"
+    >
       {content}
     </div>
   )
@@ -290,15 +512,21 @@ function GifPicker({ onSelect, onClose, inline }: { onSelect: (url: string) => v
 export default function KudosForm() {
   const router = useRouter()
   const [recipient, setRecipient] = useState("")
-  const [selectedRecipient, setSelectedRecipient] = useState<typeof samplePeople[0] | null>(null)
+  const [selectedRecipient, setSelectedRecipient] = useState<
+    (typeof samplePeople)[0] | null
+  >(null)
   const [showRecipientDropdown, setShowRecipientDropdown] = useState(false)
   const [message, setMessage] = useState("")
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [showGifPicker, setShowGifPicker] = useState(false)
   const [selectedGif, setSelectedGif] = useState<string | null>(null)
-  const [selectedCard, setSelectedCard] = useState<"heart" | "crayons" | "hammer">("hammer")
-  const [insertedLinks, setInsertedLinks] = useState<Array<{ url: string; text: string }>>([])
+  const [selectedCard, setSelectedCard] = useState<
+    "heart" | "crayons" | "hammer"
+  >("hammer")
+  const [insertedLinks, setInsertedLinks] = useState<
+    Array<{ url: string; text: string }>
+  >([])
   const [kudosSent, setKudosSent] = useState(false)
   const editorRef = useRef<HTMLDivElement>(null)
   const recipientRef = useRef<HTMLDivElement>(null)
@@ -309,7 +537,10 @@ export default function KudosForm() {
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (recipientRef.current && !recipientRef.current.contains(e.target as Node)) {
+      if (
+        recipientRef.current &&
+        !recipientRef.current.contains(e.target as Node)
+      ) {
         setShowRecipientDropdown(false)
       }
     }
@@ -317,7 +548,8 @@ export default function KudosForm() {
     return () => document.removeEventListener("mousedown", handleClick)
   }, [])
 
-  const canSend = selectedRecipient && (message.trim() || insertedLinks.length > 0)
+  const canSend =
+    selectedRecipient && (message.trim() || insertedLinks.length > 0)
 
   const handleSendKudos = () => {
     if (!canSend) return
@@ -339,10 +571,17 @@ export default function KudosForm() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="rounded-full p-1.5 text-muted-foreground hover:bg-accent transition-colors"
+            className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-accent"
           >
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5" /><polyline points="12 19 5 12 12 5" />
+            <svg
+              className="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M19 12H5" />
+              <polyline points="12 19 5 12 12 5" />
             </svg>
           </button>
 
@@ -351,10 +590,19 @@ export default function KudosForm() {
             <div className="flex items-center gap-2">
               <div className="flex size-8 items-center justify-center rounded-full border bg-muted">
                 {selectedRecipient ? (
-                  <span className="text-xs font-medium">{selectedRecipient.avatar}</span>
+                  <span className="text-xs font-medium">
+                    {selectedRecipient.avatar}
+                  </span>
                 ) : (
-                  <svg className="size-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                  <svg
+                    className="size-4 text-muted-foreground"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
                   </svg>
                 )}
               </div>
@@ -372,7 +620,7 @@ export default function KudosForm() {
               />
             </div>
             {showRecipientDropdown && (
-              <div className="absolute left-0 top-full z-50 mt-2 w-96 rounded-lg border bg-popover py-1 shadow-lg">
+              <div className="absolute top-full left-0 z-50 mt-2 w-96 rounded-lg border bg-popover py-1 shadow-lg">
                 {filteredPeople.length > 0 ? (
                   filteredPeople.map((person) => (
                     <button
@@ -382,14 +630,16 @@ export default function KudosForm() {
                         setRecipient("")
                         setShowRecipientDropdown(false)
                       }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-accent transition-colors"
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-accent"
                     >
                       <div className="flex size-8 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
                         {person.avatar}
                       </div>
                       <div>
                         <p className="text-sm font-medium">{person.name}</p>
-                        <p className="text-xs text-muted-foreground capitalize">{person.type}</p>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {person.type}
+                        </p>
                       </div>
                     </button>
                   ))
@@ -417,8 +667,19 @@ export default function KudosForm() {
       {kudosSent && (
         <div className="fixed top-20 left-1/2 z-50 -translate-x-1/2 rounded-lg border bg-green-50 px-6 py-3 shadow-lg dark:bg-green-900/20">
           <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
-            <span className="text-sm font-medium">Kudos sent to {selectedRecipient?.name}!</span>
+            <svg
+              className="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            <span className="text-sm font-medium">
+              Kudos sent to {selectedRecipient?.name}!
+            </span>
           </div>
         </div>
       )}
@@ -439,7 +700,7 @@ export default function KudosForm() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Write a message..."
-              className="w-full min-h-[80px] resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="min-h-[80px] w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </div>
 
@@ -447,20 +708,45 @@ export default function KudosForm() {
           {insertedLinks.length > 0 && (
             <div className="mt-2 space-y-1">
               {insertedLinks.map((link, i) => (
-                <div key={i} className="flex items-center gap-2 rounded-md bg-blue-50 px-3 py-1.5 dark:bg-blue-900/20">
-                  <svg className="size-3.5 text-blue-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <div
+                  key={i}
+                  className="flex items-center gap-2 rounded-md bg-blue-50 px-3 py-1.5 dark:bg-blue-900/20"
+                >
+                  <svg
+                    className="size-3.5 shrink-0 text-blue-600"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                   </svg>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate">
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="truncate text-sm text-blue-600 hover:underline"
+                  >
                     {link.text}
                   </a>
                   <button
-                    onClick={() => setInsertedLinks((prev) => prev.filter((_, idx) => idx !== i))}
+                    onClick={() =>
+                      setInsertedLinks((prev) =>
+                        prev.filter((_, idx) => idx !== i)
+                      )
+                    }
                     className="ml-auto shrink-0 rounded p-0.5 text-muted-foreground hover:bg-accent"
                   >
-                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    <svg
+                      className="size-3.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   </button>
                 </div>
@@ -474,11 +760,20 @@ export default function KudosForm() {
           <div className="relative">
             <button
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="group relative rounded-md p-2 text-muted-foreground hover:bg-accent transition-colors"
+              className="group relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent"
               title="Add emoji"
             >
-              <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" />
+              <svg
+                className="size-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                <line x1="9" y1="9" x2="9.01" y2="9" />
+                <line x1="15" y1="9" x2="15.01" y2="9" />
               </svg>
             </button>
             {showEmojiPicker && (
@@ -490,10 +785,16 @@ export default function KudosForm() {
           </div>
           <button
             onClick={() => setShowLinkDialog(true)}
-            className="rounded-md p-2 text-muted-foreground hover:bg-accent transition-colors"
+            className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent"
             title="Add link"
           >
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
@@ -505,14 +806,23 @@ export default function KudosForm() {
           {selectedGif ? (
             <div className="relative aspect-[16/9] bg-muted">
               <div className="flex size-full items-center justify-center bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20">
-                <p className="text-sm text-muted-foreground">Custom GIF selected</p>
+                <p className="text-sm text-muted-foreground">
+                  Custom GIF selected
+                </p>
               </div>
               <button
                 onClick={() => setSelectedGif(null)}
-                className="absolute left-3 top-3 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors"
+                className="absolute top-3 left-3 rounded-full bg-black/50 p-1.5 text-white transition-colors hover:bg-black/70"
               >
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
@@ -525,36 +835,47 @@ export default function KudosForm() {
           )}
 
           {/* Personalise button */}
-          <div className="absolute right-4 top-4">
+          <div className="absolute top-4 right-4">
             <div className="relative">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowGifPicker(!showGifPicker)}
-                className="bg-background/90 backdrop-blur text-sm font-medium shadow-sm"
+                className="bg-background/90 text-sm font-medium shadow-sm backdrop-blur"
               >
                 Personalise
               </Button>
               {showGifPicker && (
-                <div className="absolute right-0 top-12 z-50">
+                <div className="absolute top-12 right-0 z-50">
                   {/* Card picker */}
                   <div className="mb-2 w-80 rounded-lg border bg-popover p-4 shadow-lg">
-                    <h3 className="mb-3 text-sm font-semibold">Choose a card</h3>
-                    <div className="grid grid-cols-3 gap-2 mb-3">
+                    <h3 className="mb-3 text-sm font-semibold">
+                      Choose a card
+                    </h3>
+                    <div className="mb-3 grid grid-cols-3 gap-2">
                       <button
-                        onClick={() => { setSelectedCard("hammer"); setSelectedGif(null) }}
+                        onClick={() => {
+                          setSelectedCard("hammer")
+                          setSelectedGif(null)
+                        }}
                         className={`overflow-hidden rounded-lg border-2 transition-all ${selectedCard === "hammer" && !selectedGif ? "border-blue-500 ring-2 ring-blue-200" : "border-transparent hover:border-muted-foreground/30"}`}
                       >
                         <KudosHammerIllustration mini />
                       </button>
                       <button
-                        onClick={() => { setSelectedCard("heart"); setSelectedGif(null) }}
+                        onClick={() => {
+                          setSelectedCard("heart")
+                          setSelectedGif(null)
+                        }}
                         className={`overflow-hidden rounded-lg border-2 transition-all ${selectedCard === "heart" && !selectedGif ? "border-blue-500 ring-2 ring-blue-200" : "border-transparent hover:border-muted-foreground/30"}`}
                       >
                         <KudosHeartIllustration mini />
                       </button>
                       <button
-                        onClick={() => { setSelectedCard("crayons"); setSelectedGif(null) }}
+                        onClick={() => {
+                          setSelectedCard("crayons")
+                          setSelectedGif(null)
+                        }}
                         className={`overflow-hidden rounded-lg border-2 transition-all ${selectedCard === "crayons" && !selectedGif ? "border-blue-500 ring-2 ring-blue-200" : "border-transparent hover:border-muted-foreground/30"}`}
                       >
                         <KudosCrayonsIllustration mini />
@@ -579,7 +900,9 @@ export default function KudosForm() {
       <LinkDialog
         open={showLinkDialog}
         onClose={() => setShowLinkDialog(false)}
-        onInsert={(url, text) => setInsertedLinks((prev) => [...prev, { url, text }])}
+        onInsert={(url, text) =>
+          setInsertedLinks((prev) => [...prev, { url, text }])
+        }
       />
     </div>
   )
@@ -587,16 +910,28 @@ export default function KudosForm() {
 
 function KudosHeartIllustration({ mini }: { mini?: boolean } = {}) {
   return (
-    <svg viewBox="0 0 800 450" className={mini ? "w-full h-full" : "w-full"} xmlns="http://www.w3.org/2000/svg">
+    <svg
+      viewBox="0 0 800 450"
+      className={mini ? "h-full w-full" : "w-full"}
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <rect width="800" height="450" rx="16" fill="#F5C518" />
 
       {/* Confetti / dash marks */}
       {[
-        { x: 180, y: 80, r: -30 }, { x: 250, y: 50, r: 15 }, { x: 350, y: 40, r: -10 },
-        { x: 450, y: 45, r: 20 }, { x: 550, y: 55, r: -25 }, { x: 620, y: 85, r: 10 },
-        { x: 140, y: 180, r: 45 }, { x: 660, y: 170, r: -40 },
-        { x: 120, y: 300, r: 30 }, { x: 680, y: 290, r: -20 },
-        { x: 200, y: 380, r: -15 }, { x: 350, y: 400, r: 25 }, { x: 500, y: 390, r: -30 },
+        { x: 180, y: 80, r: -30 },
+        { x: 250, y: 50, r: 15 },
+        { x: 350, y: 40, r: -10 },
+        { x: 450, y: 45, r: 20 },
+        { x: 550, y: 55, r: -25 },
+        { x: 620, y: 85, r: 10 },
+        { x: 140, y: 180, r: 45 },
+        { x: 660, y: 170, r: -40 },
+        { x: 120, y: 300, r: 30 },
+        { x: 680, y: 290, r: -20 },
+        { x: 200, y: 380, r: -15 },
+        { x: 350, y: 400, r: 25 },
+        { x: 500, y: 390, r: -30 },
         { x: 600, y: 370, r: 15 },
       ].map((d, i) => (
         <rect
@@ -642,8 +977,24 @@ function KudosHeartIllustration({ mini }: { mini?: boolean } = {}) {
       <g transform="translate(500, 170) rotate(35)">
         <rect x="0" y="0" width="120" height="22" rx="3" fill="#E85D3A" />
         <polygon points="-18,5 0,0 0,22 -18,17" fill="#E85D3A" />
-        <rect x="60" y="2" width="4" height="18" rx="1" fill="#F0A090" opacity="0.6" />
-        <rect x="72" y="2" width="4" height="18" rx="1" fill="#F0A090" opacity="0.6" />
+        <rect
+          x="60"
+          y="2"
+          width="4"
+          height="18"
+          rx="1"
+          fill="#F0A090"
+          opacity="0.6"
+        />
+        <rect
+          x="72"
+          y="2"
+          width="4"
+          height="18"
+          rx="1"
+          fill="#F0A090"
+          opacity="0.6"
+        />
       </g>
 
       {/* Blue pen bottom left */}
@@ -686,7 +1037,11 @@ function KudosHeartIllustration({ mini }: { mini?: boolean } = {}) {
 
 function KudosCrayonsIllustration({ mini }: { mini?: boolean } = {}) {
   return (
-    <svg viewBox="0 0 800 450" className={mini ? "w-full h-full" : "w-full"} xmlns="http://www.w3.org/2000/svg">
+    <svg
+      viewBox="0 0 800 450"
+      className={mini ? "h-full w-full" : "w-full"}
+      xmlns="http://www.w3.org/2000/svg"
+    >
       {/* Yellow gradient background */}
       <defs>
         <linearGradient id="crayonsBg" x1="0" y1="0" x2="0" y2="1">
@@ -698,9 +1053,12 @@ function KudosCrayonsIllustration({ mini }: { mini?: boolean } = {}) {
 
       {/* Scattered confetti dashes */}
       {[
-        { x: 300, y: 80, r: -25 }, { x: 420, y: 60, r: 15 },
-        { x: 180, y: 160, r: 45 }, { x: 620, y: 140, r: -35 },
-        { x: 250, y: 300, r: 20 }, { x: 550, y: 320, r: -15 },
+        { x: 300, y: 80, r: -25 },
+        { x: 420, y: 60, r: 15 },
+        { x: 180, y: 160, r: 45 },
+        { x: 620, y: 140, r: -35 },
+        { x: 250, y: 300, r: 20 },
+        { x: 550, y: 320, r: -15 },
         { x: 480, y: 380, r: 30 },
       ].map((d, i) => (
         <rect
@@ -726,8 +1084,24 @@ function KudosCrayonsIllustration({ mini }: { mini?: boolean } = {}) {
       <g transform="translate(480, 200) rotate(10)">
         <rect x="0" y="0" width="140" height="24" rx="4" fill="#F87171" />
         <polygon points="-20,5 0,0 0,24 -20,19" fill="#EF4444" />
-        <rect x="70" y="3" width="5" height="18" rx="1.5" fill="#FCA5A5" opacity="0.5" />
-        <rect x="84" y="3" width="5" height="18" rx="1.5" fill="#FCA5A5" opacity="0.5" />
+        <rect
+          x="70"
+          y="3"
+          width="5"
+          height="18"
+          rx="1.5"
+          fill="#FCA5A5"
+          opacity="0.5"
+        />
+        <rect
+          x="84"
+          y="3"
+          width="5"
+          height="18"
+          rx="1.5"
+          fill="#FCA5A5"
+          opacity="0.5"
+        />
         <rect x="110" y="0" width="30" height="24" rx="4" fill="#DC2626" />
       </g>
 
@@ -743,7 +1117,11 @@ function KudosCrayonsIllustration({ mini }: { mini?: boolean } = {}) {
 
 function KudosHammerIllustration({ mini }: { mini?: boolean } = {}) {
   return (
-    <svg viewBox="0 0 800 450" className={mini ? "w-full h-full" : "w-full"} xmlns="http://www.w3.org/2000/svg">
+    <svg
+      viewBox="0 0 800 450"
+      className={mini ? "h-full w-full" : "w-full"}
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <defs>
         <linearGradient id="hammerBg" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#F5C518" />
@@ -753,11 +1131,28 @@ function KudosHammerIllustration({ mini }: { mini?: boolean } = {}) {
       <rect width="800" height="450" rx="16" fill="url(#hammerBg)" />
 
       {/* White surface / table */}
-      <rect x="200" y="300" width="400" height="150" rx="4" fill="white" opacity="0.9" />
+      <rect
+        x="200"
+        y="300"
+        width="400"
+        height="150"
+        rx="4"
+        fill="white"
+        opacity="0.9"
+      />
 
       {/* Green building blocks - back row */}
       <rect x="220" y="230" width="160" height="120" rx="6" fill="#34D399" />
-      <rect x="220" y="230" width="160" height="120" rx="6" fill="url(#none)" stroke="#10B981" strokeWidth="2" />
+      <rect
+        x="220"
+        y="230"
+        width="160"
+        height="120"
+        rx="6"
+        fill="url(#none)"
+        stroke="#10B981"
+        strokeWidth="2"
+      />
       {/* Block face shading */}
       <rect x="220" y="230" width="160" height="20" rx="6" fill="#6EE7B7" />
 
@@ -798,9 +1193,23 @@ function KudosHammerIllustration({ mini }: { mini?: boolean } = {}) {
         {/* Head */}
         <rect x="-40" y="-10" width="80" height="45" rx="6" fill="#2563EB" />
         {/* Head highlight */}
-        <rect x="-35" y="-5" width="70" height="8" rx="3" fill="#60A5FA" opacity="0.5" />
+        <rect
+          x="-35"
+          y="-5"
+          width="70"
+          height="8"
+          rx="3"
+          fill="#60A5FA"
+          opacity="0.5"
+        />
         {/* Claw */}
-        <path d="M-40 35 L-40 20 Q-40 10 -30 15" fill="none" stroke="#1D4ED8" strokeWidth="5" strokeLinecap="round" />
+        <path
+          d="M-40 35 L-40 20 Q-40 10 -30 15"
+          fill="none"
+          stroke="#1D4ED8"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
       </g>
 
       {/* Small green leaf/confetti pieces */}
@@ -812,8 +1221,20 @@ function KudosHammerIllustration({ mini }: { mini?: boolean } = {}) {
       </g>
 
       {/* Subtle pattern on green blocks */}
-      <path d="M230 280 Q300 270 370 280" fill="none" stroke="#10B981" strokeWidth="1" opacity="0.3" />
-      <path d="M390 300 Q450 290 550 300" fill="none" stroke="#22C55E" strokeWidth="1" opacity="0.3" />
+      <path
+        d="M230 280 Q300 270 370 280"
+        fill="none"
+        stroke="#10B981"
+        strokeWidth="1"
+        opacity="0.3"
+      />
+      <path
+        d="M390 300 Q450 290 550 300"
+        fill="none"
+        stroke="#22C55E"
+        strokeWidth="1"
+        opacity="0.3"
+      />
     </svg>
   )
 }

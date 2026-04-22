@@ -58,7 +58,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-6 p-6 max-w-2xl">
+      <div className="flex max-w-2xl flex-col gap-6 p-6">
         <div>
           <Skeleton className="h-6 w-48" />
           <Skeleton className="mt-2 h-4 w-64" />
@@ -82,7 +82,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-center p-12">
         <Card className="max-w-sm text-center">
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Team not found.</p>
+            <p className="text-muted-foreground text-sm">Team not found.</p>
           </CardContent>
         </Card>
       </div>
@@ -90,10 +90,10 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-2xl">
+    <div className="flex max-w-2xl flex-col gap-6 p-6">
       <div>
         <h1 className="text-xl font-semibold">{team.name} Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-muted-foreground mt-1 text-sm">
           Manage team settings and configuration.
         </p>
       </div>

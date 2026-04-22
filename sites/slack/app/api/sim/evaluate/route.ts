@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
-import "../../../lib/init-sim";
-import { evaluateEpisode, getActiveEpisode } from "@thetabench/core";
+import { NextResponse } from "next/server"
+import "../../../lib/init-sim"
+import { evaluateEpisode, getActiveEpisode } from "@thetabench/core"
 
 export async function POST() {
-  const episode = getActiveEpisode();
+  const episode = getActiveEpisode()
   if (!episode) {
-    return NextResponse.json({ error: "No active episode" }, { status: 400 });
+    return NextResponse.json({ error: "No active episode" }, { status: 400 })
   }
 
-  const result = evaluateEpisode();
+  const result = evaluateEpisode()
   if (!result) {
     return NextResponse.json(
       {
@@ -16,9 +16,9 @@ export async function POST() {
         episode_id: episode?.id ?? null,
         task_id: episode?.task.id ?? null,
       },
-      { status: 500 },
-    );
+      { status: 500 }
+    )
   }
 
-  return NextResponse.json(result);
+  return NextResponse.json(result)
 }

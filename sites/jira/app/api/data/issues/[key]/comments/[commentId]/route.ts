@@ -3,7 +3,7 @@ import * as store from "../../../../../../lib/store"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ key: string; commentId: string }> },
+  { params }: { params: Promise<{ key: string; commentId: string }> }
 ) {
   const { commentId } = await params
   let fields
@@ -21,7 +21,7 @@ export async function PUT(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ key: string; commentId: string }> },
+  { params }: { params: Promise<{ key: string; commentId: string }> }
 ) {
   const { commentId } = await params
   const result = store.deleteComment(commentId)

@@ -18,7 +18,8 @@ import { Layers01Icon } from "@hugeicons/core-free-icons"
 const allTemplates = [
   {
     name: "Scrum",
-    description: "Sprint toward your project goals with a board, backlog, and timeline.",
+    description:
+      "Sprint toward your project goals with a board, backlog, and timeline.",
     category: "Software development",
     color: "bg-blue-100 dark:bg-blue-900/30",
     iconColor: "text-blue-600",
@@ -26,7 +27,8 @@ const allTemplates = [
   },
   {
     name: "Work requests",
-    description: "Set up a service desk to manage and track incoming work requests from your team.",
+    description:
+      "Set up a service desk to manage and track incoming work requests from your team.",
     category: "Service management",
     badge: "TRY",
     color: "bg-purple-100 dark:bg-purple-900/30",
@@ -35,7 +37,8 @@ const allTemplates = [
   },
   {
     name: "IT service",
-    description: "Manage IT service requests, incidents, problems, and changes with an ITIL-ready project.",
+    description:
+      "Manage IT service requests, incidents, problems, and changes with an ITIL-ready project.",
     category: "Service management",
     badge: "TRY",
     color: "bg-green-100 dark:bg-green-900/30",
@@ -44,7 +47,8 @@ const allTemplates = [
   },
   {
     name: "Kanban",
-    description: "Visualize and advance your project forward using issues on a powerful board.",
+    description:
+      "Visualize and advance your project forward using issues on a powerful board.",
     category: "Software development",
     color: "bg-teal-100 dark:bg-teal-900/30",
     iconColor: "text-teal-600",
@@ -52,7 +56,8 @@ const allTemplates = [
   },
   {
     name: "Personal tasks",
-    description: "Track your personal tasks and to-dos in a simple, focused project just for you.",
+    description:
+      "Track your personal tasks and to-dos in a simple, focused project just for you.",
     category: "Personal",
     color: "bg-orange-100 dark:bg-orange-900/30",
     iconColor: "text-orange-600",
@@ -60,7 +65,8 @@ const allTemplates = [
   },
   {
     name: "Business project",
-    description: "Manage activities like budgets, goals, and tasks with a calendar and list view.",
+    description:
+      "Manage activities like budgets, goals, and tasks with a calendar and list view.",
     category: "Business",
     color: "bg-emerald-100 dark:bg-emerald-900/30",
     iconColor: "text-emerald-600",
@@ -68,7 +74,8 @@ const allTemplates = [
   },
   {
     name: "Top-level planning",
-    description: "Plan, track, and manage work across multiple teams and projects from a single view.",
+    description:
+      "Plan, track, and manage work across multiple teams and projects from a single view.",
     category: "Planning",
     badge: "PREMIUM",
     color: "bg-pink-100 dark:bg-pink-900/30",
@@ -77,7 +84,8 @@ const allTemplates = [
   },
   {
     name: "Bug tracking",
-    description: "Track and manage bugs with a streamlined workflow and prioritization.",
+    description:
+      "Track and manage bugs with a streamlined workflow and prioritization.",
     category: "Software development",
     color: "bg-red-100 dark:bg-red-900/30",
     iconColor: "text-red-600",
@@ -85,7 +93,8 @@ const allTemplates = [
   },
   {
     name: "Content management",
-    description: "Plan, create, and manage your content calendar and editorial workflow.",
+    description:
+      "Plan, create, and manage your content calendar and editorial workflow.",
     category: "Marketing",
     color: "bg-indigo-100 dark:bg-indigo-900/30",
     iconColor: "text-indigo-600",
@@ -93,7 +102,8 @@ const allTemplates = [
   },
   {
     name: "Recruitment",
-    description: "Manage your hiring pipeline from sourcing to offer with a structured workflow.",
+    description:
+      "Manage your hiring pipeline from sourcing to offer with a structured workflow.",
     category: "Human resources",
     color: "bg-amber-100 dark:bg-amber-900/30",
     iconColor: "text-amber-600",
@@ -101,7 +111,8 @@ const allTemplates = [
   },
   {
     name: "Go-to-market",
-    description: "Coordinate your product launch across marketing, sales, and engineering teams.",
+    description:
+      "Coordinate your product launch across marketing, sales, and engineering teams.",
     category: "Marketing",
     color: "bg-cyan-100 dark:bg-cyan-900/30",
     iconColor: "text-cyan-600",
@@ -117,7 +128,8 @@ const allTemplates = [
   },
   {
     name: "Product launch",
-    description: "Plan and execute your product launch with cross-functional coordination.",
+    description:
+      "Plan and execute your product launch with cross-functional coordination.",
     category: "Product management",
     color: "bg-rose-100 dark:bg-rose-900/30",
     iconColor: "text-rose-600",
@@ -125,7 +137,8 @@ const allTemplates = [
   },
   {
     name: "Sprint retrospective",
-    description: "Run effective retrospectives to continuously improve your team processes.",
+    description:
+      "Run effective retrospectives to continuously improve your team processes.",
     category: "Software development",
     color: "bg-sky-100 dark:bg-sky-900/30",
     iconColor: "text-sky-600",
@@ -133,7 +146,8 @@ const allTemplates = [
   },
   {
     name: "DevOps",
-    description: "Streamline your CI/CD pipeline, deployments, and infrastructure management.",
+    description:
+      "Streamline your CI/CD pipeline, deployments, and infrastructure management.",
     category: "Software development",
     badge: "TRY",
     color: "bg-lime-100 dark:bg-lime-900/30",
@@ -166,16 +180,20 @@ export default function TemplatesPage() {
       <div className="mb-2">
         <Link
           href="/projects"
-          className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-4"
+          className="mb-4 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <svg className="size-4" viewBox="0 0 16 16" fill="currentColor">
-            <path fillRule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+            <path
+              fillRule="evenodd"
+              d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+            />
           </svg>
           Back to Spaces
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">Templates</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Choose a template to get started quickly with a pre-configured project.
+          Choose a template to get started quickly with a pre-configured
+          project.
         </p>
       </div>
 
@@ -183,13 +201,17 @@ export default function TemplatesPage() {
       <div className="mt-6 flex items-center gap-4">
         <div className="relative w-[300px]">
           <svg
-            className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth={2}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+            />
           </svg>
           <Input
             placeholder="Search templates"
@@ -212,7 +234,9 @@ export default function TemplatesPage() {
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+              onClick={() =>
+                setActiveCategory(activeCategory === cat ? null : cat)
+              }
               className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
                 activeCategory === cat
                   ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
@@ -234,18 +258,25 @@ export default function TemplatesPage() {
               setSelectedName(tmpl.name)
               setCreateOpen(true)
             }}
-            className={`group rounded-lg border ${tmpl.borderColor} bg-card p-5 text-left transition-all hover:shadow-md hover:border-blue-400`}
+            className={`group rounded-lg border ${tmpl.borderColor} bg-card p-5 text-left transition-all hover:border-blue-400 hover:shadow-md`}
           >
-            <div className="flex items-start gap-3 mb-3">
-              <div className={`flex size-10 shrink-0 items-center justify-center rounded-md ${tmpl.color}`}>
-                <HugeiconsIcon icon={Layers01Icon} className={`size-5 ${tmpl.iconColor}`} />
+            <div className="mb-3 flex items-start gap-3">
+              <div
+                className={`flex size-10 shrink-0 items-center justify-center rounded-md ${tmpl.color}`}
+              >
+                <HugeiconsIcon
+                  icon={Layers01Icon}
+                  className={`size-5 ${tmpl.iconColor}`}
+                />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground">{tmpl.name}</span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {tmpl.name}
+                  </span>
                   {tmpl.badge && (
                     <span
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold leading-none ${
+                      className={`rounded px-1.5 py-0.5 text-[10px] leading-none font-bold ${
                         tmpl.badge === "PREMIUM"
                           ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
                           : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
@@ -255,12 +286,18 @@ export default function TemplatesPage() {
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] text-muted-foreground">{tmpl.category}</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {tmpl.category}
+                </span>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">{tmpl.description}</p>
-            <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-sm font-medium text-blue-600">Use template →</span>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {tmpl.description}
+            </p>
+            <div className="mt-3 opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="text-sm font-medium text-blue-600">
+                Use template →
+              </span>
             </div>
           </button>
         ))}
@@ -268,7 +305,9 @@ export default function TemplatesPage() {
 
       {filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <p className="text-sm text-muted-foreground">No templates match your search.</p>
+          <p className="text-sm text-muted-foreground">
+            No templates match your search.
+          </p>
         </div>
       )}
 
@@ -278,7 +317,8 @@ export default function TemplatesPage() {
           <DialogHeader>
             <DialogTitle>Create space from template</DialogTitle>
             <DialogDescription>
-              Using the <strong>{selectedName}</strong> template. Enter a name for your new space.
+              Using the <strong>{selectedName}</strong> template. Enter a name
+              for your new space.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3">
@@ -291,7 +331,12 @@ export default function TemplatesPage() {
                 value={newSpaceName}
                 onChange={(e) => {
                   setNewSpaceName(e.target.value)
-                  setNewSpaceKey(e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 5))
+                  setNewSpaceKey(
+                    e.target.value
+                      .replace(/[^a-zA-Z]/g, "")
+                      .toUpperCase()
+                      .slice(0, 5)
+                  )
                 }}
                 placeholder="e.g. Marketing"
               />
@@ -310,15 +355,18 @@ export default function TemplatesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setCreateOpen(false)
-              setNewSpaceName("")
-              setNewSpaceKey("")
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCreateOpen(false)
+                setNewSpaceName("")
+                setNewSpaceKey("")
+              }}
+            >
               Cancel
             </Button>
             <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-blue-600 text-white hover:bg-blue-700"
               disabled={!newSpaceName.trim()}
               onClick={() => {
                 setCreateOpen(false)

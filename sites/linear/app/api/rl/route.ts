@@ -1,31 +1,36 @@
 // AUTH: Intentionally omitted — this route is designed for local benchmark/sim use only.
-import { NextRequest, NextResponse } from "next/server";
-import * as store from "../../lib/store";
-import "../../lib/init-sim";
-import { getActiveEpisode, hasActiveEpisode, logAction, getStepReward } from "@thetabench/core";
+import { NextRequest, NextResponse } from "next/server"
+import * as store from "../../lib/store"
+import "../../lib/init-sim"
+import {
+  getActiveEpisode,
+  hasActiveEpisode,
+  logAction,
+  getStepReward,
+} from "@thetabench/core"
 
 // ---------------------------------------------------------------------------
 // Per-episode RL session state (isolated by episode, not module-level)
 // ---------------------------------------------------------------------------
 
 interface RLSessionState {
-  currentPage: string;
-  lastAction: string | null;
-  stepCount: number;
+  currentPage: string
+  lastAction: string | null
+  stepCount: number
 }
 
 let _rlState: RLSessionState = {
   currentPage: "/board",
   lastAction: null,
   stepCount: 0,
-};
+}
 
 export function resetRLState(): void {
   _rlState = {
     currentPage: "/board",
     lastAction: null,
     stepCount: 0,
-  };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -33,66 +38,92 @@ export function resetRLState(): void {
 // ---------------------------------------------------------------------------
 
 function getContextData(): Record<string, unknown> {
-  const match = _rlState.currentPage.match(/^\/(issues|projects|cycles|labels|teams)\/(.+)$/);
+  const match = _rlState.currentPage.match(
+    /^\/(issues|projects|cycles|labels|teams)\/(.+)$/
+  )
   if (match) {
-    const [, entity, id] = match;
+    const [, entity, id] = match
     switch (entity) {
       case "issues":
-        return { issue: store.getIssueById(id) ?? store.getIssueByIdentifier(id) ?? null };
+        return {
+          issue:
+            store.getIssueById(id) ?? store.getIssueByIdentifier(id) ?? null,
+        }
       case "projects":
-        return { project: store.getProjectById(id) ?? null };
+        return { project: store.getProjectById(id) ?? null }
       case "cycles":
-        return { cycle: store.getCycleById(id) ?? null };
+        return { cycle: store.getCycleById(id) ?? null }
       case "labels":
-        return { label: store.getLabelById(id) ?? null };
+        return { label: store.getLabelById(id) ?? null }
       case "teams":
-        return { team: store.getTeamById(id) ?? null };
+        return { team: store.getTeamById(id) ?? null }
     }
   }
-  return {};
+  return {}
 }
 
 function getAvailableActions(): string[] {
-  const base = ["navigate", "search", "respond"];
+  const base = ["navigate", "search", "respond"]
 
-  if (_rlState.currentPage === "/board" || _rlState.currentPage === "/backlog") {
-    return [...base, "create_issue", "transition_issue", "move_issue_to_cycle"];
+  if (
+    _rlState.currentPage === "/board" ||
+    _rlState.currentPage === "/backlog"
+  ) {
+    return [...base, "create_issue", "transition_issue", "move_issue_to_cycle"]
   }
   if (_rlState.currentPage.match(/^\/issues\/.+$/)) {
-    return [...base, "update_issue", "delete_issue", "transition_issue"];
+    return [...base, "update_issue", "delete_issue", "transition_issue"]
   }
   if (_rlState.currentPage === "/projects") {
-    return [...base, "create_project"];
+    return [...base, "create_project"]
   }
   if (_rlState.currentPage.match(/^\/projects\/.+$/)) {
-    return [...base, "update_project"];
+    return [...base, "update_project"]
   }
-  if (_rlState.currentPage === "/cycles" || _rlState.currentPage.match(/^\/cycles\/.+$/)) {
-    return [...base, "create_cycle", "start_cycle", "complete_cycle", "move_issue_to_cycle"];
+  if (
+    _rlState.currentPage === "/cycles" ||
+    _rlState.currentPage.match(/^\/cycles\/.+$/)
+  ) {
+    return [
+      ...base,
+      "create_cycle",
+      "start_cycle",
+      "complete_cycle",
+      "move_issue_to_cycle",
+    ]
   }
-  if (_rlState.currentPage === "/labels" || _rlState.currentPage.match(/^\/labels\/.+$/)) {
-    return [...base, "create_label", "update_label"];
+  if (
+    _rlState.currentPage === "/labels" ||
+    _rlState.currentPage.match(/^\/labels\/.+$/)
+  ) {
+    return [...base, "create_label", "update_label"]
   }
-  if (_rlState.currentPage === "/teams" || _rlState.currentPage.match(/^\/teams\/.+$/)) {
-    return [...base, "create_team", "update_team"];
+  if (
+    _rlState.currentPage === "/teams" ||
+    _rlState.currentPage.match(/^\/teams\/.+$/)
+  ) {
+    return [...base, "create_team", "update_team"]
   }
-  if (_rlState.currentPage === "/views" || _rlState.currentPage.match(/^\/views\/.+$/)) {
-    return [...base, "create_view"];
+  if (
+    _rlState.currentPage === "/views" ||
+    _rlState.currentPage.match(/^\/views\/.+$/)
+  ) {
+    return [...base, "create_view"]
   }
 
-  return base;
+  return base
 }
 
 function getObservation() {
-  const issues = store.getIssues();
-  const projects = store.getProjects();
-  const cycles = store.getCycles();
-  const labels = store.getLabels();
-  const teams = store.getTeams();
-  const members = store.getMembers();
-  const views = store.getViews();
+  const issues = store.getIssues()
+  const projects = store.getProjects()
+  const cycles = store.getCycles()
+  const labels = store.getLabels()
+  const teams = store.getTeams()
+  const members = store.getMembers()
+  const views = store.getViews()
 
-  const episode = getActiveEpisode();
+  const episode = getActiveEpisode()
 
   return {
     currentPage: _rlState.currentPage,
@@ -111,11 +142,21 @@ function getObservation() {
       : null,
     summary: {
       totalIssues: issues.length,
-      backlogIssues: issues.filter((i: Record<string, unknown>) => i.status === "backlog").length,
-      todoIssues: issues.filter((i: Record<string, unknown>) => i.status === "todo").length,
-      inProgressIssues: issues.filter((i: Record<string, unknown>) => i.status === "in_progress").length,
-      doneIssues: issues.filter((i: Record<string, unknown>) => i.status === "done").length,
-      cancelledIssues: issues.filter((i: Record<string, unknown>) => i.status === "cancelled").length,
+      backlogIssues: issues.filter(
+        (i: Record<string, unknown>) => i.status === "backlog"
+      ).length,
+      todoIssues: issues.filter(
+        (i: Record<string, unknown>) => i.status === "todo"
+      ).length,
+      inProgressIssues: issues.filter(
+        (i: Record<string, unknown>) => i.status === "in_progress"
+      ).length,
+      doneIssues: issues.filter(
+        (i: Record<string, unknown>) => i.status === "done"
+      ).length,
+      cancelledIssues: issues.filter(
+        (i: Record<string, unknown>) => i.status === "cancelled"
+      ).length,
       totalProjects: projects.length,
       totalCycles: cycles.length,
       totalLabels: labels.length,
@@ -169,7 +210,7 @@ function getObservation() {
         name: v.name,
       })),
     },
-  };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -177,176 +218,191 @@ function getObservation() {
 // ---------------------------------------------------------------------------
 
 function executeAction(action: Record<string, unknown>): {
-  reward: number;
-  success: boolean;
+  reward: number
+  success: boolean
 } {
-  let reward = -0.01;
-  let success = true;
+  let reward = -0.01
+  let success = true
 
   switch (action.action) {
     case "navigate": {
-      if (typeof action.target === "string" && action.target !== _rlState.currentPage) {
-        _rlState.currentPage = action.target;
-        reward = 0.0;
+      if (
+        typeof action.target === "string" &&
+        action.target !== _rlState.currentPage
+      ) {
+        _rlState.currentPage = action.target
+        reward = 0.0
       }
-      break;
+      break
     }
     case "search":
-      reward = 0.05;
-      break;
+      reward = 0.05
+      break
     case "respond":
-      reward = 0.0;
-      break;
+      reward = 0.0
+      break
     case "create_issue": {
-      const fields = action.fields as Record<string, unknown> | undefined;
+      const fields = action.fields as Record<string, unknown> | undefined
       if (fields) {
-        const result = store.createIssue(fields as Parameters<typeof store.createIssue>[0]);
-        reward = result.success ? 0.5 : -0.5;
-        success = result.success;
+        const result = store.createIssue(
+          fields as Parameters<typeof store.createIssue>[0]
+        )
+        reward = result.success ? 0.5 : -0.5
+        success = result.success
       } else {
-        reward = -0.5;
-        success = false;
+        reward = -0.5
+        success = false
       }
-      break;
+      break
     }
     case "update_issue": {
       const result = store.updateIssue(
         action.issueId as string,
-        (action.fields ?? {}) as Parameters<typeof store.updateIssue>[1],
-      );
-      reward = result.success ? 0.5 : -0.5;
-      success = result.success;
-      break;
+        (action.fields ?? {}) as Parameters<typeof store.updateIssue>[1]
+      )
+      reward = result.success ? 0.5 : -0.5
+      success = result.success
+      break
     }
     case "delete_issue": {
-      const result = store.deleteIssue(action.issueId as string);
-      reward = result.success ? 0.3 : -0.5;
-      success = result.success;
-      break;
+      const result = store.deleteIssue(action.issueId as string)
+      reward = result.success ? 0.3 : -0.5
+      success = result.success
+      break
     }
     case "transition_issue": {
       const result = store.transitionIssue(
         action.issueId as string,
-        action.status as string,
-      );
-      reward = result.success ? 0.5 : -0.5;
-      success = result.success;
-      break;
+        action.status as string
+      )
+      reward = result.success ? 0.5 : -0.5
+      success = result.success
+      break
     }
     case "move_issue_to_cycle": {
       const result = store.moveIssueToCycle(
         action.issueId as string,
-        action.cycleId as string,
-      );
-      reward = result.success ? 0.3 : -0.5;
-      success = result.success;
-      break;
+        action.cycleId as string
+      )
+      reward = result.success ? 0.3 : -0.5
+      success = result.success
+      break
     }
     case "create_project": {
-      const fields = action.fields as Record<string, unknown> | undefined;
+      const fields = action.fields as Record<string, unknown> | undefined
       if (fields) {
-        const result = store.createProject(fields as Parameters<typeof store.createProject>[0]);
-        reward = result.success ? 0.5 : -0.5;
-        success = result.success;
+        const result = store.createProject(
+          fields as Parameters<typeof store.createProject>[0]
+        )
+        reward = result.success ? 0.5 : -0.5
+        success = result.success
       } else {
-        reward = -0.5;
-        success = false;
+        reward = -0.5
+        success = false
       }
-      break;
+      break
     }
     case "update_project": {
       const result = store.updateProject(
         action.projectId as string,
-        (action.fields ?? {}) as Parameters<typeof store.updateProject>[1],
-      );
-      reward = result.success ? 0.5 : -0.5;
-      success = result.success;
-      break;
+        (action.fields ?? {}) as Parameters<typeof store.updateProject>[1]
+      )
+      reward = result.success ? 0.5 : -0.5
+      success = result.success
+      break
     }
     case "create_cycle": {
-      const fields = action.fields as Record<string, unknown> | undefined;
+      const fields = action.fields as Record<string, unknown> | undefined
       if (fields) {
-        const result = store.createCycle(fields as Parameters<typeof store.createCycle>[0]);
-        reward = result.success ? 0.5 : -0.5;
-        success = result.success;
+        const result = store.createCycle(
+          fields as Parameters<typeof store.createCycle>[0]
+        )
+        reward = result.success ? 0.5 : -0.5
+        success = result.success
       } else {
-        reward = -0.5;
-        success = false;
+        reward = -0.5
+        success = false
       }
-      break;
+      break
     }
     case "start_cycle": {
-      const result = store.startCycle(action.cycleId as string);
-      reward = result.success ? 0.3 : -0.5;
-      success = result.success;
-      break;
+      const result = store.startCycle(action.cycleId as string)
+      reward = result.success ? 0.3 : -0.5
+      success = result.success
+      break
     }
     case "complete_cycle": {
-      const result = store.completeCycle(action.cycleId as string);
-      reward = result.success ? 0.3 : -0.5;
-      success = result.success;
-      break;
+      const result = store.completeCycle(action.cycleId as string)
+      reward = result.success ? 0.3 : -0.5
+      success = result.success
+      break
     }
     case "create_label": {
-      const fields = action.fields as Record<string, unknown> | undefined;
+      const fields = action.fields as Record<string, unknown> | undefined
       if (fields) {
-        const result = store.createLabel(fields as Parameters<typeof store.createLabel>[0]);
-        reward = result.success ? 0.3 : -0.5;
-        success = result.success;
+        const result = store.createLabel(
+          fields as Parameters<typeof store.createLabel>[0]
+        )
+        reward = result.success ? 0.3 : -0.5
+        success = result.success
       } else {
-        reward = -0.5;
-        success = false;
+        reward = -0.5
+        success = false
       }
-      break;
+      break
     }
     case "update_label": {
       const result = store.updateLabel(
         action.labelId as string,
-        (action.fields ?? {}) as Parameters<typeof store.updateLabel>[1],
-      );
-      reward = result.success ? 0.3 : -0.5;
-      success = result.success;
-      break;
+        (action.fields ?? {}) as Parameters<typeof store.updateLabel>[1]
+      )
+      reward = result.success ? 0.3 : -0.5
+      success = result.success
+      break
     }
     case "create_team": {
-      const fields = action.fields as Record<string, unknown> | undefined;
+      const fields = action.fields as Record<string, unknown> | undefined
       if (fields) {
-        const result = store.createTeam(fields as Parameters<typeof store.createTeam>[0]);
-        reward = result.success ? 0.5 : -0.5;
-        success = result.success;
+        const result = store.createTeam(
+          fields as Parameters<typeof store.createTeam>[0]
+        )
+        reward = result.success ? 0.5 : -0.5
+        success = result.success
       } else {
-        reward = -0.5;
-        success = false;
+        reward = -0.5
+        success = false
       }
-      break;
+      break
     }
     case "update_team": {
       const result = store.updateTeam(
         action.teamId as string,
-        (action.fields ?? {}) as Parameters<typeof store.updateTeam>[1],
-      );
-      reward = result.success ? 0.5 : -0.5;
-      success = result.success;
-      break;
+        (action.fields ?? {}) as Parameters<typeof store.updateTeam>[1]
+      )
+      reward = result.success ? 0.5 : -0.5
+      success = result.success
+      break
     }
     case "create_view": {
-      const fields = action.fields as Record<string, unknown> | undefined;
+      const fields = action.fields as Record<string, unknown> | undefined
       if (fields) {
-        const result = store.createView(fields as Parameters<typeof store.createView>[0]);
-        reward = result.success ? 0.3 : -0.5;
-        success = result.success;
+        const result = store.createView(
+          fields as Parameters<typeof store.createView>[0]
+        )
+        reward = result.success ? 0.3 : -0.5
+        success = result.success
       } else {
-        reward = -0.5;
-        success = false;
+        reward = -0.5
+        success = false
       }
-      break;
+      break
     }
     default:
-      reward = -0.1;
-      success = false;
+      reward = -0.1
+      success = false
   }
 
-  return { reward, success };
+  return { reward, success }
 }
 
 // ---------------------------------------------------------------------------
@@ -361,48 +417,58 @@ export async function GET() {
       version: "3.0",
       episodeActive: hasActiveEpisode(),
     },
-  });
+  })
 }
 
 export async function POST(request: NextRequest) {
-  let body;
+  let body
   try {
-    body = await request.json();
+    body = await request.json()
   } catch {
-    return Response.json({ error: "Invalid JSON in request body" }, { status: 400 });
+    return Response.json(
+      { error: "Invalid JSON in request body" },
+      { status: 400 }
+    )
   }
 
-  const action = body as Record<string, unknown>;
-  const actionName = action.action as string;
+  const action = body as Record<string, unknown>
+  const actionName = action.action as string
 
-  _rlState.lastAction = actionName;
+  _rlState.lastAction = actionName
 
   // Execute the action
-  const { reward: baseReward, success } = executeAction(action);
+  const { reward: baseReward, success } = executeAction(action)
 
-  _rlState.stepCount++;
+  _rlState.stepCount++
 
   // If episode is active, use shaped rewards and log action
-  let finalReward = baseReward;
-  const episode = getActiveEpisode();
+  let finalReward = baseReward
+  const episode = getActiveEpisode()
 
   if (episode && episode.status === "active") {
     // Shape reward using task's reward profile
-    const stepReward = getStepReward(success);
-    finalReward = success ? baseReward + stepReward : stepReward;
+    const stepReward = getStepReward(success)
+    finalReward = success ? baseReward + stepReward : stepReward
 
     // Log action to episode
-    logAction(actionName, action as Record<string, unknown>, finalReward, success);
+    logAction(
+      actionName,
+      action as Record<string, unknown>,
+      finalReward,
+      success
+    )
   }
 
-  const observation = getObservation();
+  const observation = getObservation()
 
   // Determine if done
-  let done = false;
+  let done = false
   if (episode) {
     // Episode mode: done when episode status changes
     done =
-      episode.status === "timeout" || episode.status === "completed" || episode.status === "failed";
+      episode.status === "timeout" ||
+      episode.status === "completed" ||
+      episode.status === "failed"
   }
 
   return NextResponse.json({
@@ -415,7 +481,9 @@ export async function POST(request: NextRequest) {
       lastAction: actionName,
       success,
       episodeActive: hasActiveEpisode(),
-      episodeStepsRemaining: episode ? episode.task.maxSteps - episode.stepCount : null,
+      episodeStepsRemaining: episode
+        ? episode.task.maxSteps - episode.stepCount
+        : null,
     },
-  });
+  })
 }

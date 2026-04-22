@@ -57,18 +57,22 @@ export default function GiftCardsPage() {
         </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" numeric>{card.initialValue}</Text>
+        <Text as="span" numeric>
+          {card.initialValue}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" numeric>{card.balance}</Text>
+        <Text as="span" numeric>
+          {card.balance}
+        </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Badge tone={card.status === "Active" ? "success" : undefined}>
-          {card.status}
-        </Badge>
+        <Badge tone={card.status === "Active" ? "success" : undefined}>{card.status}</Badge>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" tone="subdued">{card.created}</Text>
+        <Text as="span" tone="subdued">
+          {card.created}
+        </Text>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));

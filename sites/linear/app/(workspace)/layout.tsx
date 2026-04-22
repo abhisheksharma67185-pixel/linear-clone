@@ -16,9 +16,7 @@ export default function WorkspaceLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
-        {children}
-      </SidebarInset>
+      <SidebarInset>{children}</SidebarInset>
       {!isSettings && <AskLinear />}
     </SidebarProvider>
   )

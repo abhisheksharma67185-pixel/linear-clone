@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import "../../../lib/init-sim";
+import { NextRequest, NextResponse } from "next/server"
+import "../../../lib/init-sim"
 import {
   captureSnapshot,
   computeDiff,
   getActiveEpisode,
-} from "@thetabench/core";
-import * as store from "../../../lib/store";
+} from "@thetabench/core"
+import * as store from "../../../lib/store"
 
 const COLLECTIONS = [
   "users",
@@ -21,8 +21,8 @@ const COLLECTIONS = [
   "lists",
   "workflows",
   "huddles",
-];
-const SINGLETONS = ["workspace", "preferences"];
+]
+const SINGLETONS = ["workspace", "preferences"]
 
 const getState = () => ({
   workspace: store.getWorkspace(),
@@ -40,30 +40,30 @@ const getState = () => ({
   lists: store.getLists(),
   workflows: store.getWorkflows(),
   huddles: store.getHuddles(),
-});
+})
 
 export async function GET(request: NextRequest) {
-  const url = new URL(request.url);
-  const wantDiff = url.searchParams.get("diff") === "true";
+  const url = new URL(request.url)
+  const wantDiff = url.searchParams.get("diff") === "true"
 
-  const current = captureSnapshot(getState);
+  const current = captureSnapshot(getState)
 
   if (wantDiff) {
-    const episode = getActiveEpisode();
+    const episode = getActiveEpisode()
     if (!episode) {
       return NextResponse.json(
         { error: "No active episode for diff computation" },
-        { status: 400 },
-      );
+        { status: 400 }
+      )
     }
     const diff = computeDiff(
       episode.initialSnapshot,
       current,
       COLLECTIONS,
-      SINGLETONS,
-    );
-    return NextResponse.json({ state: current, diff });
+      SINGLETONS
+    )
+    return NextResponse.json({ state: current, diff })
   }
 
-  return NextResponse.json(current);
+  return NextResponse.json(current)
 }

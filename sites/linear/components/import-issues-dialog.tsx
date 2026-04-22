@@ -57,7 +57,10 @@ export function ImportIssuesDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => (v ? onOpenChange(true) : close())}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => (v ? onOpenChange(true) : close())}
+    >
       <DialogContent className="sm:max-w-[540px]">
         <DialogHeader>
           <DialogTitle>Import issues</DialogTitle>
@@ -69,7 +72,11 @@ export function ImportIssuesDialog({
         {status ? (
           <div className="flex flex-col items-center gap-3 py-6">
             <HugeiconsIcon
-              icon={status.state === "done" ? CheckmarkCircle02Icon : InboxDownloadIcon}
+              icon={
+                status.state === "done"
+                  ? CheckmarkCircle02Icon
+                  : InboxDownloadIcon
+              }
               className={`size-8 ${status.state === "done" ? "text-emerald-500" : "text-muted-foreground"}`}
             />
             <div className="text-center">
@@ -78,7 +85,7 @@ export function ImportIssuesDialog({
                   ? `Imported from ${status.source}`
                   : `Importing from ${status.source}…`}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="text-muted-foreground mt-1 text-xs">
                 {status.state === "done"
                   ? "You can close this dialog."
                   : "This may take a few moments."}
@@ -97,11 +104,13 @@ export function ImportIssuesDialog({
                 key={source.key}
                 type="button"
                 onClick={() => start(source)}
-                className="flex flex-col items-start gap-1 rounded-lg border bg-card p-3 text-left transition-colors hover:border-foreground/30 hover:bg-accent/50"
+                className="bg-card hover:border-foreground/30 hover:bg-accent/50 flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors"
               >
                 <SourceIcon source={source.key} />
                 <span className="mt-2 text-sm font-medium">{source.name}</span>
-                <span className="text-[11px] text-muted-foreground">{source.tag}</span>
+                <span className="text-muted-foreground text-[11px]">
+                  {source.tag}
+                </span>
               </button>
             ))}
           </div>
@@ -113,10 +122,17 @@ export function ImportIssuesDialog({
 
 function SourceIcon({ source }: { source: string }) {
   if (source === "github") {
-    return <HugeiconsIcon icon={Github01Icon} className="size-5 text-foreground" />
+    return (
+      <HugeiconsIcon icon={Github01Icon} className="text-foreground size-5" />
+    )
   }
   if (source === "csv") {
-    return <HugeiconsIcon icon={File01Icon} className="size-5 text-muted-foreground" />
+    return (
+      <HugeiconsIcon
+        icon={File01Icon}
+        className="text-muted-foreground size-5"
+      />
+    )
   }
   const color: Record<string, string> = {
     jira: "bg-sky-500",

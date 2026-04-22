@@ -98,7 +98,10 @@ export function createProduct(fields: {
   if (!fields.title || String(fields.title).trim() === "") {
     return { success: false, error: "Title is required" };
   }
-  if (fields.inventory !== undefined && (typeof fields.inventory !== "number" || !isFinite(fields.inventory))) {
+  if (
+    fields.inventory !== undefined &&
+    (typeof fields.inventory !== "number" || !isFinite(fields.inventory))
+  ) {
     return { success: false, error: "Inventory must be a finite number" };
   }
   if (fields.status !== undefined && !VALID_PRODUCT_STATUS.has(fields.status)) {

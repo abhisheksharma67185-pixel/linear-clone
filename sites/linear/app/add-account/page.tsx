@@ -12,14 +12,20 @@ export default function AddAccountPage() {
       <div className="flex items-center justify-between px-6 py-4">
         <Link
           href="/"
-          className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm transition-colors"
         >
           <svg viewBox="0 0 16 16" className="size-4" fill="none">
-            <path d="M10 4L6 8l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M10 4L6 8l4 4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
           Back to Linear
         </Link>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           Logged in as{" "}
           <span className="text-foreground">theta.computer01@gmail.com</span>
         </span>
@@ -48,7 +54,9 @@ export default function AddAccountPage() {
         </svg>
 
         {/* Heading */}
-        <h1 className="text-2xl font-semibold text-foreground">Add an account</h1>
+        <h1 className="text-foreground text-2xl font-semibold">
+          Add an account
+        </h1>
 
         {/* Buttons */}
         <div className="flex w-full max-w-xs flex-col gap-3">
@@ -60,15 +68,31 @@ export default function AddAccountPage() {
           >
             {/* Google G icon */}
             <svg viewBox="0 0 20 20" className="size-4 shrink-0" fill="none">
-              <path d="M19.6 10.23c0-.68-.06-1.36-.17-2H10v3.79h5.4a4.6 4.6 0 0 1-2 3.03v2.52h3.23c1.89-1.74 2.97-4.3 2.97-7.34Z" fill="#fff" fillOpacity="0.9" />
-              <path d="M10 20c2.7 0 4.97-.9 6.63-2.43l-3.23-2.52c-.9.6-2.05.96-3.4.96-2.61 0-4.82-1.76-5.61-4.13H1.06v2.6A10 10 0 0 0 10 20Z" fill="#fff" fillOpacity="0.75" />
-              <path d="M4.39 11.88A5.98 5.98 0 0 1 4.07 10c0-.65.11-1.28.32-1.88V5.52H1.06A10 10 0 0 0 0 10c0 1.61.39 3.14 1.06 4.48l3.33-2.6Z" fill="#fff" fillOpacity="0.6" />
-              <path d="M10 3.96c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.94 9.94 0 0 0 10 0 10 10 0 0 0 1.06 5.52L4.39 8.12C5.18 5.75 7.39 3.96 10 3.96Z" fill="#fff" fillOpacity="0.85" />
+              <path
+                d="M19.6 10.23c0-.68-.06-1.36-.17-2H10v3.79h5.4a4.6 4.6 0 0 1-2 3.03v2.52h3.23c1.89-1.74 2.97-4.3 2.97-7.34Z"
+                fill="#fff"
+                fillOpacity="0.9"
+              />
+              <path
+                d="M10 20c2.7 0 4.97-.9 6.63-2.43l-3.23-2.52c-.9.6-2.05.96-3.4.96-2.61 0-4.82-1.76-5.61-4.13H1.06v2.6A10 10 0 0 0 10 20Z"
+                fill="#fff"
+                fillOpacity="0.75"
+              />
+              <path
+                d="M4.39 11.88A5.98 5.98 0 0 1 4.07 10c0-.65.11-1.28.32-1.88V5.52H1.06A10 10 0 0 0 0 10c0 1.61.39 3.14 1.06 4.48l3.33-2.6Z"
+                fill="#fff"
+                fillOpacity="0.6"
+              />
+              <path
+                d="M10 3.96c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.94 9.94 0 0 0 10 0 10 10 0 0 0 1.06 5.52L4.39 8.12C5.18 5.75 7.39 3.96 10 3.96Z"
+                fill="#fff"
+                fillOpacity="0.85"
+              />
             </svg>
             Continue with Google
           </button>
 
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-center text-xs">
             You used Google to log in last time
           </p>
 
@@ -76,7 +100,7 @@ export default function AddAccountPage() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="w-full rounded-full bg-[oklch(0.22_0_0)] py-3 text-sm font-medium text-foreground transition-colors hover:bg-[oklch(0.26_0_0)]"
+            className="text-foreground w-full rounded-full bg-[oklch(0.22_0_0)] py-3 text-sm font-medium transition-colors hover:bg-[oklch(0.26_0_0)]"
           >
             Continue with email
           </button>
@@ -85,7 +109,7 @@ export default function AddAccountPage() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="w-full rounded-full bg-[oklch(0.22_0_0)] py-3 text-sm font-medium text-foreground transition-colors hover:bg-[oklch(0.26_0_0)]"
+            className="text-foreground w-full rounded-full bg-[oklch(0.22_0_0)] py-3 text-sm font-medium transition-colors hover:bg-[oklch(0.26_0_0)]"
           >
             Continue with SAML SSO
           </button>
@@ -94,7 +118,7 @@ export default function AddAccountPage() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="w-full rounded-full bg-[oklch(0.22_0_0)] py-3 text-sm font-medium text-foreground transition-colors hover:bg-[oklch(0.26_0_0)]"
+            className="text-foreground w-full rounded-full bg-[oklch(0.22_0_0)] py-3 text-sm font-medium transition-colors hover:bg-[oklch(0.26_0_0)]"
           >
             Log in with passkey
           </button>

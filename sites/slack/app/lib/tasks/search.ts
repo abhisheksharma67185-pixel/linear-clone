@@ -1,7 +1,17 @@
-import type { TaskDefinition } from "@thetabench/core";
+import type { TaskDefinition } from "@thetabench/core"
 
-const R5 = { completion: 5.0, partialPerCheck: true, stepPenalty: -0.01, invalidActionPenalty: -0.1 };
-const R8 = { completion: 8.0, partialPerCheck: true, stepPenalty: -0.02, invalidActionPenalty: -0.2 };
+const R5 = {
+  completion: 5.0,
+  partialPerCheck: true,
+  stepPenalty: -0.01,
+  invalidActionPenalty: -0.1,
+}
+const R8 = {
+  completion: 8.0,
+  partialPerCheck: true,
+  stepPenalty: -0.02,
+  invalidActionPenalty: -0.2,
+}
 
 export const searchTasks: TaskDefinition[] = [
   {
@@ -37,7 +47,8 @@ export const searchTasks: TaskDefinition[] = [
       question: "Arjun's top-level messages in #engineering",
       groundTruth: "4",
       acceptableVariations: ["4", "four"],
-      rubric: "Count of messages where authorId=usr-2 and channelId=ch-4 and threadRootId is null",
+      rubric:
+        "Count of messages where authorId=usr-2 and channelId=ch-4 and threadRootId is null",
     },
     evalChecks: [],
     maxSteps: 15,
@@ -168,4 +179,4 @@ export const searchTasks: TaskDefinition[] = [
     rewardProfile: R8,
     tags: ["search", "status"],
   },
-];
+]

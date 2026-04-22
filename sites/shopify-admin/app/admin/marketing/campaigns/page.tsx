@@ -82,9 +82,7 @@ export default function CampaignsPage() {
           onAction: handleCreate,
           disabled: !campaignName.trim(),
         }}
-        secondaryActions={[
-          { content: "Cancel", onAction: () => setShowModal(false) },
-        ]}
+        secondaryActions={[{ content: "Cancel", onAction: () => setShowModal(false) }]}
       >
         <Modal.Section>
           <TextField
@@ -97,9 +95,7 @@ export default function CampaignsPage() {
         </Modal.Section>
       </Modal>
 
-      {toastMessage && (
-        <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />
-      )}
+      {toastMessage && <Toast content={toastMessage} onDismiss={() => setToastMessage("")} />}
     </Frame>
   );
 }

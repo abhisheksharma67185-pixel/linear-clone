@@ -1,4 +1,4 @@
-import { defineConfig } from "tsdown";
+import { defineConfig } from "tsdown"
 
 export default defineConfig({
   entry: {
@@ -27,6 +27,7 @@ export default defineConfig({
     ],
   },
   outputOptions: {
-    banner: (chunk) => (chunk.fileName === "cli.js" ? "#!/usr/bin/env node" : ""),
+    banner: (chunk) =>
+      chunk.fileName === "cli.js" ? "#!/usr/bin/env node" : "",
   },
-});
+})

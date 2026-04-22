@@ -2,10 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -70,9 +67,15 @@ export function CreateSiteDialog() {
                   onChange={(e) => setSiteName(e.target.value)}
                   className="flex-1 border-0 bg-transparent px-0 text-sm text-slate-800 shadow-none focus-visible:ring-0"
                 />
-                <span className="mx-2 shrink-0 text-sm text-slate-500">.atlassian.net</span>
+                <span className="mx-2 shrink-0 text-sm text-slate-500">
+                  .atlassian.net
+                </span>
                 {/* Green checkmark */}
-                <svg className="size-5 shrink-0 text-green-600" viewBox="0 0 24 24" fill="currentColor">
+                <svg
+                  className="size-5 shrink-0 text-green-600"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                 </svg>
               </div>
@@ -112,7 +115,9 @@ export function CreateSiteDialog() {
                 />
                 <path d="M15.593 3.09a14.58 14.58 0 0 0-.98 14.79l4.56 9.13a.86.86 0 0 0 1.538 0l5.213-10.42a.86.86 0 0 0 0-.77L18.67 3.09a1.63 1.63 0 0 0-3.076 0z" />
               </svg>
-              <span className="text-sm font-bold tracking-wider text-slate-800">ATLASSIAN</span>
+              <span className="text-sm font-bold tracking-wider text-slate-800">
+                ATLASSIAN
+              </span>
             </div>
           </div>
         </DialogContent>

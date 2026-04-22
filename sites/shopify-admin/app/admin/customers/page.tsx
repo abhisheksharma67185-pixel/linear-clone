@@ -71,13 +71,18 @@ export default function CustomersPage() {
 
   useEffect(() => {
     fetch("/api/data/customers")
-      .then((res) => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
       .then((data) => {
         setCustomers(data);
         setFilteredCustomers(data);
         setLoading(false);
       })
-      .catch(() => { setLoading(false); });
+      .catch(() => {
+        setLoading(false);
+      });
   }, []);
 
   const resourceName = { singular: "customer", plural: "customers" };

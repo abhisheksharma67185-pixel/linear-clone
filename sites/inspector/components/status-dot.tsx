@@ -35,11 +35,17 @@ export function StatusDot({
       aria-label={label ?? status}
     >
       <span
-        className={cn("inline-block size-2.5 rounded-full", COLOR[status], RING[status])}
+        className={cn(
+          "inline-block size-2.5 rounded-full",
+          COLOR[status],
+          RING[status]
+        )}
         aria-hidden
       />
       {label && (
-        <span className="text-xs text-muted-foreground capitalize">{label}</span>
+        <span className="text-xs text-muted-foreground capitalize">
+          {label}
+        </span>
       )}
     </span>
   )

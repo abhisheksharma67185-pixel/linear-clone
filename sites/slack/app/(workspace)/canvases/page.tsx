@@ -1,29 +1,32 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileText } from "lucide-react";
+import { useEffect, useState } from "react"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { FileText } from "lucide-react"
 
 type Canvas = {
-  id: string;
-  title: string;
-  content: string;
-  channelId: string | null;
-  updatedAt: string;
-};
+  id: string
+  title: string
+  content: string
+  channelId: string | null
+  updatedAt: string
+}
 
 export default function CanvasesPage() {
-  const [canvases, setCanvases] = useState<Canvas[]>([]);
+  const [canvases, setCanvases] = useState<Canvas[]>([])
   useEffect(() => {
     fetch("/api/data/canvases")
       .then((r) => r.json())
-      .then(setCanvases);
-  }, []);
+      .then(setCanvases)
+  }, [])
 
   return (
     <>
-      <SimplePageHeader title="Canvases" subtitle={`${canvases.length} canvases`} />
+      <SimplePageHeader
+        title="Canvases"
+        subtitle={`${canvases.length} canvases`}
+      />
       <ScrollArea className="flex-1">
         <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
           {canvases.map((c) => (
@@ -46,5 +49,5 @@ export default function CanvasesPage() {
         </div>
       </ScrollArea>
     </>
-  );
+  )
 }

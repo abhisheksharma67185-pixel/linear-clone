@@ -2,12 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import type {
-  Cycle,
-  Issue,
-  Member,
-  Project,
-} from "@/app/lib/mock-data"
+import type { Cycle, Issue, Member, Project } from "@/app/lib/mock-data"
 import { CURRENT_USER } from "@/lib/view-filter"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
@@ -39,11 +34,31 @@ type Answer =
   | { kind: "cycle"; cycle: Cycle; issues: Issue[]; members: Member[] }
   | { kind: "text"; title: string; body: string }
 
-const SUGGESTIONS: { icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]; label: string; color: string }[] = [
-  { icon: UserIcon, label: "What issues are assigned to me?", color: "text-violet-500" },
-  { icon: AlertCircleIcon, label: "Show urgent issues", color: "text-rose-500" },
-  { icon: PlayCircleIcon, label: "What's in the current cycle?", color: "text-amber-500" },
-  { icon: Hexagon01Icon, label: "Which projects are in progress?", color: "text-sky-500" },
+const SUGGESTIONS: {
+  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
+  label: string
+  color: string
+}[] = [
+  {
+    icon: UserIcon,
+    label: "What issues are assigned to me?",
+    color: "text-violet-500",
+  },
+  {
+    icon: AlertCircleIcon,
+    label: "Show urgent issues",
+    color: "text-rose-500",
+  },
+  {
+    icon: PlayCircleIcon,
+    label: "What's in the current cycle?",
+    color: "text-amber-500",
+  },
+  {
+    icon: Hexagon01Icon,
+    label: "Which projects are in progress?",
+    color: "text-sky-500",
+  },
 ]
 
 export function AskLinear() {
@@ -114,7 +129,7 @@ export function AskLinear() {
         render={
           <button
             type="button"
-            className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-xs text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-foreground"
+            className="bg-background text-muted-foreground hover:bg-accent hover:text-foreground fixed right-4 bottom-4 z-40 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm transition-colors"
             aria-label="Ask Linear"
           />
         }
@@ -134,7 +149,7 @@ export function AskLinear() {
             </div>
             <div>
               <div className="text-sm font-medium">Ask Linear</div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-muted-foreground text-[11px]">
                 {messages.length === 0
                   ? "Ask anything about your workspace"
                   : `${messages.filter((m) => m.role === "user").length} messages`}
@@ -147,7 +162,7 @@ export function AskLinear() {
                 variant="ghost"
                 size="sm"
                 onClick={newChat}
-                className="h-7 px-2 text-xs text-muted-foreground"
+                className="text-muted-foreground h-7 px-2 text-xs"
               >
                 New
               </Button>
@@ -155,7 +170,7 @@ export function AskLinear() {
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 text-muted-foreground"
+              className="text-muted-foreground size-7"
               onClick={() => setOpen(false)}
               aria-label="Close"
             >
@@ -178,14 +193,14 @@ export function AskLinear() {
         </div>
 
         <div className="border-t p-3">
-          <div className="flex items-end gap-2 rounded-lg border bg-background px-2 py-1.5 focus-within:border-foreground/30">
+          <div className="bg-background focus-within:border-foreground/30 flex items-end gap-2 rounded-lg border px-2 py-1.5">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask about issues, projects, cycles..."
               rows={1}
-              className="flex-1 resize-none bg-transparent text-sm placeholder:text-muted-foreground/50 focus:outline-none"
+              className="placeholder:text-muted-foreground/50 flex-1 resize-none bg-transparent text-sm focus:outline-none"
             />
             <Button
               size="icon"
@@ -197,7 +212,7 @@ export function AskLinear() {
               <HugeiconsIcon icon={Sent02Icon} className="size-3.5" />
             </Button>
           </div>
-          <p className="mt-1.5 px-1 text-[10px] text-muted-foreground">
+          <p className="text-muted-foreground mt-1.5 px-1 text-[10px]">
             Answers are generated from your workspace data.
           </p>
         </div>
@@ -214,12 +229,12 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
           <HugeiconsIcon icon={SparklesIcon} className="size-5" />
         </div>
         <h2 className="text-sm font-medium">How can I help?</h2>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           Ask about issues, projects, cycles, or teammates.
         </p>
       </div>
       <div className="flex flex-col gap-1.5">
-        <div className="px-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="text-muted-foreground px-1 text-[10px] font-medium tracking-wide uppercase">
           Suggested
         </div>
         {SUGGESTIONS.map((s) => (
@@ -227,13 +242,13 @@ function EmptyState({ onPick }: { onPick: (q: string) => void }) {
             key={s.label}
             type="button"
             onClick={() => onPick(s.label)}
-            className="group flex items-center gap-3 rounded-md border px-3 py-2 text-left text-xs transition-colors hover:bg-accent/60"
+            className="group hover:bg-accent/60 flex items-center gap-3 rounded-md border px-3 py-2 text-left text-xs transition-colors"
           >
             <HugeiconsIcon icon={s.icon} className={`size-3.5 ${s.color}`} />
             <span className="flex-1">{s.label}</span>
             <HugeiconsIcon
               icon={ArrowRight01Icon}
-              className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+              className="text-muted-foreground size-3 opacity-0 transition-opacity group-hover:opacity-100"
             />
           </button>
         ))}
@@ -254,7 +269,7 @@ function MessageRow({ msg, onClose }: { msg: Msg; onClose: () => void }) {
   }
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-2 text-[10px]">
         <div className="flex size-4 items-center justify-center rounded-sm bg-violet-500/15 text-violet-500">
           <HugeiconsIcon icon={AiBrain03Icon} className="size-2.5" />
         </div>
@@ -269,7 +284,7 @@ function MessageRow({ msg, onClose }: { msg: Msg; onClose: () => void }) {
 
 function ThinkingRow() {
   return (
-    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+    <div className="text-muted-foreground flex items-center gap-2 text-[11px]">
       <div className="flex size-4 items-center justify-center rounded-sm bg-violet-500/15 text-violet-500">
         <HugeiconsIcon icon={AiBrain03Icon} className="size-2.5" />
       </div>
@@ -283,21 +298,27 @@ function ThinkingRow() {
   )
 }
 
-function AnswerView({ answer, onClose }: { answer: Answer; onClose: () => void }) {
+function AnswerView({
+  answer,
+  onClose,
+}: {
+  answer: Answer
+  onClose: () => void
+}) {
   if (answer.kind === "text") {
     return (
-      <div className="rounded-lg border bg-card px-3 py-2">
+      <div className="bg-card rounded-lg border px-3 py-2">
         <div className="text-xs font-medium">{answer.title}</div>
-        <p className="mt-1 text-xs text-muted-foreground">{answer.body}</p>
+        <p className="text-muted-foreground mt-1 text-xs">{answer.body}</p>
       </div>
     )
   }
   if (answer.kind === "issues") {
     return (
-      <div className="rounded-lg border bg-card">
+      <div className="bg-card rounded-lg border">
         <div className="px-3 py-2 text-xs font-medium">{answer.title}</div>
         {answer.issues.length === 0 ? (
-          <div className="border-t px-3 py-3 text-xs text-muted-foreground">
+          <div className="text-muted-foreground border-t px-3 py-3 text-xs">
             No matching issues found.
           </div>
         ) : (
@@ -311,7 +332,7 @@ function AnswerView({ answer, onClose }: { answer: Answer; onClose: () => void }
               />
             ))}
             {answer.issues.length > 8 && (
-              <li className="px-3 py-2 text-[11px] text-muted-foreground">
+              <li className="text-muted-foreground px-3 py-2 text-[11px]">
                 + {answer.issues.length - 8} more
               </li>
             )}
@@ -322,10 +343,10 @@ function AnswerView({ answer, onClose }: { answer: Answer; onClose: () => void }
   }
   if (answer.kind === "projects") {
     return (
-      <div className="rounded-lg border bg-card">
+      <div className="bg-card rounded-lg border">
         <div className="px-3 py-2 text-xs font-medium">{answer.title}</div>
         {answer.projects.length === 0 ? (
-          <div className="border-t px-3 py-3 text-xs text-muted-foreground">
+          <div className="text-muted-foreground border-t px-3 py-3 text-xs">
             No projects matched.
           </div>
         ) : (
@@ -337,7 +358,7 @@ function AnswerView({ answer, onClose }: { answer: Answer; onClose: () => void }
                   <Link
                     href={`/projects/${p.id}`}
                     onClick={onClose}
-                    className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-accent/50"
+                    className="hover:bg-accent/50 flex items-center gap-2 px-3 py-2 text-xs"
                   >
                     <div className="flex size-5 items-center justify-center rounded bg-gradient-to-br from-sky-500 to-cyan-500 text-[9px] font-semibold text-white">
                       {p.name.charAt(0)}
@@ -345,7 +366,11 @@ function AnswerView({ answer, onClose }: { answer: Answer; onClose: () => void }
                     <span className="flex-1 truncate">{p.name}</span>
                     {lead && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={lead.avatar} alt={lead.name} className="size-4 rounded-full" />
+                      <img
+                        src={lead.avatar}
+                        alt={lead.name}
+                        className="size-4 rounded-full"
+                      />
                     )}
                     <Badge variant="secondary" className="text-[10px]">
                       {p.status.replace("_", " ")}
@@ -362,19 +387,22 @@ function AnswerView({ answer, onClose }: { answer: Answer; onClose: () => void }
   // cycle
   const cycle = answer.cycle
   const done = answer.issues.filter(
-    (i) => i.status === "done" || i.status === "cancelled",
+    (i) => i.status === "done" || i.status === "cancelled"
   ).length
   return (
-    <div className="rounded-lg border bg-card">
+    <div className="bg-card rounded-lg border">
       <div className="flex items-center gap-2 px-3 py-2">
-        <HugeiconsIcon icon={PlayCircleIcon} className="size-3.5 text-amber-500" />
+        <HugeiconsIcon
+          icon={PlayCircleIcon}
+          className="size-3.5 text-amber-500"
+        />
         <span className="text-xs font-medium">{cycle.name}</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">
+        <span className="text-muted-foreground ml-auto text-[10px]">
           {done}/{answer.issues.length} done
         </span>
       </div>
       {answer.issues.length === 0 ? (
-        <div className="border-t px-3 py-3 text-xs text-muted-foreground">
+        <div className="text-muted-foreground border-t px-3 py-3 text-xs">
           No issues in this cycle.
         </div>
       ) : (
@@ -388,7 +416,7 @@ function AnswerView({ answer, onClose }: { answer: Answer; onClose: () => void }
             />
           ))}
           {answer.issues.length > 6 && (
-            <li className="px-3 py-2 text-[11px] text-muted-foreground">
+            <li className="text-muted-foreground px-3 py-2 text-[11px]">
               + {answer.issues.length - 6} more
             </li>
           )}
@@ -413,7 +441,7 @@ function IssueLine({
       <Link
         href={`/issues/${issue.identifier}`}
         onClick={onClose}
-        className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-accent/50"
+        className="hover:bg-accent/50 flex items-center gap-2 px-3 py-2 text-xs"
       >
         <Badge
           variant="secondary"
@@ -421,7 +449,7 @@ function IssueLine({
         >
           {issue.priority}
         </Badge>
-        <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+        <span className="text-muted-foreground shrink-0 font-mono text-[10px]">
           {issue.identifier}
         </span>
         <span className="flex-1 truncate">{issue.title}</span>
@@ -433,7 +461,11 @@ function IssueLine({
         </Badge>
         {assignee ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={assignee.avatar} alt={assignee.name} className="size-4 rounded-full" />
+          <img
+            src={assignee.avatar}
+            alt={assignee.name}
+            className="size-4 rounded-full"
+          />
         ) : (
           <div className="size-4 rounded-full border border-dashed" />
         )}
@@ -446,7 +478,12 @@ function IssueLine({
 
 function answerFor(
   prompt: string,
-  ws: { issues: Issue[]; projects: Project[]; cycles: Cycle[]; members: Member[] },
+  ws: {
+    issues: Issue[]
+    projects: Project[]
+    cycles: Cycle[]
+    members: Member[]
+  }
 ): Answer {
   const q = prompt.toLowerCase()
 
@@ -516,7 +553,9 @@ function answerFor(
     filters.push("in backlog")
   }
   if (mentionsBugs) {
-    pool = pool.filter((i) => /bug/i.test(i.title) || /bug/i.test(i.description))
+    pool = pool.filter(
+      (i) => /bug/i.test(i.title) || /bug/i.test(i.description)
+    )
     filters.push("bugs")
   }
   if (mentionsCurrent && !mentionsCycle) {
@@ -538,7 +577,7 @@ function answerFor(
 
   // Fallback: try name match against members
   const matchedMember = ws.members.find(
-    (m) => q.includes(m.name.toLowerCase()) || q.includes(m.email.split("@")[0]),
+    (m) => q.includes(m.name.toLowerCase()) || q.includes(m.email.split("@")[0])
   )
   if (matchedMember) {
     return {

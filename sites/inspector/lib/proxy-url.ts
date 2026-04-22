@@ -7,7 +7,7 @@
 export function proxyUrl(
   siteId: string,
   path: string,
-  query?: Record<string, string | number | undefined | null>,
+  query?: Record<string, string | number | undefined | null>
 ): string {
   const cleaned = path.startsWith("/") ? path.slice(1) : path
   const base = `/api/proxy/${encodeURIComponent(siteId)}/${cleaned}`

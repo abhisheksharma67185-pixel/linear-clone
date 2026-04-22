@@ -92,133 +92,133 @@ export default function NewDiscountPage() {
               <BlockStack gap="400">
                 <Text as="h2" variant="headingSm">
                   Discount details
-              </Text>
-              <FormLayout>
-                <TextField
-                  label="Discount title"
-                  value={title}
-                  onChange={setTitle}
-                  autoComplete="off"
-                />
-                <Select
-                  label="Discount type"
-                  options={[
-                    { label: "Discount code", value: "code" },
-                    { label: "Automatic discount", value: "automatic" },
-                  ]}
-                  value={type}
-                  onChange={setType}
-                />
-                {type === "code" && (
+                </Text>
+                <FormLayout>
                   <TextField
-                    label="Discount code"
-                    value={code}
-                    onChange={setCode}
+                    label="Discount title"
+                    value={title}
+                    onChange={setTitle}
                     autoComplete="off"
-                    helpText="Customers will enter this code at checkout"
+                  />
+                  <Select
+                    label="Discount type"
+                    options={[
+                      { label: "Discount code", value: "code" },
+                      { label: "Automatic discount", value: "automatic" },
+                    ]}
+                    value={type}
+                    onChange={setType}
+                  />
+                  {type === "code" && (
+                    <TextField
+                      label="Discount code"
+                      value={code}
+                      onChange={setCode}
+                      autoComplete="off"
+                      helpText="Customers will enter this code at checkout"
+                    />
+                  )}
+                </FormLayout>
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingSm">
+                  Value
+                </Text>
+                <ChoiceList
+                  title="Discount value type"
+                  titleHidden
+                  choices={[
+                    { label: "Percentage", value: "percentage" },
+                    { label: "Fixed amount", value: "fixed_amount" },
+                    { label: "Free shipping", value: "free_shipping" },
+                  ]}
+                  selected={valueType}
+                  onChange={setValueType}
+                />
+                {valueType[0] !== "free_shipping" && (
+                  <TextField
+                    label={valueType[0] === "percentage" ? "Percentage value" : "Discount amount"}
+                    value={value}
+                    onChange={setValue}
+                    prefix={valueType[0] === "fixed_amount" ? "$" : undefined}
+                    suffix={valueType[0] === "percentage" ? "%" : undefined}
+                    type="number"
+                    autoComplete="off"
                   />
                 )}
-              </FormLayout>
-            </BlockStack>
-          </Card>
+              </BlockStack>
+            </Card>
 
-          <Card>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">
-                Value
-              </Text>
-              <ChoiceList
-                title="Discount value type"
-                titleHidden
-                choices={[
-                  { label: "Percentage", value: "percentage" },
-                  { label: "Fixed amount", value: "fixed_amount" },
-                  { label: "Free shipping", value: "free_shipping" },
-                ]}
-                selected={valueType}
-                onChange={setValueType}
-              />
-              {valueType[0] !== "free_shipping" && (
-                <TextField
-                  label={valueType[0] === "percentage" ? "Percentage value" : "Discount amount"}
-                  value={value}
-                  onChange={setValue}
-                  prefix={valueType[0] === "fixed_amount" ? "$" : undefined}
-                  suffix={valueType[0] === "percentage" ? "%" : undefined}
-                  type="number"
-                  autoComplete="off"
-                />
-              )}
-            </BlockStack>
-          </Card>
-
-          <Card>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">
-                Active dates
-              </Text>
-              <FormLayout>
-                <TextField
-                  label="Start date"
-                  value={startsAt}
-                  onChange={setStartsAt}
-                  type="date"
-                  autoComplete="off"
-                />
-                <Checkbox label="Set end date" checked={hasEndDate} onChange={setHasEndDate} />
-                {hasEndDate && (
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingSm">
+                  Active dates
+                </Text>
+                <FormLayout>
                   <TextField
-                    label="End date"
-                    value={endsAt}
-                    onChange={setEndsAt}
+                    label="Start date"
+                    value={startsAt}
+                    onChange={setStartsAt}
                     type="date"
                     autoComplete="off"
                   />
-                )}
-              </FormLayout>
-            </BlockStack>
-          </Card>
-        </Layout.Section>
+                  <Checkbox label="Set end date" checked={hasEndDate} onChange={setHasEndDate} />
+                  {hasEndDate && (
+                    <TextField
+                      label="End date"
+                      value={endsAt}
+                      onChange={setEndsAt}
+                      type="date"
+                      autoComplete="off"
+                    />
+                  )}
+                </FormLayout>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
 
-        <Layout.Section variant="oneThird">
-          <Card>
-            <BlockStack gap="300">
-              <Text as="h2" variant="headingSm">
-                Summary
-              </Text>
-              <Text as="p" variant="bodySm" tone="subdued">
-                {title || "No title yet"}
-              </Text>
-              <Text as="p" variant="bodySm">
-                {valueType[0] === "percentage"
-                  ? `${value || "0"}% off`
-                  : valueType[0] === "fixed_amount"
-                    ? `$${value || "0"} off`
-                    : "Free shipping"}
-              </Text>
-              {type === "code" && code && (
-                <Text as="p" variant="bodySm" fontWeight="semibold">
-                  Code: {code}
+          <Layout.Section variant="oneThird">
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h2" variant="headingSm">
+                  Summary
                 </Text>
-              )}
-            </BlockStack>
-          </Card>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  {title || "No title yet"}
+                </Text>
+                <Text as="p" variant="bodySm">
+                  {valueType[0] === "percentage"
+                    ? `${value || "0"}% off`
+                    : valueType[0] === "fixed_amount"
+                      ? `$${value || "0"} off`
+                      : "Free shipping"}
+                </Text>
+                {type === "code" && code && (
+                  <Text as="p" variant="bodySm" fontWeight="semibold">
+                    Code: {code}
+                  </Text>
+                )}
+              </BlockStack>
+            </Card>
 
-          <Card>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingSm">
-                Usage limits
-              </Text>
-              <TextField
-                label="Total usage limit"
-                value={usageLimit}
-                onChange={setUsageLimit}
-                type="number"
-                helpText="Leave blank for unlimited"
-                autoComplete="off"
-              />
-            </BlockStack>
-          </Card>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingSm">
+                  Usage limits
+                </Text>
+                <TextField
+                  label="Total usage limit"
+                  value={usageLimit}
+                  onChange={setUsageLimit}
+                  type="number"
+                  helpText="Leave blank for unlimited"
+                  autoComplete="off"
+                />
+              </BlockStack>
+            </Card>
           </Layout.Section>
         </Layout>
       </Form>

@@ -59,7 +59,9 @@ export function DownloadAppDialog({
               icon={CheckmarkCircle02Icon}
               className="size-7 text-emerald-500"
             />
-            <p className="text-sm font-medium">Preparing download for {started.label}…</p>
+            <p className="text-sm font-medium">
+              Preparing download for {started.label}…
+            </p>
           </div>
         ) : (
           <div className="flex flex-col gap-2 py-2">
@@ -68,11 +70,13 @@ export function DownloadAppDialog({
                 key={p.key}
                 type="button"
                 onClick={() => start(p)}
-                className="flex items-center justify-between rounded-md border px-3 py-2 text-left transition-colors hover:bg-accent/50"
+                className="hover:bg-accent/50 flex items-center justify-between rounded-md border px-3 py-2 text-left transition-colors"
               >
                 <div>
                   <div className="text-sm font-medium">{p.label}</div>
-                  <div className="text-[11px] text-muted-foreground">{p.hint}</div>
+                  <div className="text-muted-foreground text-[11px]">
+                    {p.hint}
+                  </div>
                 </div>
                 <Button size="sm" variant="outline" className="h-7 text-xs">
                   Download

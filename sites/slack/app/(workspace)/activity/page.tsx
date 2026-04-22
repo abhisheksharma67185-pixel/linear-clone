@@ -1,24 +1,38 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { SimplePageHeader } from "@/components/simple-page-header";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { AtSign, Bell, Heart, MessageSquare, Users, Grid3x3 } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react"
+import { SimplePageHeader } from "@/components/simple-page-header"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import {
+  AtSign,
+  Bell,
+  Heart,
+  MessageSquare,
+  Users,
+  Grid3x3,
+} from "lucide-react"
+import { toast } from "sonner"
 
 type Notification = {
-  id: string;
-  type: "mention" | "dm" | "thread_reply" | "keyword" | "channel_invite" | "reaction" | "huddle_invite";
-  channelId: string | null;
-  dmId: string | null;
-  messageId: string;
-  read: boolean;
-  createdAt: string;
-};
+  id: string
+  type:
+    | "mention"
+    | "dm"
+    | "thread_reply"
+    | "keyword"
+    | "channel_invite"
+    | "reaction"
+    | "huddle_invite"
+  channelId: string | null
+  dmId: string | null
+  messageId: string
+  read: boolean
+  createdAt: string
+}
 
-const CURRENT_USER_ID = "usr-1";
+const CURRENT_USER_ID = "usr-1"
 const ICONS = {
   mention: AtSign,
   dm: MessageSquare,
@@ -27,32 +41,32 @@ const ICONS = {
   channel_invite: Users,
   reaction: Heart,
   huddle_invite: Grid3x3,
-};
+}
 
 export default function ActivityPage() {
-  const [notifs, setNotifs] = useState<Notification[]>([]);
+  const [notifs, setNotifs] = useState<Notification[]>([])
 
   const load = async () => {
     const n = await fetch(
-      `/api/data/notifications?userId=${CURRENT_USER_ID}`,
-    ).then((r) => r.json());
-    setNotifs(n);
-  };
+      `/api/data/notifications?userId=${CURRENT_USER_ID}`
+    ).then((r) => r.json())
+    setNotifs(n)
+  }
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    load();
-  }, []);
+    load()
+  }, [])
 
   const byType = (t: Notification["type"] | "all") =>
-    t === "all" ? notifs : notifs.filter((n) => n.type === t);
+    t === "all" ? notifs : notifs.filter((n) => n.type === t)
 
   const markAll = async () => {
     await fetch(`/api/data/notifications?userId=${CURRENT_USER_ID}`, {
       method: "PATCH",
-    });
-    toast.success("All read");
-    load();
-  };
+    })
+    toast.success("All read")
+    load()
+  }
 
   return (
     <>
@@ -84,7 +98,7 @@ export default function ActivityPage() {
                     </div>
                   ) : (
                     byType(tab).map((n) => {
-                      const Icon = ICONS[n.type];
+                      const Icon = ICONS[n.type]
                       return (
                         <div
                           key={n.id}
@@ -94,7 +108,7 @@ export default function ActivityPage() {
                         >
                           <Icon className="size-4 text-muted-foreground" />
                           <div className="flex flex-1 flex-col">
-                            <span className="text-sm capitalize text-foreground">
+                            <span className="text-sm text-foreground capitalize">
                               {n.type.replace(/_/g, " ")}
                             </span>
                             <span className="text-xs text-muted-foreground">
@@ -115,15 +129,15 @@ export default function ActivityPage() {
                             </Button>
                           ) : null}
                         </div>
-                      );
+                      )
                     })
                   )}
                 </div>
               </ScrollArea>
             </TabsContent>
-          ),
+          )
         )}
       </Tabs>
     </>
-  );
+  )
 }

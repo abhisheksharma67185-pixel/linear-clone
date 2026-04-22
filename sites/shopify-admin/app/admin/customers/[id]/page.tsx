@@ -41,19 +41,28 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   useEffect(() => {
     Promise.all([
-      fetch(`/api/data/customers/${id}`).then((r) => { if (!r.ok) throw new Error("Failed to fetch"); return r.json(); }),
-      fetch("/api/data/orders").then((r) => { if (!r.ok) throw new Error("Failed to fetch"); return r.json(); }),
-    ]).then(([cust, allOrders]) => {
-      setCustomer(cust);
-      setOrders(allOrders.filter((o: Order) => o.customerId === id));
-      setFirstName(cust.firstName);
-      setLastName(cust.lastName);
-      setEmail(cust.email);
-      setPhone(cust.phone);
-      setNotes(cust.notes);
-      setLoading(false);
-    })
-    .catch(() => { setLoading(false); });
+      fetch(`/api/data/customers/${id}`).then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch");
+        return r.json();
+      }),
+      fetch("/api/data/orders").then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch");
+        return r.json();
+      }),
+    ])
+      .then(([cust, allOrders]) => {
+        setCustomer(cust);
+        setOrders(allOrders.filter((o: Order) => o.customerId === id));
+        setFirstName(cust.firstName);
+        setLastName(cust.lastName);
+        setEmail(cust.email);
+        setPhone(cust.phone);
+        setNotes(cust.notes);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   }, [id]);
 
   const handleSave = useCallback(async () => {

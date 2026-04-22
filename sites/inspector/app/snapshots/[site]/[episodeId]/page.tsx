@@ -34,9 +34,10 @@ type Params = Promise<{ site: string; episodeId: string }>
 // Distinguish collection arrays (arrays of items with string `id`) from
 // singletons. We infer from the state shape so we don't need a site-specific
 // schema.
-function classifyState(
-  state: Record<string, unknown> | undefined,
-): { collections: string[]; singletons: string[] } {
+function classifyState(state: Record<string, unknown> | undefined): {
+  collections: string[]
+  singletons: string[]
+} {
   if (!state) return { collections: [], singletons: [] }
   const collections: string[] = []
   const singletons: string[] = []
@@ -102,13 +103,13 @@ function AddedList({ items }: { items: StateDiff["added"] }) {
     <div className="space-y-4">
       {Object.entries(byEntity).map(([entity, rows]) => (
         <div key={entity}>
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+          <div className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {entity} · {rows.length}
           </div>
           <div className="space-y-1.5">
             {rows.map((r) => (
               <details key={r.id} className="rounded border bg-background">
-                <summary className="cursor-pointer px-2 py-1 text-xs font-mono flex items-center gap-2">
+                <summary className="flex cursor-pointer items-center gap-2 px-2 py-1 font-mono text-xs">
                   <Badge variant="success">+</Badge>
                   {r.id}
                 </summary>
@@ -134,10 +135,10 @@ function RemovedList({ items }: { items: StateDiff["removed"] }) {
     <div className="space-y-4">
       {Object.entries(byEntity).map(([entity, rows]) => (
         <div key={entity}>
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+          <div className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {entity} · {rows.length}
           </div>
-          <ul className="space-y-1 text-xs font-mono">
+          <ul className="space-y-1 font-mono text-xs">
             {rows.map((r) => (
               <li key={r.id} className="flex items-center gap-2">
                 <Badge variant="destructive">−</Badge>
@@ -157,33 +158,33 @@ function ModifiedList({ items }: { items: StateDiff["modified"] }) {
     <div className="space-y-4">
       {Object.entries(byEntity).map(([entity, rows]) => (
         <div key={entity}>
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+          <div className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {entity} · {rows.length}
           </div>
           <div className="space-y-2">
             {rows.map((m, i) => (
               <div
                 key={`${m.path}-${i}`}
-                className="rounded border bg-background p-2 text-xs space-y-1"
+                className="space-y-1 rounded border bg-background p-2 text-xs"
               >
-                <div className="font-mono flex items-center gap-2 text-muted-foreground">
+                <div className="flex items-center gap-2 font-mono text-muted-foreground">
                   <Badge variant="warning">~</Badge>
                   {m.path}
                 </div>
                 <div className="grid gap-1.5 sm:grid-cols-2">
                   <div>
-                    <div className="text-[10px] uppercase text-muted-foreground">
+                    <div className="text-[10px] text-muted-foreground uppercase">
                       before
                     </div>
-                    <pre className="rounded bg-red-500/10 p-1.5 font-mono overflow-auto max-h-32">
+                    <pre className="max-h-32 overflow-auto rounded bg-red-500/10 p-1.5 font-mono">
                       {stringify(m.before)}
                     </pre>
                   </div>
                   <div>
-                    <div className="text-[10px] uppercase text-muted-foreground">
+                    <div className="text-[10px] text-muted-foreground uppercase">
                       after
                     </div>
-                    <pre className="rounded bg-emerald-500/10 p-1.5 font-mono overflow-auto max-h-32">
+                    <pre className="max-h-32 overflow-auto rounded bg-emerald-500/10 p-1.5 font-mono">
                       {stringify(m.after)}
                     </pre>
                   </div>
@@ -199,7 +200,7 @@ function ModifiedList({ items }: { items: StateDiff["modified"] }) {
 
 function groupBy<T, K extends string | number>(
   items: T[],
-  key: (item: T) => K,
+  key: (item: T) => K
 ): Record<string, T[]> {
   const out: Record<string, T[]> = {}
   for (const item of items) {
@@ -229,8 +230,7 @@ export default function SnapshotPage({ params }: { params: Params }) {
     queryKey: site ? qk.snapshot(site.id) : ["snapshot", "none"],
     enabled: !!site,
     staleTime: 0,
-    queryFn: () =>
-      api.get<Record<string, unknown>>(site!, "/api/sim/snapshot"),
+    queryFn: () => api.get<Record<string, unknown>>(site!, "/api/sim/snapshot"),
   })
 
   const stateQuery = useQuery({
@@ -242,7 +242,7 @@ export default function SnapshotPage({ params }: { params: Params }) {
 
   const { collections, singletons } = React.useMemo(
     () => classifyState(stateQuery.data),
-    [stateQuery.data],
+    [stateQuery.data]
   )
 
   const diff: StateDiff | null = React.useMemo(() => {
@@ -330,7 +330,7 @@ export default function SnapshotPage({ params }: { params: Params }) {
                     : "unknown"}
                 </div>
               )}
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="mt-1 text-xs text-muted-foreground">
                 Snapshots require an active episode on the site.
               </div>
             </AlertDescription>
@@ -375,15 +375,13 @@ export default function SnapshotPage({ params }: { params: Params }) {
                 <Skeleton className="h-10 w-full" />
               </div>
             ) : !diff ? (
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 No diff available yet.
               </p>
             ) : (
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="success">
-                    added {diff.added.length}
-                  </Badge>
+                  <Badge variant="success">added {diff.added.length}</Badge>
                   <Badge variant="destructive">
                     removed {diff.removed.length}
                   </Badge>
@@ -432,12 +430,9 @@ export default function SnapshotPage({ params }: { params: Params }) {
               {snapshotQuery.isLoading ? (
                 <Skeleton className="h-64 w-full" />
               ) : snapshotQuery.data ? (
-                <JsonView
-                  data={snapshotQuery.data}
-                  defaultCollapsedDepth={1}
-                />
+                <JsonView data={snapshotQuery.data} defaultCollapsedDepth={1} />
               ) : (
-                <p className="text-muted-foreground text-sm">Unavailable.</p>
+                <p className="text-sm text-muted-foreground">Unavailable.</p>
               )}
             </CardContent>
           </Card>
@@ -454,7 +449,7 @@ export default function SnapshotPage({ params }: { params: Params }) {
               ) : stateQuery.data ? (
                 <JsonView data={stateQuery.data} defaultCollapsedDepth={1} />
               ) : (
-                <p className="text-muted-foreground text-sm">Unavailable.</p>
+                <p className="text-sm text-muted-foreground">Unavailable.</p>
               )}
             </CardContent>
           </Card>

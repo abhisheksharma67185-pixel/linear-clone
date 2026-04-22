@@ -1,6 +1,16 @@
 "use client";
 
-import { Page, Card, Text, BlockStack, InlineStack, InlineGrid, Box, TextField, Icon } from "@shopify/polaris";
+import {
+  Page,
+  Card,
+  Text,
+  BlockStack,
+  InlineStack,
+  InlineGrid,
+  Box,
+  TextField,
+  Icon,
+} from "@shopify/polaris";
 import { SearchIcon } from "@shopify/polaris-icons";
 import { useState } from "react";
 
