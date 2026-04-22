@@ -188,7 +188,6 @@ Each new site follows the same pattern:
 | Item | Details |
 |------|---------|
 | **Deterministic seeding** | `seed` param guarantees identical timestamps and state across runs. |
-| **Docker self-hosting** | `docker build -t thetabench . && docker run -p 3000:3000 thetabench` with healthcheck. |
 | **Batch evaluation CLI** | `thetabench eval --agent my_agent.py --output results.json` runs all tasks per site. |
 | **Standardized results format** | JSON output with per-domain and per-stage breakdowns. |
 | **Input validation** | All API routes validate JSON, enums, numeric types. Leaderboard validates submissions. |

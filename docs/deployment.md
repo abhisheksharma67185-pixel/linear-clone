@@ -1,29 +1,23 @@
 # Deployment Guide
 
-ThetaBench can be deployed via Docker (recommended for training), Vercel (quick evaluation), or directly with Node.js (development).
+ThetaBench can be deployed to Vercel (quick evaluation) or run directly with Node.js (development).
 
 ## Local Development
 
 ### Prerequisites
 
 - Node.js >= 20
-- npm (comes with Node.js)
+- pnpm >= 10 (managed via Corepack)
 - Python >= 3.10 (for the SDK)
 
 ### Setup
 
 ```bash
 # Install all workspace dependencies
-npm install
-
-# Build the shared core engine
-cd packages/thetabench-core
-npm run build
-cd ../..
+pnpm install
 
 # Start a site in development mode
-cd sites/shopify-admin
-npm run dev
+pnpm --filter shopify-admin-sim dev
 # Server starts at http://localhost:3000
 ```
 
@@ -33,89 +27,23 @@ Each site runs as an independent Next.js app on its own port:
 
 ```bash
 # Terminal 1: Shopify Admin
-cd sites/shopify-admin && npm run dev
+pnpm --filter shopify-admin-sim dev
 # http://localhost:3000
 
 # Terminal 2: Linear
-cd sites/linear && PORT=3001 npm run dev
+PORT=3001 pnpm --filter linear dev
 # http://localhost:3001
 
 # Terminal 3: Jira
-cd sites/jira && PORT=3002 npm run dev
+PORT=3002 pnpm --filter jira dev
 # http://localhost:3002
 ```
 
 ### Core Engine Development
 
-For live-reloading when editing the core engine:
-
-```bash
-# Terminal: watch mode
-cd packages/thetabench-core
-npm run dev    # runs: vp pack --watch
-```
-
----
-
-## Docker
-
-### Build
-
-```bash
-docker build -t thetabench .
-```
-
-The Dockerfile uses a multi-stage build:
-
-1. **deps** - Installs npm dependencies (`npm ci`)
-2. **builder** - Builds `@thetabench/core` and the Next.js site (standalone output)
-3. **runner** - Minimal production image (Node 20 Alpine)
-
-### Run
-
-```bash
-# Basic
-docker run -p 3000:3000 thetabench
-
-# With custom port
-docker run -p 8080:3000 thetabench
-
-# Detached
-docker run -d --name thetabench -p 3000:3000 thetabench
-```
-
-### Health Check
-
-The container includes a built-in health check:
-
-```
-GET http://localhost:3000/api/health
-Interval: 30s
-Timeout: 10s
-Retries: 3
-```
-
-### Production Details
-
-- **Base image**: `node:20-alpine`
-- **User**: `nextjs` (UID 1001) -- non-root
-- **Port**: 3000
-- **Output**: Next.js standalone mode (minimal node_modules)
-- **CMD**: `node sites/shopify-admin/server.js`
-
-### Building for a Different Site
-
-The default Dockerfile builds the Shopify Admin site. To build a different site, modify the builder stage or create site-specific Dockerfiles:
-
-```dockerfile
-# In the builder stage, replace:
-RUN cd sites/shopify-admin && npx next build
-# With:
-RUN cd sites/linear && npx next build
-
-# In the runner stage, replace the CMD:
-CMD ["node", "sites/linear/server.js"]
-```
+The core engine (`@thetabench/core`) is consumed by sites via TypeScript path mapping —
+edits to `packages/thetabench-core/src/` are picked up by site dev servers immediately,
+no rebuild needed.
 
 ---
 
@@ -135,9 +63,9 @@ Each site can be deployed to Vercel as a standard Next.js application.
 |---------|-------|
 | Framework | Next.js |
 | Root Directory | `sites/shopify-admin` |
-| Build Command | `cd ../.. && npm run build --workspace=packages/thetabench-core && cd sites/shopify-admin && next build` |
+| Build Command | `cd ../.. && pnpm --filter shopify-admin-sim build` |
 | Output Directory | `.next` |
-| Install Command | `cd ../.. && npm install` |
+| Install Command | `cd ../.. && pnpm install --frozen-lockfile` |
 
 ### Agent Connection
 
@@ -153,8 +81,8 @@ thetabench eval --agent my_agent.py --url https://your-deployment.vercel.app
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `3000` | Server port |
-| `NODE_ENV` | `development` | Environment (`production` in Docker) |
-| `HOSTNAME` | `0.0.0.0` | Bind address (set in Docker) |
+| `NODE_ENV` | `development` | Environment (`production` for prod builds) |
+| `HOSTNAME` | `0.0.0.0` | Bind address |
 
 ThetaBench does not require any external services, databases, or API keys. Everything runs in-memory.
 
@@ -223,7 +151,7 @@ Each server instance handles one active episode at a time. The in-memory state i
 ```bash
 # Run N instances on different ports
 for port in 3000 3001 3002 3003; do
-  docker run -d -p $port:3000 thetabench
+  PORT=$port pnpm --filter shopify-admin-sim start &
 done
 
 # Distribute tasks across instances
@@ -254,21 +182,7 @@ curl http://localhost:3000/api/health
 
 Returns site info, task count, and domain breakdown. Use for load balancer health checks.
 
-### Docker Health Check
-
-The container's built-in health check pings `/api/health` every 30 seconds:
-
-```bash
-docker inspect --format='{{.State.Health.Status}}' thetabench
-# "healthy" or "unhealthy"
-```
-
 ### Logs
 
-```bash
-# Docker
-docker logs thetabench
-
-# Development
-# Next.js logs to stdout
-```
+Next.js logs to stdout — pipe through your process manager (systemd, PM2, etc.) or
+container runtime as needed.

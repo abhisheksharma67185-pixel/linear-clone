@@ -24,7 +24,6 @@ You train models to interact with websites (computer use, browsing, form filling
 - **Browser mode** via Playwright for vision-language model evaluation
 - **Gymnasium-compatible** Python SDK — drop-in for your training pipeline
 - **CLI tool** for batch evaluation with standardized JSON output
-- **Docker image** for self-hosted, air-gapped deployment
 - **New sites added** without any changes to your agent code
 
 ## Integration (15 minutes)
@@ -220,10 +219,11 @@ for episode in range(100_000):
 
 ## Self-Hosting
 
-### Docker (recommended for training)
+### Local Node.js
 ```bash
-docker build -t thetabench .
-docker run -p 3000:3000 thetabench
+pnpm install
+pnpm --filter shopify-admin-sim dev
+# Server starts at http://localhost:3000
 
 # Then point your agent at localhost
 thetabench eval --agent your_agent.py --url http://localhost:3000

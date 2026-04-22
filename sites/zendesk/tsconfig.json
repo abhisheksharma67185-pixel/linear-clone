@@ -20,7 +20,8 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@thetabench/core": ["../../packages/thetabench-core/src/index.ts"]
     }
   },
   "include": [

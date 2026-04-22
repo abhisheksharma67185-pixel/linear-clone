@@ -34,8 +34,7 @@ thetabench/
 │       ├── runner.py            # Batch evaluation runner
 │       ├── curriculum.py        # Curriculum runner with mastery gates
 │       └── cli.py               # CLI tool
-├── paper/                       # Research paper
-└── Dockerfile                   # Production container
+└── paper/                       # Research paper
 ```
 
 ## Component Diagram
@@ -197,8 +196,7 @@ Client sends: { agent_response: "4 unfulfilled orders" }
 | Shopify UI | Polaris 13 | Pixel-perfect Shopify Admin fidelity |
 | Linear/Jira UI | Base UI + Tailwind CSS 4 | Lightweight, customizable components |
 | Python SDK | httpx + gymnasium + pydantic | Standard ML/RL ecosystem tools |
-| Monorepo | npm workspaces | Simple, no extra tooling |
-| Container | Docker (Node 20 Alpine) | Lightweight production image |
+| Monorepo | pnpm workspaces | Fast installs, content-addressable store |
 
 ## Key Design Decisions
 
