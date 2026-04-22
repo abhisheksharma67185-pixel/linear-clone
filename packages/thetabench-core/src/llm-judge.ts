@@ -138,3 +138,79 @@ export function judgeImpossibleTask(agentResponse: string): JudgeResult {
         matchType: "failed",
       };
 }
+
+// ---------------------------------------------------------------------------
+// Real LLM judge (Vercel ai-sdk + Anthropic)
+//
+// Opt-in: requires ANTHROPIC_API_KEY in env. Falls back to deterministic
+// `judgeRetrieval` string matcher when no key is set, so default behavior
+// stays reproducible.
+//
+// Use this for retrieval tasks where the string matcher's keyword check
+// systematically under-credits semantically correct answers (e.g. paraphrases,
+// equivalent units, abbreviations).
+// ---------------------------------------------------------------------------
+
+export type LLMJudgeOptions = {
+  /** Anthropic model ID. Default: claude-haiku-4-5-20251001 (fast + cheap). */
+  model?: string;
+  /** 0 = deterministic. Default 0. */
+  temperature?: number;
+  /** When no API key or LLM call fails, fall back to string matcher. Default true. */
+  fallbackToStringMatcher?: boolean;
+};
+
+const DEFAULT_LLM_MODEL = "claude-haiku-4-5-20251001";
+
+export async function judgeRetrievalLLM(
+  agentResponse: string,
+  rubric: RetrievalRubric,
+  options: LLMJudgeOptions = {},
+): Promise<JudgeResult> {
+  const fallback = options.fallbackToStringMatcher !== false;
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    if (fallback) return judgeRetrieval(agentResponse, rubric);
+    throw new Error("judgeRetrievalLLM requires ANTHROPIC_API_KEY (or set fallbackToStringMatcher: true)");
+  }
+
+  // Lazy import so callers without ai-sdk installed at runtime aren't penalized.
+  const [{ generateObject }, { anthropic }, { z }] = await Promise.all([
+    import("ai"),
+    import("@ai-sdk/anthropic"),
+    import("zod"),
+  ]);
+
+  const variations = rubric.acceptableVariations.length
+    ? `\nAcceptable variations: ${rubric.acceptableVariations.map((v) => JSON.stringify(v)).join(", ")}`
+    : "";
+
+  const prompt = `You are an evaluator for a web-agent benchmark. Judge whether the agent's response correctly answers the retrieval question against the ground truth.
+
+Ground truth: ${JSON.stringify(rubric.groundTruth)}${variations}
+
+Agent response: ${JSON.stringify(agentResponse)}
+
+Pass when the response semantically matches the ground truth or any acceptable variation. Be strict about factual accuracy (numbers, names, identifiers must match), lenient about phrasing (units, abbreviations, surrounding text are fine).`;
+
+  try {
+    const { object } = await generateObject({
+      model: anthropic(options.model ?? DEFAULT_LLM_MODEL),
+      temperature: options.temperature ?? 0,
+      schema: z.object({
+        passed: z.boolean(),
+        reasoning: z.string(),
+      }),
+      prompt,
+    });
+
+    return {
+      passed: object.passed,
+      reasoning: object.reasoning,
+      matchType: object.passed ? "semantic" : "failed",
+    };
+  } catch (err) {
+    if (fallback) return judgeRetrieval(agentResponse, rubric);
+    throw err;
+  }
+}

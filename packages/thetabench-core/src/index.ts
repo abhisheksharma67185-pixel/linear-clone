@@ -32,7 +32,8 @@ export { getUniversalConfig, applyUniversalConfig, resetUniversalConfig } from "
 export { evaluate } from "./evaluator";
 
 // LLM Judge
-export { judgeRetrieval, judgeImpossibleTask } from "./llm-judge";
+export { judgeRetrieval, judgeImpossibleTask, judgeRetrievalLLM } from "./llm-judge";
+export type { LLMJudgeOptions } from "./llm-judge";
 
 // Predicates
 export { registerPredicate, getPredicate, clearPredicates } from "./predicates";
