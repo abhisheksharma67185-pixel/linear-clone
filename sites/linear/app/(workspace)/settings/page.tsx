@@ -3,9 +3,7 @@
 import {
   Suspense,
   useEffect,
-  useMemo,
   useState,
-  useCallback,
   type Dispatch,
   type SetStateAction,
 } from "react"
@@ -13,7 +11,6 @@ import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
 import type { Label as LabelType, Member } from "@/app/lib/mock-data"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -894,7 +891,7 @@ function SecuritySection() {
       <div>
         <h2 className="mb-1 text-sm font-semibold">Personal API keys</h2>
         <p className="text-muted-foreground mb-3 text-xs">
-          Use Linear's GraphQL API to build your own integrations
+          Use Linear&apos;s GraphQL API to build your own integrations
         </p>
         <div className="rounded-lg border">
           {apiKeys.length === 0 && !showNewKey ? (
@@ -987,7 +984,7 @@ function SecuritySection() {
       <div>
         <h2 className="mb-1 text-sm font-semibold">Authorized applications</h2>
         <p className="text-muted-foreground mb-3 text-xs">
-          OAuth applications you've approved
+          OAuth applications you&apos;ve approved
         </p>
         <div className="rounded-lg border px-4 py-3">
           <p className="text-muted-foreground text-sm">
@@ -1188,7 +1185,7 @@ function AgentPersonalizationSection() {
         </p>
         <div className="bg-card flex flex-col items-center justify-center gap-3 rounded-lg border px-4 py-10">
           <p className="text-muted-foreground text-sm">
-            You haven't added any skills yet
+            You haven&apos;t added any skills yet
           </p>
           <button
             type="button"
@@ -1737,7 +1734,7 @@ function AdminSecuritySection() {
                   SAML &amp; SCIM
                 </div>
                 <div className="text-muted-foreground text-xs">
-                  Manage logins via an identity provider's SSO
+                  Manage logins via an identity provider&apos;s SSO
                 </div>
               </div>
               <span className="text-muted-foreground text-xs">
@@ -1875,7 +1872,8 @@ function AdminSecuritySection() {
                 Reduce personal information from support integrations
               </div>
               <div className="text-muted-foreground text-xs">
-                Personal information from support integrations won't be stored
+                Personal information from support integrations won&apos;t be
+                stored
               </div>
             </div>
             <span className="text-muted-foreground text-xs">
@@ -1964,8 +1962,8 @@ function ApiSection() {
       <div>
         <h1 className="text-xl font-semibold">API</h1>
         <p className="text-muted-foreground mt-2 text-sm">
-          Linear's GraphQL API provides a programmable interface to your data.
-          Use our API to build public or private apps, workflows, and
+          Linear&apos;s GraphQL API provides a programmable interface to your
+          data. Use our API to build public or private apps, workflows, and
           integrations for Linear.{" "}
           <a
             href="#"
@@ -1987,7 +1985,7 @@ function ApiSection() {
       <div>
         <h2 className="mb-1 text-sm font-semibold">OAuth Applications</h2>
         <p className="text-muted-foreground mb-3 text-xs">
-          Manage your organization's OAuth applications.{" "}
+          Manage your organization&apos;s OAuth applications.{" "}
           <a
             href="#"
             className="text-foreground font-semibold underline-offset-2 hover:underline"
@@ -2304,7 +2302,7 @@ function ImportExportSection() {
         <h2 className="mb-1 text-sm font-semibold">Export</h2>
         <p className="text-muted-foreground mb-3 text-xs">
           You can export your issue data in CSV format. Once the export is
-          available, we'll email you the download link.
+          available, we&apos;ll email you the download link.
         </p>
         <ExportCard />
       </div>
@@ -3199,7 +3197,7 @@ function PulseSection() {
                 Default workspace schedule
               </div>
               <div className="text-muted-foreground text-xs">
-                Applies to all members who haven't set their own preference
+                Applies to all members who haven&apos;t set their own preference
               </div>
             </div>
             <Select
@@ -3319,7 +3317,7 @@ function CustomerRequestsSection() {
         <h2 className="mb-1 text-sm font-semibold">Issue routing</h2>
         <p className="text-muted-foreground mb-3 text-xs">
           When a new issue is created from a customer page, it will be routed to
-          the default team's triage or backlog. This centralizes customer
+          the default team&apos;s triage or backlog. This centralizes customer
           requests for ease of management and prioritization.
         </p>
         <div className="bg-card flex items-center justify-between rounded-lg border px-4 py-3">
@@ -4691,16 +4689,6 @@ function teamColor(key: string) {
   for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0
   return TEAM_PALETTE[h % TEAM_PALETTE.length]
 }
-function TeamIcon({ teamKey }: { teamKey: string }) {
-  return (
-    <div
-      className={`flex size-4 shrink-0 items-center justify-center rounded-sm text-[9px] font-semibold text-white ${teamColor(teamKey)}`}
-    >
-      {teamKey.slice(0, 2)}
-    </div>
-  )
-}
-
 // SettingsTeamRow is no longer used — sidebar renders team buttons inline
 
 // ─── Create Team Page ─────────────────────────────────────────────────────────
@@ -4832,7 +4820,7 @@ function CreateTeamPage({
             You can choose to copy the settings of an existing team for your
             newly created team. All settings including workflow and cycle
             settings are copied, but Slack notification settings and team
-            members won't be copied.
+            members won&apos;t be copied.
           </p>
         </div>
         <div className="rounded-lg border">
@@ -4846,7 +4834,7 @@ function CreateTeamPage({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Don't copy</SelectItem>
+                <SelectItem value="none">Don&apos;t copy</SelectItem>
                 {teams.map((t) => (
                   <SelectItem key={t.id} value={t.key}>
                     {t.name}

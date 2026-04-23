@@ -331,7 +331,11 @@ function HealthCell({ health }: { health: InitiativeHealth }) {
 }
 
 function MemberAvatar({ member }: { member: Member }) {
+  // Mock avatars are remote SVGs from api.dicebear.com — adding the host to
+  // next.config images.remotePatterns is a separate concern; plain <img>
+  // keeps the visual identical without coupling lint cleanup to next config.
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={member.avatar}
       alt={member.name}

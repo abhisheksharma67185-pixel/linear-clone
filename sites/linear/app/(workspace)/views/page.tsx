@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import type { View, Member, Issue, Cycle, Label } from "@/app/lib/mock-data"
-import { filterIssuesForView as _filterIssuesForView } from "@/lib/view-filter"
+import type { View, Member } from "@/app/lib/mock-data"
 import { CreateViewDialog } from "@/components/create-view-dialog"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -27,9 +26,6 @@ const WORKSPACE_INITIALS = "TC"
 export default function ViewsPage() {
   const [views, setViews] = useState<View[]>([])
   const [members, setMembers] = useState<Member[]>([])
-  const [issues, setIssues] = useState<Issue[]>([])
-  const [cycles, setCycles] = useState<Cycle[]>([])
-  const [labels, setLabels] = useState<Label[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<"issues" | "projects">("issues")
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -38,15 +34,9 @@ export default function ViewsPage() {
     Promise.all([
       fetch("/api/data/views").then((r) => r.json()),
       fetch("/api/data/members").then((r) => r.json()),
-      fetch("/api/data/issues").then((r) => r.json()),
-      fetch("/api/data/cycles").then((r) => r.json()),
-      fetch("/api/data/labels").then((r) => r.json()),
-    ]).then(([v, m, i, c, l]) => {
+    ]).then(([v, m]) => {
       setViews(v)
       setMembers(m)
-      setIssues(i)
-      setCycles(c)
-      setLabels(Array.isArray(l) ? l : [])
       setLoading(false)
     })
   }, [])

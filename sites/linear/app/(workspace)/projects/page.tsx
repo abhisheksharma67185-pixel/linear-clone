@@ -2,9 +2,8 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { useSearchParams, useRouter } from "next/navigation"
-import type { Project, Member, Team, Issue } from "@/app/lib/mock-data"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useRouter } from "next/navigation"
+import type { Project, Member, Issue } from "@/app/lib/mock-data"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -23,7 +22,6 @@ import {
   Layers01Icon,
   ArrowDown01Icon,
   CubeIcon,
-  CheckmarkSquare01Icon,
   CalendarAdd01Icon,
 } from "@hugeicons/core-free-icons"
 
@@ -39,7 +37,6 @@ function ProjectsPageInner() {
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [members, setMembers] = useState<Member[]>([])
-  const [teams, setTeams] = useState<Team[]>([])
   const [issues, setIssues] = useState<Issue[]>([])
   const [loading, setLoading] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
@@ -70,7 +67,8 @@ function ProjectsPageInner() {
     e.stopPropagation()
     setSelectedIds((prev) => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
       return next
     })
   }
@@ -79,12 +77,10 @@ function ProjectsPageInner() {
     Promise.all([
       fetch("/api/data/projects").then((r) => r.json()),
       fetch("/api/data/members").then((r) => r.json()),
-      fetch("/api/data/teams").then((r) => r.json()),
       fetch("/api/data/issues").then((r) => r.json()),
-    ]).then(([p, m, t, i]) => {
+    ]).then(([p, m, i]) => {
       setProjects(p)
       setMembers(m)
-      setTeams(t)
       setIssues(i)
       setLoading(false)
     })
@@ -300,8 +296,6 @@ function ProjectsPageInner() {
             ) : viewType === "board" ? (
               <BoardView
                 projects={sortedProjects}
-                members={members}
-                statsByProject={statsByProject}
                 onCreateProject={() => setCreateOpen(true)}
               />
             ) : viewType === "timeline" ? (
@@ -370,7 +364,6 @@ function ProjectsPageInner() {
                   </div>
                 ) : (
                   sortedProjects.map((project) => {
-                    const lead = members.find((m) => m.id === project.leadId)
                     const pct = statsByProject.get(project.id) ?? 0
                     const isSelected = selectedIds.has(project.id)
                     return (
@@ -445,10 +438,7 @@ function ProjectsPageInner() {
                           className="w-16"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <LeadPicker
-                            initialLead={lead ?? null}
-                            members={members}
-                          />
+                          <LeadPicker members={members} />
                         </div>
                         {/* Target date */}
                         <div
@@ -459,7 +449,7 @@ function ProjectsPageInner() {
                         </div>
                         {/* Status */}
                         <div className="text-muted-foreground flex w-20 items-center justify-end gap-1.5 text-xs">
-                          <ProgressCircle pct={pct} />
+                          <ProgressCircle />
                           <span>{pct}%</span>
                         </div>
                       </div>
@@ -760,22 +750,11 @@ function MemberRow({
   )
 }
 
-function LeadPicker({
-  initialLead,
-  members,
-}: {
-  initialLead: Member | null
-  members: Member[]
-}) {
+function LeadPicker({ members }: { members: Member[] }) {
   const [open, setOpen] = useState(false)
   const [lead, setLead] = useState<Member | null>(null)
-  const [search, setSearch] = useState("")
   const [inviteOpen, setInviteOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState("")
-
-  const filtered = members.filter((m) =>
-    m.name.toLowerCase().includes(search.toLowerCase())
-  )
 
   return (
     <>
@@ -903,7 +882,6 @@ function LeadPicker({
                 onSelect={() => {
                   setLead(m)
                   setOpen(false)
-                  setSearch("")
                 }}
               />
             ))}
@@ -1034,6 +1012,7 @@ function TimelineView({
 }) {
   const router = useRouter()
   const today = new Date()
+  const todayYear = today.getFullYear()
   const scrollRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const [zoom, setZoom] = useState<"Year" | "Quarter" | "Month" | "Week">(
@@ -1044,7 +1023,7 @@ function TimelineView({
 
   // Timeline: Jan 1 1943 → 3 years from now (fixed range, never changes)
   const START_MS = new Date(1943, 0, 1).getTime()
-  const END_MS = new Date(today.getFullYear() + 3, 11, 31).getTime()
+  const END_MS = new Date(todayYear + 3, 11, 31).getTime()
   const totalDays = Math.round((END_MS - START_MS) / 86400000)
   const totalWidth = totalDays * PX_PER_DAY
 
@@ -1054,12 +1033,16 @@ function TimelineView({
 
   const todayX = dayX(today)
 
-  // Build month segments — memoized
+  // Build month segments — memoized.
+  // START_MS and END_MS are recomputed every render from `today` (a new Date
+  // instance), so the React Compiler's `preserve-manual-memoization` lint
+  // can't prove they're stable. They ARE stable for the lifetime of the
+  // component (fixed-range timeline anchored to current year).
   const months = useMemo(() => {
     const result: { label: string; year: number; x: number; width: number }[] =
       []
     let d = new Date(1943, 0, 1)
-    const end = new Date(today.getFullYear() + 3, 11, 31)
+    const end = new Date(todayYear + 3, 11, 31)
     while (d < end) {
       const m = d.getMonth(),
         y = d.getFullYear()
@@ -1073,8 +1056,8 @@ function TimelineView({
       d = new Date(y, m + 1, 1)
     }
     return result
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [today.getFullYear()])
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  }, [todayYear, START_MS, END_MS])
 
   // Build bi-weekly date ticks — memoized
   const ticks = useMemo(() => {
@@ -1507,13 +1490,9 @@ const BOARD_COLUMNS = [
 
 function BoardView({
   projects,
-  members,
-  statsByProject,
   onCreateProject,
 }: {
   projects: Project[]
-  members: Member[]
-  statsByProject: Map<string, number>
   onCreateProject: () => void
 }) {
   const router = useRouter()
@@ -1575,7 +1554,6 @@ function BoardView({
             {/* Cards */}
             <div className="flex flex-col gap-1.5 p-2">
               {colProjects.map((project) => {
-                const pct = statsByProject.get(project.id) ?? 0
                 return (
                   <div
                     key={project.id}
@@ -2145,7 +2123,9 @@ function PriorityPicker() {
   )
 }
 
-function ProgressCircle({ pct }: { pct: number }) {
+// Static "in-progress" indicator. The numeric percentage is rendered
+// alongside this icon by the caller, so the icon itself takes no props.
+function ProgressCircle() {
   return (
     <svg viewBox="0 0 16 16" className="size-4 shrink-0 text-orange-400">
       <circle
@@ -2160,11 +2140,6 @@ function ProgressCircle({ pct }: { pct: number }) {
       />
     </svg>
   )
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso)
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
 const DATE_TABS = ["Day", "Month", "Quarter", "Half-year", "Year"] as const
@@ -2905,7 +2880,8 @@ function DisplayPopover({
   function toggleProp(prop: string) {
     setActiveProps((prev) => {
       const next = new Set(prev)
-      next.has(prop) ? next.delete(prop) : next.add(prop)
+      if (next.has(prop)) next.delete(prop)
+      else next.add(prop)
       return next
     })
   }
@@ -2913,7 +2889,8 @@ function DisplayPopover({
   function toggleTimelineProp(prop: string) {
     setTimelineProps((prev) => {
       const next = new Set(prev)
-      next.has(prop) ? next.delete(prop) : next.add(prop)
+      if (next.has(prop)) next.delete(prop)
+      else next.add(prop)
       return next
     })
   }

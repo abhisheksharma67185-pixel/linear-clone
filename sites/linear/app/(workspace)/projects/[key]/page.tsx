@@ -63,13 +63,6 @@ export default function ProjectDetailPage() {
     () => (project ? issues.filter((i) => i.projectId === project.id) : []),
     [project, issues]
   )
-  const pct = useMemo(() => {
-    if (!projectIssues.length) return 0
-    const done = projectIssues.filter(
-      (i) => i.status === "done" || i.status === "cancelled"
-    ).length
-    return Math.round((done / projectIssues.length) * 100)
-  }, [projectIssues])
 
   if (loading) {
     return (
