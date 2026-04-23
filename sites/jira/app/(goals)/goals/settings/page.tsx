@@ -500,9 +500,10 @@ function GoalSettingsContent() {
     setTimeout(() => setToastMessage(null), 3000)
   }
 
-  // When URL tab param changes, sync state
+  // When URL tab param changes, sync state (external sync: URL → UI).
   useEffect(() => {
     const tab = searchParams.get("tab") as "types" | "fields" | "scoring" | null
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (tab && tab !== activeTab) setActiveTab(tab)
   }, [searchParams]) // eslint-disable-line react-hooks/exhaustive-deps
 

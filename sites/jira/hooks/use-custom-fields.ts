@@ -36,6 +36,8 @@ export function useCustomFields() {
       .catch(() => {})
   }, [])
 
+  // External sync: subscribe to module-level cache updates and hydrate from
+  // it on mount.
   useEffect(() => {
     // Subscribe to cross-component updates
     const handler = () => {
@@ -47,6 +49,7 @@ export function useCustomFields() {
     if (_cache === null) {
       refresh()
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFields([..._cache])
     }
 

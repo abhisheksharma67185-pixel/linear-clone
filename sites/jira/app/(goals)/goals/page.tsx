@@ -730,8 +730,9 @@ export default function GoalsPage() {
   const [viewSearch, setViewSearch] = useState("")
   const [moreViewsOpen, setMoreViewsOpen] = useState(false)
 
-  // Auto-enable newly created custom fields
+  // Auto-enable newly created custom fields (external sync: customFields → UI).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCustomColEnabled((prev) => {
       const next = { ...prev }
       let changed = false

@@ -331,7 +331,9 @@ function FilterDropdown({
     return () => document.removeEventListener("mousedown", h)
   }, [isOpen, onToggleOpen])
 
+  // Form-reset on close (external sync: open/close → UI).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!isOpen) setSearch("")
   }, [isOpen])
 

@@ -442,8 +442,9 @@ export default function AdminLayout({
   const bellRef = useRef<HTMLButtonElement>(null)
   const profileRef = useRef<HTMLDivElement>(null)
 
-  // Close mobile sidebar on route change
+  // Close mobile sidebar on route change (external sync: pathname → UI).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileNavOpen(false)
   }, [pathname])
 

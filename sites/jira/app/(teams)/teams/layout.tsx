@@ -1132,7 +1132,9 @@ export default function TeamsLayout({
   const feedbackModalRef = useRef<HTMLDivElement>(null)
   const shortcutsModalRef = useRef<HTMLDivElement>(null)
 
+  // Mount-only sync from localStorage.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNavFeedbackDismissed(
       localStorage.getItem("atlas_nav_feedback_dismissed") === "true"
     )

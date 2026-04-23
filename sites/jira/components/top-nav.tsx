@@ -2141,13 +2141,19 @@ function NotificationsPanel({ onClose }: { onClose: () => void }) {
       })
   }, [])
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleClose()
-    }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  }, [])
+  useEffect(
+    () => {
+      const handler = (e: KeyboardEvent) => {
+        if (e.key === "Escape") handleClose()
+      }
+      window.addEventListener("keydown", handler)
+      return () => window.removeEventListener("keydown", handler)
+    },
+    // handleClose is a stable inline helper; the listener should only be
+    // set up on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
 
   function handleClose() {
     setVisible(false)

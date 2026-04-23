@@ -359,8 +359,10 @@ export function CreateTaskDialog({
   const [flagged, setFlagged] = useState(false)
   const [createAnother, setCreateAnother] = useState(false)
 
+  // External sync on open: hydrate dropdown options + reset minimized.
   useEffect(() => {
     if (!open) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMinimized(false)
     Promise.all([
       fetch("/api/data/projects").then((r) => r.json()),
@@ -380,11 +382,13 @@ export function CreateTaskDialog({
     })
   }, [open])
 
-  // When project changes, reset status to the first workflow state of the new project
+  // When project changes, reset status to the first workflow state of the new
+  // project (external sync: projectId → status).
   useEffect(() => {
     if (!projectId) return
     const project = projects.find((p) => p.id === projectId)
     if (project?.workflow?.length) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus(project.workflow[0])
     }
   }, [projectId, projects])

@@ -131,7 +131,9 @@ export function IssueDrawer({
     })
   }, [issueKey])
 
+  // External sync: open/close drawer → reset/load issue state.
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (open && issueKey) fetchData()
     if (!open) {
       setIssue(null)
@@ -139,6 +141,7 @@ export function IssueDrawer({
       loadedRef.current = false
       setSaveStatus("idle")
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [open, issueKey, fetchData])
 
   // Auto-save

@@ -191,12 +191,15 @@ function CreateProjectFromTemplate({
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // External sync: derive a default project key from the user-typed name,
+  // but allow the user to override it manually afterward.
   useEffect(() => {
     if (name) {
       const autoKey = name
         .toUpperCase()
         .replace(/[^A-Z0-9]/g, "")
         .substring(0, 10)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setKey(autoKey || "PROJ")
     }
   }, [name])

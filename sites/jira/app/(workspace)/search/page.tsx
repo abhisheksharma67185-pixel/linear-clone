@@ -171,14 +171,17 @@ function SearchPageInner() {
   const [loading, setLoading] = useState(false)
   const [saveFilterOpen, setSaveFilterOpen] = useState(false)
 
+  // External sync: URL ?q= → query/results state.
   useEffect(() => {
     const q = searchParams.get("q") ?? ""
+    /* eslint-disable react-hooks/set-state-in-effect */
     setQuery(q)
     if (!q.trim()) {
       setResults(null)
       return
     }
     setLoading(true)
+    /* eslint-enable react-hooks/set-state-in-effect */
     fetch(`/api/data/search?q=${encodeURIComponent(q.trim())}&issueLimit=50`)
       .then((r) => r.json())
       .then((data: SearchResults) => {

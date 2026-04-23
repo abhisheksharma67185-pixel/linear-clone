@@ -1153,7 +1153,9 @@ export default function ProjectFollowingPage() {
     link?: { label: string; href: string }
   } | null>(null)
 
+  // Mount-only sync from localStorage.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFollowedKeys(readFollowedKeys())
   }, [])
 

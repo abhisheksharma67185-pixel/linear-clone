@@ -94,8 +94,11 @@ function Carousel({
     setApi(api)
   }, [api, setApi])
 
+  // External sync: subscribe to embla carousel events; the immediate call
+  // initializes UI from the current api state.
   React.useEffect(() => {
     if (!api) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)

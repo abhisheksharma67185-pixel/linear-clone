@@ -1501,9 +1501,9 @@ export default function ProjectDirectoryPage() {
       setViewNameError("A view with this name already exists")
       return
     }
+    // handler runs from user events (Enter / button click), not during render.
     const newView: SavedView = {
-      // eslint-disable-next-line react-hooks/purity -- handler runs from user
-      // events (Enter / button click), not during render.
+      // eslint-disable-next-line react-hooks/purity
       id: `view_${Date.now()}`,
       name,
       chips: Array.from(activeChips),

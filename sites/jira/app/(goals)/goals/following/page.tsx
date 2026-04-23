@@ -775,8 +775,9 @@ export default function FollowingPage() {
   const [goalOwner, setGoalOwner] = useState("Abhishek Sharma")
   const goalNameRef = useRef<HTMLInputElement>(null)
 
-  // Auto-enable newly created custom fields
+  // Auto-enable newly created custom fields (external sync: customFields → UI).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCustomColEnabled((prev) => {
       const next = { ...prev }
       let changed = false

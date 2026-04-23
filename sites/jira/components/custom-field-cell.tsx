@@ -32,8 +32,9 @@ export function CustomFieldCell({
   const inputRef = useRef<HTMLInputElement>(null)
   const selectRef = useRef<HTMLDivElement>(null)
 
-  // Sync draft when value changes from parent
+  // Sync draft when value changes from parent (external sync: prop → state).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft(value)
   }, [value])
 

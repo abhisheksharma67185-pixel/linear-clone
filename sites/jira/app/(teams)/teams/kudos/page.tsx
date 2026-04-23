@@ -186,8 +186,6 @@ export default function KudosPage() {
     }
     document.addEventListener("keydown", handler)
     return () => document.removeEventListener("keydown", handler)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- closeModal is a
-    // stable inline helper; only modalOpen needs to retrigger the listener.
   }, [modalOpen])
 
   useEffect(() => {

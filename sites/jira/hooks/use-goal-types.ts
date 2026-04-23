@@ -26,7 +26,9 @@ export function useGoalTypes() {
     setLoading(false)
   }, [])
 
+  // Mount: fetch goal types from API.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load()
   }, [load])
 
