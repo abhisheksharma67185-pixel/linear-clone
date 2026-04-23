@@ -570,14 +570,22 @@ export function getHomeInitialData(): HomeInitialData {
   // Filter further to just the sample ticket for the home list — the screen
   // shows "1 ticket" so we highlight the SAMPLE welcome ticket.
   const sampleTickets = yourTickets.filter((t) => t.tags.includes("sample"))
+  // Match the reference screenshot — "Open tickets / Your groups" counts
+  // tickets assigned to the current agent that are currently in the "open"
+  // status (a tighter slice than yourOpenTickets, which includes pending/on-hold).
   const groupOpenTickets = _tickets.filter(
-    (t) =>
-      t.groupId === agent.groupId && (t.status === "new" || t.status === "open")
+    (t) => t.assigneeId === agent.id && t.status === "open"
   ).length
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+  // "This week" = since the most recent Monday (Zendesk's convention).
+  const startOfWeek = new Date()
+  startOfWeek.setHours(0, 0, 0, 0)
+  const dow = startOfWeek.getDay() // 0 = Sun, 1 = Mon, ...
+  const offsetToMonday = dow === 0 ? 6 : dow - 1
+  startOfWeek.setDate(startOfWeek.getDate() - offsetToMonday)
+  const startOfWeekMs = startOfWeek.getTime()
   const solvedThisWeek = _tickets.filter(
     (t) =>
-      t.status === "solved" && new Date(t.updatedAt).getTime() >= sevenDaysAgo
+      t.status === "solved" && new Date(t.updatedAt).getTime() >= startOfWeekMs
   ).length
   return {
     tickets: deepClone(

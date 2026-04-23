@@ -65,8 +65,8 @@ function StepCta({ cta }: { cta: Step["cta"] }) {
 
 export function SetupGuideCard() {
   return (
-    <Card className="gap-3 py-4">
-      <CardHeader className="px-4">
+    <Card className="gap-1 py-3" size="sm">
+      <CardHeader className="px-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-0.5">
             <CardDescription className="text-xs">Setup guide</CardDescription>
@@ -80,12 +80,12 @@ export function SetupGuideCard() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-1 px-2">
+      <CardContent className="flex flex-col gap-0.5 px-1.5">
         {STEPS.map((step) => (
           <div
             key={step.id}
             className={cn(
-              "flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm",
+              "flex items-center justify-between gap-3 rounded-md px-2 py-0.5 text-[13px] leading-6",
               step.state === "locked"
                 ? "text-muted-foreground"
                 : "text-foreground hover:bg-muted/50"
