@@ -106,7 +106,7 @@ let _issues: Issue[] = deepClone(initialIssues)
 let _boards: Board[] = deepClone(initialBoards)
 let _filters: SavedFilter[] = deepClone(initialFilters)
 let _plans: Plan[] = []
-let _goals: Goal[] = [
+const _goals: Goal[] = [
   {
     id: "goal-1",
     name: "Increase platform uptime to 99.9%",

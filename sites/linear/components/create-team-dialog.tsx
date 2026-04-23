@@ -19,7 +19,8 @@ export function CreateTeamDialog({
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreated: (team: Team) => void
+  /** Optional callback fired when a team is successfully created. */
+  onCreated?: (team: Team) => void
 }) {
   const [name, setName] = useState("")
   const [key, setKey] = useState("")
@@ -27,13 +28,17 @@ export function CreateTeamDialog({
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
+  // Reset form fields when the dialog closes. open → UI state sync is what
+  // useEffect is for; the rule's caution doesn't apply.
   useEffect(() => {
     if (!open) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setName("")
       setKey("")
       setKeyDirty(false)
       setError(null)
       setSubmitting(false)
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open])
 
@@ -61,7 +66,7 @@ export function CreateTeamDialog({
         setSubmitting(false)
         return
       }
-      onCreated(data as Team)
+      onCreated?.(data as Team)
       onOpenChange(false)
     } catch {
       setError("Network error")

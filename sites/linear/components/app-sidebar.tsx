@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
@@ -48,18 +48,10 @@ import {
   Search01Icon,
   ArrowDown01Icon,
   InboxDownloadIcon,
-  UserAdd01Icon,
   Github01Icon,
   HelpCircleIcon,
-  Activity03Icon,
-  Target01Icon,
   TaskEdit01Icon,
-  Progress01Icon,
   Settings02Icon,
-  Logout03Icon,
-  Download01Icon,
-  KeyboardIcon,
-  Moon01Icon,
   PlusSignIcon,
   Tick02Icon,
   UserIcon,
@@ -68,9 +60,7 @@ import {
   Notification01Icon,
   SlackIcon,
   Logout01Icon,
-  ArrowRight01Icon,
 } from "@hugeicons/core-free-icons"
-import type { Team } from "@/app/lib/mock-data"
 import { CreateIssueDialog } from "@/components/create-issue-dialog"
 import { CreateTeamDialog } from "@/components/create-team-dialog"
 import { ImportIssuesDialog } from "@/components/import-issues-dialog"
@@ -87,14 +77,6 @@ export function AppSidebar() {
   const [importOpen, setImportOpen] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
-  const [teams, setTeams] = useState<Team[]>([])
-
-  useEffect(() => {
-    fetch("/api/data/teams")
-      .then((r) => r.json())
-      .then(setTeams)
-      .catch(() => setTeams([]))
-  }, [])
 
   const isActive = (href: string) => pathname === href
 
@@ -536,29 +518,12 @@ export function AppSidebar() {
       <CreateTeamDialog
         open={createTeamOpen}
         onOpenChange={setCreateTeamOpen}
-        onCreated={(team) => setTeams((prev) => [...prev, team])}
       />
       <ImportIssuesDialog open={importOpen} onOpenChange={setImportOpen} />
       <InvitePeopleDialog open={inviteOpen} onOpenChange={setInviteOpen} />
       <DownloadAppDialog open={downloadOpen} onOpenChange={setDownloadOpen} />
     </>
   )
-}
-
-function teamIconColor(key: string): string {
-  const palette = [
-    "bg-violet-500",
-    "bg-sky-500",
-    "bg-amber-500",
-    "bg-emerald-500",
-    "bg-rose-500",
-    "bg-fuchsia-500",
-    "bg-cyan-500",
-    "bg-orange-500",
-  ]
-  let h = 0
-  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0
-  return palette[h % palette.length]
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {

@@ -15,8 +15,6 @@ import {
   File01Icon,
   InboxDownloadIcon,
   CheckmarkCircle02Icon,
-  AlertCircleIcon,
-  Tick02Icon,
 } from "@hugeicons/core-free-icons"
 
 type Source = {

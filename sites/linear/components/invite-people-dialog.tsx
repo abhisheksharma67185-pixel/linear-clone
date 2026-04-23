@@ -48,13 +48,17 @@ export function InvitePeopleDialog({
   const [copied, setCopied] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Reset form fields when the dialog closes. open → UI state sync is what
+  // useEffect is for; the rule's caution doesn't apply.
   useEffect(() => {
     if (!open) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setDraft("")
       setEmails([])
       setRole("member")
       setSent(null)
       setCopied(false)
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open])
 

@@ -25,9 +25,6 @@ import {
   UserMultiple02Icon,
   Calendar01Icon,
   CalendarBlock01Icon,
-  HelpCircleIcon,
-  CheckmarkCircle02Icon,
-  AlertCircleIcon,
   Attachment01Icon,
 } from "@hugeicons/core-free-icons"
 

@@ -94,8 +94,11 @@ function Carousel({
     setApi(api)
   }, [api, setApi])
 
+  // Embla event subscription. Initial onSelect call seeds state from the
+  // external library; subsequent updates flow through the on/off listeners.
   React.useEffect(() => {
     if (!api) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)

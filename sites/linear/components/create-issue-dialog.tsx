@@ -116,7 +116,6 @@ export function CreateIssueDialog({
   const team = teams.find((t) => t.id === teamId) ?? null
   const assignee = members.find((m) => m.id === assigneeId) ?? null
   const project = projects.find((p) => p.id === projectId) ?? null
-  const cycle = cycles.find((c) => c.id === cycleId) ?? null
   const selectedLabels = labels.filter((l) => labelIds.includes(l.id))
   const statusLabel =
     STATUS_OPTIONS.find((s) => s.value === status)?.label ?? "Backlog"

@@ -21,12 +21,16 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const [tab, setTab] = useState<Tab>("all")
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Reset query/tab when dialog closes; focus input when it opens.
+  // open → UI sync — exactly what useEffect is for.
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 50)
     } else {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setQuery("")
       setTab("all")
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open])
 
