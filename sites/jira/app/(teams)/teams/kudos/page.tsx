@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
@@ -107,8 +106,6 @@ const EMOJI_PICKER = [
   "⭐",
   "👍",
 ]
-const CURRENT_USER = "Abhishek Sharma"
-
 export default function KudosPage() {
   const [tab, setTab] = useState<"all" | "received" | "given">("all")
   const [kudos, setKudos] = useState(initialKudos)

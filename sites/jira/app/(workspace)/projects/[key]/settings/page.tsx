@@ -208,8 +208,6 @@ export default function ProjectSettingsPage() {
     )
   }
 
-  const leadUser = users.find((u) => u.id === lead)
-
   return (
     <div className="flex min-h-0 flex-1">
       {/* Sidebar */}

@@ -168,9 +168,12 @@ export default function GeneralSettingsPage() {
     setTimeout(() => setSaved(false), 3000)
   }
 
+  const intlWithSupported = Intl as typeof Intl & {
+    supportedValuesOf?: (key: string) => string[]
+  }
   const timezones =
-    typeof Intl !== "undefined" && (Intl as any).supportedValuesOf
-      ? ((Intl as any).supportedValuesOf("timeZone") as string[])
+    typeof Intl !== "undefined" && intlWithSupported.supportedValuesOf
+      ? intlWithSupported.supportedValuesOf("timeZone")
       : [
           "Asia/Kolkata",
           "America/New_York",

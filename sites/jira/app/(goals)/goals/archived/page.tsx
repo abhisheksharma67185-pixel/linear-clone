@@ -454,8 +454,6 @@ export default function ArchivedGoalsPage() {
     { id: "owner", label: "Owner", enabled: true },
     { id: "following", label: "Following", enabled: true },
   ])
-  const isColEnabled = (id: string) =>
-    columns.find((c) => c.id === id)?.enabled ?? false
 
   // Filter values
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
@@ -552,7 +550,6 @@ export default function ArchivedGoalsPage() {
 
   const isChipShown = (id: string) => isFilterActive(id) || openFilter === id
   const anyChipActive = filterDefs.some((f) => isChipShown(f.id))
-  const anyFilterActive = filterDefs.some((f) => isFilterActive(f.id))
 
   const handleFilterBtn = (id: string) => {
     if (id === "following") {
@@ -659,11 +656,11 @@ export default function ArchivedGoalsPage() {
     )
     .filter((g) => !statusFilter || g.status === statusFilter)
     .filter((g) => !ownerFilter || g.owner.name === ownerFilter)
-    .filter((g) => !teamFilter)
+    .filter(() => !teamFilter)
     .filter((g) => !followingFilter || g.following)
-    .filter((g) => !tagChipActive)
-    .filter((g) => !metricChipActive)
-    .filter((g) => !reportingFilter)
+    .filter(() => !tagChipActive)
+    .filter(() => !metricChipActive)
+    .filter(() => !reportingFilter)
     .slice()
     .sort((a, b) => {
       const dir = sortAsc ? 1 : -1

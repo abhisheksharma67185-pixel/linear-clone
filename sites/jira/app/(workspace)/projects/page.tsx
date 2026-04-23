@@ -1,9 +1,9 @@
 "use client"
 
 import { Suspense, useEffect, useState, useRef } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -719,22 +719,11 @@ function SpacesPageInner() {
       : "asc"
   )
   const [starredProjects, setStarredProjects] = useState<Set<string>>(new Set())
-  const [refetchTrigger, setRefetchTrigger] = useState(0)
+  const refetchTrigger = 0
   const [createOpen, setCreateOpen] = useState(false)
   const [newSpaceName, setNewSpaceName] = useState("")
-  const [newSpaceKey, setNewSpaceKey] = useState("")
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [spaceToast, setSpaceToast] = useState<string | null>(null)
-
-  const handleCreateSpace = () => {
-    const name = newSpaceName.trim()
-    if (!name) return
-    setCreateOpen(false)
-    setNewSpaceName("")
-    setNewSpaceKey("")
-    setSpaceToast(`Space "${name}" created`)
-    setTimeout(() => setSpaceToast(null), 3000)
-  }
 
   const activeTemplate = templateList.find((t) => t.name === selectedTemplate)
 
@@ -1194,13 +1183,16 @@ function SpacesPageInner() {
                             (e.currentTarget.style.textDecoration = "none")
                           }
                         >
-                          <img
-                            src={project.avatarUrls?.["32x32"]}
-                            width={24}
-                            height={24}
-                            style={{ borderRadius: 3, flexShrink: 0 }}
-                            alt={project.name}
-                          />
+                          {project.avatarUrls?.["32x32"] && (
+                            <Image
+                              src={project.avatarUrls["32x32"]}
+                              width={24}
+                              height={24}
+                              style={{ borderRadius: 3, flexShrink: 0 }}
+                              alt={project.name}
+                              unoptimized
+                            />
+                          )}
                           {project.name}
                         </Link>
                       </TableCell>
@@ -1231,12 +1223,13 @@ function SpacesPageInner() {
                           }}
                         >
                           {project.lead?.avatarUrls?.["24x24"] && (
-                            <img
+                            <Image
                               src={project.lead.avatarUrls["24x24"]}
                               width={20}
                               height={20}
                               style={{ borderRadius: "50%", flexShrink: 0 }}
                               alt={project.lead.displayName}
+                              unoptimized
                             />
                           )}
                           <span style={{ fontSize: 14, color: "#172B4D" }}>

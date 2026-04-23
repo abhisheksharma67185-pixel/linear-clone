@@ -1,11 +1,10 @@
 "use client"
 
 import { useEffect, useState, useRef, useCallback } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import type { Issue, User, Project, Sprint, Epic } from "@/app/lib/mock-data"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
@@ -90,14 +89,12 @@ function formatFieldValue(field: string, value: string | null): string {
 }
 
 // Types kept for compatibility
-type PopulatedComment = Comment & { author: UserType | null }
 type PopulatedHistory = IssueHistoryEntry & { author: UserType | null }
 
 // ─── Issue detail page ───────────────────────────────────────────────────────
 
 export default function IssueDetailPage() {
   const params = useParams<{ key: string }>()
-  const router = useRouter()
   const issueKey = params.key
 
   const [issue, setIssue] = useState<Issue | null>(null)
@@ -122,7 +119,6 @@ export default function IssueDetailPage() {
     }>
   >([])
   const [commentBody, setCommentBody] = useState("")
-  const [commentPosting, setCommentPosting] = useState(false)
   const [history, setHistory] = useState<PopulatedHistory[]>([])
   const [activityTab, setActivityTab] = useState<
     "all" | "comments" | "history"

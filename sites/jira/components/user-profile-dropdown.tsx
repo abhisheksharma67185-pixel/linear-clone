@@ -146,12 +146,6 @@ function SystemThumbnail() {
   )
 }
 
-const THEMES = [
-  { id: "light", label: "Light", Thumb: LightThumbail },
-  { id: "dark", label: "Dark", Thumb: DarkThumbnail },
-  { id: "system", label: "Match browser", Thumb: SystemThumbnail },
-] as const
-
 export function UserProfileDropdown({
   name = "Abhishek Sharma",
   email = "abhisheksharma67185@gmail.com",
@@ -160,10 +154,8 @@ export function UserProfileDropdown({
   const router = useRouter()
   const { theme, setTheme } = useTheme()
   const [open, setOpen] = useState(false)
-  const [showThemeMenu, setShowThemeMenu] = useState(false)
 
   const closeAll = () => {
-    setShowThemeMenu(false)
     setOpen(false)
   }
 
@@ -187,13 +179,7 @@ export function UserProfileDropdown({
   }
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={(o) => {
-        setOpen(o)
-        if (!o) setShowThemeMenu(false)
-      }}
-    >
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         aria-label="User profile"
         data-testid="user-profile-trigger"

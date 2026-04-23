@@ -708,7 +708,7 @@ export default function GoalsPage() {
   const [renameValue, setRenameValue] = useState("")
   const [renameError, setRenameError] = useState<string | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
-  const [deleteConfirmLabel, setDeleteConfirmLabel] = useState("")
+  const deleteConfirmLabel = ""
 
   const [openFilter, setOpenFilter] = useState<FilterType>(null)
   const [activeFilters, setActiveFilters] = useState<

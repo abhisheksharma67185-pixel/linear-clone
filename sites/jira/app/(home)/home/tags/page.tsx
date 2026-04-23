@@ -50,7 +50,7 @@ export default function TagsPage() {
   const [trending, setTrending] = useState(initialTrending)
   const [followingTopics, setFollowingTopics] = useState(initialFollowing)
   const [everything, setEverything] = useState(initialEverything)
-  const [sortBy, setSortBy] = useState<SortKey>("followers")
+  const sortBy: SortKey = "followers"
   const [sortAsc, setSortAsc] = useState(false)
 
   const toggleTrending = (name: string) => {

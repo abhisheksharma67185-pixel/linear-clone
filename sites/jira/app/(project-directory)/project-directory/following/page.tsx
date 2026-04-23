@@ -1331,7 +1331,6 @@ export default function ProjectFollowingPage() {
 
   // Filters that are active (chip shown) or inactive (button shown)
   const activeFilterIds = Array.from(activeFilters)
-  const inactiveFilters = FILTER_CONFIGS.filter((f) => !activeFilters.has(f.id))
 
   return (
     <div className="p-6">

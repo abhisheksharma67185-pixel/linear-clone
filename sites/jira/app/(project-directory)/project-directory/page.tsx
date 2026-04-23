@@ -179,8 +179,6 @@ const allOwners = [
   "Taylor Brown",
 ]
 
-const tabs = ["All projects", "My projects", "Archived"]
-
 type FilterKey =
   | "status"
   | "goal"
@@ -197,8 +195,6 @@ interface FilterConfig {
   options: string[]
   icon: React.ReactNode
 }
-
-const allProjectTypes = ["Scrum", "Kanban"]
 
 const filterConfigs: FilterConfig[] = [
   {
@@ -1573,13 +1569,6 @@ export default function ProjectDirectoryPage() {
     setTimeout(() => setToast(null), 3000)
   }
 
-  const handleEditProject = (id: number) => {
-    const p = projects.find((x) => x.id === id)
-    if (!p) return
-    setEditProjectId(id)
-    setEditProjectName(p.name)
-    setEditOpen(true)
-  }
   const commitEdit = () => {
     if (editProjectId === null) return
     const newName = editProjectName.trim()
@@ -1725,10 +1714,6 @@ export default function ProjectDirectoryPage() {
     setArchiveConfirmId(null)
     showToast("Project archived")
   }
-  const handleDelete = (id: number) => {
-    setProjects((p) => p.filter((x) => x.id !== id))
-    showToast("Project deleted")
-  }
   const toggleFollow = (id: number) => {
     setFollowedProjects((prev) => {
       const next = new Set(prev)
@@ -1789,9 +1774,6 @@ export default function ProjectDirectoryPage() {
     setSortAsc(true)
     setSearch("")
   }
-
-  const anyChipActive =
-    activeChips.size > 0 || starredChipActive || reportingLineChipActive
 
   const filteredProjects = projects
     .filter((p) => {

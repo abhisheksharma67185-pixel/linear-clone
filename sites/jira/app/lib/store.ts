@@ -1051,9 +1051,6 @@ if (!_g.__cfValues) _g.__cfValues = {}
 function getCFState() {
   return _g.__cf!
 }
-function getCFIdState() {
-  return _g.__cfId!
-}
 function incCFId() {
   _g.__cfId = (_g.__cfId ?? 1) + 1
   return _g.__cfId! - 1

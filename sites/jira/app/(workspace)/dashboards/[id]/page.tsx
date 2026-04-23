@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import type { Issue, Project, User, Sprint, Epic } from "@/app/lib/mock-data"
+import type { Issue, Project, User, Sprint } from "@/app/lib/mock-data"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -15,11 +15,7 @@ import {
   typeLabel,
 } from "@/lib/badge-styles"
 import { IssueLink } from "@/components/issue-link"
-import {
-  resolveUser,
-  resolveSprintName,
-  resolveEpicName,
-} from "@/lib/resolve-user"
+import { resolveUser } from "@/lib/resolve-user"
 
 const DASHBOARD_META: Record<string, { name: string; description: string }> = {
   "dash-1": {
@@ -115,7 +111,6 @@ export default function DashboardDetailPage() {
   const [users, setUsers] = useState<User[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [sprints, setSprints] = useState<Sprint[]>([])
-  const [epics, setEpics] = useState<Epic[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -124,13 +119,11 @@ export default function DashboardDetailPage() {
       fetch("/api/data/users").then((r) => r.json()),
       fetch("/api/data/projects").then((r) => r.json()),
       fetch("/api/data/sprints").then((r) => r.json()),
-      fetch("/api/data/epics").then((r) => r.json()),
-    ]).then(([i, u, p, s, e]) => {
+    ]).then(([i, u, p, s]) => {
       setIssues(i)
       setUsers(u)
       setProjects(p)
       setSprints(s)
-      setEpics(e)
       setLoading(false)
     })
   }, [])

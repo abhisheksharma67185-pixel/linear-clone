@@ -2438,7 +2438,6 @@ const fappIssues: Issue[] = [
 
 // --- LCRM issues (215) — spec §4.5. Distribution: 8 epics, 71 stories, 70 bugs, 50 tasks, 15 sub-tasks + 1 epic reserved ---
 
-const lcrmStatuses = ["To Do", "Doing", "Review", "Testing", "Done", "Rejected"]
 const lcrmDistribution: { status: string; count: number }[] = [
   { status: "To Do", count: 45 },
   { status: "Doing", count: 25 },

@@ -1584,19 +1584,6 @@ function CreateDropdown() {
     }
   }
 
-  const dialogTitles: Record<string, string> = {
-    goal: "Create goal",
-    work: "Create work item",
-    project: "Create project",
-    team: "Create team",
-  }
-  const dialogDescs: Record<string, string> = {
-    goal: "Set a goal for your team to track progress.",
-    work: "Create a new issue in your project.",
-    project: "Start a new project to organize work.",
-    team: "Create a team to collaborate with others.",
-  }
-
   return (
     <>
       <DropdownMenu>

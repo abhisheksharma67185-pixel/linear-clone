@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
@@ -38,7 +37,6 @@ const initialUpdates: Update[] = [
 ]
 
 export default function ProjectStatusUpdatesPage() {
-  const router = useRouter()
   const [updates, setUpdates] = useState<Update[]>(initialUpdates)
   const [weekOffset, setWeekOffset] = useState(0) // 0 = last week, -1 = two weeks ago, 1 = this week
   const [writeOpen, setWriteOpen] = useState(false)

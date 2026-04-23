@@ -155,8 +155,6 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] =
     useState<Notification[]>(initialNotifications)
 
-  const unreadCount = notifications.filter((n) => !n.read).length
-
   const filteredNotifications = notifications.filter((n) => {
     if (n.category !== activeTab) return false
     if (showUnread && n.read) return false
