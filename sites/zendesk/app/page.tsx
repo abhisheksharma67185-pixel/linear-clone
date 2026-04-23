@@ -1,19 +1,46 @@
-import { Button } from "@/components/ui/button"
+import { AppShell } from "@/components/zendesk/app-shell"
+import { ChannelsMiniCard } from "@/components/zendesk/channels-mini-card"
+import { SetupGuideCard } from "@/components/zendesk/setup-guide-card"
+import { StatCard } from "@/components/zendesk/stat-card"
+import { TicketList } from "@/components/zendesk/ticket-list"
+import { UpdatesCard } from "@/components/zendesk/updates-card"
+import { ViewsSidebar } from "@/components/zendesk/views-sidebar"
+import * as store from "@/app/lib/store"
+import "@/app/lib/init-sim"
+import type { User } from "@/app/lib/mock-data"
 
-export default function Page() {
+export const dynamic = "force-dynamic"
+
+export default function HomePage() {
+  const home = store.getHomeInitialData()
+  const usersById: Record<string, User> = Object.fromEntries(
+    store.getUsers().map((u) => [u.id, u])
+  )
+
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
+    <AppShell
+      agentName={home.currentAgent.name}
+      conversations={0}
+      left={<ViewsSidebar />}
+      main={<TicketList tickets={home.tickets} usersById={usersById} />}
+      right={
+        <>
+          <SetupGuideCard />
+          <ChannelsMiniCard />
+          <StatCard
+            title="Ticket statistics"
+            subtitle="This week"
+            value={home.counts.solvedThisWeek}
+            caption="Solved"
+          />
+          <StatCard
+            title="Open tickets"
+            value={home.counts.groupOpenTickets}
+            caption="Your groups"
+          />
+          <UpdatesCard />
+        </>
+      }
+    />
   )
 }
