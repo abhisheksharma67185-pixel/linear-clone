@@ -284,7 +284,9 @@ function ChartCard({
   compDateLabel?: string;
 }) {
   const [mounted, setMounted] = useState(false);
+  // SSR-mount detection — render placeholder until hydration.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
   const data = useMemo(() => MERGED_DATA, []);
@@ -564,6 +566,25 @@ function CohortCard({ reportUrl: _r }: { reportUrl?: string }) {
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 
+function CompareIcon() {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M1 5h11M9 3l3 2-3 2" />
+      <path d="M15 11H4M7 9l-3 2 3 2" />
+    </svg>
+  );
+}
+
 export default function AnalyticsPage() {
   const router = useRouter();
 
@@ -578,7 +599,9 @@ export default function AnalyticsPage() {
   const rangeDropdownRef = useRef<HTMLDivElement>(null);
   const [rangePos, setRangePos] = useState({ top: 0, left: 0 });
   const [pageMounted, setPageMounted] = useState(false);
+  // SSR-mount detection for the page-level chrome.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPageMounted(true);
   }, []);
 
@@ -754,23 +777,6 @@ export default function AnalyticsPage() {
     >
       {rangeLabel}
     </Button>
-  );
-
-  const CompareIcon = () => (
-    <svg
-      viewBox="0 0 16 16"
-      width="16"
-      height="16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M1 5h11M9 3l3 2-3 2" />
-      <path d="M15 11H4M7 9l-3 2 3 2" />
-    </svg>
   );
 
   const dateActivator = (
