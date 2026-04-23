@@ -74,7 +74,24 @@ interface EnrichedTask extends TaskSummary {
   _siteUrl: string
 }
 
+// Next.js 16 requires `useSearchParams()` to live under a Suspense boundary
+// so the rest of the page can prerender. Wrap the real page in a small
+// suspense shell.
 export default function TasksPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <PageShell title="Tasks">
+          <Skeleton className="h-64 w-full" />
+        </PageShell>
+      }
+    >
+      <TasksContent />
+    </React.Suspense>
+  )
+}
+
+function TasksContent() {
   const router = useRouter()
   const params = useSearchParams()
   const sites = useSitesStore((s) => s.sites)

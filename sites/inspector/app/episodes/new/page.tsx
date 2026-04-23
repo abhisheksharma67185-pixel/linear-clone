@@ -37,7 +37,24 @@ import { api, ApiError } from "@/lib/api-client"
 import { difficultyVariant } from "@/lib/format"
 import type { StartEpisodeResponse } from "@/lib/types"
 
+// Next.js 16 requires `useSearchParams()` (and any client hook that bails out
+// of static prerendering) to live under a Suspense boundary so the rest of
+// the page can prerender. Wrap the real page in a small suspense shell.
 export default function NewEpisodePage() {
+  return (
+    <React.Suspense
+      fallback={
+        <PageShell title="New episode">
+          <Skeleton className="h-64 w-full" />
+        </PageShell>
+      }
+    >
+      <NewEpisodeContent />
+    </React.Suspense>
+  )
+}
+
+function NewEpisodeContent() {
   const router = useRouter()
   const search = useSearchParams()
   const sites = useSitesStore((s) => s.sites)
