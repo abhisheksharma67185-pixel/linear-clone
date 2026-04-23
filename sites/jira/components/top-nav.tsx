@@ -12,17 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
 import type { Issue, Project, User } from "@/app/lib/mock-data"
 import { CreateTaskDialog } from "@/components/create-task-dialog"
 import { useTheme } from "next-themes"
@@ -1284,93 +1273,6 @@ function CreateIssueDialog(_props: { isBlue?: boolean }) {
 
 export function CreateButton({ isBlue = false }: { isBlue?: boolean }) {
   return <CreateIssueDialog isBlue={isBlue} />
-}
-
-// ─── Chevron Icon ───────────────────────────────────────────────────────────
-
-function ChevronDown({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className ?? "size-3.5"}
-      viewBox="0 0 16 16"
-      fill="currentColor"
-    >
-      <path d="M4 6l4 4 4-4" />
-    </svg>
-  )
-}
-
-// ─── Nav Dropdown ───────────────────────────────────────────────────────────
-
-function NavDropdown({
-  label,
-  children,
-}: {
-  label: string
-  children: React.ReactNode
-}) {
-  return (
-    <Popover>
-      <PopoverTrigger className="flex items-center gap-1 rounded px-2.5 py-1.5 text-[13px] font-medium text-white/90 transition-colors hover:bg-white/15 hover:text-white">
-        {label}
-        <ChevronDown className="size-3 text-white/60" />
-      </PopoverTrigger>
-      <PopoverContent
-        side="bottom"
-        align="start"
-        sideOffset={4}
-        className="w-[280px] p-0"
-      >
-        {children}
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-// ─── Projects nav list (fetches recent projects for the dropdown) ───────────
-
-function ProjectsNavList() {
-  const [projects, setProjects] = useState<Project[]>([])
-  const loadedRef = useRef(false)
-
-  useEffect(() => {
-    if (loadedRef.current) return
-    loadedRef.current = true
-    fetch("/api/data/projects")
-      .then((r) => r.json())
-      .then((data: Project[]) => setProjects(data.slice(0, 5)))
-      .catch(() => {})
-  }, [])
-
-  if (projects.length === 0) {
-    return (
-      <div className="px-3 py-3 text-center text-xs text-muted-foreground">
-        No recent projects
-      </div>
-    )
-  }
-
-  return (
-    <>
-      {projects.map((p) => (
-        <Link
-          key={p.id}
-          href={`/projects/${p.key}/board`}
-          className="flex items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-accent"
-        >
-          <div className="flex size-6 shrink-0 items-center justify-center rounded bg-blue-100 text-[10px] font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-            {p.key.charAt(0)}
-          </div>
-          <div className="min-w-0">
-            <div className="truncate text-sm">{p.name}</div>
-            <div className="text-[11px] text-muted-foreground">
-              {p.type === "scrum" ? "Scrum" : "Kanban"} project
-            </div>
-          </div>
-        </Link>
-      ))}
-    </>
-  )
 }
 
 // ─── App Switcher Icon (grid) ───────────────────────────────────────────────

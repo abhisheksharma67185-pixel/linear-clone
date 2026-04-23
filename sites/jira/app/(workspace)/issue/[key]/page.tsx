@@ -18,11 +18,7 @@ import {
 import { statusDisplayLabel } from "@/lib/badge-styles"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { UserProfileCard } from "@/components/user-profile-card"
-import type {
-  Comment,
-  IssueHistoryEntry,
-  User as UserType,
-} from "@/app/lib/mock-data"
+import type { IssueHistoryEntry, User as UserType } from "@/app/lib/mock-data"
 
 const statusOptions = [
   { value: "to_do", label: statusDisplayLabel.to_do },

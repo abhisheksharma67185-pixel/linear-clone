@@ -378,17 +378,10 @@ function HelpDropdown({
   )
 }
 
-function AdminDropdown({ onClose }: { onClose: () => void }) {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose()
-    }
-    document.addEventListener("mousedown", h)
-    return () => document.removeEventListener("mousedown", h)
-  }, [onClose])
-
-  const ExternalLinkIcon = () => (
+// Static icon used inside AdminDropdown rows; declared at module scope so
+// React doesn't recreate it on every render.
+function ExternalLinkIcon() {
+  return (
     <svg
       className="size-3.5 shrink-0 text-muted-foreground"
       viewBox="0 0 24 24"
@@ -401,6 +394,17 @@ function AdminDropdown({ onClose }: { onClose: () => void }) {
       <line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   )
+}
+
+function AdminDropdown({ onClose }: { onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose()
+    }
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [onClose])
 
   return (
     <div

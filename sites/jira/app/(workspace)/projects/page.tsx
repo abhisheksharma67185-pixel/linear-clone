@@ -721,9 +721,8 @@ function SpacesPageInner() {
   const [starredProjects, setStarredProjects] = useState<Set<string>>(new Set())
   const refetchTrigger = 0
   const [createOpen, setCreateOpen] = useState(false)
-  const [newSpaceName, setNewSpaceName] = useState("")
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const [spaceToast, setSpaceToast] = useState<string | null>(null)
+  const spaceToast: string | null = null
 
   const activeTemplate = templateList.find((t) => t.name === selectedTemplate)
 

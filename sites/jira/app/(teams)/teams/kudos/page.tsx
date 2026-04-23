@@ -170,6 +170,15 @@ export default function KudosPage() {
     setTimeout(() => setToast(null), 3000)
   }
 
+  const closeModal = () => {
+    setModalOpen(false)
+    setRecipientSearch("")
+    setSelectedRecipient(null)
+    setMessage("")
+    setSelectedBadge("hammer")
+    setRecipientDropOpen(false)
+  }
+
   useEffect(() => {
     if (!modalOpen) return
     const handler = (e: KeyboardEvent) => {
@@ -177,6 +186,8 @@ export default function KudosPage() {
     }
     document.addEventListener("keydown", handler)
     return () => document.removeEventListener("keydown", handler)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- closeModal is a
+    // stable inline helper; only modalOpen needs to retrigger the listener.
   }, [modalOpen])
 
   useEffect(() => {
@@ -191,15 +202,6 @@ export default function KudosPage() {
     document.addEventListener("mousedown", handler)
     return () => document.removeEventListener("mousedown", handler)
   }, [recipientDropOpen])
-
-  const closeModal = () => {
-    setModalOpen(false)
-    setRecipientSearch("")
-    setSelectedRecipient(null)
-    setMessage("")
-    setSelectedBadge("hammer")
-    setRecipientDropOpen(false)
-  }
 
   const handleSend = () => {
     if (!selectedRecipient || !message.trim()) return

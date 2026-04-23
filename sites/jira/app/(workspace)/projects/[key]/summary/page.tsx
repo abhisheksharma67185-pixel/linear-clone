@@ -32,6 +32,9 @@ export default function SummaryPage() {
   const [addPeopleOpen, setAddPeopleOpen] = useState(false)
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  // Captured once at mount so the "X hours ago" labels are stable across
+  // re-renders (avoids react-hooks/purity for Date.now()).
+  const [now] = useState(() => Date.now())
 
   const FILTER_OPTIONS = [
     "Assignee",
@@ -951,8 +954,7 @@ export default function SummaryPage() {
             <div className="space-y-3">
               {recentIssues.map((issue) => {
                 const reporter = users.find((u) => u.id === issue.reporterId)
-                const timeDiff =
-                  Date.now() - new Date(issue.updatedAt).getTime()
+                const timeDiff = now - new Date(issue.updatedAt).getTime()
                 const hours = Math.floor(timeDiff / 3600000)
                 const timeAgo =
                   hours < 1

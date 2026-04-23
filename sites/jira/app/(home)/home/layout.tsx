@@ -3721,6 +3721,100 @@ function CreateDropdown() {
   )
 }
 
+// Static icon components used inside HomeSearchBar; declared at module
+// scope so React doesn't recreate them on every render.
+function IssueTypeIcon({ type }: { type: string }) {
+  const bg =
+    type === "bug"
+      ? "bg-red-500"
+      : type === "story"
+        ? "bg-green-500"
+        : "bg-blue-500"
+  return (
+    <div
+      className={`flex size-6 shrink-0 items-center justify-center rounded-md ${bg}`}
+    >
+      <svg
+        className="size-3.5 text-white"
+        viewBox="0 0 14 14"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polyline points="2,7 5.5,10.5 12,3.5" />
+      </svg>
+    </div>
+  )
+}
+
+function BoardGridIcon() {
+  return (
+    <div className="flex size-6 shrink-0 items-center justify-center rounded-md border border-border bg-background">
+      <svg
+        className="size-3.5 text-foreground"
+        viewBox="0 0 16 16"
+        fill="currentColor"
+      >
+        <rect x="1" y="1" width="6" height="6" rx="0.5" />
+        <rect x="9" y="1" width="6" height="6" rx="0.5" />
+        <rect x="1" y="9" width="6" height="6" rx="0.5" />
+        <rect x="9" y="9" width="6" height="6" rx="0.5" />
+      </svg>
+    </div>
+  )
+}
+
+function JiraProjectIcon({ color = "bg-violet-600" }: { color?: string }) {
+  return (
+    <div
+      className={`flex size-6 shrink-0 items-center justify-center rounded-md ${color}`}
+    >
+      <svg className="size-3.5 text-white" viewBox="0 0 32 32" fill="white">
+        <path d="M27.545 15.2L16.8 4.454 16 3.654l-8.345 8.346-.855.854L4.454 15.2a1.547 1.547 0 000 2.189L12.2 25.135 16 28.935l8.345-8.346.354-.354 2.846-2.846a1.547 1.547 0 000-2.189zM16 20.6l-4.254-4.254L16 12.092l4.254 4.254L16 20.6z" />
+      </svg>
+    </div>
+  )
+}
+
+function ProjectIcon({ color = "bg-blue-500" }: { color?: string }) {
+  return (
+    <div
+      className={`flex size-6 shrink-0 items-center justify-center rounded-md ${color}`}
+    >
+      <svg
+        className="size-3.5 text-white"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M3 3h18v4H3zm0 6h18v4H3zm0 6h18v4H3z" />
+      </svg>
+    </div>
+  )
+}
+
+function TeamIcon({ color = "bg-blue-500" }: { color?: string }) {
+  return (
+    <div
+      className={`flex size-6 shrink-0 items-center justify-center rounded-md ${color}`}
+    >
+      <svg
+        className="size-3.5 text-white"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    </div>
+  )
+}
+
 function HomeSearchBar() {
   const router = useRouter()
   const [query, setQuery] = useState("")
@@ -3819,90 +3913,6 @@ function HomeSearchBar() {
     (results.issues.length > 0 ||
       results.projects.length > 0 ||
       results.users.length > 0)
-
-  const IssueTypeIcon = ({ type }: { type: string }) => {
-    const bg =
-      type === "bug"
-        ? "bg-red-500"
-        : type === "story"
-          ? "bg-green-500"
-          : "bg-blue-500"
-    return (
-      <div
-        className={`flex size-6 shrink-0 items-center justify-center rounded-md ${bg}`}
-      >
-        <svg
-          className="size-3.5 text-white"
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polyline points="2,7 5.5,10.5 12,3.5" />
-        </svg>
-      </div>
-    )
-  }
-
-  const BoardGridIcon = () => (
-    <div className="flex size-6 shrink-0 items-center justify-center rounded-md border border-border bg-background">
-      <svg
-        className="size-3.5 text-foreground"
-        viewBox="0 0 16 16"
-        fill="currentColor"
-      >
-        <rect x="1" y="1" width="6" height="6" rx="0.5" />
-        <rect x="9" y="1" width="6" height="6" rx="0.5" />
-        <rect x="1" y="9" width="6" height="6" rx="0.5" />
-        <rect x="9" y="9" width="6" height="6" rx="0.5" />
-      </svg>
-    </div>
-  )
-
-  const JiraProjectIcon = ({ color = "bg-violet-600" }: { color?: string }) => (
-    <div
-      className={`flex size-6 shrink-0 items-center justify-center rounded-md ${color}`}
-    >
-      <svg className="size-3.5 text-white" viewBox="0 0 32 32" fill="white">
-        <path d="M27.545 15.2L16.8 4.454 16 3.654l-8.345 8.346-.855.854L4.454 15.2a1.547 1.547 0 000 2.189L12.2 25.135 16 28.935l8.345-8.346.354-.354 2.846-2.846a1.547 1.547 0 000-2.189zM16 20.6l-4.254-4.254L16 12.092l4.254 4.254L16 20.6z" />
-      </svg>
-    </div>
-  )
-
-  const ProjectIcon = ({ color = "bg-blue-500" }: { color?: string }) => (
-    <div
-      className={`flex size-6 shrink-0 items-center justify-center rounded-md ${color}`}
-    >
-      <svg
-        className="size-3.5 text-white"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-      >
-        <path d="M3 3h18v4H3zm0 6h18v4H3zm0 6h18v4H3z" />
-      </svg>
-    </div>
-  )
-
-  const TeamIcon = ({ color = "bg-blue-500" }: { color?: string }) => (
-    <div
-      className={`flex size-6 shrink-0 items-center justify-center rounded-md ${color}`}
-    >
-      <svg
-        className="size-3.5 text-white"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    </div>
-  )
 
   const handleClear = () => {
     setQuery("")

@@ -332,7 +332,7 @@ export function CreateTaskDialog({
   const [users, setUsers] = useState<User[]>([])
   const [sprints, setSprints] = useState<Sprint[]>([])
   const [epics, setEpics] = useState<Epic[]>([])
-  const [saving, setSaving] = useState(false)
+  const saving = false
   const [error, setError] = useState("")
   const [minimized, setMinimized] = useState(false)
 
@@ -345,7 +345,6 @@ export function CreateTaskDialog({
   const [description, setDescription] = useState("")
   const [assigneeId, setAssigneeId] = useState("__none__")
   const [priority, setPriority] = useState("medium")
-  const [parentId, setParentId] = useState("")
   const [dueDate, setDueDate] = useState("")
   const [labelsStr, setLabelsStr] = useState("")
   const [teamName, setTeamName] = useState("")
@@ -404,7 +403,6 @@ export function CreateTaskDialog({
     setEpicId("")
     setStoryPoints("")
     setLabelsStr("")
-    setParentId("")
     setDueDate("")
     setStartDate("")
     setTeamName("")

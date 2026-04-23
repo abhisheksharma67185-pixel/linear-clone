@@ -1502,6 +1502,8 @@ export default function ProjectDirectoryPage() {
       return
     }
     const newView: SavedView = {
+      // eslint-disable-next-line react-hooks/purity -- handler runs from user
+      // events (Enter / button click), not during render.
       id: `view_${Date.now()}`,
       name,
       chips: Array.from(activeChips),
