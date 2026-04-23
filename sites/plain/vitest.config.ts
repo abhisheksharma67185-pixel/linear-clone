@@ -15,8 +15,5 @@ export default defineConfig({
     environment: "node",
     include: ["__tests__/**/*.test.ts"],
     globals: false,
-    // Engine + smoke tests land alongside the panel build; vitest must
-    // not fail the pre-push gate while the suite is empty.
-    passWithNoTests: true,
   },
 })
