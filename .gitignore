@@ -23,6 +23,11 @@ coverage/
 # Claude Code scratch
 .claude/worktrees/
 .claude/scheduled_tasks.lock
+.claude/settings.local.json
+
+# shadcn-init bundled skills (per-developer; SKILL.md is committed under .claude/skills/)
+.agents/
+skills-lock.json
 
 # macOS Time Machine hard-link markers
 .!*
