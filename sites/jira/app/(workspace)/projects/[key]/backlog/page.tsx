@@ -6,7 +6,6 @@ import Link from "next/link"
 import type { Issue, User, Project, Sprint, Epic } from "@/app/lib/mock-data"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserProfileCard } from "@/components/user-profile-card"
 import {
   Collapsible,

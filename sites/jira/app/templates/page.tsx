@@ -4322,42 +4322,6 @@ function BugTrackingIllustration() {
   )
 }
 
-function BusinessProjectIllustration() {
-  return (
-    <div className="relative flex h-[180px] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-sky-100 p-4 dark:from-blue-950/40 dark:to-sky-950/40">
-      <div className="relative w-[170px] rounded-lg bg-white p-3 shadow-md dark:bg-gray-800">
-        <div className="mb-2 text-[10px] font-bold text-gray-700 dark:text-gray-300">
-          Project
-        </div>
-        <div className="space-y-2">
-          {[
-            {
-              bg: "bg-blue-100 dark:bg-blue-900/40",
-              bar: "bg-blue-400",
-              w: "w-3/4",
-            },
-            {
-              bg: "bg-green-100 dark:bg-green-900/40",
-              bar: "bg-green-400",
-              w: "w-1/2",
-            },
-            {
-              bg: "bg-amber-100 dark:bg-amber-900/40",
-              bar: "bg-amber-400",
-              w: "w-2/3",
-            },
-          ].map((row, i) => (
-            <div key={i} className={`${row.bg} rounded p-1.5`}>
-              <div className="mb-1 h-1 w-8 rounded-full bg-gray-300 dark:bg-gray-600" />
-              <div className={`h-2 ${row.bar} rounded ${row.w}`} />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 /* ── Service Management Illustrations ── */
 
 function GeneralServiceMgmtIllustration() {
@@ -4404,26 +4368,6 @@ function GeneralServiceMgmtIllustration() {
         <circle cx="35" cy="98" r="2" fill="#C0B6F2" />
         <circle cx="135" cy="95" r="2" fill="#79E2F2" />
       </svg>
-    </div>
-  )
-}
-
-function BlankSpaceIllustration() {
-  return (
-    <div className="flex h-[180px] items-center justify-center rounded-2xl bg-gray-50 dark:bg-muted/20">
-      <div className="flex h-[100px] w-[100px] items-center justify-center rounded-xl border-[3px] border-dashed border-blue-300 dark:border-blue-700">
-        <svg
-          className="size-10 text-blue-400 dark:text-blue-600"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        >
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-      </div>
     </div>
   )
 }

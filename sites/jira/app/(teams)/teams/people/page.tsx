@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { UserProfileCard } from "@/components/user-profile-card"
 import {
   Dialog,

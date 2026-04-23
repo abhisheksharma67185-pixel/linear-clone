@@ -491,7 +491,7 @@ const actorItems = {
 const ipAddresses = ["10.19.46.105", "10.19.69.165"]
 
 function FilterDropdown({
-  label,
+  label: _label,
   active,
   children,
   onClose,

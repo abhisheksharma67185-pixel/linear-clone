@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import {
   Tooltip,
   TooltipContent,
@@ -24,12 +23,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import {
-  priorityVariant,
-  typeVariant,
-  typeLabel,
-  projectTypeVariant,
-} from "@/lib/badge-styles"
+import { priorityVariant, typeVariant, typeLabel } from "@/lib/badge-styles"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   MoreHorizontalIcon,
