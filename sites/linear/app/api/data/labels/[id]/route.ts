@@ -33,3 +33,24 @@ export async function PUT(
   }
   return NextResponse.json(result.data)
 }
+
+// PATCH accepts the same fields as PUT; provided for clients that prefer the
+// partial-update semantic (e.g. toggling archivedAt without touching name).
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return PUT(request, { params })
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const result = store.deleteLabel(id)
+  if (!result.success) {
+    return NextResponse.json({ error: result.error }, { status: 404 })
+  }
+  return NextResponse.json(result.data)
+}

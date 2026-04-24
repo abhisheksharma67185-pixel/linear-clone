@@ -61,7 +61,18 @@ const SUGGESTIONS: {
   },
 ]
 
-export function AskLinear() {
+export type AskLinearVariant = "floating" | "inline"
+
+export function AskLinear({
+  variant = "floating",
+}: {
+  /**
+   * "floating" (default) renders the Ask Linear pill fixed at the bottom-right
+   * of the viewport. "inline" renders a compact button sized for a sidebar
+   * footer alongside a chat-history icon button.
+   */
+  variant?: AskLinearVariant
+} = {}) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Msg[]>([])
   const [input, setInput] = useState("")
@@ -125,18 +136,33 @@ export function AskLinear() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger
-        render={
-          <button
-            type="button"
-            className="bg-background text-muted-foreground hover:bg-accent hover:text-foreground fixed right-4 bottom-4 z-40 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm transition-colors"
-            aria-label="Ask Linear"
-          />
-        }
-      >
-        <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
-        <span>Ask Linear</span>
-      </SheetTrigger>
+      {variant === "floating" ? (
+        <SheetTrigger
+          render={
+            <button
+              type="button"
+              className="bg-background text-muted-foreground hover:bg-accent hover:text-foreground fixed right-4 bottom-4 z-40 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm transition-colors"
+              aria-label="Ask Linear"
+            />
+          }
+        >
+          <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
+          <span>Ask Linear</span>
+        </SheetTrigger>
+      ) : (
+        <SheetTrigger
+          render={
+            <button
+              type="button"
+              className="bg-sidebar hover:bg-sidebar-accent text-muted-foreground hover:text-foreground flex w-full flex-1 items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-colors"
+              aria-label="Ask Linear"
+            />
+          }
+        >
+          <HugeiconsIcon icon={AiBrain03Icon} className="size-3.5" />
+          <span className="flex-1 text-left">Ask Linear</span>
+        </SheetTrigger>
+      )}
       <SheetContent
         side="right"
         showCloseButton={false}

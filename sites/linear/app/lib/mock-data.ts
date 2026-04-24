@@ -82,10 +82,14 @@ export interface Label {
   [key: string]: unknown
   id: string
   name: string
+  /** Optional longer description shown in the labels settings table. */
+  description?: string
   color: string
   teamId: string | null // null = workspace-level
   /** CESS label grouping (Area, Type, Status, Source, Severity). */
   group: "Area" | "Type" | "Status" | "Source" | "Severity"
+  /** ISO timestamp when archived; undefined/null = active. */
+  archivedAt?: string | null
 }
 
 export interface View {

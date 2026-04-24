@@ -1,0 +1,49 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "linear",
+      "cwd": "sites/linear",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "shopify-admin",
+      "cwd": "sites/shopify-admin",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "port": 3001,
+      "autoPort": true
+    },
+    {
+      "name": "inspector",
+      "cwd": "sites/inspector",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "port": 3010
+    },
+    {
+      "name": "jira",
+      "cwd": "sites/jira",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "port": 3002
+    },
+    {
+      "name": "zendesk",
+      "cwd": "sites/zendesk",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "port": 3003
+    },
+    {
+      "name": "slack",
+      "cwd": "sites/slack",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "port": 3004
+    }
+  ]
+}

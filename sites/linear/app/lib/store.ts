@@ -574,7 +574,8 @@ export function getLabelById(id: string): Label | undefined {
 export function createLabel(fields: {
   name?: string
   color?: string
-  teamId?: string
+  teamId?: string | null
+  description?: string
 }): Result<Label> {
   if (!fields.name || String(fields.name).trim() === "") {
     return { success: false, error: "Name is required" }
@@ -583,26 +584,32 @@ export function createLabel(fields: {
     return { success: false, error: "Color is required" }
   }
 
-  const teamId = fields.teamId ?? "team-1"
-  const team = _teams.find((t) => t.id === teamId)
-  if (!team) return { success: false, error: `Team not found: ${teamId}` }
+  // Workspace-level labels (teamId: null) are allowed; only validate team
+  // existence when a non-null teamId is provided.
+  const teamId = fields.teamId === undefined ? "team-1" : fields.teamId
+  if (teamId !== null) {
+    const team = _teams.find((t) => t.id === teamId)
+    if (!team) return { success: false, error: `Team not found: ${teamId}` }
+  }
 
-  // Check for duplicate name within team
+  // Check for duplicate name within same scope (teamId).
   if (
     _labels.some((l) => l.teamId === teamId && l.name === fields.name!.trim())
   ) {
     return {
       success: false,
-      error: `Label already exists in team: ${fields.name}`,
+      error: `Label already exists: ${fields.name}`,
     }
   }
 
   const label: Label = {
     id: `label-${_nextLabelId++}`,
     name: fields.name.trim(),
+    description: fields.description?.trim() ?? "",
     color: fields.color.trim(),
     teamId,
     group: "Type",
+    archivedAt: null,
   }
 
   _labels.push(label)
@@ -614,6 +621,8 @@ export function updateLabel(
   fields: {
     name?: string
     color?: string
+    description?: string
+    archivedAt?: string | null
   }
 ): Result<Label> {
   const label = _labels.find((l) => l.id === id)
@@ -634,7 +643,7 @@ export function updateLabel(
     ) {
       return {
         success: false,
-        error: `Label already exists in team: ${fields.name}`,
+        error: `Label already exists: ${fields.name}`,
       }
     }
     label.name = fields.name.trim()
@@ -645,8 +654,29 @@ export function updateLabel(
     }
     label.color = fields.color.trim()
   }
+  if (fields.description !== undefined) {
+    label.description = String(fields.description).trim()
+  }
+  if (fields.archivedAt !== undefined) {
+    label.archivedAt = fields.archivedAt
+  }
 
   return { success: true, data: deepClone(label) }
+}
+
+export function deleteLabel(id: string): Result<{ id: string }> {
+  const idx = _labels.findIndex((l) => l.id === id)
+  if (idx === -1) return { success: false, error: "Label not found" }
+  _labels.splice(idx, 1)
+  return { success: true, data: { id } }
+}
+
+export function archiveLabel(id: string): Result<Label> {
+  return updateLabel(id, { archivedAt: new Date().toISOString() })
+}
+
+export function restoreLabel(id: string): Result<Label> {
+  return updateLabel(id, { archivedAt: null })
 }
 
 // ---------------------------------------------------------------------------
