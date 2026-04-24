@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useQuery } from "@tanstack/react-query"
 
 import type {
   Agent,
@@ -10,6 +11,7 @@ import type {
   Tenant,
   Thread,
 } from "@/app/lib/mock-data"
+import { fetchThreads } from "@/lib/api"
 
 import { CommandPalette } from "./command-palette"
 import { CustomerProfile } from "./customer-profile"
@@ -18,7 +20,7 @@ import { ThreadDetail } from "./thread-detail"
 import { ThreadList } from "./thread-list"
 
 export function WorkspaceShell({
-  threads,
+  threads: initialThreads,
   messages,
   customers,
   tenants,
@@ -34,6 +36,17 @@ export function WorkspaceShell({
   agents: Agent[]
   currentAgent: Agent
 }) {
+  // Threads are the only collection that mutates from the UI; everything else
+  // is read-only seed data, so we keep it as plain props. Threads flow through
+  // TanStack Query so optimistic updates from dropdowns/composer flip the
+  // pills + list rows immediately without prop drilling.
+  const { data: threads = initialThreads } = useQuery({
+    queryKey: ["threads"],
+    queryFn: fetchThreads,
+    initialData: initialThreads,
+    staleTime: 30_000,
+  })
+
   const customersById = React.useMemo(
     () => new Map(customers.map((c) => [c.id, c])),
     [customers]
@@ -99,21 +112,23 @@ export function WorkspaceShell({
   const selectedCustomer = selectedThread
     ? customersById.get(selectedThread.customerId)
     : undefined
-  const selectedTenant = selectedThread
-    ? tenantsById.get(selectedThread.tenantId)
-    : undefined
-  const selectedAssignee =
-    selectedThread && selectedThread.assigneeId
-      ? agentsById.get(selectedThread.assigneeId)
-      : undefined
-  const selectedMessages = selectedThread
-    ? messages
-        .filter((m) => m.threadId === selectedThread.id)
-        .sort(
-          (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        )
-    : []
+
+  // Initial messages for the seeded session — ThreadDetail prefers its own
+  // useQuery for thread detail, but we hand it the seed so the very first
+  // render is hydrated and there's no flash-of-skeleton on initial load.
+  const initialMessagesForSelected = React.useMemo(
+    () =>
+      selectedThread
+        ? messages
+            .filter((m) => m.threadId === selectedThread.id)
+            .sort(
+              (a, b) =>
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime()
+            )
+        : [],
+    [messages, selectedThread]
+  )
   const recentThreads = selectedCustomer
     ? threads
         .filter(
@@ -143,19 +158,21 @@ export function WorkspaceShell({
         currentAgentId={currentAgent.id}
       />
       <ThreadDetail
-        thread={selectedThread}
-        customer={selectedCustomer}
-        tenant={selectedTenant}
-        assignee={selectedAssignee}
+        threadId={selectedThreadId}
+        initialThread={selectedThread}
+        initialMessages={initialMessagesForSelected}
+        customersById={customersById}
+        tenantsById={tenantsById}
+        agentsById={agentsById}
         agents={agents}
         labels={labels}
-        messages={selectedMessages}
+        currentAgent={currentAgent}
         onToggleProfile={() => setShowProfile((s) => !s)}
       />
       {showProfile && selectedCustomer && (
         <CustomerProfile
           customer={selectedCustomer}
-          tenant={selectedTenant}
+          tenant={tenantsById.get(selectedCustomer.tenantId)}
           recentThreads={recentThreads}
         />
       )}
