@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
   const typeRaw = url.searchParams.get("type")
   const stage = url.searchParams.get("stage")
   const site = url.searchParams.get("site")
+  const limitRaw = url.searchParams.get("limit")
 
   if (domainRaw && !VALID_DOMAINS.includes(domainRaw as TaskDomain)) {
     return NextResponse.json(
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
 
   const hasFilters = domain || difficulty || type || stage || site
 
-  const tasks = hasFilters
+  let tasks = hasFilters
     ? getTasksByCriteria({
         domain: domain ?? undefined,
         difficulty: difficulty ?? undefined,
@@ -76,6 +77,15 @@ export async function GET(request: NextRequest) {
         site: site ?? undefined,
       })
     : getAllTasks()
+
+  // `?limit=N` truncates the response. Invalid (negative, non-numeric)
+  // values are silently ignored — matches zendesk + plain.
+  if (limitRaw) {
+    const limit = parseInt(limitRaw, 10)
+    if (Number.isFinite(limit) && limit > 0) {
+      tasks = tasks.slice(0, limit)
+    }
+  }
 
   return NextResponse.json({
     total: getTaskCount(),
