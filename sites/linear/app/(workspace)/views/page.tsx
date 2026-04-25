@@ -45,14 +45,27 @@ export default function ViewsPage() {
     <div className="flex h-full min-h-0 flex-col">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-2.5">
-        <h1 className="text-sm font-medium">Views</h1>
+        <h1 className="text-sm font-medium" data-testid="views-header-title">
+          Views
+        </h1>
+        {/*
+          The header New view button now routes to /views/new so the
+          create flow is URL-addressable (deep-link friendly, browser
+          back returns to /views). The in-list "+" buttons below
+          still open the dialog inline for users already scanning the
+          list. Both paths land on the same CreateViewDialog.
+        */}
         <Button
+          asChild
           variant="ghost"
           size="icon"
+          aria-label="New view"
+          data-testid="views-header-new"
           className="size-7"
-          onClick={() => setDialogOpen(true)}
         >
-          <HugeiconsIcon icon={PlusSignIcon} className="size-4" />
+          <Link href="/views/new">
+            <HugeiconsIcon icon={PlusSignIcon} className="size-4" />
+          </Link>
         </Button>
       </header>
 
@@ -87,10 +100,17 @@ export default function ViewsPage() {
           </div>
         ) : tab === "issues" ? (
           <>
-            {/* Column header */}
-            <div className="text-muted-foreground flex items-center border-b px-5 py-2 text-[11px]">
+            {/* Column header. data-testid hooks let the regression
+                test for the Display-options popover ghost bug verify
+                the headers aren't covered by a leftover popover layer
+                after outside-click dismiss. */}
+            <div
+              data-testid="views-table-header"
+              className="text-muted-foreground flex items-center border-b px-5 py-2 text-[11px]"
+            >
               <button
                 type="button"
+                data-testid="views-header-name"
                 className="hover:text-foreground flex flex-1 items-center gap-1"
               >
                 Name
@@ -101,7 +121,9 @@ export default function ViewsPage() {
                   <path d="M5 7L1 3h8z" />
                 </svg>
               </button>
-              <span className="w-44">Owner</span>
+              <span data-testid="views-header-owner" className="w-44">
+                Owner
+              </span>
             </div>
 
             {/* Personal views section header */}
@@ -185,16 +207,38 @@ export default function ViewsPage() {
   )
 }
 
+/**
+ * Display options popover for the Views page (the gear/sliders icon
+ * to the right of the Issues/Projects tabs).
+ *
+ * Controlled `open` state + Base UI's `onOpenChangeComplete` is what
+ * fixes the regression where outside-click left a faded ghost over
+ * the Created/Updated/Owner table columns:
+ *
+ *   1. `open`/`setOpen` make the close path explicit. Both Escape AND
+ *      outside-click route through `onOpenChange(false)`, so the two
+ *      dismiss paths are identical.
+ *   2. `onOpenChangeComplete(false)` is the lib's "animation done"
+ *      signal. We use it to assert (in development) that the popup
+ *      really did unmount. In production it's a no-op.
+ *   3. The hardened global `PopoverContent` already adds
+ *      `data-[instant=dismiss]:duration-0 data-[instant=dismiss]:opacity-0`
+ *      so outside-click dismisses snap to invisible instead of
+ *      animating — combined here for belt-and-suspenders.
+ */
 function ViewsDisplayPopover() {
+  const [open, setOpen] = useState(false)
   const [grouping, setGrouping] = useState("No grouping")
   const [ordering, setOrdering] = useState("Last updated")
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
           <button
             type="button"
+            data-testid="views-display-trigger"
+            aria-label="Display options"
             className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
           />
         }
@@ -205,6 +249,7 @@ function ViewsDisplayPopover() {
         side="bottom"
         align="end"
         sideOffset={6}
+        data-testid="views-display-popover"
         className="w-72 gap-0 p-0"
       >
         <div className="flex flex-col px-2.5 py-2">

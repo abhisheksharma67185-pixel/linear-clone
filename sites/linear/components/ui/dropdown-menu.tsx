@@ -34,7 +34,12 @@ function DropdownMenuContent({
   return (
     <MenuPrimitive.Portal>
       <MenuPrimitive.Positioner
-        className="isolate z-50 outline-none"
+        // `data-closed:pointer-events-none` defends against the same
+        // ghost-overlay class of bug we hardened the Popover against:
+        // if the closing menu lingers in the DOM for an animation
+        // frame, it can't intercept clicks or visually paint over
+        // table cells. Escape closes route through the same path.
+        className="isolate z-50 outline-none data-closed:pointer-events-none data-closed:opacity-0"
         align={align}
         alignOffset={alignOffset}
         side={side}

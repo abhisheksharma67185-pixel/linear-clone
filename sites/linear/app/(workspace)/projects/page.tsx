@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/popover"
 import { CreateProjectDialog } from "@/components/create-project-dialog"
 import { IconPickerPopover } from "@/components/icon-picker-popover"
+import { useToday, formatTodayPill } from "@/app/lib/today-context"
+import {
+  bucketProjects,
+  computeTimelineBounds,
+  pxPerDayForZoom,
+  type TimelineZoom,
+} from "@/app/lib/timeline-range"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   SlidersHorizontalIcon,
@@ -299,7 +306,11 @@ function ProjectsPageInner() {
                 onCreateProject={() => setCreateOpen(true)}
               />
             ) : viewType === "timeline" ? (
-              <TimelineView projects={sortedProjects} members={members} />
+              <TimelineView
+                projects={sortedProjects}
+                members={members}
+                onCreateProject={() => setCreateOpen(true)}
+              />
             ) : (
               <>
                 {/* Column headers */}
@@ -1001,63 +1012,83 @@ const MONTH_ABBR = [
   "NOV",
   "DEC",
 ]
-const PX_PER_DAY = 4
+/** Pixels around the today pill where header labels are hidden so the
+ *  pill never visually overlaps a partial month abbreviation. */
+const TODAY_PILL_HALF_WIDTH = 32
 
 function TimelineView({
   projects,
   members,
+  onCreateProject,
 }: {
   projects: Project[]
   members: Member[]
+  onCreateProject?: () => void
 }) {
   const router = useRouter()
-  const today = new Date()
-  const todayYear = today.getFullYear()
+  // Single source of truth for "today" — comes from TodayProvider in
+  // the workspace layout. Computed once at provider mount, then
+  // pinned, so every today-aware UI surface (header pill, indicator
+  // line, scroll-to-today button, hover label) shows the same date.
+  const today = useToday()
+  const todayPillLabel = formatTodayPill(today)
   const scrollRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
-  const [zoom, setZoom] = useState<"Year" | "Quarter" | "Month" | "Week">(
-    "Year"
-  )
+  const [zoom, setZoom] = useState<TimelineZoom>("Quarter")
   const [zoomOpen, setZoomOpen] = useState(false)
   const [cursorX, setCursorX] = useState<number | null>(null)
 
-  // Timeline: Jan 1 1943 → 3 years from now (fixed range, never changes)
-  const START_MS = new Date(1943, 0, 1).getTime()
-  const END_MS = new Date(todayYear + 3, 11, 31).getTime()
+  // Pixel density — derived from zoom, not a fixed constant. Project
+  // rows are sourced from the `projects` prop and rendered in every
+  // zoom mode, so the row list itself never disappears when zoom
+  // changes; only the horizontal scale does.
+  const pxPerDay = pxPerDayForZoom(zoom)
+
+  // Visible date range — bounded by actual project content, not the
+  // historical 1943→today+3yrs span. With zero scheduled projects we
+  // default to today ± a focused window so the empty-state CTA is
+  // visible without a mile of horizontal scroll.
+  const { start: rangeStart, end: rangeEnd } = useMemo(
+    () => computeTimelineBounds(projects, today),
+    [projects, today]
+  )
+  const START_MS = rangeStart.getTime()
+  const END_MS = rangeEnd.getTime()
   const totalDays = Math.round((END_MS - START_MS) / 86400000)
-  const totalWidth = totalDays * PX_PER_DAY
+  const totalWidth = totalDays * pxPerDay
+
+  // Split projects into the two lanes. Scheduled projects render with
+  // bars on the timeline; unscheduled (no start AND no target date)
+  // get their own "Unscheduled" lane at the top so they don't vanish.
+  const { scheduled, unscheduled } = useMemo(
+    () => bucketProjects(projects),
+    [projects]
+  )
 
   function dayX(date: Date) {
-    return Math.round((date.getTime() - START_MS) / 86400000) * PX_PER_DAY
+    return Math.round((date.getTime() - START_MS) / 86400000) * pxPerDay
   }
 
   const todayX = dayX(today)
 
-  // Build month segments — memoized.
-  // START_MS and END_MS are recomputed every render from `today` (a new Date
-  // instance), so the React Compiler's `preserve-manual-memoization` lint
-  // can't prove they're stable. They ARE stable for the lifetime of the
-  // component (fixed-range timeline anchored to current year).
+  // Build month segments — memoized
   const months = useMemo(() => {
     const result: { label: string; year: number; x: number; width: number }[] =
       []
-    let d = new Date(1943, 0, 1)
-    const end = new Date(todayYear + 3, 11, 31)
-    while (d < end) {
+    let d = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), 1)
+    while (d < rangeEnd) {
       const m = d.getMonth(),
         y = d.getFullYear()
       const mStartMs = new Date(y, m, 1).getTime()
       const mEndMs = new Date(y, m + 1, 1).getTime()
-      const x = Math.round((mStartMs - START_MS) / 86400000) * PX_PER_DAY
+      const x = Math.round((mStartMs - START_MS) / 86400000) * pxPerDay
       const w =
-        Math.round((Math.min(mEndMs, END_MS) - mStartMs) / 86400000) *
-        PX_PER_DAY
+        Math.round((Math.min(mEndMs, END_MS) - mStartMs) / 86400000) * pxPerDay
       result.push({ label: MONTH_ABBR[m], year: y, x, width: w })
       d = new Date(y, m + 1, 1)
     }
     return result
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  }, [todayYear, START_MS, END_MS])
+  }, [rangeStart, rangeEnd, START_MS, END_MS, pxPerDay])
 
   // Build bi-weekly date ticks — memoized
   const ticks = useMemo(() => {
@@ -1068,7 +1099,7 @@ function TimelineView({
       ;[1, 15].forEach((day) => {
         const tickDate = new Date(year, m, day)
         const tx =
-          Math.round((tickDate.getTime() - START_MS) / 86400000) * PX_PER_DAY
+          Math.round((tickDate.getTime() - START_MS) / 86400000) * pxPerDay
         if (tx < 0 || tx > totalWidth) return
         result.push({
           label: String(day),
@@ -1078,17 +1109,19 @@ function TimelineView({
       })
     })
     return result
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [months])
+  }, [months, today, START_MS, pxPerDay, totalWidth])
 
-  // Scroll to today on mount
+  // Scroll to today on mount and whenever zoom changes (the pixel
+  // scale flips so the saved scroll offset would no longer point at
+  // today). Project list changes do NOT trigger a re-scroll — that
+  // would yank the user's view if they're inspecting a specific row.
   useEffect(() => {
     if (scrollRef.current) {
       const offset = todayX - scrollRef.current.clientWidth / 2
       scrollRef.current.scrollLeft = offset
       if (headerRef.current) headerRef.current.scrollLeft = offset
     }
-  }, [todayX])
+  }, [todayX, zoom])
 
   function scrollToToday() {
     if (scrollRef.current) {
@@ -1097,6 +1130,12 @@ function TimelineView({
       if (headerRef.current) headerRef.current.scrollLeft = offset
     }
   }
+
+  // Whether any project bar is visible in the current range. When
+  // every project is unscheduled, the timeline canvas is empty — we
+  // render a center-screen "Create new project" CTA on top of it so
+  // discovery doesn't depend on hover.
+  const hasVisibleBars = scheduled.length > 0
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -1180,46 +1219,67 @@ function TimelineView({
             className="bg-background absolute inset-y-0 left-0 z-10"
             style={{ width: 256 }}
           />
-          {/* Month cells — offset x by 256 */}
-          {months.map((m, i) => (
-            <div
-              key={i}
-              className="border-border/40 absolute top-0 flex items-center border-r border-b px-2"
-              style={{ left: m.x + 256, width: m.width, height: 28 }}
-            >
-              <span className="text-muted-foreground text-[11px] font-medium">
-                {m.label}
-                {m.year !== today.getFullYear() ? ` ${m.year}` : ""}
-              </span>
-            </div>
-          ))}
+          {/* Month cells — offset x by 256. Labels within ±TODAY_PILL_HALF_WIDTH
+              of the today pill are hidden so the pill never overlaps a
+              partial month abbreviation like "PR 7". The cell itself
+              (border + bg) still renders so the grid stays continuous. */}
+          {months.map((m, i) => {
+            const labelCenterX = m.x + Math.min(20, m.width / 2)
+            const hideLabel =
+              Math.abs(labelCenterX - todayX) < TODAY_PILL_HALF_WIDTH
+            return (
+              <div
+                key={i}
+                className="border-border/40 absolute top-0 flex items-center border-r border-b px-2"
+                style={{ left: m.x + 256, width: m.width, height: 28 }}
+              >
+                {!hideLabel && (
+                  <span className="text-muted-foreground text-[11px] font-medium">
+                    {m.label}
+                    {m.year !== today.getFullYear() ? ` ${m.year}` : ""}
+                  </span>
+                )}
+              </div>
+            )
+          })}
           {/* Today indicator in month row */}
           <div
             className="pointer-events-none absolute top-0 z-10 border-l border-blue-500/60"
             style={{ left: todayX + 256, height: 28 }}
           />
-          {/* Date tick cells — offset x by 256 */}
+          {/* Date tick cells — offset x by 256. Tick labels within
+              ±TODAY_PILL_HALF_WIDTH of today are also hidden (the pill
+              itself replaces the "1"/"15" tick text at today's column). */}
           <div
             className="border-border/40 absolute border-b"
             style={{ top: 28, left: 256, right: 0, height: 28 }}
           >
-            {ticks.map((t, i) => (
-              <div
-                key={i}
-                className="absolute top-0 flex h-full items-center"
-                style={{ left: t.x }}
-              >
-                {t.isToday ? (
-                  <span className="flex h-5 -translate-x-1/2 items-center rounded bg-blue-600 px-1.5 text-[11px] font-semibold text-white">
-                    {MONTH_ABBR[today.getMonth()]} {today.getDate()}
-                  </span>
-                ) : (
-                  <span className="text-muted-foreground -translate-x-1/2 text-[11px]">
-                    {t.label}
-                  </span>
-                )}
-              </div>
-            ))}
+            {ticks.map((t, i) => {
+              const hideTickLabel =
+                !t.isToday &&
+                Math.abs(t.x - todayX) < TODAY_PILL_HALF_WIDTH
+              if (hideTickLabel) return null
+              return (
+                <div
+                  key={i}
+                  className="absolute top-0 flex h-full items-center"
+                  style={{ left: t.x }}
+                >
+                  {t.isToday ? (
+                    <span
+                      data-testid="today-pill"
+                      className="flex h-5 -translate-x-1/2 items-center rounded bg-blue-600 px-1.5 text-[11px] font-semibold text-white"
+                    >
+                      {todayPillLabel}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground -translate-x-1/2 text-[11px]">
+                      {t.label}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -1246,73 +1306,41 @@ function TimelineView({
           style={{ width: 256 + totalWidth, minHeight: "100%" }}
           className="relative flex"
         >
-          {/* ── Sticky left column — NO spacer, rows start at top ── */}
-          <div className="bg-background border-border/40 sticky left-0 z-30 flex w-64 shrink-0 flex-col border-r">
-            {projects.map((project) => (
+          {/* ── Sticky left column — Unscheduled lane (if any) + scheduled rows ── */}
+          <div
+            data-testid="timeline-left-column"
+            className="bg-background border-border/40 sticky left-0 z-30 flex w-64 shrink-0 flex-col border-r"
+          >
+            {unscheduled.length > 0 && (
               <div
-                key={project.id}
-                className="group border-border/40 hover:bg-accent/40 flex h-10 shrink-0 items-center gap-2 border-b px-3 transition-colors"
+                data-testid="timeline-unscheduled-lane-label"
+                className="bg-muted/30 border-border/40 text-muted-foreground sticky top-0 z-10 flex h-7 items-center gap-2 border-b px-3 text-[11px] font-medium uppercase tracking-wide"
               >
-                <HugeiconsIcon
-                  icon={CubeIcon}
-                  className="text-muted-foreground size-4 shrink-0"
-                />
-                <span className="flex-1 truncate text-sm font-medium">
-                  {project.name}
+                <span>Unscheduled</span>
+                <span className="bg-muted text-muted-foreground inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums">
+                  {unscheduled.length}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => router.push(`/projects/${project.id}`)}
-                  className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-5 shrink-0 items-center justify-center rounded transition-colors"
-                >
-                  <svg viewBox="0 0 12 12" className="size-3" fill="none">
-                    <path
-                      d="M4 2l4 4-4 4"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <div className="flex items-center gap-1">
-                  <svg
-                    viewBox="0 0 16 16"
-                    className="text-muted-foreground/80 size-3.5"
-                    fill="none"
-                  >
-                    <circle
-                      cx="8"
-                      cy="8"
-                      r="6"
-                      stroke="currentColor"
-                      strokeWidth="1.4"
-                      strokeDasharray="3 2"
-                    />
-                  </svg>
-                  <svg
-                    viewBox="0 0 16 16"
-                    className="size-3.5 text-orange-400"
-                    fill="none"
-                  >
-                    <circle
-                      cx="8"
-                      cy="8"
-                      r="6"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeDasharray="1 2.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </div>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <PriorityPicker />
-                </div>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <TimelineLeadPicker members={members} />
-                </div>
               </div>
+            )}
+
+            {unscheduled.map((project) => (
+              <ProjectRowLabel
+                key={project.id}
+                project={project}
+                members={members}
+                onOpen={() => router.push(`/projects/${project.id}`)}
+                variant="unscheduled"
+              />
+            ))}
+
+            {scheduled.map((project) => (
+              <ProjectRowLabel
+                key={project.id}
+                project={project}
+                members={members}
+                onOpen={() => router.push(`/projects/${project.id}`)}
+                variant="scheduled"
+              />
             ))}
           </div>
 
@@ -1320,12 +1348,54 @@ function TimelineView({
           <div
             style={{
               width: totalWidth,
-              height: Math.max(projects.length * 40, 200),
+              height: Math.max(
+                (unscheduled.length > 0 ? 28 : 0) + // header row
+                  unscheduled.length * 40 +
+                  scheduled.length * 40,
+                200
+              ),
             }}
+            data-testid="timeline-canvas"
             className="relative shrink-0"
           >
-            {/* Project bar rows */}
-            {projects.map((project, pi) => {
+            {/* Header offset matches the sticky "Unscheduled" label row above. */}
+            {unscheduled.length > 0 && (
+              <div
+                className="bg-muted/30 border-border/40 absolute top-0 left-0 border-b"
+                style={{ width: totalWidth, height: 28 }}
+              />
+            )}
+
+            {/* Unscheduled lane chips — render at a fixed x near the left
+                edge of the visible area. Card carries no date so it's
+                informational only and clicking opens the project.
+                Index `i` is offset by the 28px header row. */}
+            {unscheduled.map((project, i) => (
+              <div
+                key={project.id}
+                data-testid="timeline-unscheduled-row"
+                className="border-border/20 absolute border-b"
+                style={{
+                  top: 28 + i * 40,
+                  left: 0,
+                  width: totalWidth,
+                  height: 40,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => router.push(`/projects/${project.id}`)}
+                  className="border-muted-foreground/30 text-muted-foreground hover:bg-accent/40 absolute top-1/2 left-3 flex h-6 -translate-y-1/2 cursor-pointer items-center gap-1.5 overflow-hidden rounded-full border border-dashed px-2.5 text-[11px] font-medium"
+                >
+                  <HugeiconsIcon icon={CubeIcon} className="size-3 shrink-0" />
+                  <span className="whitespace-nowrap">{project.name}</span>
+                  <span className="text-muted-foreground/70">· no dates</span>
+                </button>
+              </div>
+            ))}
+
+            {/* Scheduled rows */}
+            {scheduled.map((project, pi) => {
               const startX = project.createdAt
                 ? dayX(new Date(project.createdAt))
                 : null
@@ -1334,13 +1404,18 @@ function TimelineView({
                 : null
               const barX = startX ?? 0
               const barW = endX && startX ? Math.max(endX - startX, 20) : 0
+              const rowTop =
+                (unscheduled.length > 0 ? 28 : 0) +
+                unscheduled.length * 40 +
+                pi * 40
 
               return (
                 <div
                   key={project.id}
+                  data-testid="timeline-scheduled-row"
                   className="border-border/20 hover:bg-accent/20 absolute border-b transition-colors"
                   style={{
-                    top: pi * 40,
+                    top: rowTop,
                     left: 0,
                     width: totalWidth,
                     height: 40,
@@ -1380,6 +1455,29 @@ function TimelineView({
               )
             })}
 
+            {/* Empty-state CTA: when no scheduled bars exist in the
+                current range, show a centered card so creating a new
+                project doesn't depend on hover discovery. */}
+            {!hasVisibleBars && (
+              <div
+                data-testid="timeline-empty-cta"
+                className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
+              >
+                <div className="border-border bg-card pointer-events-auto flex flex-col items-center gap-3 rounded-xl border px-6 py-5 shadow-sm">
+                  <p className="text-muted-foreground text-xs">
+                    No scheduled projects in this range.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={onCreateProject}
+                    className="h-7 rounded-md bg-violet-600 px-3 text-xs font-medium text-white hover:bg-violet-700"
+                  >
+                    Create new project
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Today line */}
             <div
               className="pointer-events-none absolute top-0 z-20 h-full border-l border-blue-500/60"
@@ -1389,7 +1487,7 @@ function TimelineView({
             {/* Cursor hover line */}
             {cursorX !== null &&
               (() => {
-                const daysOffset = (cursorX - 256) / PX_PER_DAY
+                const daysOffset = (cursorX - 256) / pxPerDay
                 const hoverDate = new Date(START_MS + daysOffset * 86400000)
                 const hoverLabel = `${MONTH_ABBR[hoverDate.getMonth()]} ${hoverDate.getDate()}`
                 return (
@@ -1411,6 +1509,112 @@ function TimelineView({
               })()}
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Sticky left-column row label.
+ *
+ * Why a dedicated component:
+ *  - Centralises the "don't truncate when the column has free space"
+ *    behavior. We use `min-w-0` + `truncate` ONLY when the project
+ *    name is long enough to actually overflow; short names render
+ *    full-width with `whitespace-nowrap` and no ellipsis.
+ *  - The action chevron + status icons are deferred to a `group-hover`
+ *    layer so they don't reduce the label's available width on a
+ *    non-hover state. (Previously the chevron was always mounted and
+ *    consumed ~30px even on names like "bbkbk" that fit easily.)
+ *  - Variant prop tags rows for the e2e test that asserts the
+ *    Unscheduled and Scheduled lanes both render their members.
+ */
+function ProjectRowLabel({
+  project,
+  members,
+  onOpen,
+  variant,
+}: {
+  project: Project
+  members: Member[]
+  onOpen: () => void
+  variant: "scheduled" | "unscheduled"
+}) {
+  return (
+    <div
+      data-testid={`timeline-project-label-${variant}`}
+      data-project-id={project.id}
+      className="group border-border/40 hover:bg-accent/40 flex h-10 shrink-0 items-center gap-2 border-b px-3 transition-colors"
+    >
+      <HugeiconsIcon
+        icon={CubeIcon}
+        className="text-muted-foreground size-4 shrink-0"
+      />
+      {/*
+        `min-w-0` lets the label flex-shrink only when there genuinely
+        is no room. `whitespace-nowrap` keeps short names on a single
+        line without forcing an ellipsis. `overflow-hidden + text-ellipsis`
+        kicks in only on actual overflow, never preemptively.
+      */}
+      <span
+        title={project.name}
+        className="min-w-0 flex-1 overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap"
+      >
+        {project.name}
+      </span>
+      <button
+        type="button"
+        aria-label={`Open ${project.name}`}
+        onClick={onOpen}
+        className="text-muted-foreground hover:bg-accent hover:text-foreground pointer-events-none flex size-5 shrink-0 items-center justify-center rounded opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
+      >
+        <svg viewBox="0 0 12 12" className="size-3" fill="none">
+          <path
+            d="M4 2l4 4-4 4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+      <div className="hidden items-center gap-1 group-hover:flex">
+        <svg
+          viewBox="0 0 16 16"
+          className="text-muted-foreground/80 size-3.5"
+          fill="none"
+        >
+          <circle
+            cx="8"
+            cy="8"
+            r="6"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeDasharray="3 2"
+          />
+        </svg>
+        <svg
+          viewBox="0 0 16 16"
+          className="size-3.5 text-orange-400"
+          fill="none"
+        >
+          <circle
+            cx="8"
+            cy="8"
+            r="6"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeDasharray="1 2.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+      <div
+        className="hidden group-hover:contents"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <PriorityPicker />
+        <TimelineLeadPicker members={members} />
       </div>
     </div>
   )

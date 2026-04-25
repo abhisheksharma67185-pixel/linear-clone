@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+import { CURRENT_USER_ID } from "@/app/lib/current-user"
 import type {
   Member,
   Project,
@@ -57,9 +58,21 @@ const PRIORITY_OPTIONS: { value: Priority; label: string; shortcut: string }[] =
 export function CreateIssueDialog({
   open,
   onOpenChange,
+  defaultAssigneeId,
+  defaultTeamId,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /**
+   * Per-context override for the Assignee dropdown's initial value.
+   * Pass this when the dialog is opened from a place that has an
+   * implied assignee (e.g. a team board cell where the column already
+   * filters to one user). When omitted, the dialog defaults to the
+   * currently signed-in user — never to a hardcoded member.
+   */
+  defaultAssigneeId?: string | null
+  /** Per-context override for the Team dropdown's initial value. */
+  defaultTeamId?: string
 }) {
   const [teams, setTeams] = useState<Team[]>([])
   const [members, setMembers] = useState<Member[]>([])
@@ -68,12 +81,20 @@ export function CreateIssueDialog({
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [loaded, setLoaded] = useState(false)
 
+  // The initial Assignee is the per-context override if provided
+  // (including explicit `null` for "Unassigned"), otherwise the
+  // signed-in user. We resolve `undefined` to currentUser here so the
+  // dropdown reflects the right default before the members roster
+  // finishes loading.
+  const initialAssignee: string | null =
+    defaultAssigneeId === undefined ? CURRENT_USER_ID : defaultAssigneeId
+
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [teamId, setTeamId] = useState<string>("")
+  const [teamId, setTeamId] = useState<string>(defaultTeamId ?? "")
   const [status, setStatus] = useState<Status>("backlog")
   const [priority, setPriority] = useState<Priority>("none")
-  const [assigneeId, setAssigneeId] = useState<string | null>("usr-1")
+  const [assigneeId, setAssigneeId] = useState<string | null>(initialAssignee)
   const [projectId, setProjectId] = useState<string | null>(null)
   const [labelIds, setLabelIds] = useState<string[]>([])
   const [cycleId, setCycleId] = useState<string | null>(null)
@@ -106,12 +127,65 @@ export function CreateIssueDialog({
           setProjects(p)
           setLabels(l)
           setCycles(c)
-          if (t.length > 0) setTeamId(t[0].id)
+          // Only auto-pick the first team when no per-context override
+          // was provided — respecting the override avoids resetting a
+          // team that the caller intentionally set.
+          if (!defaultTeamId && t.length > 0) setTeamId(t[0].id)
           setLoaded(true)
         }
       )
     }
-  }, [open, loaded])
+  }, [open, loaded, defaultTeamId])
+
+  // Window-level Escape safety net. Base UI's Dialog already closes on
+  // Escape by default, but a focused dropdown / contenteditable inside the
+  // modal can intercept the keydown before it bubbles to the dialog root.
+  // Listening on window in capture phase guarantees Escape always closes
+  // the create dialog from any nested input.
+  useEffect(() => {
+    if (!open) return
+    const handler = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return
+      // If a *different* overlay (a dropdown) is open inside the modal, let
+      // it consume the Escape first — only close the modal when no inner
+      // popup is intercepting it.
+      const innerPopup = document.querySelector(
+        '[data-state="open"][data-slot="dropdown-menu-content"], [data-state="open"][role="listbox"]'
+      )
+      if (innerPopup) return
+      event.preventDefault()
+      onOpenChange(false)
+    }
+    window.addEventListener("keydown", handler, true)
+    return () => window.removeEventListener("keydown", handler, true)
+  }, [open, onOpenChange])
+
+  const resetForm = useCallback(() => {
+    setTitle("")
+    setDescription("")
+    setStatus("backlog")
+    setPriority("none")
+    setAssigneeId(initialAssignee)
+    setProjectId(null)
+    setLabelIds([])
+    setCycleId(null)
+  }, [initialAssignee])
+
+  // Wrap onOpenChange so closing the dialog (via Escape, backdrop click,
+  // close button, or successful create) always fully resets the form. Doing
+  // this in the open-state callback (rather than a useEffect on `open`)
+  // avoids the cascading-render footgun and keeps reset deterministic.
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen) {
+        resetForm()
+        setCreating(false)
+        setFullscreen(false)
+      }
+      onOpenChange(nextOpen)
+    },
+    [onOpenChange, resetForm]
+  )
 
   const team = teams.find((t) => t.id === teamId) ?? null
   const assignee = members.find((m) => m.id === assigneeId) ?? null
@@ -129,16 +203,6 @@ export function CreateIssueDialog({
   const previousCycles = teamCycles
     .filter((c) => c.state === "completed")
     .slice(-1)
-
-  const resetForm = () => {
-    setTitle("")
-    setDescription("")
-    setStatus("backlog")
-    setPriority("none")
-    setProjectId(null)
-    setLabelIds([])
-    setCycleId(null)
-  }
 
   const handleCreate = async () => {
     if (!title.trim() || !teamId) return
@@ -162,13 +226,18 @@ export function CreateIssueDialog({
     })
     setCreating(false)
     if (res.ok) {
-      resetForm()
-      if (!createMore) onOpenChange(false)
+      if (createMore) {
+        // Stay open and clear the form for the next entry.
+        resetForm()
+      } else {
+        // handleOpenChange takes care of resetting form/loading state.
+        handleOpenChange(false)
+      }
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={false}
         className={

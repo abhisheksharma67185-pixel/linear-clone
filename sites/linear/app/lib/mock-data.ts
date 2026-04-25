@@ -53,6 +53,16 @@ export interface Issue {
   priority: "urgent" | "high" | "medium" | "low" | "none"
   assigneeId: string | null
   creatorId: string
+  /**
+   * Users who follow this issue and receive notifications. Distinct from
+   * `creatorId`: an issue can be created by user A and subscribed to by
+   * users B, C, D — and the "/my-issues subscribed" filter must use
+   * this field, not `creatorId`.
+   *
+   * Optional/back-compat: pre-seeded fixtures may omit it; readers should
+   * treat undefined as `[]`.
+   */
+  subscriberIds?: string[]
   teamId: string
   projectId: string | null
   cycleId: string | null

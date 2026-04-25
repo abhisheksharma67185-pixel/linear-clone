@@ -32,7 +32,37 @@ const ROLE_LABEL: Record<Role, string> = {
   guest: "Guest",
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+/**
+ * Email validation regex. Stricter than the previous
+ * `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` which accepted obviously malformed
+ * inputs that contained any "@…." sequence. This pattern follows the
+ * HTML5 `type="email"` spec (single address):
+ *
+ *   - local: at least one of the standard atext characters
+ *   - domain: starts and ends with an alphanumeric, internal hyphens
+ *     allowed, ≥1 dot-separated label, last label ≥2 alpha chars (TLD)
+ *
+ * `^...$` anchors the regex and `.test()` is run against a trimmed
+ * string. Server-side mirrors this in `validateInviteEmail` so an
+ * attacker who bypasses the client cannot create a malformed member.
+ */
+const EMAIL_RE =
+  /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,}$/
+
+/**
+ * Single source of truth used by both the dialog and any server-side
+ * code paths that need to validate invite addresses.
+ */
+export function isValidInviteEmail(value: string): boolean {
+  const trimmed = value.trim()
+  if (!trimmed) return false
+  // Reject anything obviously over-long; RFC 5321 caps the local at
+  // 64 and the full address at 254 — keep the same bounds.
+  if (trimmed.length > 254) return false
+  const at = trimmed.indexOf("@")
+  if (at < 0 || at > 64) return false
+  return EMAIL_RE.test(trimmed)
+}
 
 export function InvitePeopleDialog({
   open,
@@ -46,6 +76,10 @@ export function InvitePeopleDialog({
   const [role, setRole] = useState<Role>("member")
   const [sent, setSent] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
+  // Last validation error surfaced to the user. Cleared whenever the
+  // user types, so error state never blocks them once they correct
+  // the input. Set on Enter/comma/blur if the draft fails validation.
+  const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Reset form fields when the dialog closes. open → UI state sync is what
@@ -58,31 +92,50 @@ export function InvitePeopleDialog({
       setRole("member")
       setSent(null)
       setCopied(false)
+      setError(null)
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open])
 
   const commitDraft = () => {
     const trimmed = draft.trim().replace(/,$/, "")
-    if (!trimmed) return
-    if (!EMAIL_RE.test(trimmed)) return
+    if (!trimmed) {
+      setError(null)
+      return
+    }
+    if (!isValidInviteEmail(trimmed)) {
+      setError(`"${trimmed}" is not a valid email address`)
+      return
+    }
     if (emails.includes(trimmed)) {
       setDraft("")
+      setError(null)
       return
     }
     setEmails((prev) => [...prev, trimmed])
     setDraft("")
+    setError(null)
   }
 
   const removeEmail = (email: string) =>
     setEmails((prev) => prev.filter((e) => e !== email))
 
-  const canSend = emails.length > 0 || EMAIL_RE.test(draft.trim())
+  const canSend =
+    emails.length > 0 || isValidInviteEmail(draft.trim())
 
   const handleSend = () => {
     const final = [...emails]
     const t = draft.trim()
-    if (t && EMAIL_RE.test(t) && !final.includes(t)) final.push(t)
+    if (t) {
+      if (!isValidInviteEmail(t)) {
+        // Surface the error and abort — never silently drop a draft
+        // that the user thought they'd just sent.
+        setError(`"${t}" is not a valid email address`)
+        return
+      }
+      if (!final.includes(t)) final.push(t)
+    }
+    if (final.length === 0) return
     setSent(final.length)
   }
 
@@ -152,8 +205,24 @@ export function InvitePeopleDialog({
                   id="invite-emails"
                   ref={inputRef}
                   autoFocus
+                  // type="email" enables browser-native validation as
+                  // a second line of defence and triggers email-tuned
+                  // soft keyboards on mobile.
+                  type="email"
+                  multiple
+                  data-testid="invite-emails-input"
+                  aria-invalid={error ? true : undefined}
+                  aria-describedby={
+                    error ? "invite-emails-error" : undefined
+                  }
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
+                  onChange={(e) => {
+                    setDraft(e.target.value)
+                    // Typing clears the error so the user isn't held
+                    // by stale validation after they've corrected
+                    // the value.
+                    if (error) setError(null)
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === ",") {
                       e.preventDefault()
@@ -171,6 +240,16 @@ export function InvitePeopleDialog({
                   className="placeholder:text-muted-foreground/60 flex-1 bg-transparent text-sm outline-none"
                 />
               </div>
+              {error && (
+                <p
+                  id="invite-emails-error"
+                  data-testid="invite-emails-error"
+                  role="alert"
+                  className="text-destructive text-xs"
+                >
+                  {error}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between">

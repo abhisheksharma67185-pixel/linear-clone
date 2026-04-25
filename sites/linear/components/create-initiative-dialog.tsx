@@ -44,6 +44,11 @@ export interface NewInitiative {
   completedProjects: number
   activeProjects: number
   health: InitiativeHealth
+  /**
+   * Tab/lifecycle bucket. Optional for back-compat with existing
+   * fixtures: omitted is treated as "active" by `bucketsForTabs`.
+   */
+  status?: "active" | "planned" | "completed"
 }
 
 export const HEALTH_OPTIONS: {
@@ -117,6 +122,9 @@ export function CreateInitiativeDialog({
       completedProjects: 0,
       activeProjects: 0,
       health,
+      // Newly-created initiatives land on the Active tab. The user can
+      // move them later via initiative-level controls.
+      status: "active",
     })
     resetForm()
     if (!createMore) onOpenChange(false)

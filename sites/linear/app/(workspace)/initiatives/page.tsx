@@ -1,7 +1,15 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import type { Member } from "@/app/lib/mock-data"
+import {
+  bucketsForTabs,
+  INITIATIVE_TABS,
+  resolveTab,
+  type InitiativeTab,
+  type InitiativeWithStatus,
+} from "@/app/lib/initiatives-filters"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -27,6 +35,7 @@ import {
   ArrowRight01Icon,
   UserIcon,
   HelpCircleIcon,
+  BookUploadIcon,
 } from "@hugeicons/core-free-icons"
 import {
   CreateInitiativeDialog,
@@ -34,8 +43,9 @@ import {
   type InitiativeHealth,
   type NewInitiative,
 } from "@/components/create-initiative-dialog"
+import { NewInitiativeInline } from "@/components/new-initiative-inline"
 
-type Initiative = NewInitiative
+type Initiative = InitiativeWithStatus
 
 const INITIAL_INITIATIVES: Initiative[] = [
   {
@@ -48,6 +58,7 @@ const INITIAL_INITIATIVES: Initiative[] = [
     completedProjects: 0,
     activeProjects: 0,
     health: "no_update",
+    status: "active",
   },
   {
     id: "init-2",
@@ -59,8 +70,15 @@ const INITIAL_INITIATIVES: Initiative[] = [
     completedProjects: 0,
     activeProjects: 4,
     health: "no_update",
+    status: "active",
   },
 ]
+
+const TAB_LABELS: Record<InitiativeTab, string> = {
+  active: "Active",
+  planned: "Planned",
+  completed: "Completed",
+}
 
 const DISPLAY_PROPERTIES = [
   { key: "description", label: "Description", default: true },
@@ -77,10 +95,23 @@ const DISPLAY_PROPERTIES = [
 ]
 
 export default function InitiativesPage() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const tab = resolveTab(searchParams.get("tab"))
+
   const [members, setMembers] = useState<Member[]>([])
   const [initiatives, setInitiatives] =
     useState<Initiative[]>(INITIAL_INITIATIVES)
   const [creating, setCreating] = useState(false)
+  /**
+   * `inlineDraftKey`:
+   *   - `null` → the inline draft is closed and the component is unmounted.
+   *   - any number → the inline draft is open. Bumping the number on
+   *     each open forces React to remount the form, guaranteeing fresh
+   *     state without manual reset bookkeeping.
+   */
+  const [inlineDraftKey, setInlineDraftKey] = useState<number | null>(null)
   const [activeProps, setActiveProps] = useState<Set<string>>(
     () => new Set(DISPLAY_PROPERTIES.filter((p) => p.default).map((p) => p.key))
   )
@@ -90,6 +121,34 @@ export default function InitiativesPage() {
       .then((r) => r.json())
       .then(setMembers)
       .catch(() => setMembers([]))
+  }, [])
+
+  // Single source of truth for per-tab buckets — ensures tab badges
+  // and rendered lists are always derived from the same array, so a
+  // "Planned 2" badge can never co-exist with an empty Planned list.
+  const buckets = useMemo(() => bucketsForTabs(initiatives), [initiatives])
+
+  const setTab = useCallback(
+    (next: InitiativeTab) => {
+      // URL-driven tab state: writing the param synchronously means the
+      // new tab's content renders on the same React commit as the URL
+      // change, so there's no perceptible lag between click and view.
+      const params = new URLSearchParams(searchParams.toString())
+      if (next === "active") params.delete("tab")
+      else params.set("tab", next)
+      const qs = params.toString()
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    },
+    [pathname, router, searchParams]
+  )
+
+  const openInlineDraft = useCallback(() => {
+    setInlineDraftKey(Date.now())
+  }, [])
+  const closeInlineDraft = useCallback(() => setInlineDraftKey(null), [])
+  const handleInlineSave = useCallback((init: NewInitiative) => {
+    setInitiatives((prev) => [init, ...prev])
+    setInlineDraftKey(null)
   }, [])
 
   return (
@@ -109,14 +168,20 @@ export default function InitiativesPage() {
         </header>
 
         <Tabs
-          defaultValue="active"
+          value={tab}
+          onValueChange={(v) => setTab(resolveTab(v))}
           className="flex min-h-0 flex-1 flex-col gap-0"
         >
           <div className="flex items-center justify-between px-4 pr-6">
             <TabsList className="h-10 gap-1 bg-transparent p-0">
-              <TabPill value="active">Active</TabPill>
-              <TabPill value="planned">Planned</TabPill>
-              <TabPill value="completed">Completed</TabPill>
+              {INITIATIVE_TABS.map((key) => (
+                <TabPill
+                  key={key}
+                  value={key}
+                  count={buckets[key].length}
+                  label={TAB_LABELS[key]}
+                />
+              ))}
             </TabsList>
 
             <div className="text-muted-foreground flex items-center gap-0.5">
@@ -128,21 +193,28 @@ export default function InitiativesPage() {
             </div>
           </div>
 
-          <TabsContent value="active" className="m-0 flex-1 overflow-auto">
-            <InitiativeTable
-              initiatives={initiatives}
-              members={members}
-              activeProps={activeProps}
-              onNew={() => setCreating(true)}
-            />
-          </TabsContent>
-
-          <TabsContent value="planned" className="m-0 flex-1 overflow-auto">
-            <EmptyTab label="No planned initiatives" />
-          </TabsContent>
-          <TabsContent value="completed" className="m-0 flex-1 overflow-auto">
-            <EmptyTab label="No completed initiatives" />
-          </TabsContent>
+          {INITIATIVE_TABS.map((key) => (
+            <TabsContent
+              key={key}
+              value={key}
+              className="m-0 flex-1 overflow-auto"
+              data-tab-content={key}
+            >
+              <NewInitiativeInline
+                key={inlineDraftKey ?? "closed"}
+                open={key === tab && inlineDraftKey !== null}
+                onCancel={closeInlineDraft}
+                onSave={handleInlineSave}
+              />
+              <InitiativeTable
+                initiatives={buckets[key]}
+                members={members}
+                activeProps={activeProps}
+                emptyLabel={EMPTY_LABEL[key]}
+                onNew={openInlineDraft}
+              />
+            </TabsContent>
+          ))}
         </Tabs>
       </div>
 
@@ -155,28 +227,40 @@ export default function InitiativesPage() {
   )
 }
 
+const EMPTY_LABEL: Record<InitiativeTab, string> = {
+  active: "No initiatives yet.",
+  planned: "No planned initiatives yet.",
+  completed: "No completed initiatives yet.",
+}
+
 function TabPill({
   value,
-  children,
+  label,
+  count,
 }: {
-  value: string
-  children: React.ReactNode
+  value: InitiativeTab
+  label: string
+  count: number
 }) {
   return (
     <TabsTrigger
       value={value}
-      className="text-muted-foreground data-[state=active]:bg-accent data-[state=active]:text-foreground rounded-full border-0 bg-transparent px-3 py-1 text-xs font-medium shadow-none data-[state=active]:shadow-none"
+      // The badge is rendered inside the trigger so it shares the same
+      // active-state styling as the label and is reachable via the
+      // same role="tab" element. The numeric span is also a stable
+      // testid hook (data-tab-count) so unit/e2e tests can read the
+      // displayed count without scraping pseudo-elements.
+      className="text-muted-foreground data-[state=active]:bg-accent data-[state=active]:text-foreground inline-flex items-center gap-1.5 rounded-full border-0 bg-transparent px-3 py-1 text-xs font-medium shadow-none data-[state=active]:shadow-none"
     >
-      {children}
+      <span>{label}</span>
+      <span
+        data-tab-count={value}
+        aria-label={`${count} ${label.toLowerCase()} initiatives`}
+        className="bg-muted text-muted-foreground inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums"
+      >
+        {count}
+      </span>
     </TabsTrigger>
-  )
-}
-
-function EmptyTab({ label }: { label: string }) {
-  return (
-    <div className="text-muted-foreground flex h-full items-center justify-center py-24 text-xs">
-      {label}
-    </div>
   )
 }
 
@@ -186,11 +270,13 @@ function InitiativeTable({
   initiatives,
   members,
   activeProps,
+  emptyLabel,
   onNew,
 }: {
   initiatives: Initiative[]
   members: Member[]
   activeProps: Set<string>
+  emptyLabel: string
   onNew: () => void
 }) {
   const showOwner = activeProps.has("owner")
@@ -200,18 +286,35 @@ function InitiativeTable({
   const showActive = activeProps.has("active_projects")
 
   if (initiatives.length === 0) {
+    // Same empty-state shape on every tab — the CTA pair was inconsistent
+    // before (Active had a Create button; Planned/Completed had only
+    // text). Aligning all three matches Linear's behavior of always
+    // offering Create + Documentation.
     return (
       <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-3 py-24 text-sm">
         <div className="flex size-10 items-center justify-center rounded-md bg-orange-100 text-orange-500">
           <HugeiconsIcon icon={Satellite01Icon} className="size-5" />
         </div>
-        <p>No initiatives yet.</p>
-        <Button
-          onClick={onNew}
-          className="h-7 rounded-md bg-violet-600 px-3 text-xs font-medium text-white hover:bg-violet-700"
-        >
-          New initiative
-        </Button>
+        <p data-testid="initiatives-empty-label">{emptyLabel}</p>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={onNew}
+            data-testid="initiatives-empty-create"
+            className="h-7 rounded-md bg-violet-600 px-3 text-xs font-medium text-white hover:bg-violet-700"
+          >
+            Create new initiative
+          </Button>
+          <a
+            href="https://linear.app/docs/initiatives"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="initiatives-empty-docs"
+            className="border-border hover:bg-muted/50 inline-flex h-7 items-center gap-1.5 rounded-md border px-3 text-xs font-medium"
+          >
+            <HugeiconsIcon icon={BookUploadIcon} className="size-3.5" />
+            Documentation
+          </a>
+        </div>
       </div>
     )
   }

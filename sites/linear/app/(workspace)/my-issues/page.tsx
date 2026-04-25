@@ -1,8 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import type { Issue, Member } from "@/app/lib/mock-data"
+import { CURRENT_USER_ID } from "@/app/lib/current-user"
+import {
+  assignedQuery,
+  createdQuery,
+  subscribedQuery,
+} from "@/app/lib/my-issues-filters"
 import { statusStyle, priorityStyle } from "@/lib/status-styles"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -17,8 +23,6 @@ import {
 } from "@hugeicons/core-free-icons"
 import { CreateIssueDialog } from "@/components/create-issue-dialog"
 import { ViewOptionsPopover } from "@/components/view-options-popover"
-
-const CURRENT_USER = "usr-1"
 
 export default function MyIssuesPage() {
   const [issues, setIssues] = useState<Issue[]>([])
@@ -37,13 +41,43 @@ export default function MyIssuesPage() {
     })
   }, [])
 
-  const assigned = issues.filter(
-    (i) =>
-      i.assigneeId === CURRENT_USER &&
-      i.status !== "done" &&
-      i.status !== "cancelled"
+  // Global "c" hotkey to open the New Issue dialog. Skipped while typing
+  // in inputs/textareas/contenteditable so it doesn't hijack typing.
+  const openCreate = useCallback(() => setCreateOpen(true), [])
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "c" && event.key !== "C") return
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      const target = event.target as HTMLElement | null
+      const tag = target?.tagName.toLowerCase()
+      if (tag === "input" || tag === "textarea" || target?.isContentEditable) {
+        return
+      }
+      // Don't fire when an overlay (modal/dropdown/popover) is open —
+      // the user is interacting with that surface.
+      if (document.querySelector('[data-state="open"][role="dialog"]')) return
+      event.preventDefault()
+      openCreate()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [openCreate])
+
+  // The three pure filter queries — defined in `app/lib/my-issues-filters`
+  // so they're unit-testable and so a regression that aliases Subscribed
+  // back to "created by me" fails a test instead of the UI.
+  const assigned = useMemo(
+    () => issues.filter(assignedQuery(CURRENT_USER_ID).predicate),
+    [issues]
   )
-  const created = issues.filter((i) => i.creatorId === CURRENT_USER)
+  const created = useMemo(
+    () => issues.filter(createdQuery(CURRENT_USER_ID).predicate),
+    [issues]
+  )
+  const subscribed = useMemo(
+    () => issues.filter(subscribedQuery(CURRENT_USER_ID).predicate),
+    [issues]
+  )
 
   return (
     <>
@@ -104,10 +138,16 @@ export default function MyIssuesPage() {
           </TabsContent>
 
           <TabsContent value="subscribed" className="m-0 flex-1 overflow-auto">
-            <EmptyState
-              label="You're not subscribed to any issues"
-              onCreate={() => setCreateOpen(true)}
-            />
+            {loading ? (
+              <LoadingRows />
+            ) : subscribed.length === 0 ? (
+              <EmptyState
+                label="You're not subscribed to any issues"
+                onCreate={() => setCreateOpen(true)}
+              />
+            ) : (
+              <IssueList issues={subscribed} members={members} />
+            )}
           </TabsContent>
 
           <TabsContent value="activity" className="m-0 flex-1 overflow-auto">

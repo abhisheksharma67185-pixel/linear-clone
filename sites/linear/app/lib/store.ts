@@ -122,7 +122,33 @@ let _nextViewId = 5
 // ---------------------------------------------------------------------------
 
 export function getIssues(): Issue[] {
-  return deepClone(_issues)
+  return deepClone(_issues).map(withDerivedSubscribers)
+}
+
+/**
+ * Deterministic subscriber set per issue. Real Linear stores subscribers
+ * as their own table, but for the mock we synthesise a stable list from
+ * the issue ID hash so the "Subscribed" filter has data to operate on
+ * without exploding fixture size. The current user (`usr-1`) is included
+ * for issues where their hash bit is set, plus the assignee and creator
+ * are always implicit subscribers.
+ */
+function withDerivedSubscribers(issue: Issue): Issue {
+  if (Array.isArray(issue.subscriberIds)) return issue
+  const subs = new Set<string>()
+  if (issue.creatorId) subs.add(issue.creatorId)
+  if (issue.assigneeId) subs.add(issue.assigneeId)
+  // Stable hash of issue.id → which extra members subscribe.
+  let h = 0
+  for (let i = 0; i < issue.id.length; i++) {
+    h = (h * 31 + issue.id.charCodeAt(i)) | 0
+  }
+  // Mix in `usr-1` for ~⅓ of issues so My Issues → Subscribed has content.
+  if ((Math.abs(h) % 3) === 0) subs.add("usr-1")
+  // Add one rotating member from the roster for variety.
+  const extras = ["usr-2", "usr-3", "usr-4", "usr-5", "usr-6"]
+  subs.add(extras[Math.abs(h) % extras.length])
+  return { ...issue, subscriberIds: Array.from(subs) }
 }
 
 export function getIssueById(id: string): Issue | undefined {
@@ -210,6 +236,10 @@ export function createIssue(fields: {
   const identifier = `${teamKey}-${_nextIssueCounters[teamKey]++}`
   const timestamp = now()
 
+  const creatorId = fields.creatorId ?? "usr-1"
+  const initialSubscribers = new Set<string>([creatorId])
+  if (fields.assigneeId) initialSubscribers.add(fields.assigneeId)
+
   const issue: Issue = {
     id: `iss-${_nextIssueId++}`,
     identifier,
@@ -218,7 +248,10 @@ export function createIssue(fields: {
     status: fields.status ?? "backlog",
     priority: fields.priority ?? "none",
     assigneeId: fields.assigneeId ?? null,
-    creatorId: fields.creatorId ?? "usr-1",
+    creatorId,
+    // Creator (and assignee, if any) is auto-subscribed at create time —
+    // matches Linear's behavior and is what the Subscribed filter expects.
+    subscriberIds: Array.from(initialSubscribers),
     teamId,
     projectId: fields.projectId ?? null,
     cycleId: fields.cycleId ?? null,
