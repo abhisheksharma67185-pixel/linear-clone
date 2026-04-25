@@ -4,7 +4,6 @@ import { Suspense, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import { AskLinear } from "@/components/ask-linear"
 import { RoutePageSkeleton } from "@/components/route-page-skeleton"
 import { TodayProvider } from "@/app/lib/today-context"
 
@@ -48,7 +47,6 @@ export default function WorkspaceLayout({
             {children}
           </Suspense>
         </SidebarInset>
-        <AskLinear />
       </SidebarProvider>
     </TodayProvider>
   )
