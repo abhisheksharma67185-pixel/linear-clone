@@ -28,7 +28,6 @@ import {
   AppStoreIcon,
   CreditCardAcceptIcon,
   BookUploadIcon,
-  PlusSignIcon,
   Flag03Icon,
   DocumentValidationIcon,
   CustomerSupportIcon,
@@ -121,6 +120,7 @@ const SHELL_WRAPPED_PATHS = new Set([
   "/settings/project-labels",
   "/settings/project-templates",
   "/settings/project-statuses",
+  "/settings/new-team",
 ])
 
 const TEAM_HUB_PATTERN = /^\/settings\/teams\/[^/]+(?:\/[^/]+)?$/
@@ -232,39 +232,6 @@ function SettingsShell({ children }: { children: React.ReactNode }) {
               })}
             </div>
           ))}
-
-          <div className="mt-1 mb-1">
-            <div className="text-muted-foreground/60 mb-0.5 px-2 py-1 text-[11px] font-medium">
-              Your teams
-            </div>
-            <Link
-              href={sectionHref("team-hub-abhishek")}
-              scroll={false}
-              aria-label="Abhishek"
-              aria-current={
-                section === "team-hub-abhishek" ? "page" : undefined
-              }
-              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
-                section === "team-hub-abhishek"
-                  ? "bg-sidebar-accent text-foreground font-medium"
-                  : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
-              }`}
-            >
-              <span className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-pink-500/60 text-pink-500">
-                <HugeiconsIcon icon={UserIcon} className="size-3" />
-              </span>
-              <span className="flex-1 truncate">Abhishek</span>
-            </Link>
-            <Link
-              href="/settings/new-team"
-              scroll={false}
-              aria-label="Create a team"
-              className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors"
-            >
-              <HugeiconsIcon icon={PlusSignIcon} className="size-3.5 shrink-0" />
-              <span>Create a team</span>
-            </Link>
-          </div>
         </nav>
       </aside>
 

@@ -69,7 +69,7 @@ export default function TeamSectionSubPage({
   }, [copy.label, team])
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6 p-6">
+    <div className="flex max-w-5xl flex-col gap-6 p-6">
       <Link
         href={`/settings/teams/${teamKey}`}
         scroll={false}
@@ -88,6 +88,12 @@ export default function TeamSectionSubPage({
         <MembersSection team={team} />
       ) : section === "notifications" ? (
         <NotificationsSection />
+      ) : section === "issue-labels" ? (
+        <IssueLabelsSection />
+      ) : section === "templates" ? (
+        <TemplatesSection />
+      ) : section === "recurring-issues" ? (
+        <RecurringIssuesSection />
       ) : (
         <PlaceholderSection label={copy.label} subtitle={copy.subtitle} team={team} />
       )}
@@ -421,6 +427,168 @@ function NotificationsSection() {
           ))}
         </div>
       </section>
+    </div>
+  )
+}
+
+function IssueLabelsSection() {
+  const [filter, setFilter] = useState("")
+  const [scope, setScope] = useState("team")
+
+  return (
+    <div className="flex flex-col gap-4">
+      <h1 className="text-2xl font-semibold">Team issue labels</h1>
+
+      <div className="flex items-center gap-2">
+        <div className="relative max-w-xs flex-1">
+          <HugeiconsIcon
+            icon={Search01Icon}
+            className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2"
+          />
+          <input
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Filter by name..."
+            aria-label="Filter labels by name"
+            className="placeholder:text-muted-foreground/60 focus:ring-ring h-8 w-full rounded-md border bg-transparent pr-3 pl-8 text-sm outline-none focus:ring-2"
+          />
+        </div>
+        <Select value={scope} onValueChange={(v) => v && setScope(v)}>
+          <SelectTrigger className="h-8 w-28 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="team">Team</SelectItem>
+            <SelectItem value="workspace">Workspace</SelectItem>
+            <SelectItem value="all">All</SelectItem>
+          </SelectContent>
+        </Select>
+        <div className="ml-auto flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-8 text-xs">
+            New group
+          </Button>
+          <Button
+            size="sm"
+            className="h-8 bg-violet-600 px-4 text-xs text-white hover:bg-violet-700"
+          >
+            New label
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-lg border">
+        <div className="text-muted-foreground grid grid-cols-[2fr_3fr_80px_120px_120px] border-b px-4 py-2 text-xs font-medium">
+          <div className="flex items-center gap-1">
+            Name
+            <HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />
+          </div>
+          <div>Description</div>
+          <div>Issues</div>
+          <div>Last applied</div>
+          <div>Created</div>
+        </div>
+        <div className="text-muted-foreground px-4 py-10 text-sm">
+          This team doesn&apos;t have any issue labels yet
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TemplatesSection() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Team templates</h1>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          Any templates created here will be available when creating issues,
+          projects, and documents within this team. To create templates that
+          apply to all teams, do so in the workspace{" "}
+          <a
+            href="#"
+            className="text-foreground font-medium underline-offset-2 hover:underline"
+          >
+            issue
+          </a>
+          ,{" "}
+          <a
+            href="#"
+            className="text-foreground font-medium underline-offset-2 hover:underline"
+          >
+            project
+          </a>
+          , or{" "}
+          <a
+            href="#"
+            className="text-foreground font-medium underline-offset-2 hover:underline"
+          >
+            document
+          </a>{" "}
+          templates sections.{" "}
+          <a
+            href="https://linear.app/docs/templates"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground font-medium underline-offset-2 hover:underline"
+          >
+            Docs <span aria-hidden="true">↗</span>
+          </a>
+        </p>
+      </div>
+
+      {[
+        { title: "Issue templates", empty: "No issue templates" },
+        { title: "Project templates", empty: "No project templates" },
+        { title: "Document templates", empty: "No document templates" },
+      ].map((s) => (
+        <section key={s.title} className="flex flex-col gap-2">
+          <h2 className="text-base font-semibold">{s.title}</h2>
+          <div className="bg-card flex items-center justify-between rounded-lg border px-4 py-3">
+            <span className="text-muted-foreground text-sm">{s.empty}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1 text-xs font-medium"
+            >
+              <span className="text-base leading-none">+</span> New template
+            </Button>
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}
+
+function RecurringIssuesSection() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <h1 className="text-2xl font-semibold">Recurring issues</h1>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          Automatically create issues that need to be completed on a regular
+          schedule. Each issue is created with a due date set by the schedule.
+          A new instance is created after each due date passes.{" "}
+          <a
+            href="https://linear.app/docs/recurring-issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground font-medium underline-offset-2 hover:underline"
+          >
+            Docs <span aria-hidden="true">↗</span>
+          </a>
+        </p>
+      </div>
+
+      <div className="bg-card flex items-center justify-between rounded-lg border px-4 py-3">
+        <span className="text-muted-foreground text-sm">No recurring issues</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 gap-1 text-xs font-medium"
+        >
+          <span className="text-base leading-none">+</span> New recurring issue
+        </Button>
+      </div>
     </div>
   )
 }

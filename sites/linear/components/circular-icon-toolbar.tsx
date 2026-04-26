@@ -1,10 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { SlidersHorizontalIcon } from "@hugeicons/core-free-icons"
 import { cn } from "@/lib/utils"
-
-const BG = "#2A2A2A"
-const FG = "#B0B0B0"
 
 const CircularIconButton = React.forwardRef<
   HTMLButtonElement,
@@ -19,7 +18,7 @@ const CircularIconButton = React.forwardRef<
       type="button"
       aria-label={label}
       className={cn(
-        "relative flex size-9 shrink-0 items-center justify-center rounded-full border border-white/[0.06] bg-[#2A2A2A] text-[#B0B0B0] transition-colors hover:border-white/15 hover:text-white focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:outline-none",
+        "bg-muted text-muted-foreground hover:text-foreground focus-visible:ring-ring/40 relative flex size-7 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none",
         className
       )}
       {...props}
@@ -32,8 +31,8 @@ const CircularIconButton = React.forwardRef<
 export function FilterSortIcon() {
   return (
     <svg
-      width="16"
-      height="16"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="currentColor"
       aria-hidden="true"
@@ -48,43 +47,28 @@ export function FilterSortIcon() {
 }
 
 export function AdjustmentsIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <line x1="2.5" y1="5" x2="13.5" y2="5" />
-      <circle cx="10.5" cy="5" r="1.5" fill={BG} />
-      <line x1="2.5" y1="11" x2="13.5" y2="11" />
-      <circle cx="5.5" cy="11" r="1.5" fill={BG} />
-    </svg>
-  )
+  return <HugeiconsIcon icon={SlidersHorizontalIcon} className="size-3.5" />
 }
 
 export function VerticalAdjustmentsIcon() {
   return (
     <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
       aria-hidden="true"
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="currentColor"
     >
-      <line x1="4" y1="2.5" x2="4" y2="13.5" />
-      <circle cx="4" cy="6" r="1.5" fill={BG} />
-      <line x1="8" y1="2.5" x2="8" y2="13.5" />
-      <circle cx="8" cy="10" r="1.5" fill={BG} />
-      <line x1="12" y1="2.5" x2="12" y2="13.5" />
-      <circle cx="12" cy="7" r="1.5" fill={BG} />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M7 2.5C8.11933 2.5 9.06613 3.23584 9.38477 4.25H14.75C15.1642 4.25 15.5 4.58579 15.5 5C15.5 5.41421 15.1642 5.75 14.75 5.75H9.38477C9.06613 6.76416 8.11933 7.5 7 7.5C5.88067 7.5 4.93387 6.76416 4.61523 5.75H2.25C1.83579 5.75 1.5 5.41421 1.5 5C1.5 4.58579 1.83579 4.25 2.25 4.25H4.61523C4.93387 3.23584 5.88067 2.5 7 2.5ZM7 4C6.44772 4 6 4.44772 6 5C6 5.55228 6.44772 6 7 6C7.55228 6 8 5.55228 8 5C8 4.44772 7.55228 4 7 4Z"
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M10 13.5C8.88067 13.5 7.93387 12.7642 7.61523 11.75H2.25C1.83579 11.75 1.5 11.4142 1.5 11C1.5 10.5858 1.83579 10.25 2.25 10.25H7.61523C7.93387 9.23584 8.88067 8.5 10 8.5C11.1193 8.5 12.0661 9.23584 12.3848 10.25H14.75C15.1642 10.25 15.5 10.5858 15.5 11C15.5 11.4142 15.1642 11.75 14.75 11.75H12.3848C12.0661 12.7642 11.1193 13.5 10 13.5ZM10 12C10.5523 12 11 11.5523 11 11C11 10.4477 10.5523 10 10 10C9.44772 10 9 10.4477 9 11C9 11.5523 9.44772 12 10 12Z"
+      />
     </svg>
   )
 }
@@ -92,11 +76,11 @@ export function VerticalAdjustmentsIcon() {
 export function CardViewIcon() {
   return (
     <svg
-      width="16"
-      height="16"
+      aria-hidden="true"
+      width="14"
+      height="14"
       viewBox="0 0 16 16"
       fill="currentColor"
-      aria-hidden="true"
     >
       <path
         fillRule="evenodd"
@@ -117,8 +101,7 @@ export function CircularIconToolbarRoot({
 }) {
   return (
     <div
-      className={cn("flex items-center gap-2", className)}
-      style={{ color: FG }}
+      className={cn("text-muted-foreground flex items-center gap-1.5", className)}
     >
       {children}
     </div>

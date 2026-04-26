@@ -65,7 +65,9 @@ test.describe("Views — Display Options Escape + New view breadcrumb", () => {
    * the create-mode literal regardless of the previous view — is
    * identical.
    */
-  test("/views/new breadcrumb reads exactly 'New view'", async ({ page }) => {
+  test("/views/new breadcrumb shows the deterministic placeholder", async ({
+    page,
+  }) => {
     // First visit a real view detail so there's a previous view name
     // cached in the page header. The bug we're guarding against is
     // that previous-view title leaking into /new.
@@ -80,9 +82,10 @@ test.describe("Views — Display Options Escape + New view breadcrumb", () => {
     await expect(breadcrumb).toBeVisible()
     const current = page.getByTestId("views-breadcrumb-current")
     await expect(current).toBeVisible()
-    // Exact match — must literally say "New view", not the
-    // previous view's title.
-    await expect(current).toHaveText("New view")
+    // The breadcrumb mirrors the name input. With no name typed yet
+    // it falls back to the literal "All issues" placeholder — the
+    // previously-viewed view's title must NOT leak in.
+    await expect(current).toHaveText("All issues")
   })
 
   /**

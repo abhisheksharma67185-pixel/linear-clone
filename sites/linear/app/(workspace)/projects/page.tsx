@@ -23,14 +23,41 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   SlidersHorizontalIcon,
-  FilterHorizontalIcon,
   PanelRightIcon,
   PlusSignIcon,
   Layers01Icon,
   ArrowDown01Icon,
   CubeIcon,
   CalendarAdd01Icon,
+  StatusIcon,
+  UserIcon,
+  LabelIcon,
+  Calendar03Icon,
+  Flag03Icon,
+  Chart01Icon,
+  UserMultiple02Icon,
+  PencilEdit01Icon,
+  PulseRectangle01Icon,
+  Target02Icon,
+  Diamond01Icon,
+  FileEditIcon,
+  TextFontIcon,
+  GitMergeIcon,
+  BlockedIcon,
+  MinusSignCircleIcon,
+  CalendarSyncIcon,
+  CalendarCheckIn01Icon,
+  CalendarCheckOut01Icon,
 } from "@hugeicons/core-free-icons"
+import { StatusIcon as IssueStatusIcon, PriorityIcon } from "@/components/status-icons"
+import {
+  FilterPopover,
+  type FilterOption,
+} from "@/components/filter-popover"
+import {
+  FilterSortIcon,
+  VerticalAdjustmentsIcon,
+} from "@/components/circular-icon-toolbar"
 
 export default function ProjectsPage() {
   return (
@@ -55,6 +82,7 @@ function ProjectsPageInner() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [healthFiltered, setHealthFiltered] = useState(false)
   const [leadsFiltered, setLeadsFiltered] = useState(false)
+  const [advancedFilterActive, setAdvancedFilterActive] = useState(false)
   const [sortBy, setSortBy] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [viewType, setViewType] = useState<"list" | "board" | "timeline">(
@@ -184,12 +212,28 @@ function ProjectsPageInner() {
                 onClick={() => setEditingView(true)}
                 className="text-muted-foreground hover:bg-accent hover:text-foreground ml-1 flex size-6 items-center justify-center rounded"
               >
-                <HugeiconsIcon icon={Layers01Icon} className="size-3" />
+                <svg
+                  aria-hidden="true"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M6.97358 1.34476C7.57022 0.885624 8.41055 0.885024 9.00788 1.3433L14.5499 5.59521C15.15 6.05565 15.15 6.94435 14.5499 7.40478L9.00788 11.6567C8.41055 12.115 7.57022 12.1144 6.97358 11.6552L1.44875 7.40374C0.850417 6.94331 0.850415 6.05669 1.44875 5.59625L6.97358 1.34476ZM8 3.25C8.41421 3.25 8.75 3.58579 8.75 4V5.75H10.5C10.9142 5.75 11.25 6.08579 11.25 6.5C11.25 6.91421 10.9142 7.25 10.5 7.25H8.75V9C8.75 9.41421 8.41421 9.75 8 9.75C7.58579 9.75 7.25 9.41421 7.25 9V7.25H5.5C5.08579 7.25 4.75 6.91421 4.75 6.5C4.75 6.08579 5.08579 5.75 5.5 5.75H7.25V4C7.25 3.58579 7.58579 3.25 8 3.25Z"
+                  />
+                  <path d="M1.15024 9.79849C1.39408 9.46375 1.84872 9.40113 2.16572 9.65862L6.50981 12.9949C7.29068 13.6292 8.37801 13.6292 9.15888 12.9949L13.8344 9.65862C14.1513 9.40113 14.606 9.46375 14.8498 9.79849C15.0937 10.1332 15.0344 10.6133 14.7174 10.8708L10.0419 14.2071C8.74045 15.2643 6.92824 15.2643 5.62678 14.2071L1.28269 10.8708C0.965698 10.6133 0.906397 10.1332 1.15024 9.79849Z" />
+                </svg>
               </button>
             )}
           </div>
           <div className="text-muted-foreground flex items-center gap-1.5">
-            <FilterPopover />
+            <ProjectFilterPopover
+              projects={projects}
+              onAdvancedFilter={() => setAdvancedFilterActive(true)}
+            />
             <DisplayPopover viewType={viewType} setViewType={setViewType} />
             <button
               type="button"
@@ -205,6 +249,13 @@ function ProjectsPageInner() {
           </div>
         </div>
 
+        {advancedFilterActive && (
+          <AdvancedFilterBar
+            projects={projects}
+            onClose={() => setAdvancedFilterActive(false)}
+          />
+        )}
+
         {/* Table + Panel */}
         <div className="flex min-h-0 flex-1 overflow-hidden">
           <div className="flex-1 overflow-auto">
@@ -214,9 +265,24 @@ function ProjectsPageInner() {
                 {/* Name + description inputs */}
                 <div className="px-5 py-3">
                   <div className="flex items-center gap-2">
-                    <HugeiconsIcon
-                      icon={Layers01Icon}
-                      className="text-muted-foreground size-4 shrink-0"
+                    <IconPickerPopover
+                      triggerClassName="bg-accent text-muted-foreground hover:bg-accent/80 flex size-7 shrink-0 items-center justify-center rounded-md"
+                      trigger={
+                        <svg
+                          aria-hidden="true"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 16 16"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M6.97358 1.34476C7.57022 0.885624 8.41055 0.885024 9.00788 1.3433L14.5499 5.59521C15.15 6.05565 15.15 6.94435 14.5499 7.40478L9.00788 11.6567C8.41055 12.115 7.57022 12.1144 6.97358 11.6552L1.44875 7.40374C0.850417 6.94331 0.850415 6.05669 1.44875 5.59625L6.97358 1.34476ZM8 3.25C8.41421 3.25 8.75 3.58579 8.75 4V5.75H10.5C10.9142 5.75 11.25 6.08579 11.25 6.5C11.25 6.91421 10.9142 7.25 10.5 7.25H8.75V9C8.75 9.41421 8.41421 9.75 8 9.75C7.58579 9.75 7.25 9.41421 7.25 9V7.25H5.5C5.08579 7.25 4.75 6.91421 4.75 6.5C4.75 6.08579 5.08579 5.75 5.5 5.75H7.25V4C7.25 3.58579 7.58579 3.25 8 3.25Z"
+                          />
+                          <path d="M1.15024 9.79849C1.39408 9.46375 1.84872 9.40113 2.16572 9.65862L6.50981 12.9949C7.29068 13.6292 8.37801 13.6292 9.15888 12.9949L13.8344 9.65862C14.1513 9.40113 14.606 9.46375 14.8498 9.79849C15.0937 10.1332 15.0344 10.6133 14.7174 10.8708L10.0419 14.2071C8.74045 15.2643 6.92824 15.2643 5.62678 14.2071L1.28269 10.8708C0.965698 10.6133 0.906397 10.1332 1.15024 9.79849Z" />
+                        </svg>
+                      }
                     />
                     <input
                       autoFocus
@@ -246,7 +312,7 @@ function ProjectsPageInner() {
                     value={viewDesc}
                     onChange={(e) => setViewDesc(e.target.value)}
                     placeholder="Description (optional)"
-                    className="text-muted-foreground placeholder:text-muted-foreground/60 mt-1.5 w-full bg-transparent pl-6 text-xs focus:outline-none"
+                    className="text-muted-foreground placeholder:text-muted-foreground/60 mt-1.5 w-full bg-transparent pl-9 text-xs focus:outline-none"
                   />
                 </div>
 
@@ -257,10 +323,7 @@ function ProjectsPageInner() {
                     type="button"
                     className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
                   >
-                    <HugeiconsIcon
-                      icon={FilterHorizontalIcon}
-                      className="size-3.5"
-                    />
+                    <FilterSortIcon />
                   </button>
                   {/* Right: timeline controls */}
                   <div className="flex items-center gap-1.5">
@@ -285,10 +348,7 @@ function ProjectsPageInner() {
                       type="button"
                       className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
                     >
-                      <HugeiconsIcon
-                        icon={SlidersHorizontalIcon}
-                        className="size-3.5"
-                      />
+                      <VerticalAdjustmentsIcon />
                     </button>
                   </div>
                 </div>
@@ -2751,143 +2811,316 @@ function DatePickerPopover() {
   )
 }
 
-const FILTER_OPTIONS = [
-  { label: "Status", icon: "○" },
-  { label: "Priority", icon: "⚑" },
-  { label: "Lead", icon: "◎" },
-  { label: "Member", icon: "◉" },
-  { label: "Label", icon: "⬡" },
-  { label: "Target date", icon: "▦" },
-  { label: "Health", icon: "♡" },
-]
-
-function FilterPopover() {
-  const [search, setSearch] = useState("")
-  const [active, setActive] = useState<string[]>([])
-
-  const filtered = FILTER_OPTIONS.filter((o) =>
-    o.label.toLowerCase().includes(search.toLowerCase())
-  )
-
-  return (
-    <Popover>
-      <PopoverTrigger
-        render={
-          <button
-            type="button"
-            className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
+const STATIC_FILTER_OPTIONS: FilterOption[] = [
+  {
+    label: "Status",
+    icon: StatusIcon,
+    kind: "checkbox",
+    submenu: [
+      { label: "Backlog", icon: <IssueStatusIcon status="backlog" /> },
+      { label: "Planned", icon: <IssueStatusIcon status="todo" /> },
+      { label: "In Progress", icon: <IssueStatusIcon status="in_progress" /> },
+      { label: "Completed", icon: <IssueStatusIcon status="done" /> },
+      { label: "Cancelled", icon: <IssueStatusIcon status="cancelled" /> },
+    ],
+  },
+  {
+    label: "Priority",
+    icon: Chart01Icon,
+    kind: "checkbox",
+    submenu: [
+      { label: "Urgent", icon: <PriorityIcon priority="urgent" /> },
+      { label: "High", icon: <PriorityIcon priority="high" /> },
+      { label: "Medium", icon: <PriorityIcon priority="medium" /> },
+      { label: "Low", icon: <PriorityIcon priority="low" /> },
+      { label: "No priority", icon: <PriorityIcon priority="none" /> },
+    ],
+  },
+  {
+    label: "Labels",
+    icon: LabelIcon,
+    kind: "checkbox",
+    submenu: [],
+  },
+  {
+    label: "Lead",
+    icon: UserIcon,
+    kind: "checkbox",
+    submenu: [{ label: "Abhishek" }, { label: "No lead" }],
+  },
+  {
+    label: "Members",
+    icon: UserMultiple02Icon,
+    kind: "checkbox",
+    submenu: [{ label: "Abhishek" }],
+  },
+  {
+    label: "Creator",
+    icon: PencilEdit01Icon,
+    kind: "checkbox",
+    submenu: [{ label: "Abhishek" }],
+  },
+  {
+    label: "Health",
+    icon: PulseRectangle01Icon,
+    kind: "checkbox",
+    submenu: [
+      {
+        label: "On track",
+        icon: (
+          <HugeiconsIcon
+            icon={PulseRectangle01Icon}
+            className="size-3.5 text-emerald-500"
           />
-        }
-      >
-        <HugeiconsIcon icon={FilterHorizontalIcon} className="size-3.5" />
-      </PopoverTrigger>
-      <PopoverContent
-        side="bottom"
-        align="end"
-        sideOffset={6}
-        className="w-64 gap-0 p-0"
-      >
-        {active.length > 0 && (
-          <>
-            <div className="flex flex-wrap gap-1.5 px-2.5 pt-2.5">
-              {active.map((a) => (
-                <span
-                  key={a}
-                  className="bg-muted text-foreground flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
-                >
-                  {a}
-                  <button
-                    type="button"
-                    onClick={() => setActive((p) => p.filter((x) => x !== a))}
-                    className="text-muted-foreground hover:text-foreground ml-0.5"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="border-border/60 mt-2 border-t" />
-          </>
-        )}
-
-        {/* Search */}
-        <div className="flex items-center gap-2 px-2.5 py-2">
+        ),
+      },
+      {
+        label: "At risk",
+        icon: (
+          <HugeiconsIcon
+            icon={PulseRectangle01Icon}
+            className="size-3.5 text-yellow-500"
+          />
+        ),
+      },
+      {
+        label: "Off track",
+        icon: (
+          <HugeiconsIcon
+            icon={PulseRectangle01Icon}
+            className="size-3.5 text-red-500"
+          />
+        ),
+      },
+      {
+        label: "Update missing",
+        icon: (
+          <HugeiconsIcon
+            icon={PulseRectangle01Icon}
+            className="size-3.5 text-yellow-500"
+          />
+        ),
+      },
+      {
+        label: "No update expected",
+        count: 1,
+        icon: (
           <svg
             viewBox="0 0 16 16"
-            className="text-muted-foreground size-3.5 shrink-0"
+            className="text-muted-foreground/70 size-3.5"
             fill="none"
           >
             <circle
-              cx="7"
-              cy="7"
-              r="4.5"
+              cx="8"
+              cy="8"
+              r="6"
               stroke="currentColor"
-              strokeWidth="1.3"
-            />
-            <path
-              d="M10.5 10.5L13 13"
-              stroke="currentColor"
-              strokeWidth="1.3"
-              strokeLinecap="round"
+              strokeWidth="1.5"
+              strokeDasharray="3 2"
             />
           </svg>
-          <input
-            autoFocus
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Filter by..."
-            className="text-foreground placeholder:text-muted-foreground flex-1 bg-transparent text-xs focus:outline-none"
-          />
-        </div>
+        ),
+      },
+    ],
+  },
+  {
+    label: "Dates",
+    icon: Calendar03Icon,
+    kind: "nested",
+    submenu: [
+      {
+        label: "Created date",
+        icon: <HugeiconsIcon icon={Calendar03Icon} className="size-3.5" />,
+      },
+      {
+        label: "Updated date",
+        icon: <HugeiconsIcon icon={CalendarSyncIcon} className="size-3.5" />,
+      },
+      {
+        label: "Start date",
+        icon: <HugeiconsIcon icon={CalendarCheckIn01Icon} className="size-3.5" />,
+      },
+      {
+        label: "Target date",
+        icon: <HugeiconsIcon icon={Target02Icon} className="size-3.5" />,
+      },
+      {
+        label: "Completed date",
+        icon: <HugeiconsIcon icon={CalendarCheckOut01Icon} className="size-3.5" />,
+      },
+      {
+        label: "Latest update date",
+        icon: <HugeiconsIcon icon={PulseRectangle01Icon} className="size-3.5" />,
+      },
+    ],
+  },
+  {
+    label: "No initiatives",
+    icon: Target02Icon,
+  },
+  {
+    label: "Milestones",
+    icon: Diamond01Icon,
+    kind: "nested",
+    submenu: [
+      {
+        label: "Next milestone",
+        icon: <HugeiconsIcon icon={Diamond01Icon} className="size-3.5" />,
+      },
+      {
+        label: "Completed milestones",
+        icon: <HugeiconsIcon icon={Diamond01Icon} className="size-3.5" />,
+      },
+    ],
+  },
+  {
+    label: "Relations",
+    icon: Flag03Icon,
+    kind: "click",
+    submenu: [
+      {
+        label: "Has dependencies",
+        icon: <HugeiconsIcon icon={GitMergeIcon} className="size-3.5" />,
+      },
+      {
+        label: "Blocking projects",
+        icon: <HugeiconsIcon icon={BlockedIcon} className="size-3.5" />,
+      },
+      {
+        label: "Blocked projects",
+        icon: <HugeiconsIcon icon={MinusSignCircleIcon} className="size-3.5" />,
+      },
+      {
+        label: "Violated dependencies",
+        icon: <HugeiconsIcon icon={MinusSignCircleIcon} className="size-3.5" />,
+      },
+    ],
+  },
+  {
+    label: "Template",
+    icon: FileEditIcon,
+    kind: "checkbox",
+    submenu: [{ label: "No template" }],
+  },
+  {
+    label: "Title & summary",
+    icon: TextFontIcon,
+    kind: "search",
+    searchPlaceholder: "Filter by title & summary...",
+  },
+  {
+    label: "Specific project",
+    icon: CubeIcon,
+    kind: "checkbox",
+    submenu: [],
+  },
+]
 
-        <div className="border-border/60 border-t" />
+const AI_FILTER_SUGGESTIONS = [
+  "my projects",
+  "completed in the last month",
+  "in progress",
+]
 
-        {/* Filter options */}
-        <div className="py-1">
-          {filtered.map((opt) => (
+function ProjectFilterPopover({
+  projects = [],
+  variant = "toolbar",
+  onAdvancedFilter,
+  triggerRender,
+}: {
+  projects?: Project[]
+  variant?: "toolbar" | "advanced-add"
+  onAdvancedFilter?: () => void
+  triggerRender?: React.ReactElement
+}) {
+  const options = useMemo<FilterOption[]>(
+    () =>
+      STATIC_FILTER_OPTIONS.map((o) =>
+        o.label === "Specific project"
+          ? {
+              ...o,
+              submenu: projects.map((p) => ({
+                label: p.name,
+                icon: <HugeiconsIcon icon={CubeIcon} className="size-3.5" />,
+              })),
+            }
+          : o
+      ),
+    [projects]
+  )
+  return (
+    <FilterPopover
+      options={options}
+      aiSuggestions={AI_FILTER_SUGGESTIONS}
+      variant={variant}
+      onAdvancedFilter={onAdvancedFilter}
+      triggerRender={triggerRender}
+    />
+  )
+}
+
+
+function AdvancedFilterBar({
+  projects,
+  onClose,
+}: {
+  projects: Project[]
+  onClose: () => void
+}) {
+  return (
+    <div className="border-b px-4 py-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <div className="bg-muted text-muted-foreground inline-flex items-center gap-1.5 rounded-md py-1 pl-2 pr-1 text-xs">
+            <span>Advanced filter</span>
             <button
-              key={opt.label}
               type="button"
-              onClick={() =>
-                setActive((p) =>
-                  p.includes(opt.label)
-                    ? p.filter((x) => x !== opt.label)
-                    : [...p, opt.label]
-                )
-              }
-              className={`hover:bg-accent flex w-full items-center gap-2.5 px-2.5 py-1.5 text-xs transition-colors ${
-                active.includes(opt.label)
-                  ? "text-foreground"
-                  : "text-muted-foreground"
-              }`}
+              onClick={onClose}
+              className="hover:text-foreground flex size-4 items-center justify-center rounded"
+              aria-label="Remove advanced filter"
             >
-              <span className="text-sm">{opt.icon}</span>
-              <span>{opt.label}</span>
-              {active.includes(opt.label) && (
-                <svg
-                  viewBox="0 0 16 16"
-                  className="text-foreground ml-auto size-3"
-                  fill="currentColor"
-                >
-                  <path
-                    d="M3 8l3.5 3.5L13 4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              )}
+              <svg viewBox="0 0 12 12" className="size-3" fill="none">
+                <path
+                  d="M3 3l6 6M9 3l-6 6"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
             </button>
-          ))}
-          {filtered.length === 0 && (
-            <p className="text-muted-foreground px-2.5 py-3 text-center text-xs">
-              No filters found
-            </p>
-          )}
+          </div>
+          <button
+            type="button"
+            className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-6 items-center justify-center rounded"
+            aria-label="Add filter"
+          >
+            <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" />
+          </button>
         </div>
-      </PopoverContent>
-    </Popover>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-muted-foreground hover:text-foreground text-xs"
+        >
+          Clear
+        </button>
+      </div>
+      <div className="mt-2">
+        <ProjectFilterPopover
+          projects={projects}
+          variant="advanced-add"
+          triggerRender={
+            <button
+              type="button"
+              className="border-muted-foreground/50 text-muted-foreground hover:border-muted-foreground/80 hover:text-foreground inline-flex items-center gap-1.5 rounded-md border border-dashed px-2.5 py-1.5 text-xs"
+            >
+              <HugeiconsIcon icon={PlusSignIcon} className="size-3" />
+              <span>Filter</span>
+            </button>
+          }
+        />
+      </div>
+    </div>
   )
 }
 

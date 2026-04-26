@@ -96,6 +96,11 @@ import {
   useSidebarCustomization,
   type SidebarVisibility,
 } from "@/lib/sidebar-customization"
+import {
+  removeFavorite,
+  useFavorites,
+  type FavoriteIcon,
+} from "@/lib/view-favorites"
 
 /**
  * localStorage key for the dismissable "Try" onboarding section in
@@ -156,6 +161,7 @@ export function AppSidebar() {
   // checkable Subscribe submenu state. Same subscribe pattern as
   // useSidebarCustomization (CustomEvent-driven).
   const teamPrefs = useTeamPreferences()
+  const favorites = useFavorites()
   // Per-item badge counts. Inbox is the only badge-bearing row in
   // this mock; others have no count, so a "Show when badged" rule
   // collapses them. The values would come from real APIs in
@@ -421,6 +427,40 @@ export function AppSidebar() {
               </CollapsibleContent>
             </Collapsible>
           </SidebarGroup>
+
+          {favorites.length > 0 && (
+            <SidebarGroup data-testid="sidebar-favorites">
+              <Collapsible defaultOpen className="group/label">
+                <SectionLabel>Favorites</SectionLabel>
+                <CollapsibleContent>
+                  <SidebarMenu>
+                    {favorites.map((fav) => (
+                      <SidebarMenuItem key={fav.key}>
+                        <SidebarMenuButton
+                          isActive={isActive(fav.href)}
+                          render={<Link href={fav.href} />}
+                        >
+                          <FavoriteIconGlyph icon={fav.icon} />
+                          <span>{fav.label}</span>
+                        </SidebarMenuButton>
+                        <SidebarMenuAction
+                          aria-label={`Remove ${fav.label} from favorites`}
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            removeFavorite(fav.key)
+                          }}
+                          showOnHover
+                        >
+                          <HugeiconsIcon icon={Cancel01Icon} />
+                        </SidebarMenuAction>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarGroup>
+          )}
 
           <SidebarGroup>
             <Collapsible defaultOpen className="group/label">
@@ -777,18 +817,7 @@ export function AppSidebar() {
           {!tryDismissed && (
             <SidebarGroup data-testid="sidebar-try-section">
               <Collapsible defaultOpen className="group/label">
-                <div className="flex items-center">
-                  <SectionLabel>Try</SectionLabel>
-                  <button
-                    type="button"
-                    aria-label="Dismiss Try section"
-                    onClick={dismissTrySection}
-                    data-testid="sidebar-try-dismiss"
-                    className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground ml-auto flex size-5 shrink-0 items-center justify-center rounded-md"
-                  >
-                    <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
-                  </button>
-                </div>
+                <SectionLabel>Try</SectionLabel>
                 <CollapsibleContent>
                   <SidebarMenu>
                     <SidebarMenuItem>
@@ -867,11 +896,19 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function TriangleCaret({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 8 8"
+      viewBox="0 0 16 16"
       aria-hidden="true"
-      className={`text-muted-foreground/70 size-1 shrink-0 fill-current ${className ?? ""}`}
+      className={`text-muted-foreground/70 size-3 shrink-0 fill-current ${className ?? ""}`}
     >
-      <path d="M1 2 L7 2 L4 6 Z" />
+      <g transform="rotate(90 8 8)">
+        <path d="M7.00194 10.6239C6.66861 10.8183 6.25 10.5779 6.25 10.192V5.80802C6.25 5.42212 6.66861 5.18169 7.00194 5.37613L10.7596 7.56811C11.0904 7.76105 11.0904 8.23895 10.7596 8.43189L7.00194 10.6239Z" />
+      </g>
     </svg>
+  )
+}
+
+function FavoriteIconGlyph({ icon }: { icon: FavoriteIcon }) {
+  return (
+    <HugeiconsIcon icon={icon === "issues" ? TaskEdit01Icon : Layers01Icon} />
   )
 }

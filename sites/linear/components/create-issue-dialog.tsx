@@ -61,6 +61,7 @@ export function CreateIssueDialog({
   onOpenChange,
   defaultAssigneeId,
   defaultTeamId,
+  defaultStatus,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -74,6 +75,8 @@ export function CreateIssueDialog({
   defaultAssigneeId?: string | null
   /** Per-context override for the Team dropdown's initial value. */
   defaultTeamId?: string
+  /** Per-context override for the Status dropdown's initial value. */
+  defaultStatus?: Status
 }) {
   const [teams, setTeams] = useState<Team[]>([])
   const [members, setMembers] = useState<Member[]>([])
@@ -93,7 +96,7 @@ export function CreateIssueDialog({
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [teamId, setTeamId] = useState<string>(defaultTeamId ?? "")
-  const [status, setStatus] = useState<Status>("backlog")
+  const [status, setStatus] = useState<Status>(defaultStatus ?? "backlog")
   const [priority, setPriority] = useState<Priority>("none")
   const [assigneeId, setAssigneeId] = useState<string | null>(initialAssignee)
   const [projectId, setProjectId] = useState<string | null>(null)
@@ -164,13 +167,13 @@ export function CreateIssueDialog({
   const resetForm = useCallback(() => {
     setTitle("")
     setDescription("")
-    setStatus("backlog")
+    setStatus(defaultStatus ?? "backlog")
     setPriority("none")
     setAssigneeId(initialAssignee)
     setProjectId(null)
     setLabelIds([])
     setCycleId(null)
-  }, [initialAssignee])
+  }, [initialAssignee, defaultStatus])
 
   // Wrap onOpenChange so closing the dialog (via Escape, backdrop click,
   // close button, or successful create) always fully resets the form. Doing
@@ -611,7 +614,7 @@ export function CreateIssueDialog({
             <Button
               onClick={handleCreate}
               disabled={!title.trim() || !teamId || creating}
-              className="h-7 rounded-md bg-violet-600 px-3 text-xs font-medium text-white hover:bg-violet-700"
+              className="h-7 rounded-md bg-indigo-600 px-3 text-xs font-medium text-white hover:bg-indigo-700"
             >
               {creating ? "Creating..." : "Create issue"}
             </Button>
