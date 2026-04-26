@@ -62,6 +62,8 @@ import {
 } from "@/components/provider-icons"
 import { AskLinear } from "@/components/ask-linear"
 import { TeamSettingsHub } from "@/components/team-settings-hub"
+import { CustomizeSidebarDialog } from "@/components/customize-sidebar-dialog"
+import { compareNullSmallest } from "@/lib/members-sort"
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
 import {
   ArrowLeft01Icon,
@@ -94,6 +96,7 @@ import {
   Search01Icon,
   ArrowDown01Icon,
   ArrowUp01Icon,
+  Tick02Icon,
   Copy01Icon,
   MoreHorizontalIcon,
   Delete01Icon,
@@ -345,22 +348,31 @@ function SettingsPageInner() {
             <div className="text-muted-foreground/60 mb-0.5 px-2 py-1 text-[11px] font-medium">
               Your teams
             </div>
-            <Link
-              href={sectionHref("team-hub-abhishek")}
-              scroll={false}
-              aria-label="Abhishek"
-              aria-current={section === "team-hub-abhishek" ? "page" : undefined}
-              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
-                section === "team-hub-abhishek"
-                  ? "bg-sidebar-accent text-foreground font-medium"
-                  : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
-              }`}
-            >
-              <span className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-pink-500/60 text-pink-500">
-                <HugeiconsIcon icon={UserIcon} className="size-3" />
-              </span>
-              <span className="flex-1 truncate">Abhishek</span>
-            </Link>
+            {teams
+              .filter((t) => t.name.toLowerCase() === "abhishek")
+              .map((t) => {
+                const sectionKey = `team-hub-${t.key}`
+                const active = section === sectionKey
+                return (
+                  <Link
+                    key={t.id}
+                    href={sectionHref(sectionKey)}
+                    scroll={false}
+                    aria-label={t.name}
+                    aria-current={active ? "page" : undefined}
+                    className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
+                      active
+                        ? "bg-sidebar-accent text-foreground font-medium"
+                        : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground"
+                    }`}
+                  >
+                    <span className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-pink-500/60 text-pink-500">
+                      <HugeiconsIcon icon={UserIcon} className="size-3" />
+                    </span>
+                    <span className="flex-1 truncate">{t.name}</span>
+                  </Link>
+                )
+              })}
             <Link
               href="/settings/new-team"
               scroll={false}
@@ -377,91 +389,213 @@ function SettingsPageInner() {
       </aside>
 
       {/* Content */}
-      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
+      <div className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto">
         <SectionContent section={section} teams={teams} />
       </div>
     </div>
   )
 }
 
+const HELP_MENU_ITEMS = [
+  { label: "Documentation", icon: BookUploadIcon, shortcut: null, href: "https://linear.app/docs" },
+  { label: "Changelog", icon: ActivitySparkIcon, shortcut: null, href: "https://linear.app/changelog" },
+  { label: "Community", icon: Group01Icon, shortcut: null, href: "https://linear.app/community" },
+  { label: "Contact us", icon: CustomerSupportIcon, shortcut: null, href: "https://linear.app/support" },
+  { label: "Keyboard shortcuts", icon: SourceCodeIcon, shortcut: "?", href: null },
+] as const
+
+const WHATS_NEW_ITEMS = [
+  { label: "Linear Agent MCP support", href: "https://linear.app/changelog/linear-agent-mcp" },
+  { label: "Project update templates", href: "https://linear.app/changelog/project-update-templates" },
+  { label: "Improved inbox filters", href: "https://linear.app/changelog/inbox-filters" },
+] as const
+
 function SettingsSidebarFooter() {
-  const [whatsNewDismissed, setWhatsNewDismissed] = useState(false)
-  const [historyOpen, setHistoryOpen] = useState(false)
+  const [open, setOpen] = useState(false)
+
   return (
-    <div className="bg-sidebar border-sidebar-border flex flex-col gap-2 border-t px-2 py-2">
-      {!whatsNewDismissed && (
-        <div
-          role="region"
-          aria-label="What's new"
-          className="bg-background relative rounded-md border p-2.5"
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        type="button"
+        aria-label="Help"
+        style={{
+          position: "fixed",
+          bottom: "12px",
+          left: "12px",
+          width: "28px",
+          height: "28px",
+          borderRadius: "50%",
+          background: open ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          zIndex: 50,
+          flexShrink: 0,
+          transition: "background 0.15s",
+        }}
+        onMouseEnter={(e) => {
+          if (!open)
+            e.currentTarget.style.background = "rgba(255,255,255,0.08)"
+        }}
+        onMouseLeave={(e) => {
+          if (!open)
+            e.currentTarget.style.background = "rgba(255,255,255,0.04)"
+        }}
+      >
+        <span
+          style={{
+            color: "rgba(255,255,255,0.55)",
+            fontSize: "12px",
+            fontWeight: 500,
+            lineHeight: 1,
+            display: "block",
+            transform: "translateX(0.5px)",
+            transition: "color 0.15s",
+          }}
         >
-          <button
-            type="button"
-            onClick={() => setWhatsNewDismissed(true)}
-            aria-label="Dismiss What's new"
-            className="text-muted-foreground hover:bg-accent absolute top-1 right-1 flex size-5 items-center justify-center rounded-sm"
-          >
-            <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
-          </button>
-          <div className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
-            What&apos;s new
-          </div>
-          <a
-            href="https://linear.app/changelog"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Linear Agent MCP support changelog entry (opens in new tab)"
-            className="text-foreground hover:underline mt-1 block text-xs font-medium underline-offset-2"
-          >
-            Linear Agent MCP support
-          </a>
-          <p className="text-muted-foreground mt-1 text-[11px] leading-4">
-            Connect MCP servers so agents can invoke your own tools.
-          </p>
-        </div>
-      )}
-
-      {/* User avatar + menu */}
-      <div className="flex items-center gap-2 px-1 py-1">
-        <div
-          aria-hidden="true"
-          className="flex size-6 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-semibold text-white"
-        >
-          AB
-        </div>
-        <span className="text-muted-foreground flex-1 truncate text-xs">
-          Abhishek
+          ?
         </span>
-      </div>
+      </PopoverTrigger>
 
-      {/* Ask Linear + chat history */}
-      <div className="flex items-center gap-1">
-        <AskLinear variant="inline" />
-        <button
-          type="button"
-          onClick={() => setHistoryOpen(true)}
-          aria-label="Ask Linear chat history"
-          className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground flex size-7 shrink-0 items-center justify-center rounded-md border"
+      <PopoverContent
+        side="top"
+        align="start"
+        sideOffset={8}
+        className="p-0"
+        style={{
+          width: "260px",
+          borderRadius: "12px",
+          padding: "6px",
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "#1c1c1c",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+          zIndex: 9999,
+        }}
+      >
+        {/* Menu items */}
+        {HELP_MENU_ITEMS.map((item) => (
+          <HelpMenuItem key={item.label} item={item} />
+        ))}
+
+        {/* What's new section */}
+        <div
+          style={{
+            marginTop: "12px",
+            marginBottom: "4px",
+            padding: "0 8px",
+            fontSize: "11px",
+            fontWeight: 600,
+            color: "rgba(255,255,255,0.45)",
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+          }}
         >
-          <HugeiconsIcon icon={Activity03Icon} className="size-3.5" />
-        </button>
-      </div>
+          What&apos;s new
+        </div>
 
-      {/* Placeholder history dialog — actual chat log lives in AskLinear. */}
-      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Chat history</DialogTitle>
-            <DialogDescription>
-              Your recent Ask Linear conversations will appear here.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setHistoryOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        <div style={{ position: "relative", padding: "0 8px 2px" }}>
+          {/* Vertical dotted connector — sits behind bullets */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: "10px",
+              top: "3px",
+              bottom: "3px",
+              width: "1px",
+              borderLeft: "1px dotted rgba(255,255,255,0.18)",
+            }}
+          />
+          {WHATS_NEW_ITEMS.map((item) => (
+            <WhatsNewItem key={item.label} item={item} />
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function HelpMenuItem({
+  item,
+}: {
+  item: { label: string; icon: IconSvgElement; shortcut: string | null; href: string | null }
+}) {
+  const [hovered, setHovered] = useState(false)
+  const Tag = item.href ? "a" : "button"
+  return (
+    <Tag
+      {...(item.href
+        ? { href: item.href, target: "_blank", rel: "noopener noreferrer" }
+        : { type: "button" as const })}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        height: "32px",
+        padding: "0 8px",
+        borderRadius: "6px",
+        cursor: "pointer",
+        textDecoration: "none",
+        background: hovered ? "rgba(255,255,255,0.06)" : "transparent",
+        width: "100%",
+        border: "none",
+        transition: "background 0.1s",
+      }}
+    >
+      <HugeiconsIcon
+        icon={item.icon}
+        style={{ width: "16px", height: "16px", color: "rgba(255,255,255,0.55)", flexShrink: 0 }}
+      />
+      <span style={{ flex: 1, fontSize: "14px", color: "rgba(255,255,255,0.9)", textAlign: "left" }}>
+        {item.label}
+      </span>
+      {item.shortcut && (
+        <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>{item.shortcut}</span>
+      )}
+    </Tag>
+  )
+}
+
+function WhatsNewItem({ item }: { item: { label: string; href: string } }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <a
+      href={item.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        height: "28px",
+        borderRadius: "6px",
+        cursor: "pointer",
+        textDecoration: "none",
+        background: hovered ? "rgba(255,255,255,0.06)" : "transparent",
+        position: "relative",
+        transition: "background 0.1s",
+      }}
+    >
+      {/* Bullet — rendered above dotted line via zIndex */}
+      <div
+        style={{
+          width: "6px",
+          height: "6px",
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.35)",
+          flexShrink: 0,
+          position: "relative",
+          zIndex: 1,
+        }}
+      />
+      <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)", flex: 1 }}>{item.label}</span>
+    </a>
   )
 }
 
@@ -504,7 +638,9 @@ function SectionContent({
   if (section === "create-team") return <CreateTeamPage teams={teams} />
   if (section.startsWith("team-hub-")) {
     const teamKey = section.replace("team-hub-", "")
-    const team = teams.find((t) => t.key === teamKey)
+    const team = teams.find(
+      (t) => t.key.toUpperCase() === teamKey.toUpperCase()
+    )
     return (
       <TeamSettingsHubSection
         team={team ?? { id: teamKey, name: teamKey, key: teamKey }}
@@ -742,89 +878,6 @@ function PreferencesSection() {
         onOpenChange={setCodingToolsOpen}
       />
     </div>
-  )
-}
-
-const DEFAULT_SIDEBAR_ITEMS = [
-  { key: "inbox", label: "Inbox" },
-  { key: "my-issues", label: "My issues" },
-  { key: "active", label: "Active" },
-  { key: "projects", label: "Projects" },
-  { key: "views", label: "Views" },
-  { key: "teams", label: "Teams" },
-] as const
-
-function CustomizeSidebarDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const [visibility, setVisibility] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(DEFAULT_SIDEBAR_ITEMS.map((item) => [item.key, true]))
-  )
-  const [badgeStyle, setBadgeStyle] = useState("all")
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Customize sidebar</DialogTitle>
-          <DialogDescription>
-            Choose which items appear in your sidebar and how badges are
-            displayed.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 py-2">
-          <div className="flex flex-col gap-2">
-            <span className="text-muted-foreground text-xs font-medium">
-              Sidebar items
-            </span>
-            <div className="divide-border/50 border-border flex flex-col divide-y rounded-md border">
-              {DEFAULT_SIDEBAR_ITEMS.map((item) => (
-                <div
-                  key={item.key}
-                  className="flex items-center justify-between px-3 py-2"
-                >
-                  <span className="text-sm">{item.label}</span>
-                  <Switch
-                    checked={visibility[item.key] ?? true}
-                    onCheckedChange={(checked) =>
-                      setVisibility((prev) => ({ ...prev, [item.key]: checked }))
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium">Badge style</span>
-              <span className="text-muted-foreground text-xs">
-                How counts appear next to items
-              </span>
-            </div>
-            <Select value={badgeStyle} onValueChange={onSelectChange(setBadgeStyle)}>
-              <SelectTrigger className="h-8 w-36 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="unread">Unread only</SelectItem>
-                <SelectItem value="none">None</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={() => onOpenChange(false)}>Done</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }
 
@@ -3805,6 +3858,79 @@ const STATUS_FILTER_OPTIONS: { key: MemberStatus | "all"; label: string }[] = [
   { key: "guest" as unknown as MemberStatus, label: "Guests" },
 ]
 
+/**
+ * Segmented tabs (Members / Invited / Suspended / Applications) shown
+ * above the table. The "Members" tab includes both active humans AND
+ * guests so the Linear application bot stays out of the human list —
+ * Applications has its own tab. The first three tab keys map directly
+ * to a `MemberStatus`; "members" is a higher-level UI concept that
+ * gets its own filter predicate downstream.
+ */
+type MembersTabKey =
+  | "all"
+  | "members"
+  | "applications"
+  | "invited"
+  | "suspended"
+  | "left"
+
+const MEMBERS_TABS: { key: MembersTabKey; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "members", label: "Members" },
+  { key: "applications", label: "Applications" },
+  { key: "invited", label: "Pending invites" },
+  { key: "suspended", label: "Suspended" },
+  { key: "left", label: "Left workspace" },
+]
+
+/**
+ * Stable, deterministic ordering for the Status column.
+ *
+ * Linear's production behavior shows owners first, then admins, then
+ * regular members and guests, with system rows (applications) and
+ * pending invites at the bottom. The previous implementation used
+ * `String(av).localeCompare` which sorted alphabetically — producing
+ * Application → Invited → Member → … which doesn't match production
+ * and reorders unpredictably across re-renders if any field is null.
+ *
+ * `STATUS_RANK` is read by `compareMemberStatus` for both ascending
+ * and descending sort. Reverse direction simply negates the rank
+ * delta — same items keep their relative order so the sort is
+ * actually stable, not just consistent on first click.
+ */
+const STATUS_RANK: Record<string, number> = {
+  // Lower number = higher in the list.
+  // We don't model "Owner" as a separate role yet (admins double as
+  // owners in the mock), but the rank table is keyed so that the
+  // future "owner" status would slot in at 0.
+  owner: 0,
+  admin: 1,
+  member: 2,
+  guest: 3,
+  application: 4,
+  invited: 5,
+}
+
+/** Rank a row by its status+role combination. Invited beats role. */
+function rankMemberStatus(m: MemberSummary): number {
+  if (m.status === "invited") return STATUS_RANK.invited
+  if (m.status === "application") return STATUS_RANK.application
+  if (m.status === "suspended") return STATUS_RANK.member + 100 // suspended sinks
+  // Active: rank by role.
+  return STATUS_RANK[m.role] ?? STATUS_RANK.member
+}
+
+function compareMemberStatus(
+  a: MemberSummary,
+  b: MemberSummary,
+  direction: 1 | -1
+): number {
+  const delta = rankMemberStatus(a) - rankMemberStatus(b)
+  if (delta !== 0) return delta * direction
+  // Tiebreak by name for a stable order within a status bucket.
+  return a.name.localeCompare(b.name) * direction
+}
+
 const STATUS_GROUPS: { key: MemberStatus; label: string }[] = [
   { key: "active", label: "Active" },
   { key: "invited", label: "Invited" },
@@ -3886,14 +4012,7 @@ function MembersSection() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("")
   const debouncedFilter = useDebounced(filter, 150)
-  const [status, setStatus] = useState<MemberStatus | "guest" | "all">("all")
-  const [statusOpen, setStatusOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState<Record<MemberStatus, boolean>>({
-    active: false,
-    invited: false,
-    suspended: false,
-    application: false,
-  })
+  const [tab, setTab] = useState<MembersTabKey>("all")
   const [exporting, setExporting] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [confirm, setConfirm] = useState<{
@@ -3931,19 +4050,28 @@ function MembersSection() {
     }
   }, [])
 
-  const activeStatusLabel =
-    STATUS_FILTER_OPTIONS.find((o) => o.key === status)?.label ?? "All"
+  // Tab → predicate: each tab decides which `MemberSummary` rows
+  // belong on it. "members" = human users (active + suspended) that
+  // aren't applications and aren't pending invites. "applications"
+  // moves the Linear application bot off the human list.
+  const tabMatches = useMemo(() => {
+    const matchers: Record<MembersTabKey, (m: MemberSummary) => boolean> = {
+      all: () => true,
+      members: (m) =>
+        !m.isApplication && !m.isInvite && m.status !== "suspended",
+      applications: (m) => m.isApplication,
+      invited: (m) => m.isInvite,
+      suspended: (m) => m.status === "suspended",
+      left: () => false,
+    }
+    return matchers
+  }, [])
 
-  // Apply the filter + status. The "guest" pseudo-filter is a role filter
-  // rendered alongside the statuses because the spec treats it as a tab.
+  // Apply tab filter then text filter.
   const filtered = useMemo(() => {
     const q = debouncedFilter.trim().toLowerCase()
     return summaries.filter((m) => {
-      if (status === "all") {
-        // nothing to drop on status
-      } else if (status === ("guest" as unknown)) {
-        if (m.role !== "guest") return false
-      } else if (m.status !== status) return false
+      if (!tabMatches[tab](m)) return false
       if (!q) return true
       return (
         m.name.toLowerCase().includes(q) ||
@@ -3951,34 +4079,46 @@ function MembersSection() {
         m.username.toLowerCase().includes(q)
       )
     })
-  }, [summaries, debouncedFilter, status])
+  }, [summaries, debouncedFilter, tab, tabMatches])
+
+  const tabCounts = useMemo(() => {
+    const counts: Record<MembersTabKey, number> = {
+      all: 0,
+      members: 0,
+      applications: 0,
+      invited: 0,
+      suspended: 0,
+      left: 0,
+    }
+    for (const m of summaries) {
+      for (const key of Object.keys(counts) as MembersTabKey[]) {
+        if (tabMatches[key](m)) counts[key]++
+      }
+    }
+    return counts
+  }, [summaries, tabMatches])
 
   const sorted = useMemo(() => {
     const direction = sort.dir === "asc" ? 1 : -1
     return [...filtered].sort((a, b) => {
-      const av = a[sort.key]
-      const bv = b[sort.key]
-      if (av == null && bv == null) return 0
-      if (av == null) return 1
-      if (bv == null) return -1
-      if (typeof av === "number" && typeof bv === "number") {
-        return (av - bv) * direction
+      // Status column gets the deterministic rank-based comparator
+      // so the sort matches Linear's production order and is stable
+      // (Owner → Admin → Member → Guest → Application → Invited).
+      if (sort.key === "status") {
+        return compareMemberStatus(a, b, direction)
       }
-      return String(av).localeCompare(String(bv)) * direction
+      // `compareNullSmallest` lives in `lib/members-sort.ts` and is
+      // unit-tested directly. It encodes the spec's "null is the
+      // smallest value" rule (nulls top on asc, bottom on desc) plus
+      // the antisymmetry property `compare(a,b) === -compare(b,a)`
+      // which keeps Array.sort stable across re-renders.
+      return compareNullSmallest(
+        a[sort.key] as string | number | null,
+        b[sort.key] as string | number | null,
+        direction
+      )
     })
   }, [filtered, sort])
-
-  // Group by status (excluding guests — their rows keep their real status).
-  const grouped: Record<MemberStatus, MemberSummary[]> = useMemo(() => {
-    const out: Record<MemberStatus, MemberSummary[]> = {
-      active: [],
-      invited: [],
-      suspended: [],
-      application: [],
-    }
-    for (const m of sorted) out[m.status].push(m)
-    return out
-  }, [sorted])
 
   const onSortClick = (key: MembersSortKey) => {
     const nextDir: MembersSortDir =
@@ -4020,8 +4160,40 @@ function MembersSection() {
       | "unsuspend"
       | "remove"
       | "resend-invite"
+      | "revoke-invite"
+      | "copy-email"
       | { type: "set-role"; role: MemberRole }
   ) => {
+    // Client-side action: copy email to clipboard. No server call.
+    if (action === "copy-email") {
+      try {
+        await navigator.clipboard.writeText(member.email)
+        toast.success(`Copied ${member.email}`)
+      } catch {
+        toast.error("Couldn't copy email")
+      }
+      return
+    }
+
+    // Revoking an invite is just removing the row; the server uses
+    // the same DELETE-equivalent path as `remove` for invited rows.
+    if (action === "revoke-invite") {
+      try {
+        const res = await fetch(`/api/members/${member.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "remove" }),
+        })
+        if (!res.ok)
+          throw new Error((await res.json()).error || "Revoke failed")
+        toast.success(`Revoked invite for ${member.email}`)
+        await refresh()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Revoke failed")
+      }
+      return
+    }
+
     const url = `/api/members/${member.id}`
     const body =
       typeof action === "string"
@@ -4051,7 +4223,14 @@ function MembersSection() {
     }
   }
 
+  // Track widths of header + row grids together. The min-width floor
+  // (760px = 472px of fixed columns + ~288px for Name/Email at
+  // readable widths) keeps every column legible. Below that width,
+  // the wrapper scrolls horizontally rather than dropping columns
+  // from the DOM. Linear's production page does the same — narrow
+  // viewports get a scroll affordance, not a truncated column set.
   const COL = "grid-cols-[2fr_2fr_160px_80px_90px_110px_32px]"
+  const TABLE_MIN_WIDTH = "min-w-[760px]"
 
   return (
     <TooltipProvider>
@@ -4084,35 +4263,39 @@ function MembersSection() {
             )}
           </div>
 
-          <DropdownMenu open={statusOpen} onOpenChange={setStatusOpen}>
+          <DropdownMenu>
             <DropdownMenuTrigger
               render={
                 <button
                   type="button"
-                  aria-label="Filter by status"
-                  aria-haspopup="menu"
-                  className="text-muted-foreground hover:bg-accent/40 focus-visible:ring-ring flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs focus-visible:ring-2 focus-visible:outline-none"
+                  data-testid="members-filter-trigger"
+                  aria-label="Filter members"
+                  className="hover:bg-accent/40 inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs"
                 >
-                  {activeStatusLabel}
-                  <HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />
+                  <span>
+                    {MEMBERS_TABS.find((t) => t.key === tab)?.label ?? "All"}
+                  </span>
+                  <HugeiconsIcon
+                    icon={ArrowDown01Icon}
+                    className="text-muted-foreground size-3"
+                  />
                 </button>
               }
             />
-            <DropdownMenuContent align="start" className="w-44">
-              {STATUS_FILTER_OPTIONS.map((o) => (
+            <DropdownMenuContent align="end" className="w-44">
+              {MEMBERS_TABS.map((t) => (
                 <DropdownMenuItem
-                  key={o.key as string}
-                  onClick={() => {
-                    setStatus(o.key as MemberStatus | "guest" | "all")
-                    setStatusOpen(false)
-                  }}
-                  className="flex items-center justify-between text-xs"
+                  key={t.key}
+                  data-testid={`members-filter-${t.key}`}
+                  onClick={() => setTab(t.key)}
+                  className="flex items-center justify-between gap-2 text-xs"
                 >
-                  {o.label}
-                  {status === (o.key as MemberStatus | "guest" | "all") && (
+                  <span>{t.label}</span>
+                  {tab === t.key && (
                     <HugeiconsIcon
-                      icon={CheckmarkCircle02Icon}
+                      icon={Tick02Icon}
                       className="size-3.5"
+                      aria-label="Selected"
                     />
                   )}
                 </DropdownMenuItem>
@@ -4140,16 +4323,22 @@ function MembersSection() {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table — horizontal scroll wrapper guarantees every column
+            stays in the DOM at narrow viewports. The inner
+            `min-w-[760px]` keeps Joined / Teams / Last seen at
+            readable widths even as the page narrows; the user can
+            scroll the table sideways inside its container. */}
         <div
           role="table"
+          data-testid="members-table"
           aria-label="Workspace members"
-          className="overflow-hidden rounded-lg border"
+          className="overflow-x-auto rounded-lg border"
         >
           {/* Header row */}
           <div
             role="row"
-            className={`text-muted-foreground grid ${COL} border-b px-4 py-2 text-xs font-medium`}
+            data-testid="members-table-header"
+            className={`text-muted-foreground grid ${COL} ${TABLE_MIN_WIDTH} border-b px-4 py-2 text-xs font-medium`}
           >
             {MEMBERS_SORTABLE_COLUMNS.map((c) => {
               const active = sort.key === c.key
@@ -4186,62 +4375,45 @@ function MembersSection() {
           </div>
 
           {loading ? (
-            <div className="flex flex-col gap-1 p-4" role="status" aria-label="Loading members">
+            <div
+              className={`flex flex-col gap-1 p-4 ${TABLE_MIN_WIDTH}`}
+              role="status"
+              aria-label="Loading members"
+              data-testid="members-loading"
+            >
               {Array.from({ length: 5 }).map((_, i) => (
                 <Skeleton key={i} className="h-10 w-full rounded-md" />
               ))}
             </div>
           ) : sorted.length === 0 ? (
-            <div className="text-muted-foreground py-16 text-center text-sm">
+            <div
+              data-testid="members-empty"
+              className={`text-muted-foreground py-16 text-center text-sm ${TABLE_MIN_WIDTH}`}
+            >
               No members match your filter.
             </div>
           ) : (
-            STATUS_GROUPS.map((g) => {
-              const rows = grouped[g.key]
-              if (rows.length === 0) return null
-              const isCollapsed = collapsed[g.key]
-              return (
-                <div key={g.key}>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCollapsed((prev) => ({
-                        ...prev,
-                        [g.key]: !prev[g.key],
-                      }))
+            // The active tab pre-filters rows by status, so render
+            // them as a flat list — no in-table per-status grouping
+            // headers (those duplicated info already in the tabs).
+            // The min-width matches the header so rows don't shrink
+            // narrower than the header on small viewports — together
+            // they form a single horizontally-scrollable surface.
+            <div data-testid="members-rows" className={TABLE_MIN_WIDTH}>
+              {sorted.map((m) => (
+                <MemberRow
+                  key={m.id}
+                  member={m}
+                  onAction={(action) => {
+                    if (action === "suspend" || action === "remove") {
+                      setConfirm({ member: m, action })
+                      return
                     }
-                    aria-expanded={!isCollapsed}
-                    aria-controls={`members-group-${g.key}`}
-                    className="bg-muted/20 text-muted-foreground/80 hover:bg-muted/30 flex w-full items-center gap-1.5 border-b px-4 py-1 text-left text-[11px] font-medium tracking-wide uppercase transition-colors"
-                  >
-                    <HugeiconsIcon
-                      icon={isCollapsed ? ArrowRight01Icon : ArrowDown01Icon}
-                      className="size-3"
-                    />
-                    <span>{g.label}</span>
-                    <span className="ml-1 opacity-70">{rows.length}</span>
-                  </button>
-                  {!isCollapsed && (
-                    <div id={`members-group-${g.key}`}>
-                      {rows.map((m) => (
-                        <MemberRow
-                          key={m.id}
-                          member={m}
-                          onAction={(action) => {
-                            // Destructive actions open a confirmation first.
-                            if (action === "suspend" || action === "remove") {
-                              setConfirm({ member: m, action })
-                              return
-                            }
-                            void onRowAction(m, action)
-                          }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            })
+                    void onRowAction(m, action)
+                  }}
+                />
+              ))}
+            </div>
           )}
         </div>
 
@@ -4278,6 +4450,8 @@ function MemberRow({
       | "unsuspend"
       | "remove"
       | "resend-invite"
+      | "revoke-invite"
+      | "copy-email"
       | { type: "set-role"; role: MemberRole }
   ) => void
 }) {
@@ -4285,12 +4459,32 @@ function MemberRow({
   const joined = formatJoined(member.joinedAt)
   const lastSeen = formatMemberLastSeen(member.lastSeenAt)
   const roleLabel = ROLE_LABEL[member.role]
+  // Controlled dropdown state — needed so the right-click context
+  // menu can open the same menu without going through its trigger
+  // button. Linear's production behavior matches the menu shown by
+  // either click target on the row.
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuTriggerRef = useRef<HTMLButtonElement>(null)
 
   return (
     <Link
       href={`/profiles/${member.username}`}
       role="row"
+      data-testid="members-row"
+      data-member-id={member.id}
+      data-member-status={member.status}
+      data-member-role={member.role}
       aria-label={`Open ${member.name}'s profile`}
+      onContextMenu={(e) => {
+        // Right-click shows the same actions menu instead of the
+        // browser's default context menu — production parity with
+        // Linear's row UX.
+        e.preventDefault()
+        // Programmatically click the trigger so Base UI anchors the
+        // menu correctly. Setting `open` directly would float the
+        // menu away from the row.
+        menuTriggerRef.current?.click()
+      }}
       className={`group grid ${COL} hover:bg-accent/40 focus-visible:ring-ring items-center border-b px-4 py-2.5 transition-colors last:border-b-0 focus-visible:ring-2 focus-visible:outline-none`}
     >
       <div role="cell" className="flex min-w-0 items-center gap-2.5">
@@ -4354,32 +4548,76 @@ function MemberRow({
         role="cell"
         className="text-muted-foreground flex items-center gap-1.5 text-sm"
       >
-        {lastSeen.online && (
+        {/* Last seen: invited rows have no real value yet, so we
+            render an em-dash (per spec) rather than the previous
+            "Never" placeholder which read like a stale stat. */}
+        {member.isInvite ? (
           <span
-            aria-hidden="true"
-            className="size-1.5 rounded-full bg-emerald-500"
-          />
+            data-testid="members-row-last-seen-dash"
+            aria-label="No last-seen yet"
+          >
+            —
+          </span>
+        ) : (
+          <>
+            {lastSeen.online && (
+              <span
+                aria-hidden="true"
+                className="size-1.5 rounded-full bg-emerald-500"
+              />
+            )}
+            <span>{lastSeen.label}</span>
+          </>
         )}
-        <span>{lastSeen.label}</span>
       </div>
-      <div role="cell" className="flex justify-end">
-        <DropdownMenu>
+      <div role="cell" className="flex items-center justify-end gap-1">
+        {/* Inline Resend invite button on invited rows — matches the
+            production "one-click resend" affordance that Linear shows
+            on hover. The same action is available from the row menu
+            for keyboard users. */}
+        {member.isInvite && (
+          <button
+            type="button"
+            data-testid="members-row-resend-inline"
+            aria-label={`Resend invite to ${member.email}`}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onAction("resend-invite")
+            }}
+            className="text-muted-foreground hover:bg-accent hover:text-foreground rounded px-1.5 py-0.5 text-[11px] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+          >
+            Resend
+          </button>
+        )}
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger
             render={
               <button
+                ref={menuTriggerRef}
                 type="button"
+                data-testid="members-row-actions"
                 aria-label={`Actions for ${member.name}`}
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
                 }}
-                className="text-muted-foreground hover:bg-accent flex size-6 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                className="text-muted-foreground hover:bg-accent flex size-6 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[popup-open]:opacity-100"
               >
                 <HugeiconsIcon icon={MoreHorizontalIcon} className="size-3.5" />
               </button>
             }
           />
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-52">
+            {/* Always-available action: copy email to clipboard. */}
+            <DropdownMenuItem
+              data-testid="members-row-action-copy-email"
+              className="text-xs"
+              onClick={() => onAction("copy-email")}
+            >
+              Copy email
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             {(["admin", "member", "guest"] as MemberRole[]).map((r) => (
               <DropdownMenuItem
                 key={r}
@@ -4400,37 +4638,49 @@ function MemberRow({
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
+                  data-testid="members-row-action-resend"
                   className="text-xs"
                   onClick={() => onAction("resend-invite")}
                 >
                   Resend invite
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  data-testid="members-row-action-revoke"
+                  className="text-destructive focus:text-destructive text-xs"
+                  onClick={() => onAction("revoke-invite")}
+                >
+                  Revoke invite
+                </DropdownMenuItem>
               </>
             )}
-            <DropdownMenuSeparator />
-            {member.status === "suspended" ? (
-              <DropdownMenuItem
-                className="text-xs"
-                onClick={() => onAction("unsuspend")}
-              >
-                Reactivate
-              </DropdownMenuItem>
-            ) : (
-              !member.isApplication && (
+            {!member.isInvite && (
+              <>
+                <DropdownMenuSeparator />
+                {member.status === "suspended" ? (
+                  <DropdownMenuItem
+                    className="text-xs"
+                    onClick={() => onAction("unsuspend")}
+                  >
+                    Reactivate
+                  </DropdownMenuItem>
+                ) : (
+                  !member.isApplication && (
+                    <DropdownMenuItem
+                      className="text-xs"
+                      onClick={() => onAction("suspend")}
+                    >
+                      Suspend member
+                    </DropdownMenuItem>
+                  )
+                )}
                 <DropdownMenuItem
-                  className="text-xs"
-                  onClick={() => onAction("suspend")}
+                  className="text-destructive focus:text-destructive text-xs"
+                  onClick={() => onAction("remove")}
                 >
-                  Suspend member
+                  Remove from workspace
                 </DropdownMenuItem>
-              )
+              </>
             )}
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive text-xs"
-              onClick={() => onAction("remove")}
-            >
-              Remove from workspace
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -4524,32 +4774,99 @@ function InviteMembersDialog({
   const [emails, setEmails] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  // Role defaults to "member" — Linear's production default. The
+  // previous default was "admin" both in the UI copy AND in the
+  // server-side fallback, which produced the "Admin (Invited)"
+  // status-column bug.
+  const [role, setRole] = useState<MemberRole>("member")
+  const [roleOpen, setRoleOpen] = useState(false)
+  // Team multi-select state. Stored as a Set for O(1) toggle.
+  const [teams, setTeams] = useState<{ id: string; name: string; key: string }[]>(
+    []
+  )
+  const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(
+    new Set()
+  )
+  const [teamsOpen, setTeamsOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!open) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setEmails("")
       setError(null)
       setSubmitting(false)
+      setRole("member")
+      setSelectedTeamIds(new Set())
+      setRoleOpen(false)
+      setTeamsOpen(false)
+      setCopied(false)
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open])
+
+  // Load teams once when the dialog first opens; cheap, won't change
+  // mid-dialog.
+  useEffect(() => {
+    if (!open || teams.length > 0) return
+    let cancelled = false
+    fetch("/api/data/teams")
+      .then((r) => r.json())
+      .then((data: { id: string; name: string; key: string }[]) => {
+        if (!cancelled) setTeams(data)
+      })
+      .catch(() => {
+        /* not fatal — team multi-select is optional */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [open, teams.length])
 
   // Live validation — keep the user from hitting submit on junk.
   useEffect(() => {
     if (!emails.trim()) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setError(null)
+      /* eslint-enable react-hooks/set-state-in-effect */
       return
     }
     const parts = emails.split(/[\s,;\n]+/).map((p) => p.trim()).filter(Boolean)
     const bad = parts.filter((p) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p))
+    /* eslint-disable react-hooks/set-state-in-effect */
     setError(
       bad.length
         ? `Invalid email${bad.length === 1 ? "" : "s"}: ${bad.join(", ")}`
         : null
     )
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [emails])
+
+  const toggleTeam = (id: string) =>
+    setSelectedTeamIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
 
   const canSubmit =
     !submitting && emails.trim().length > 0 && !error
+
+  const inviteLink =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/invite/abhishek?token=demo`
+      : "/invite/abhishek?token=demo"
+
+  const copyInviteLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1500)
+    } catch {
+      toast.error("Couldn't copy invite link")
+    }
+  }
 
   const onSubmit = async () => {
     if (!canSubmit) return
@@ -4558,7 +4875,13 @@ function InviteMembersDialog({
       const res = await fetch("/api/members/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emails }),
+        body: JSON.stringify({
+          emails,
+          // The two new fields the backend now reads. Persisting role
+          // is the spec's primary contract for this dialog.
+          role,
+          teamIds: Array.from(selectedTeamIds),
+        }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
@@ -4578,6 +4901,13 @@ function InviteMembersDialog({
     }
   }
 
+  const teamButtonLabel =
+    selectedTeamIds.size === 0
+      ? "Select teams (optional)"
+      : selectedTeamIds.size === 1
+        ? (teams.find((t) => selectedTeamIds.has(t.id))?.name ?? "1 team")
+        : `${selectedTeamIds.size} teams`
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -4589,43 +4919,184 @@ function InviteMembersDialog({
             Invite to your workspace
           </DialogTitle>
           <DialogDescription>
-            Invitees receive admin access by default. You can change their role
-            any time.
+            Invitees join as {ROLE_LABEL[role]} by default. You can change
+            their role any time.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="invite-emails">Emails</Label>
-          <textarea
-            id="invite-emails"
-            value={emails}
-            onChange={(e) => setEmails(e.target.value)}
-            placeholder="email@gmail.com, email2@gmail.com…"
-            rows={4}
-            aria-invalid={!!error}
-            aria-describedby={error ? "invite-emails-error" : undefined}
-            className="placeholder:text-muted-foreground/60 focus:ring-ring min-h-24 w-full resize-y rounded-md border bg-transparent p-2.5 text-sm outline-none focus:ring-2"
-          />
-          {error ? (
-            <p
-              id="invite-emails-error"
-              role="alert"
-              className="text-destructive text-xs"
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="invite-emails">Emails</Label>
+            <textarea
+              id="invite-emails"
+              data-testid="invite-emails-textarea"
+              value={emails}
+              onChange={(e) => setEmails(e.target.value)}
+              placeholder="email@gmail.com, email2@gmail.com…"
+              rows={4}
+              aria-invalid={!!error}
+              aria-describedby={error ? "invite-emails-error" : undefined}
+              className="placeholder:text-muted-foreground/60 focus:ring-ring min-h-24 w-full resize-y rounded-md border bg-transparent p-2.5 text-sm outline-none focus:ring-2"
+            />
+            {error ? (
+              <p
+                id="invite-emails-error"
+                role="alert"
+                className="text-destructive text-xs"
+              >
+                {error}
+              </p>
+            ) : (
+              <p className="text-muted-foreground text-xs">
+                Separate multiple emails with commas, spaces, or new lines.
+              </p>
+            )}
+          </div>
+
+          {/* Role + Teams row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="invite-role">Role</Label>
+              <DropdownMenu open={roleOpen} onOpenChange={setRoleOpen}>
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      id="invite-role"
+                      type="button"
+                      data-testid="invite-role-trigger"
+                      aria-label={`Role: ${ROLE_LABEL[role]}`}
+                      className="hover:bg-accent/40 focus-visible:ring-ring flex h-8 items-center justify-between gap-2 rounded-md border px-2.5 text-xs focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                      <span>{ROLE_LABEL[role]}</span>
+                      <HugeiconsIcon
+                        icon={ArrowDown01Icon}
+                        className="text-muted-foreground size-3"
+                      />
+                    </button>
+                  }
+                />
+                <DropdownMenuContent align="start" className="w-40">
+                  {(["member", "admin", "guest"] as MemberRole[]).map((r) => (
+                    <DropdownMenuItem
+                      key={r}
+                      data-testid={`invite-role-option-${r}`}
+                      onClick={() => {
+                        setRole(r)
+                        setRoleOpen(false)
+                      }}
+                      className="flex items-center justify-between text-xs"
+                    >
+                      {ROLE_LABEL[r]}
+                      {role === r && (
+                        <HugeiconsIcon
+                          icon={CheckmarkCircle02Icon}
+                          className="size-3.5"
+                        />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="invite-teams">Teams</Label>
+              <DropdownMenu open={teamsOpen} onOpenChange={setTeamsOpen}>
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      id="invite-teams"
+                      type="button"
+                      data-testid="invite-teams-trigger"
+                      aria-label={`Add to teams: ${teamButtonLabel}`}
+                      className="hover:bg-accent/40 focus-visible:ring-ring flex h-8 items-center justify-between gap-2 rounded-md border px-2.5 text-xs focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                      <span className="truncate">{teamButtonLabel}</span>
+                      <HugeiconsIcon
+                        icon={ArrowDown01Icon}
+                        className="text-muted-foreground size-3 shrink-0"
+                      />
+                    </button>
+                  }
+                />
+                <DropdownMenuContent
+                  align="start"
+                  className="max-h-60 w-56 overflow-y-auto"
+                >
+                  {teams.length === 0 ? (
+                    <div className="text-muted-foreground px-2 py-2 text-xs">
+                      No teams to add
+                    </div>
+                  ) : (
+                    teams.map((t) => {
+                      const checked = selectedTeamIds.has(t.id)
+                      return (
+                        <DropdownMenuItem
+                          key={t.id}
+                          data-testid={`invite-team-option-${t.id}`}
+                          // Multi-select: closeOnSelect=false would be
+                          // ideal but Base UI's MenuItem closes by
+                          // default; toggling and re-opening would feel
+                          // janky. We stop the close by re-opening
+                          // immediately via setTeamsOpen(true) on the
+                          // next tick (microtask) so multiple toggles
+                          // feel like one continuous interaction.
+                          onClick={(e) => {
+                            e.preventDefault()
+                            toggleTeam(t.id)
+                            queueMicrotask(() => setTeamsOpen(true))
+                          }}
+                          className="flex items-center justify-between text-xs"
+                        >
+                          <span className="truncate">{t.name}</span>
+                          {checked && (
+                            <HugeiconsIcon
+                              icon={CheckmarkCircle02Icon}
+                              className="size-3.5 shrink-0"
+                            />
+                          )}
+                        </DropdownMenuItem>
+                      )
+                    })
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {/* Copy invite link — secondary action */}
+          <div className="bg-muted/40 flex items-center justify-between gap-2 rounded-md border p-2 text-xs">
+            <div className="flex min-w-0 items-center gap-2">
+              <HugeiconsIcon
+                icon={Link01Icon}
+                className="text-muted-foreground size-3.5 shrink-0"
+              />
+              <span className="text-muted-foreground truncate">
+                {inviteLink}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              type="button"
+              data-testid="invite-copy-link"
+              onClick={copyInviteLink}
+              className="h-6 shrink-0 px-2 text-xs"
             >
-              {error}
-            </p>
-          ) : (
-            <p className="text-muted-foreground text-xs">
-              Separate multiple emails with commas, spaces, or new lines.
-            </p>
-          )}
+              {copied ? "Copied" : "Copy invite link"}
+            </Button>
+          </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={onSubmit} disabled={!canSubmit}>
+          <Button
+            onClick={onSubmit}
+            disabled={!canSubmit}
+            data-testid="invite-submit"
+          >
             {submitting ? "Sending…" : "Send invites"}
           </Button>
         </DialogFooter>
@@ -7287,15 +7758,14 @@ const CLI_IMPORT_URL =
 const IMPORT_SOURCES: {
   key: string
   name: string
-  color: string
   abbr: string
 }[] = [
-  { key: "asana", name: "Asana", color: "bg-rose-500", abbr: "AS" },
-  { key: "shortcut", name: "Shortcut", color: "bg-amber-500", abbr: "SC" },
-  { key: "github", name: "GitHub", color: "bg-[#24292e]", abbr: "GH" },
-  { key: "jira", name: "Jira", color: "bg-[#0052CC]", abbr: "JR" },
-  { key: "linear", name: "Linear", color: "bg-violet-600", abbr: "LN" },
-  { key: "trello", name: "Trello", color: "bg-[#0079BF]", abbr: "TR" },
+  { key: "asana", name: "Asana", abbr: "AS" },
+  { key: "shortcut", name: "Shortcut", abbr: "SC" },
+  { key: "github", name: "GitHub", abbr: "GH" },
+  { key: "jira", name: "Jira", abbr: "JR" },
+  { key: "linear", name: "Linear", abbr: "LN" },
+  { key: "trello", name: "Trello", abbr: "TR" },
 ]
 
 type IncludePrivateTeams = "none" | "all"
@@ -7475,7 +7945,7 @@ function ImportExportSection() {
           </a>
         </p>
         <div className="divide-border divide-y overflow-hidden rounded-lg border">
-          {IMPORT_SOURCES.map(({ key, name, color, abbr }) => (
+          {IMPORT_SOURCES.map(({ key, name, abbr }) => (
             <Link
               key={key}
               href={`/settings/import-export/migration-assistant?service=${key}`}
@@ -7484,7 +7954,7 @@ function ImportExportSection() {
               className="hover:bg-white/5 focus-visible:bg-white/5 focus-visible:ring-ring group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               <div
-                className={`flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold text-white ${color}`}
+                className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-semibold"
               >
                 {abbr}
               </div>

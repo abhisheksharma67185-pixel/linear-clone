@@ -211,10 +211,39 @@ export function validateInviteEmails(raw: unknown): Result<string[]> {
   return { success: true, data: [...new Set(parts.map((p) => p.toLowerCase()))] }
 }
 
-export function inviteMembers(raw: unknown): Result<MemberSummary[]> {
-  const result = validateInviteEmails(raw)
+/**
+ * Validate the optional `role` field on an invite POST body. We
+ * accept the three documented values; everything else (including
+ * undefined / missing) falls through to `"member"` — Linear's
+ * production default and the spec's required default for new
+ * invites. Previously this defaulted to `"admin"`, which is what
+ * caused freshly-invited members to land in the workspace as
+ * admins regardless of what the user picked in the modal.
+ */
+function normalizeInviteRole(raw: unknown): MemberRole {
+  if (raw === "admin" || raw === "member" || raw === "guest") return raw
+  return "member"
+}
+
+/** Parse an optional `teamIds` array on the invite body. Filters
+ *  out anything that isn't a non-empty string so we never persist
+ *  garbage. */
+function normalizeTeamIds(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return []
+  return raw.filter(
+    (t): t is string => typeof t === "string" && t.trim().length > 0
+  )
+}
+
+export function inviteMembers(
+  emailsRaw: unknown,
+  options: { role?: unknown; teamIds?: unknown } = {}
+): Result<MemberSummary[]> {
+  const result = validateInviteEmails(emailsRaw)
   if (!result.success) return result
   seed()
+  const role = normalizeInviteRole(options.role)
+  const teamIds = normalizeTeamIds(options.teamIds)
   const created: MemberSummary[] = []
   for (const email of result.data) {
     const id = `inv-${Math.random().toString(36).slice(2, 10)}`
@@ -224,12 +253,14 @@ export function inviteMembers(raw: unknown): Result<MemberSummary[]> {
       name: email,
       email,
       avatar: "",
-      role: "admin",
+      // Persist the role chosen in the invite modal — the Status
+      // column reads this back as "Member (Invited)" / "Admin (Invited)".
+      role,
       status: "invited",
       joinedAt: now(),
       lastSeenAt: null,
       username,
-      teamCount: 0,
+      teamCount: teamIds.length,
     }
     _extras.push(extra)
     created.push({
@@ -242,7 +273,7 @@ export function inviteMembers(raw: unknown): Result<MemberSummary[]> {
       status: extra.status,
       joinedAt: extra.joinedAt,
       lastSeenAt: extra.lastSeenAt,
-      teamCount: 0,
+      teamCount: teamIds.length,
       isApplication: false,
       isInvite: true,
     })

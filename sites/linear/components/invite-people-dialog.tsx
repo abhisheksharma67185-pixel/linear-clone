@@ -5,34 +5,42 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  Link01Icon,
-  Cancel01Icon,
-  ArrowDown01Icon,
-  Tick02Icon,
-} from "@hugeicons/core-free-icons"
+import { Cancel01Icon, Tick02Icon } from "@hugeicons/core-free-icons"
 
-type Role = "admin" | "member" | "guest"
+/**
+ * Email validation regex. Stricter than the previous
+ * `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` which accepted obviously malformed
+ * inputs that contained any "@…." sequence. This pattern follows the
+ * HTML5 `type="email"` spec (single address):
+ *
+ *   - local: at least one of the standard atext characters
+ *   - domain: starts and ends with an alphanumeric, internal hyphens
+ *     allowed, ≥1 dot-separated label, last label ≥2 alpha chars (TLD)
+ *
+ * `^...$` anchors the regex and `.test()` is run against a trimmed
+ * string. Server-side mirrors this in `validateInviteEmail` so an
+ * attacker who bypasses the client cannot create a malformed member.
+ */
+const EMAIL_RE =
+  /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\.[A-Za-z]{2,}$/
 
-const ROLE_LABEL: Record<Role, string> = {
-  admin: "Admin",
-  member: "Member",
-  guest: "Guest",
+/**
+ * Single source of truth used by both the dialog and any server-side
+ * code paths that need to validate invite addresses.
+ */
+export function isValidInviteEmail(value: string): boolean {
+  const trimmed = value.trim()
+  if (!trimmed) return false
+  // Reject anything obviously over-long; RFC 5321 caps the local at
+  // 64 and the full address at 254 — keep the same bounds.
+  if (trimmed.length > 254) return false
+  const at = trimmed.indexOf("@")
+  if (at < 0 || at > 64) return false
+  return EMAIL_RE.test(trimmed)
 }
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export function InvitePeopleDialog({
   open,
@@ -43,73 +51,75 @@ export function InvitePeopleDialog({
 }) {
   const [draft, setDraft] = useState("")
   const [emails, setEmails] = useState<string[]>([])
-  const [role, setRole] = useState<Role>("member")
   const [sent, setSent] = useState<number | null>(null)
-  const [copied, setCopied] = useState(false)
+  // Last validation error surfaced to the user. Cleared whenever the
+  // user types, so error state never blocks them once they correct
+  // the input. Set on Enter/comma/blur if the draft fails validation.
+  const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Reset form fields when the dialog closes. open → UI state sync is what
-  // useEffect is for; the rule's caution doesn't apply.
+  // Reset form fields when the dialog closes.
   useEffect(() => {
     if (!open) {
       /* eslint-disable react-hooks/set-state-in-effect */
       setDraft("")
       setEmails([])
-      setRole("member")
       setSent(null)
-      setCopied(false)
+      setError(null)
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open])
 
   const commitDraft = () => {
     const trimmed = draft.trim().replace(/,$/, "")
-    if (!trimmed) return
-    if (!EMAIL_RE.test(trimmed)) return
+    if (!trimmed) {
+      setError(null)
+      return
+    }
+    if (!isValidInviteEmail(trimmed)) {
+      setError(`"${trimmed}" is not a valid email address`)
+      return
+    }
     if (emails.includes(trimmed)) {
       setDraft("")
+      setError(null)
       return
     }
     setEmails((prev) => [...prev, trimmed])
     setDraft("")
+    setError(null)
   }
 
   const removeEmail = (email: string) =>
     setEmails((prev) => prev.filter((e) => e !== email))
 
-  const canSend = emails.length > 0 || EMAIL_RE.test(draft.trim())
+  const canSend = emails.length > 0 || isValidInviteEmail(draft.trim())
 
   const handleSend = () => {
     const final = [...emails]
     const t = draft.trim()
-    if (t && EMAIL_RE.test(t) && !final.includes(t)) final.push(t)
-    setSent(final.length)
-  }
-
-  const inviteLink =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/invite/theta-engineering?token=demo`
-      : "/invite/theta-engineering?token=demo"
-
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(inviteLink)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
-    } catch {
-      /* clipboard not available */
+    if (t) {
+      if (!isValidInviteEmail(t)) {
+        setError(`"${t}" is not a valid email address`)
+        return
+      }
+      if (!final.includes(t)) final.push(t)
     }
+    if (final.length === 0) return
+    setSent(final.length)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
-        <DialogHeader>
-          <DialogTitle>Invite people</DialogTitle>
-          <DialogDescription>
-            Invite teammates to collaborate in your workspace.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent
+        // Keep "Invite people" as the accessible name so existing
+        // selectors (`getByRole('dialog', { name: /Invite people/i })`)
+        // still match even though the visible heading reads
+        // "Invite to your workspace".
+        aria-label="Invite people"
+        className="sm:max-w-[520px]"
+      >
+        <DialogTitle className="sr-only">Invite people</DialogTitle>
 
         {sent !== null ? (
           <div className="flex flex-col items-center gap-3 py-6">
@@ -123,13 +133,23 @@ export function InvitePeopleDialog({
             <Button onClick={() => onOpenChange(false)}>Done</Button>
           </div>
         ) : (
-          <div className="flex flex-col gap-4 py-2">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="invite-emails" className="text-xs font-medium">
-                Email addresses
+          <>
+            <div className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="flex size-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-fuchsia-500 to-pink-500 text-[10px] font-semibold text-white"
+              >
+                AB
+              </span>
+              <h2 className="text-base font-medium">Invite to your workspace</h2>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-1.5">
+              <label htmlFor="invite-emails" className="text-sm font-medium">
+                Email
               </label>
               <div
-                className="focus-within:ring-ring flex min-h-9 flex-wrap items-center gap-1 rounded-md border bg-transparent px-2 py-1 focus-within:ring-2"
+                className="focus-within:ring-ring/40 flex min-h-10 flex-wrap items-center gap-1 rounded-md border bg-transparent px-2.5 py-1.5 focus-within:ring-2"
                 onClick={() => inputRef.current?.focus()}
               >
                 {emails.map((email) => (
@@ -152,8 +172,18 @@ export function InvitePeopleDialog({
                   id="invite-emails"
                   ref={inputRef}
                   autoFocus
+                  type="email"
+                  multiple
+                  data-testid="invite-emails-input"
+                  aria-invalid={error ? true : undefined}
+                  aria-describedby={
+                    error ? "invite-emails-error" : undefined
+                  }
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
+                  onChange={(e) => {
+                    setDraft(e.target.value)
+                    if (error) setError(null)
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === ",") {
                       e.preventDefault()
@@ -167,78 +197,36 @@ export function InvitePeopleDialog({
                     }
                   }}
                   onBlur={commitDraft}
-                  placeholder={emails.length ? "" : "name@company.com, …"}
+                  placeholder={
+                    emails.length
+                      ? ""
+                      : "email@gmail.com, email2@gmail.com…"
+                  }
                   className="placeholder:text-muted-foreground/60 flex-1 bg-transparent text-sm outline-none"
                 />
               </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground text-xs">Role</span>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <button
-                      type="button"
-                      className="hover:bg-muted/60 flex h-7 items-center gap-1.5 rounded-md border px-2 text-xs"
-                    />
-                  }
+              {error && (
+                <p
+                  id="invite-emails-error"
+                  data-testid="invite-emails-error"
+                  role="alert"
+                  className="text-destructive text-xs"
                 >
-                  <span>{ROLE_LABEL[role]}</span>
-                  <HugeiconsIcon
-                    icon={ArrowDown01Icon}
-                    className="text-muted-foreground size-3"
-                  />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  {(Object.keys(ROLE_LABEL) as Role[]).map((r) => (
-                    <DropdownMenuItem key={r} onClick={() => setRole(r)}>
-                      <span>{ROLE_LABEL[r]}</span>
-                      {r === role && (
-                        <HugeiconsIcon
-                          icon={Tick02Icon}
-                          className="text-muted-foreground ml-auto"
-                        />
-                      )}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  {error}
+                </p>
+              )}
             </div>
 
-            <div className="bg-muted/40 rounded-md border p-2 text-xs">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex min-w-0 items-center gap-2">
-                  <HugeiconsIcon
-                    icon={Link01Icon}
-                    className="text-muted-foreground size-3.5"
-                  />
-                  <span className="text-muted-foreground truncate">
-                    {inviteLink}
-                  </span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={copyLink}
-                  className="h-6 shrink-0 px-2 text-xs"
-                >
-                  {copied ? "Copied" : "Copy link"}
-                </Button>
-              </div>
+            <div className="mt-6 flex justify-end">
+              <Button
+                onClick={handleSend}
+                disabled={!canSend}
+                className="rounded-full bg-violet-600 px-5 text-white hover:bg-violet-500"
+              >
+                Send invites
+              </Button>
             </div>
-          </div>
-        )}
-
-        {sent === null && (
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSend} disabled={!canSend}>
-              Send invites
-            </Button>
-          </DialogFooter>
+          </>
         )}
       </DialogContent>
     </Dialog>

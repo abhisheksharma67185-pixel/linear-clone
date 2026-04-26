@@ -19,6 +19,7 @@ import {
   PlayCircleIcon,
   Hexagon01Icon,
   SparklesIcon,
+  History as HistoryIcon,
 } from "@hugeicons/core-free-icons"
 
 type Msg = {
@@ -146,8 +147,8 @@ export function AskLinear({
             />
           }
         >
-          <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
           <span>Ask Linear</span>
+          <HugeiconsIcon icon={HistoryIcon} className="size-3.5" />
         </SheetTrigger>
       ) : (
         <SheetTrigger

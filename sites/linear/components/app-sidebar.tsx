@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
@@ -60,13 +60,56 @@ import {
   Notification01Icon,
   SlackIcon,
   Logout01Icon,
+  Cancel01Icon,
+  StarIcon,
+  ViewOffSlashIcon,
+  ArrowUpRight01Icon,
+  Satellite01Icon,
 } from "@hugeicons/core-free-icons"
 import { CreateIssueDialog } from "@/components/create-issue-dialog"
 import { CreateTeamDialog } from "@/components/create-team-dialog"
-import { ImportIssuesDialog } from "@/components/import-issues-dialog"
 import { InvitePeopleDialog } from "@/components/invite-people-dialog"
 import { DownloadAppDialog } from "@/components/download-app-dialog"
 import { SearchDialog } from "@/components/search-dialog"
+import { CustomizeSidebarDialog } from "@/components/customize-sidebar-dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  ALL_SUBSCRIBE_EVENTS,
+  isFavoriteTeam,
+  isSubscribed,
+  isTeamHidden,
+  saveTeamPreferences,
+  setTeamHidden,
+  SUBSCRIBE_EVENT_LABELS,
+  toggleFavoriteTeam,
+  toggleSubscribeEvent,
+  useTeamPreferences,
+  type TeamSubscribeEvent,
+} from "@/lib/team-preferences"
+import {
+  shouldRenderSidebarItem,
+  useSidebarCustomization,
+  type SidebarVisibility,
+} from "@/lib/sidebar-customization"
+import {
+  removeFavorite,
+  useFavorites,
+  type FavoriteIcon,
+} from "@/lib/view-favorites"
+
+/**
+ * localStorage key for the dismissable "Try" onboarding section in
+ * the sidebar. Stored as "1" once dismissed; absent or any other
+ * value means visible. Persisting client-side (rather than per-user
+ * server-side) is fine because dismissal is a UI preference, not
+ * authoritative data — and avoids round-tripping a tiny boolean.
+ */
+const TRY_SECTION_DISMISSED_KEY = "sidebar:try-section-dismissed"
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -74,11 +117,63 @@ export function AppSidebar() {
   const [createOpen, setCreateOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [createTeamOpen, setCreateTeamOpen] = useState(false)
-  const [importOpen, setImportOpen] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
+  const [customizeOpen, setCustomizeOpen] = useState(false)
+  // Try-section dismiss state. Read from localStorage on mount so
+  // the section stays hidden across page reloads, then write on
+  // every change. SSR-safe: starts as `false` (visible) on the
+  // server; the effect reconciles to the persisted value on the
+  // client without a flash because the section's content is short.
+  const [tryDismissed, setTryDismissed] = useState(false)
+  useEffect(() => {
+    // Reading localStorage is the textbook "syncing external state
+    // into React" use case for useEffect — the rule lint flags it
+    // because the body calls setState, but we only do it once on
+    // mount with a stable value, so cascading renders aren't a risk.
+    try {
+      const stored = window.localStorage.getItem(TRY_SECTION_DISMISSED_KEY)
+      if (stored === "1") {
+        /* eslint-disable react-hooks/set-state-in-effect */
+        setTryDismissed(true)
+        /* eslint-enable react-hooks/set-state-in-effect */
+      }
+    } catch {
+      // ignore — Safari private mode etc.
+    }
+  }, [])
+  const dismissTrySection = () => {
+    setTryDismissed(true)
+    try {
+      window.localStorage.setItem(TRY_SECTION_DISMISSED_KEY, "1")
+    } catch {
+      // ignore
+    }
+  }
 
   const isActive = (href: string) => pathname === href
+
+  // Read the user's sidebar customisation. The hook subscribes to
+  // localStorage + same-tab change events so toggling visibility in
+  // the Customize sidebar modal updates this view instantly.
+  const customization = useSidebarCustomization()
+  // Per-team preferences — favorites, hide-from-sidebar, and the
+  // checkable Subscribe submenu state. Same subscribe pattern as
+  // useSidebarCustomization (CustomEvent-driven).
+  const teamPrefs = useTeamPreferences()
+  const favorites = useFavorites()
+  // Per-item badge counts. Inbox is the only badge-bearing row in
+  // this mock; others have no count, so a "Show when badged" rule
+  // collapses them. The values would come from real APIs in
+  // production.
+  const ITEM_BADGE_COUNTS: Record<string, number> = { inbox: 1 }
+  const visibilityFor = (key: string): SidebarVisibility => {
+    return (
+      customization.items.find((i) => i.key === key)?.visibility ?? "always"
+    )
+  }
+  const isItemRendered = (key: string): boolean =>
+    shouldRenderSidebarItem(visibilityFor(key), (ITEM_BADGE_COUNTS[key] ?? 0) > 0)
 
   return (
     <>
@@ -90,6 +185,7 @@ export function AppSidebar() {
                 render={
                   <button
                     type="button"
+                    aria-label="Workspace menu"
                     className="hover:bg-sidebar-accent data-[popup-open]:bg-sidebar-accent flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1 text-left"
                   />
                 }
@@ -108,7 +204,10 @@ export function AppSidebar() {
                 sideOffset={6}
                 className="w-60"
               >
-                <DropdownMenuItem render={<Link href="/settings" />}>
+                <DropdownMenuItem
+                  render={<Link href="/settings" />}
+                  data-testid="workspace-menu-settings"
+                >
                   <span>Settings</span>
                   <DropdownMenuShortcut>G then S</DropdownMenuShortcut>
                 </DropdownMenuItem>
@@ -123,7 +222,9 @@ export function AppSidebar() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
+                  <DropdownMenuSubTrigger
+                    data-testid="workspace-menu-switch"
+                  >
                     <span>Switch workspace</span>
                     <DropdownMenuShortcut className="me-1">
                       O then W
@@ -177,6 +278,7 @@ export function AppSidebar() {
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuItem
+                  data-testid="workspace-menu-logout"
                   onClick={() => {
                     router.push("/")
                   }}
@@ -208,19 +310,24 @@ export function AppSidebar() {
         <SidebarContent>
           <SidebarGroup>
             <SidebarMenu>
-              <SidebarMenuItem>
+              <SidebarMenuItem
+                data-sidebar-item="inbox"
+                data-collapsed={!isItemRendered("inbox")}
+                className="sidebar-item-animated"
+              >
                 <SidebarMenuButton
                   isActive={isActive("/inbox")}
                   render={<Link href="/inbox" />}
                 >
                   <HugeiconsIcon icon={InboxIcon} />
                   <span>Inbox</span>
-                  <span className="bg-muted-foreground/20 text-muted-foreground ml-auto flex size-4 items-center justify-center rounded-full text-[10px] font-medium">
-                    1
-                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
+              <SidebarMenuItem
+                data-sidebar-item="my-issues"
+                data-collapsed={!isItemRendered("my-issues")}
+                className="sidebar-item-animated"
+              >
                 <SidebarMenuButton
                   isActive={isActive("/my-issues")}
                   render={<Link href="/my-issues" />}
@@ -237,7 +344,11 @@ export function AppSidebar() {
               <SectionLabel>Workspace</SectionLabel>
               <CollapsibleContent>
                 <SidebarMenu>
-                  <SidebarMenuItem>
+                  <SidebarMenuItem
+                    data-sidebar-item="projects"
+                    data-collapsed={!isItemRendered("projects")}
+                    className="sidebar-item-animated"
+                  >
                     <SidebarMenuButton
                       isActive={isActive("/projects")}
                       render={<Link href="/projects" />}
@@ -246,7 +357,11 @@ export function AppSidebar() {
                       <span>Projects</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                  <SidebarMenuItem>
+                  <SidebarMenuItem
+                    data-sidebar-item="views"
+                    data-collapsed={!isItemRendered("views")}
+                    className="sidebar-item-animated"
+                  >
                     <SidebarMenuButton
                       isActive={isActive("/views")}
                       render={<Link href="/views" />}
@@ -271,6 +386,25 @@ export function AppSidebar() {
                         sideOffset={4}
                         className="w-56"
                       >
+                        {/*
+                          Order matches Linear's production "More"
+                          dropdown: Members → Initiatives → Teams,
+                          then a divider and Customize sidebar.
+                        */}
+                        <DropdownMenuItem
+                          className="gap-2"
+                          render={<Link href="/settings?section=members" />}
+                        >
+                          <HugeiconsIcon icon={UserMultiple02Icon} />
+                          <span>Members</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="gap-2"
+                          render={<Link href="/initiatives" />}
+                        >
+                          <HugeiconsIcon icon={Satellite01Icon} />
+                          <span>Initiatives</span>
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           className="gap-2"
                           render={<Link href="/teams" />}
@@ -278,15 +412,11 @@ export function AppSidebar() {
                           <HugeiconsIcon icon={Contact02Icon} />
                           <span>Teams</span>
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="gap-2"
-                          render={<Link href="/settings" />}
+                          onClick={() => setCustomizeOpen(true)}
                         >
-                          <HugeiconsIcon icon={UserMultiple02Icon} />
-                          <span>Members</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="gap-2">
                           <HugeiconsIcon icon={PencilEdit02Icon} />
                           <span>Customize sidebar</span>
                         </DropdownMenuItem>
@@ -297,6 +427,40 @@ export function AppSidebar() {
               </CollapsibleContent>
             </Collapsible>
           </SidebarGroup>
+
+          {favorites.length > 0 && (
+            <SidebarGroup data-testid="sidebar-favorites">
+              <Collapsible defaultOpen className="group/label">
+                <SectionLabel>Favorites</SectionLabel>
+                <CollapsibleContent>
+                  <SidebarMenu>
+                    {favorites.map((fav) => (
+                      <SidebarMenuItem key={fav.key}>
+                        <SidebarMenuButton
+                          isActive={isActive(fav.href)}
+                          render={<Link href={fav.href} />}
+                        >
+                          <FavoriteIconGlyph icon={fav.icon} />
+                          <span>{fav.label}</span>
+                        </SidebarMenuButton>
+                        <SidebarMenuAction
+                          aria-label={`Remove ${fav.label} from favorites`}
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            removeFavorite(fav.key)
+                          }}
+                          showOnHover
+                        >
+                          <HugeiconsIcon icon={Cancel01Icon} />
+                        </SidebarMenuAction>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarGroup>
+          )}
 
           <SidebarGroup>
             <Collapsible defaultOpen className="group/label">
@@ -313,13 +477,27 @@ export function AppSidebar() {
               <CollapsibleContent>
                 <SidebarMenu>
                   {[{ id: "abhishek", name: "Abhishek", key: "ABH" }].map(
-                    (team) => (
+                    (team) => {
+                      const teamHidden = isTeamHidden(teamPrefs, team.id)
+                      const teamFavorited = isFavoriteTeam(teamPrefs, team.id)
+                      // Mock-only: there's only one team in the
+                      // sidebar, so "you're the only admin" is
+                      // always true and Leave team... is disabled.
+                      // Real app would derive from member-count.
+                      const leaveDisabled = true
+                      const leaveDisabledReason =
+                        "You're the only admin — you can't leave this team"
+                      return (
                       <Collapsible
                         key={team.id}
                         defaultOpen
                         className="group/team"
                       >
-                        <SidebarMenuItem>
+                        <SidebarMenuItem
+                          data-team-id={team.id}
+                          data-collapsed={teamHidden}
+                          className="sidebar-item-animated"
+                        >
                           <SidebarMenuButton render={<CollapsibleTrigger />}>
                             <span className="flex size-3.5 shrink-0 items-center justify-center rounded-sm border border-pink-500/70 text-pink-500">
                               <HugeiconsIcon
@@ -328,6 +506,13 @@ export function AppSidebar() {
                               />
                             </span>
                             <span className="truncate">{team.name}</span>
+                            {teamFavorited && (
+                              <HugeiconsIcon
+                                icon={StarIcon}
+                                className="size-3 text-amber-400"
+                                aria-label="Favorited"
+                              />
+                            )}
                             <TriangleCaret className="transition-transform group-data-[closed]/team:-rotate-90" />
                           </SidebarMenuButton>
                           <DropdownMenu>
@@ -336,7 +521,19 @@ export function AppSidebar() {
                                 <SidebarMenuAction
                                   showOnHover
                                   aria-label={`${team.name} options`}
-                                  onClick={(e) => e.stopPropagation()}
+                                  data-testid={`team-menu-trigger-${team.id}`}
+                                  // stopPropagation prevents the
+                                  // CollapsibleTrigger above from
+                                  // toggling open/closed when the
+                                  // user clicks the "..." button.
+                                  // Base UI's Menu uses pointer-down
+                                  // semantics that already win the
+                                  // race against an outside-click
+                                  // listener — this stop is purely
+                                  // for the Collapsible parent.
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                  }}
                                 />
                               }
                             >
@@ -349,71 +546,221 @@ export function AppSidebar() {
                               side="bottom"
                               align="start"
                               sideOffset={4}
-                              className="w-60"
+                              data-testid={`team-menu-${team.id}`}
+                              className="w-64"
                             >
                               <DropdownMenuItem
                                 className="gap-2"
                                 render={<Link href="/settings" />}
+                                data-testid="team-menu-settings"
                               >
                                 <HugeiconsIcon
                                   icon={Settings02Icon}
-                                  className="size-4"
+                                  className="size-4 opacity-70"
                                 />
                                 <span>Team settings</span>
                               </DropdownMenuItem>
                               <DropdownMenuItem className="gap-2">
                                 <HugeiconsIcon
                                   icon={CopyLinkIcon}
-                                  className="size-4"
+                                  className="size-4 opacity-70"
                                 />
                                 <span>Copy link</span>
                               </DropdownMenuItem>
                               <DropdownMenuItem className="gap-2">
                                 <HugeiconsIcon
                                   icon={Archive01Icon}
-                                  className="size-4"
+                                  className="size-4 opacity-70"
                                 />
                                 <span>Open archive</span>
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="gap-2">
-                                  <HugeiconsIcon
-                                    icon={Notification01Icon}
-                                    className="size-4"
-                                  />
-                                  <span>Subscribe</span>
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent className="w-48">
-                                  <DropdownMenuItem>
-                                    All activity
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    My activity only
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem>
-                                    Unsubscribe
-                                  </DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                              </DropdownMenuSub>
-                              <DropdownMenuItem className="gap-2">
+                              <DropdownMenuItem
+                                className="gap-2"
+                                data-testid="team-menu-new-issue"
+                                onClick={() => setCreateOpen(true)}
+                              >
                                 <HugeiconsIcon
-                                  icon={SlackIcon}
-                                  className="size-4"
+                                  icon={PencilEdit01Icon}
+                                  className="size-4 opacity-70"
                                 />
-                                <span>Configure Slack notifications...</span>
+                                <span>New issue</span>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-muted-foreground/50 gap-2"
-                                disabled
+                                className="gap-2"
+                                data-testid="team-menu-favorite"
+                                onClick={() => {
+                                  saveTeamPreferences(
+                                    toggleFavoriteTeam(teamPrefs, team.id)
+                                  )
+                                }}
                               >
                                 <HugeiconsIcon
-                                  icon={Logout01Icon}
-                                  className="size-4"
+                                  icon={StarIcon}
+                                  className={`size-4 ${
+                                    teamFavorited
+                                      ? "text-amber-400"
+                                      : "opacity-70"
+                                  }`}
                                 />
-                                <span>Leave team...</span>
+                                <span>
+                                  {teamFavorited
+                                    ? "Remove from favorites"
+                                    : "Add to favorites"}
+                                </span>
                               </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger
+                                  className="gap-2"
+                                  data-testid="team-menu-subscribe"
+                                >
+                                  <HugeiconsIcon
+                                    icon={Notification01Icon}
+                                    className="size-4 opacity-70"
+                                  />
+                                  <span>Subscribe</span>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent
+                                  className="w-56"
+                                  data-testid="team-menu-subscribe-submenu"
+                                >
+                                  {ALL_SUBSCRIBE_EVENTS.map((event) => {
+                                    const checked = isSubscribed(
+                                      teamPrefs,
+                                      team.id,
+                                      event
+                                    )
+                                    return (
+                                      <DropdownMenuItem
+                                        key={event}
+                                        data-testid={`team-menu-subscribe-${event}`}
+                                        // Manual checkbox semantics:
+                                        // we render a check on the
+                                        // right when subscribed and
+                                        // toggle on click. Multi-
+                                        // select stays open via
+                                        // event.preventDefault.
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          saveTeamPreferences(
+                                            toggleSubscribeEvent(
+                                              teamPrefs,
+                                              team.id,
+                                              event as TeamSubscribeEvent
+                                            )
+                                          )
+                                        }}
+                                        className="flex items-center justify-between gap-2"
+                                      >
+                                        <span>
+                                          {SUBSCRIBE_EVENT_LABELS[event]}
+                                        </span>
+                                        {checked && (
+                                          <HugeiconsIcon
+                                            icon={Tick02Icon}
+                                            className="size-3.5 shrink-0"
+                                            aria-label="Subscribed"
+                                          />
+                                        )}
+                                      </DropdownMenuItem>
+                                    )
+                                  })}
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
+                              <DropdownMenuItem
+                                className="gap-2"
+                                render={
+                                  <Link href="/settings?section=integrations" />
+                                }
+                                data-testid="team-menu-slack"
+                              >
+                                <HugeiconsIcon
+                                  icon={SlackIcon}
+                                  className="size-4 opacity-70"
+                                />
+                                <span className="flex-1">
+                                  Configure Slack notifications...
+                                </span>
+                                {/* External-link arrow — matches
+                                    Linear's convention of marking
+                                    items that leave the current
+                                    view (here: navigates to
+                                    integrations settings). */}
+                                <HugeiconsIcon
+                                  icon={ArrowUpRight01Icon}
+                                  className="text-muted-foreground size-3 shrink-0 opacity-70"
+                                  aria-hidden="true"
+                                />
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="gap-2"
+                                data-testid="team-menu-invite"
+                                onClick={() => setInviteOpen(true)}
+                              >
+                                <HugeiconsIcon
+                                  icon={UserMultiple02Icon}
+                                  className="size-4 opacity-70"
+                                />
+                                <span>Invite members...</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="gap-2"
+                                data-testid="team-menu-hide"
+                                onClick={() => {
+                                  saveTeamPreferences(
+                                    setTeamHidden(teamPrefs, team.id, true)
+                                  )
+                                }}
+                              >
+                                <HugeiconsIcon
+                                  icon={ViewOffSlashIcon}
+                                  className="size-4 opacity-70"
+                                />
+                                <span>Hide team from sidebar</span>
+                              </DropdownMenuItem>
+                              {/* "Leave team..." carries an
+                                  explanatory tooltip when disabled
+                                  — Tooltip wraps the menu item via
+                                  TooltipTrigger render so the
+                                  trigger's role/keyboard semantics
+                                  are preserved. 500ms delay matches
+                                  Linear's other long-form tooltips. */}
+                              <TooltipProvider delay={500}>
+                                <Tooltip>
+                                  <TooltipTrigger
+                                    render={
+                                      <DropdownMenuItem
+                                        className="text-muted-foreground/60 gap-2"
+                                        disabled={leaveDisabled}
+                                        data-testid="team-menu-leave"
+                                        // Even though the item is
+                                        // aria-disabled, we keep it
+                                        // focusable so screen
+                                        // readers announce the
+                                        // tooltip — Base UI's Menu
+                                        // doesn't strip focus from
+                                        // disabled items.
+                                      >
+                                        <HugeiconsIcon
+                                          icon={Logout01Icon}
+                                          className="size-4 opacity-70"
+                                        />
+                                        <span>Leave team...</span>
+                                      </DropdownMenuItem>
+                                    }
+                                  />
+                                  {leaveDisabled && (
+                                    <TooltipContent
+                                      side="right"
+                                      data-testid="team-menu-leave-tooltip"
+                                    >
+                                      {leaveDisabledReason}
+                                    </TooltipContent>
+                                  )}
+                                </Tooltip>
+                              </TooltipProvider>
                             </DropdownMenuContent>
                           </DropdownMenu>
                           <CollapsibleContent>
@@ -460,45 +807,50 @@ export function AppSidebar() {
                         </SidebarMenuItem>
                       </Collapsible>
                     )
+                    }
                   )}
                 </SidebarMenu>
               </CollapsibleContent>
             </Collapsible>
           </SidebarGroup>
 
-          <SidebarGroup>
-            <Collapsible defaultOpen className="group/label">
-              <SectionLabel>Try</SectionLabel>
-              <CollapsibleContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setImportOpen(true)}>
-                      <HugeiconsIcon icon={InboxDownloadIcon} />
-                      <span>Import issues</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setInviteOpen(true)}>
-                      <HugeiconsIcon icon={PlusSignIcon} />
-                      <span>Invite people</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      render={<Link href="/settings?tab=integrations" />}
-                    >
-                      <HugeiconsIcon icon={Github01Icon} />
-                      <span>Connect GitHub</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </CollapsibleContent>
-            </Collapsible>
-          </SidebarGroup>
+          {!tryDismissed && (
+            <SidebarGroup data-testid="sidebar-try-section">
+              <Collapsible defaultOpen className="group/label">
+                <SectionLabel>Try</SectionLabel>
+                <CollapsibleContent>
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        render={<Link href="/settings?section=import-export" />}
+                      >
+                        <HugeiconsIcon icon={InboxDownloadIcon} />
+                        <span>Import issues</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton onClick={() => setInviteOpen(true)}>
+                        <HugeiconsIcon icon={PlusSignIcon} />
+                        <span>Invite people</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        render={<Link href="/settings?section=integrations&provider=github" />}
+                      >
+                        <HugeiconsIcon icon={Github01Icon} />
+                        <span>Connect GitHub</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarGroup>
+          )}
         </SidebarContent>
 
         <SidebarFooter>
-          <div className="flex items-center justify-between px-1">
+          <div className="flex items-center px-1">
             <button
               type="button"
               aria-label="Help"
@@ -506,10 +858,6 @@ export function AppSidebar() {
             >
               <HugeiconsIcon icon={HelpCircleIcon} className="size-4" />
             </button>
-            <div className="border-sidebar-border bg-background text-muted-foreground flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
-              <span className="size-1.5 rounded-full bg-emerald-500" />
-              <span>Free plan</span>
-            </div>
           </div>
         </SidebarFooter>
       </Sidebar>
@@ -518,10 +866,17 @@ export function AppSidebar() {
       <CreateTeamDialog
         open={createTeamOpen}
         onOpenChange={setCreateTeamOpen}
+        // Creating a team is a strong signal the user has finished
+        // basic onboarding — auto-collapse the Try section so it
+        // stops taking sidebar real estate.
+        onCreated={() => dismissTrySection()}
       />
-      <ImportIssuesDialog open={importOpen} onOpenChange={setImportOpen} />
       <InvitePeopleDialog open={inviteOpen} onOpenChange={setInviteOpen} />
       <DownloadAppDialog open={downloadOpen} onOpenChange={setDownloadOpen} />
+      <CustomizeSidebarDialog
+        open={customizeOpen}
+        onOpenChange={setCustomizeOpen}
+      />
     </>
   )
 }
@@ -541,11 +896,19 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function TriangleCaret({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 8 8"
+      viewBox="0 0 16 16"
       aria-hidden="true"
-      className={`text-muted-foreground/70 size-1 shrink-0 fill-current ${className ?? ""}`}
+      className={`text-muted-foreground/70 size-3 shrink-0 fill-current ${className ?? ""}`}
     >
-      <path d="M1 2 L7 2 L4 6 Z" />
+      <g transform="rotate(90 8 8)">
+        <path d="M7.00194 10.6239C6.66861 10.8183 6.25 10.5779 6.25 10.192V5.80802C6.25 5.42212 6.66861 5.18169 7.00194 5.37613L10.7596 7.56811C11.0904 7.76105 11.0904 8.23895 10.7596 8.43189L7.00194 10.6239Z" />
+      </g>
     </svg>
+  )
+}
+
+function FavoriteIconGlyph({ icon }: { icon: FavoriteIcon }) {
+  return (
+    <HugeiconsIcon icon={icon === "issues" ? TaskEdit01Icon : Layers01Icon} />
   )
 }

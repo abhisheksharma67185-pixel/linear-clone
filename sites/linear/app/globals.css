@@ -79,11 +79,12 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  /* Linear-style near-black background (#0a0a0b ≈ oklch(0.085 0 0)) */
+  --background: oklch(0.085 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.18 0 0);
+  --card: oklch(0.13 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.18 0 0);
+  --popover: oklch(0.13 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.541 0.281 293.009);
   --primary-foreground: oklch(0.97 0.014 254.604);
@@ -121,5 +122,37 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* ─── Sidebar customisation transitions ──────────────────────────────────
+   Toggling "Don't show" in the Customize sidebar modal removes a row.
+   We give the surrounding layout a 150ms ease-out fade so the change
+   doesn't snap. Both `opacity` and `max-height` transition so the
+   collapse animates rather than jumping. The collapsed/visible
+   state is set by the React component via inline `data-collapsed`.
+   ────────────────────────────────────────────────────────────────────── */
+.sidebar-item-animated {
+  overflow: hidden;
+  transition:
+    opacity 150ms ease-out,
+    max-height 150ms ease-out;
+  opacity: 1;
+  max-height: 64px;
+}
+.sidebar-item-animated[data-collapsed="true"] {
+  opacity: 0;
+  max-height: 0;
+  pointer-events: none;
+}
+/* Team rows wrap a header + an expandable sub-list, so 64px clips
+   their sub-items. Give them enough room for the header plus several
+   sub-items while still letting the collapse animation work. */
+.sidebar-item-animated[data-team-id] {
+  max-height: 400px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-item-animated {
+    transition: none;
   }
 }

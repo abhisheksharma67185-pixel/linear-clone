@@ -53,6 +53,16 @@ export interface Issue {
   priority: "urgent" | "high" | "medium" | "low" | "none"
   assigneeId: string | null
   creatorId: string
+  /**
+   * Users who follow this issue and receive notifications. Distinct from
+   * `creatorId`: an issue can be created by user A and subscribed to by
+   * users B, C, D — and the "/my-issues subscribed" filter must use
+   * this field, not `creatorId`.
+   *
+   * Optional/back-compat: pre-seeded fixtures may omit it; readers should
+   * treat undefined as `[]`.
+   */
+  subscriberIds?: string[]
   teamId: string
   projectId: string | null
   cycleId: string | null
@@ -292,6 +302,16 @@ export const teams: Team[] = [
     leadId: "usr-9",
     memberIds: ["usr-9", "usr-10", "usr-13"],
     createdAt: "2025-12-15T09:00:00.000Z",
+  },
+  {
+    id: "team-abh",
+    name: "Abhishek",
+    key: "ABH",
+    description:
+      "Personal team for the workspace owner. Holds onboarding tasks and any solo work.",
+    leadId: "usr-1",
+    memberIds: ["usr-1"],
+    createdAt: "2026-04-21T09:00:00.000Z",
   },
 ]
 
@@ -1920,12 +1940,93 @@ const legacyIssues: Issue[] = Array.from({ length: 85 }, (_, i) => {
   }
 })
 
+/**
+ * Onboarding issues seeded into the personal "Abhishek" team. Mirrors
+ * the four tasks Linear creates when a new workspace is set up so the
+ * team's Issues view is never empty on first visit.
+ */
+const abhishekOnboardingIssues: Issue[] = [
+  {
+    id: "iss-181",
+    identifier: "ABH-1",
+    title: "Get familiar with Linear",
+    description: "Take a quick tour of the keyboard shortcuts and the issue model.",
+    status: "todo",
+    priority: "none",
+    assigneeId: null,
+    creatorId: "usr-1",
+    teamId: "team-abh",
+    projectId: null,
+    cycleId: null,
+    labelIds: [],
+    estimate: null,
+    dueDate: null,
+    createdAt: "2026-04-21T09:00:00.000Z",
+    updatedAt: "2026-04-21T09:00:00.000Z",
+  },
+  {
+    id: "iss-182",
+    identifier: "ABH-2",
+    title: "Set up your teams",
+    description: "Create teams for the people you work with most.",
+    status: "todo",
+    priority: "none",
+    assigneeId: null,
+    creatorId: "usr-1",
+    teamId: "team-abh",
+    projectId: null,
+    cycleId: null,
+    labelIds: [],
+    estimate: null,
+    dueDate: null,
+    createdAt: "2026-04-21T09:00:00.000Z",
+    updatedAt: "2026-04-21T09:00:00.000Z",
+  },
+  {
+    id: "iss-183",
+    identifier: "ABH-3",
+    title: "Connect your tools",
+    description: "Hook up GitHub, Slack, and Figma so updates land in Linear.",
+    status: "todo",
+    priority: "none",
+    assigneeId: null,
+    creatorId: "usr-1",
+    teamId: "team-abh",
+    projectId: null,
+    cycleId: null,
+    labelIds: [],
+    estimate: null,
+    dueDate: null,
+    createdAt: "2026-04-21T09:00:00.000Z",
+    updatedAt: "2026-04-21T09:00:00.000Z",
+  },
+  {
+    id: "iss-184",
+    identifier: "ABH-4",
+    title: "Import your data",
+    description: "Bring issues over from your previous tracker via the import flow.",
+    status: "todo",
+    priority: "none",
+    assigneeId: null,
+    creatorId: "usr-1",
+    teamId: "team-abh",
+    projectId: null,
+    cycleId: null,
+    labelIds: [],
+    estimate: null,
+    dueDate: null,
+    createdAt: "2026-04-21T09:00:00.000Z",
+    updatedAt: "2026-04-21T09:00:00.000Z",
+  },
+]
+
 export const issues: Issue[] = [
   ...authServiceIssues,
   ...checkoutIssues,
   ...paymentApiIssues,
   ...triageBacklogIssues,
   ...legacyIssues,
+  ...abhishekOnboardingIssues,
 ]
 
 // ---------------------------------------------------------------------------

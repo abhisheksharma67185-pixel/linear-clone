@@ -32,12 +32,35 @@ function PopoverContent({
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
-        className="isolate z-50"
+        // `data-closed:pointer-events-none` guarantees the positioner
+        // can't intercept clicks during the exit animation — even if a
+        // browser repaint leaves a transparent layer for a frame, it
+        // won't sit on top of the underlying table cells.
+        // `data-closed:opacity-0` is a defense-in-depth: if the
+        // animation is interrupted (e.g. outside-click during fade-in),
+        // the positioner snaps invisible instead of staying half-opaque.
+        className="isolate z-50 data-closed:pointer-events-none data-closed:opacity-0"
       >
         <PopoverPrimitive.Popup
           data-slot="popover-content"
           className={cn(
-            "bg-popover text-popover-foreground ring-foreground/10 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-start-2 data-[side=inline-start]:slide-in-from-end-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 z-50 flex w-72 origin-(--transform-origin) flex-col gap-4 rounded-lg p-2.5 text-xs shadow-md ring-1 outline-hidden duration-100",
+            // Exit-state classes:
+            //   - `data-closed:animate-out fade-out-0 zoom-out-95`
+            //     drives the 100ms exit animation when the lib
+            //     orchestrates a clean close (e.g. trigger-click).
+            //   - `data-closed:opacity-0` is a static end-state
+            //     fallback — if the animationend event fails to fire
+            //     for any reason (browser tab throttling, exit
+            //     interrupted by re-open), the popup is still at
+            //     opacity:0, so its inner content can never be left
+            //     visible after Escape.
+            //   - `data-closed:pointer-events-none` keeps any
+            //     transient frame uninteractive.
+            //   - `data-[instant=dismiss]:*` overrides collapse the
+            //     animation to zero on outside-click closes (Base UI
+            //     marks those with `data-instant="dismiss"`), so the
+            //     popup unmounts immediately rather than fading.
+            "bg-popover text-popover-foreground ring-foreground/10 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-start-2 data-[side=inline-start]:slide-in-from-end-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-closed:opacity-0 data-closed:pointer-events-none data-[instant=dismiss]:animate-none data-[instant=dismiss]:duration-0 data-[instant=dismiss]:opacity-0 z-50 flex w-72 origin-(--transform-origin) flex-col gap-4 rounded-lg p-2.5 text-xs shadow-md ring-1 outline-hidden duration-100",
             className
           )}
           {...props}

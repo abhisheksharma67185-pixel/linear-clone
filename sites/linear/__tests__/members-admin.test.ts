@@ -150,15 +150,45 @@ describe("role + suspend + remove actions", () => {
 })
 
 describe("inviteMembers", () => {
-  it("adds invited records with Admin role", () => {
+  it("adds invited records that default to Member role (Linear's production default)", () => {
     const r = inviteMembers("new@x.com, new2@x.com")
     expect(r.success).toBe(true)
     const s = summarize()
     const invited = s.filter((m) => m.status === "invited")
     // Two new invites + the seeded Meera (usr-11) invite.
     expect(invited.length).toBeGreaterThanOrEqual(3)
+    // Default role is now "member" — the previous "admin" default
+    // produced the "Admin (Invited)" status-column regression.
     for (const inv of r.success ? r.data : []) {
-      expect(inv.role).toBe("admin")
+      expect(inv.role).toBe("member")
+    }
+  })
+
+  it("respects an explicit role passed in options", () => {
+    const r = inviteMembers("explicit@x.com", { role: "admin" })
+    expect(r.success).toBe(true)
+    if (r.success) {
+      expect(r.data[0].role).toBe("admin")
+    }
+  })
+
+  it("falls back to 'member' when an unknown role string is passed", () => {
+    const r = inviteMembers("fallback@x.com", { role: "owner" as unknown })
+    expect(r.success).toBe(true)
+    if (r.success) {
+      expect(r.data[0].role).toBe("member")
+    }
+  })
+
+  it("persists teamCount from the teamIds option", () => {
+    const r = inviteMembers("teams@x.com", {
+      role: "guest",
+      teamIds: ["team-1", "team-2"],
+    })
+    expect(r.success).toBe(true)
+    if (r.success) {
+      expect(r.data[0].teamCount).toBe(2)
+      expect(r.data[0].role).toBe("guest")
     }
   })
 })

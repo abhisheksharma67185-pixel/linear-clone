@@ -201,12 +201,23 @@ export default function ViewDetailPage() {
             </div>
           ) : (
             <div className="flex flex-col">
+              {/*
+                Render every workflow state, even when its bucket is
+                empty. The previous implementation skipped empty
+                statuses (`if (items.length === 0) return null`), which
+                meant a board-style view of "Backlog (5)" and four
+                empty statuses collapsed visually to a single column.
+                Hiding empty columns is a per-user "Display options"
+                preference, not the renderer's default.
+              */}
               {STATUS_ORDER.map((status) => {
                 const items = grouped.get(status) ?? []
-                if (items.length === 0) return null
                 return (
                   <Collapsible key={status} defaultOpen>
-                    <CollapsibleTrigger className="bg-muted/50 sticky top-0 z-10 flex w-full items-center gap-2 border-b px-6 py-1.5 text-left text-xs font-medium backdrop-blur">
+                    <CollapsibleTrigger
+                      data-status={status}
+                      className="bg-muted/50 sticky top-0 z-10 flex w-full items-center gap-2 border-b px-6 py-1.5 text-left text-xs font-medium backdrop-blur"
+                    >
                       <StatusDot status={status} />
                       <span>{STATUS_LABEL[status]}</span>
                       <span className="text-muted-foreground">
@@ -214,15 +225,21 @@ export default function ViewDetailPage() {
                       </span>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                      <ul className="divide-y">
-                        {items.map((issue) => (
-                          <IssueRow
-                            key={issue.id}
-                            issue={issue}
-                            members={members}
-                          />
-                        ))}
-                      </ul>
+                      {items.length === 0 ? (
+                        <p className="text-muted-foreground/70 px-6 py-3 text-xs italic">
+                          No issues
+                        </p>
+                      ) : (
+                        <ul className="divide-y">
+                          {items.map((issue) => (
+                            <IssueRow
+                              key={issue.id}
+                              issue={issue}
+                              members={members}
+                            />
+                          ))}
+                        </ul>
+                      )}
                     </CollapsibleContent>
                   </Collapsible>
                 )

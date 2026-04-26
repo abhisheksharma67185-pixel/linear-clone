@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import type { Project, Issue, Member, Team } from "@/app/lib/mock-data"
@@ -10,10 +10,40 @@ import {
   StarIcon,
   PlusSignIcon,
   ArrowRight01Icon,
+  PencilEdit01Icon,
+  PanelRightIcon,
 } from "@hugeicons/core-free-icons"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
+import { CreateIssueDialog } from "@/components/create-issue-dialog"
+import {
+  NotificationsPopover,
+  type NotificationItem,
+} from "@/components/notifications-popover"
+import { InitialsAvatar } from "@/components/initials-avatar"
+import { buildProjectBreadcrumb } from "@/lib/project-breadcrumb"
 
 type Tab = "overview" | "activity" | "issues"
+
+/**
+ * Seed notifications shared across project detail pages. A real
+ * implementation would fetch per-user; the seed keeps the bell's
+ * unread badge testable.
+ */
+const SEED_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: "n1",
+    title: "Project lead changed",
+    meta: "5m ago",
+    read: false,
+  },
+  {
+    id: "n2",
+    title: "New milestone added: M1",
+    meta: "1h ago",
+    read: true,
+  },
+]
 
 function isProject(r: unknown): r is Project {
   return (
@@ -32,6 +62,35 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [tab, setTab] = useState<Tab>("overview")
+  const [createOpen, setCreateOpen] = useState(false)
+  // Right Properties panel — collapsible. Width animates via CSS
+  // grid-template-columns transition so toggling expands/shrinks
+  // the main column smoothly instead of snapping.
+  const [panelOpen, setPanelOpen] = useState(true)
+
+  // Global "c" hotkey — same contract as the team-issues page.
+  // Skipped while typing or while another dialog is already open.
+  const openCreate = useCallback(() => setCreateOpen(true), [])
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "c" && event.key !== "C") return
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      const target = event.target as HTMLElement | null
+      const tag = target?.tagName.toLowerCase()
+      if (
+        tag === "input" ||
+        tag === "textarea" ||
+        target?.isContentEditable
+      ) {
+        return
+      }
+      if (document.querySelector('[data-state="open"][role="dialog"]')) return
+      event.preventDefault()
+      openCreate()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [openCreate])
 
   useEffect(() => {
     Promise.all([
@@ -85,82 +144,101 @@ export default function ProjectDetailPage() {
     )
   }
 
+  // Breadcrumb is derived from route params + the loaded project +
+  // its team — never from transient client state. So a hard-nav and
+  // a click-from-list produce the same crumb hierarchy.
+  const crumbs = buildProjectBreadcrumb(project, team)
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* ── Header breadcrumb + actions ── */}
       <header className="flex shrink-0 items-center justify-between border-b px-4 py-2.5">
-        <div className="flex items-center gap-1.5 text-sm">
-          <Link
-            href="/projects"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Projects
-          </Link>
-          <HugeiconsIcon
-            icon={ArrowRight01Icon}
-            className="text-muted-foreground/50 size-3"
-          />
-          <div className="flex items-center gap-1.5">
-            <div className="flex size-4 items-center justify-center rounded-sm bg-violet-500/20">
-              <HugeiconsIcon
-                icon={CubeIcon}
-                className="size-3 text-violet-400"
-              />
-            </div>
-            <span className="font-medium">{project.name}</span>
-          </div>
+        <nav
+          aria-label="Breadcrumb"
+          data-testid="project-breadcrumb"
+          className="flex items-center gap-1.5 text-sm"
+        >
+          {crumbs.map((crumb, i) => {
+            const isLast = i === crumbs.length - 1
+            return (
+              <span key={i} className="flex items-center gap-1.5">
+                {i > 0 && (
+                  <HugeiconsIcon
+                    icon={ArrowRight01Icon}
+                    aria-hidden="true"
+                    className="text-muted-foreground/50 size-3"
+                  />
+                )}
+                {isLast ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="flex size-4 items-center justify-center rounded-sm bg-violet-500/20">
+                      <HugeiconsIcon
+                        icon={CubeIcon}
+                        className="size-3 text-violet-400"
+                      />
+                    </span>
+                    <span
+                      data-testid="project-breadcrumb-current"
+                      className="font-medium"
+                    >
+                      {crumb.label}
+                    </span>
+                  </span>
+                ) : (
+                  <Link
+                    href={crumb.href ?? "/projects"}
+                    data-testid={`project-breadcrumb-${i}`}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {crumb.label}
+                  </Link>
+                )}
+              </span>
+            )
+          })}
           <button
             type="button"
+            aria-label="Toggle favorite"
             className="text-muted-foreground/40 ml-1 transition-colors hover:text-yellow-400"
           >
             <HugeiconsIcon icon={StarIcon} className="size-3.5" />
           </button>
-          <button
-            type="button"
-            className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-5 items-center justify-center rounded"
-          >
-            <svg viewBox="0 0 12 12" className="size-3" fill="currentColor">
-              <circle cx="2" cy="6" r="1" />
-              <circle cx="6" cy="6" r="1" />
-              <circle cx="10" cy="6" r="1" />
-            </svg>
-          </button>
-        </div>
+        </nav>
 
         {/* Right actions */}
         <div className="text-muted-foreground flex items-center gap-1">
-          {/* Chat */}
-          <button
+          {/* Header Create button — opens the create-issue modal,
+              same handler as the global "c" shortcut and any in-list
+              "+" buttons. */}
+          <Button
             type="button"
-            className="hover:bg-accent hover:text-foreground flex size-7 items-center justify-center rounded"
+            variant="ghost"
+            size="icon"
+            data-testid="project-header-create"
+            aria-label="Create new issue"
+            onClick={openCreate}
+            className="size-7"
           >
-            <svg viewBox="0 0 16 16" className="size-4" fill="none">
-              <path
-                d="M2 3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5v7A1.5 1.5 0 0112.5 12H9l-3 2v-2H3.5A1.5 1.5 0 012 10.5v-7z"
-                stroke="currentColor"
-                strokeWidth="1.3"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          {/* Layout */}
-          <button
-            type="button"
-            className="hover:bg-accent hover:text-foreground flex size-7 items-center justify-center rounded"
-          >
-            <svg viewBox="0 0 16 16" className="size-4" fill="none">
-              <rect
-                x="2"
-                y="2"
-                width="12"
-                height="12"
-                rx="1.5"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-              <path d="M9 2v12" stroke="currentColor" strokeWidth="1.3" />
-            </svg>
-          </button>
+            <HugeiconsIcon icon={PencilEdit01Icon} className="size-4" />
+          </Button>
+          {/* Properties panel toggle — only shown on the Overview
+              tab where the panel actually exists. Animated width
+              transition lives on the grid container below. */}
+          {tab === "overview" && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              data-testid="project-panel-toggle"
+              aria-label={panelOpen ? "Close properties panel" : "Open properties panel"}
+              aria-pressed={panelOpen}
+              onClick={() => setPanelOpen((v) => !v)}
+              className="size-7"
+            >
+              <HugeiconsIcon icon={PanelRightIcon} className="size-4" />
+            </Button>
+          )}
+          <NotificationsPopover items={SEED_NOTIFICATIONS} />
         </div>
       </header>
 
@@ -203,9 +281,16 @@ export default function ProjectDetailPage() {
 
       {/* ── Body ── */}
       {tab === "overview" && (
-        <div className="flex min-h-0 flex-1 overflow-hidden">
+        <div
+          data-testid="project-overview-grid"
+          data-panel-open={panelOpen}
+          className="grid min-h-0 flex-1 overflow-hidden transition-[grid-template-columns] duration-200 ease-out"
+          style={{
+            gridTemplateColumns: panelOpen ? "1fr 360px" : "1fr 0fr",
+          }}
+        >
           {/* Left: main content */}
-          <div className="flex-1 overflow-auto px-12 py-8">
+          <div className="overflow-auto px-12 py-8">
             {/* Project icon */}
             <div className="bg-muted mb-4 flex size-10 items-center justify-center rounded-lg">
               <HugeiconsIcon
@@ -412,8 +497,15 @@ export default function ProjectDetailPage() {
             </button>
           </div>
 
-          {/* Right: Properties panel */}
-          <div className="w-64 shrink-0 overflow-auto border-l px-0 py-0">
+          {/* Right: Properties panel — grid column 2. Width comes
+              from `grid-template-columns` above so the transition
+              between open (360px) and closed (0fr) animates the
+              main column's reflow at the same time. */}
+          <div
+            data-testid="project-properties-panel"
+            aria-hidden={!panelOpen}
+            className="overflow-auto border-l px-0 py-0"
+          >
             {/* Properties section */}
             <div className="border-b px-4 py-3">
               <div className="mb-3 flex items-center justify-between">
@@ -478,10 +570,15 @@ export default function ProjectDetailPage() {
                   {
                     label: "Lead",
                     content: lead ? (
-                      <div className="flex items-center gap-1.5 text-xs">
-                        <span className="bg-muted rounded px-1 py-0.5 text-[9px] font-semibold">
-                          HV
-                        </span>
+                      <div
+                        data-testid="project-lead-cell"
+                        className="flex items-center gap-1.5 text-xs"
+                      >
+                        <InitialsAvatar
+                          name={lead.name}
+                          seed={lead.id}
+                          size={18}
+                        />
                         <span className="text-muted-foreground truncate text-xs">
                           {lead.name}
                         </span>
@@ -822,6 +919,12 @@ export default function ProjectDetailPage() {
           )}
         </div>
       )}
+
+      <CreateIssueDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        defaultTeamId={team?.id}
+      />
     </div>
   )
 }
