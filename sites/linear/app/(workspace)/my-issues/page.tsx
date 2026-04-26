@@ -354,7 +354,7 @@ export default function MyIssuesPage() {
         <div className="flex min-h-0 flex-1">
           <Tabs
             defaultValue="assigned"
-            className="flex min-h-0 flex-1 flex-col gap-0"
+            className="flex min-h-0 min-w-0 flex-1 flex-col gap-0"
           >
             <div className="px-4">
               <TabsList className="h-10 gap-1 bg-transparent p-0">
@@ -386,6 +386,7 @@ export default function MyIssuesPage() {
                   projectById={projectById}
                   onUpdatePriority={updatePriority}
                   onUpdateStatus={updateStatus}
+                  forceLayout="list"
                 />
               )}
             </TabsContent>
@@ -411,6 +412,8 @@ export default function MyIssuesPage() {
                   projectById={projectById}
                   onUpdatePriority={updatePriority}
                   onUpdateStatus={updateStatus}
+                  forceLayout="board"
+                  ungrouped={false}
                 />
               )}
             </TabsContent>
@@ -439,16 +442,39 @@ export default function MyIssuesPage() {
                   projectById={projectById}
                   onUpdatePriority={updatePriority}
                   onUpdateStatus={updateStatus}
+                  forceLayout="list"
+                  ungrouped
                 />
               )}
             </TabsContent>
 
             <TabsContent value="activity" className="m-0 flex-1 overflow-auto">
-              <EmptyState label="No recent activity" onCreate={openCreate} />
+              {loading ? (
+                <LoadingRows />
+              ) : filteredCreated.length === 0 ? (
+                <EmptyState label="No recent activity" onCreate={openCreate} />
+              ) : (
+                <IssueListView
+                  issues={filteredCreated}
+                  display={display}
+                  memberById={memberById}
+                  labelById={labelById}
+                  projectById={projectById}
+                  onUpdatePriority={updatePriority}
+                  onUpdateStatus={updateStatus}
+                  forceLayout="board"
+                />
+              )}
             </TabsContent>
           </Tabs>
 
-          {panelOpen && <SummaryPanel issues={filteredAssigned} />}
+          {panelOpen && display.layout !== "board" && (
+            <SummaryPanel
+              issues={filteredAssigned}
+              filters={filters}
+              setFilters={setFilters}
+            />
+          )}
         </div>
       </div>
 
@@ -465,6 +491,8 @@ function IssueListView({
   projectById,
   onUpdatePriority,
   onUpdateStatus,
+  forceLayout,
+  ungrouped,
 }: {
   issues: Issue[]
   display: DisplayState
@@ -473,22 +501,30 @@ function IssueListView({
   projectById: Map<string, Project>
   onUpdatePriority: (id: string, priority: IssuePriority) => void
   onUpdateStatus: (id: string, status: IssueStatus) => void
+  forceLayout?: "list" | "board"
+  ungrouped?: boolean
 }) {
-  if (display.layout === "board") {
+  const sorted = useMemo(() => sortIssues(issues, display.ordering), [issues, display.ordering])
+  const effectiveLayout = forceLayout ?? display.layout
+  // Board view is a kanban — always group by status so columns are meaningful.
+  const effectiveGrouping: GroupingKind =
+    effectiveLayout === "board" ? "status" : display.grouping
+  const groups = useMemo(
+    () => buildGroups(sorted, effectiveGrouping, { memberById, labelById, projectById }),
+    [sorted, effectiveGrouping, memberById, labelById, projectById]
+  )
+
+  if (effectiveLayout === "board") {
     return (
-      <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
-        Board layout coming soon
-      </div>
+      <BoardView
+        groups={groups}
+        grouping={effectiveGrouping}
+        memberById={memberById}
+      />
     )
   }
 
-  const sorted = useMemo(() => sortIssues(issues, display.ordering), [issues, display.ordering])
-  const groups = useMemo(
-    () => buildGroups(sorted, display.grouping, { memberById, labelById, projectById }),
-    [sorted, display.grouping, memberById, labelById, projectById]
-  )
-
-  if (display.grouping === "none") {
+  if (ungrouped || display.grouping === "none") {
     return (
       <ul className="m-0 list-none p-0">
         {sorted.map((issue) => (
@@ -528,6 +564,170 @@ function IssueListView({
         />
       ))}
     </ul>
+  )
+}
+
+function BoardView({
+  groups,
+  grouping,
+  memberById,
+}: {
+  groups: GroupSpec[]
+  grouping: GroupingKind
+  memberById: Map<string, Member>
+}) {
+  const [hiddenOpen, setHiddenOpen] = useState(true)
+  const filledStatusKeys = new Set(groups.map((g) => g.key))
+  const hiddenStatuses =
+    grouping === "status"
+      ? STATUS_GROUP_ORDER.filter((s) => !filledStatusKeys.has(s))
+      : []
+
+  return (
+    <div className="flex h-full min-h-0 gap-3 overflow-x-auto px-4 py-3">
+      {groups.map((g) => (
+        <BoardColumn key={g.key} group={g} memberById={memberById} />
+      ))}
+      {hiddenStatuses.length > 0 && (
+        <aside className="flex w-56 shrink-0 flex-col gap-1.5 px-1 pt-1">
+          <button
+            type="button"
+            onClick={() => setHiddenOpen((v) => !v)}
+            aria-expanded={hiddenOpen}
+            className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 px-1 text-xs"
+          >
+            <svg
+              viewBox="0 0 8 8"
+              aria-hidden="true"
+              className={`size-2 shrink-0 fill-current transition-transform ${
+                hiddenOpen ? "" : "-rotate-90"
+              }`}
+            >
+              <path d="M1 2 L7 2 L4 6 Z" />
+            </svg>
+            <span>Hidden columns</span>
+          </button>
+          {hiddenOpen && (
+            <ul className="m-0 flex list-none flex-col p-0">
+              {hiddenStatuses.map((s) => (
+                <li
+                  key={s}
+                  className="hover:bg-accent/40 flex items-center justify-between rounded-sm px-2 py-2 text-xs"
+                >
+                  <span className="flex items-center gap-2">
+                    <StatusIcon status={s} className="size-3.5" />
+                    <span>{STATUS_GROUP_LABEL[s]}</span>
+                  </span>
+                  <span className="text-muted-foreground">0</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </aside>
+      )}
+    </div>
+  )
+}
+
+function BoardColumn({
+  group,
+  memberById,
+}: {
+  group: GroupSpec
+  memberById: Map<string, Member>
+}) {
+  return (
+    <div className="flex w-72 shrink-0 flex-col gap-2">
+      <div className="flex items-center justify-between px-1.5 py-1">
+        <div className="flex items-center gap-2 text-sm">
+          {group.icon}
+          <span className="font-medium">{group.label}</span>
+          <span className="text-muted-foreground text-xs">{group.items.length}</span>
+        </div>
+        <div className="text-muted-foreground flex items-center gap-1 text-xs">
+          <button
+            type="button"
+            aria-label="Column actions"
+            className="hover:bg-accent rounded px-1.5 py-0.5"
+          >
+            …
+          </button>
+          <button
+            type="button"
+            aria-label="Add issue"
+            className="hover:bg-accent rounded px-1.5 py-0.5"
+          >
+            +
+          </button>
+        </div>
+      </div>
+      <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        {group.items.map((issue) => (
+          <BoardCard
+            key={issue.id}
+            issue={issue}
+            assignee={memberById.get(issue.assigneeId ?? "") ?? null}
+          />
+        ))}
+      </ul>
+      <button
+        type="button"
+        aria-label="Add issue"
+        className="text-muted-foreground hover:bg-accent/60 hover:text-foreground mt-1 flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs"
+      >
+        <span aria-hidden="true" className="text-base leading-none">+</span>
+        <span>Add issue</span>
+      </button>
+    </div>
+  )
+}
+
+function BoardCard({
+  issue,
+  assignee,
+}: {
+  issue: Issue
+  assignee: Member | null
+}) {
+  return (
+    <li>
+      <Link
+        href={`/issues/${issue.identifier}`}
+        className="border-border/60 bg-background hover:bg-accent/40 flex flex-col gap-1.5 rounded-md border p-3 transition-colors"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <span className="text-muted-foreground font-mono text-[11px]">
+            {issue.identifier}
+          </span>
+          {assignee ? (
+            <Avatar className="size-5 shrink-0">
+              <AvatarImage src={assignee.avatar} alt={assignee.name} />
+              <AvatarFallback className="bg-violet-600 text-[9px] text-white">
+                {assignee.name.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <span className="border-muted-foreground/40 size-5 shrink-0 rounded-full border border-dashed" />
+          )}
+        </div>
+        <div className="flex items-start gap-2">
+          <StatusIcon
+            status={issue.status}
+            className="size-3.5 shrink-0 translate-y-0.5"
+          />
+          <span className="text-sm leading-snug">{issue.title}</span>
+        </div>
+        <div
+          aria-hidden="true"
+          className="text-muted-foreground/60 font-mono text-[11px] leading-none"
+        >
+          ---
+        </div>
+        <div className="text-muted-foreground text-[11px]">
+          Created {formatShortDate(issue.createdAt)}
+        </div>
+      </Link>
+    </li>
   )
 }
 
@@ -1073,8 +1273,33 @@ const PRIORITY_ORDER: Issue["priority"][] = [
   "none",
 ]
 
-function SummaryPanel({ issues }: { issues: Issue[] }) {
+function SummaryPanel({
+  issues,
+  filters,
+  setFilters,
+}: {
+  issues: Issue[]
+  filters: FilterState
+  setFilters: (next: FilterState) => void
+}) {
   const [tab, setTab] = useState<SummaryTab>("labels")
+
+  const toggleFilterValue = useCallback(
+    (kind: FilterKind, value: string) => {
+      const current = filters[kind] ?? []
+      const next = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value]
+      setFilters(setFilterValues(filters, kind, next))
+    },
+    [filters, setFilters]
+  )
+
+  const isActive = useCallback(
+    (kind: FilterKind, value: string) =>
+      (filters[kind] ?? []).includes(value),
+    [filters]
+  )
 
   const labelCounts = useMemo(() => {
     const m = new Map<string, number>()
@@ -1100,7 +1325,7 @@ function SummaryPanel({ issues }: { issues: Issue[] }) {
   }, [issues])
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-l">
+    <aside className="flex w-72 shrink-0 flex-col border-l">
       <div className="flex items-center gap-1.5 px-3 py-3">
         <PanelPill active={tab === "labels"} onClick={() => setTab("labels")}>
           Labels
@@ -1126,13 +1351,13 @@ function SummaryPanel({ issues }: { issues: Issue[] }) {
           ) : (
             <ul className="m-0 list-none p-0">
               {Array.from(labelCounts.entries()).map(([id, count]) => (
-                <li
+                <SummaryRow
                   key={id}
-                  className="flex items-center justify-between py-1.5 text-xs"
-                >
-                  <span className="text-muted-foreground truncate">{id}</span>
-                  <span className="text-muted-foreground">{count}</span>
-                </li>
+                  active={isActive("labels", id)}
+                  count={count}
+                  onClick={() => toggleFilterValue("labels", id)}
+                  label={<span className="truncate">{id}</span>}
+                />
               ))}
             </ul>
           ))}
@@ -1141,18 +1366,18 @@ function SummaryPanel({ issues }: { issues: Issue[] }) {
           <ul className="m-0 list-none p-0">
             {PRIORITY_ORDER.filter((p) => (priorityCounts.get(p) ?? 0) > 0).map(
               (p) => (
-                <li
+                <SummaryRow
                   key={p}
-                  className="flex items-center justify-between gap-2 py-1.5 text-xs"
-                >
-                  <span className="flex items-center gap-2">
-                    <PriorityIcon priority={p} className="size-3" />
-                    <span>{PRIORITY_LABEL[p]}</span>
-                  </span>
-                  <span className="text-muted-foreground">
-                    {priorityCounts.get(p) ?? 0}
-                  </span>
-                </li>
+                  active={isActive("priority", p)}
+                  count={priorityCounts.get(p) ?? 0}
+                  onClick={() => toggleFilterValue("priority", p)}
+                  label={
+                    <>
+                      <PriorityIcon priority={p} className="size-3" />
+                      <span>{PRIORITY_LABEL[p]}</span>
+                    </>
+                  }
+                />
               )
             )}
             {priorityCounts.size === 0 && (
@@ -1167,20 +1392,61 @@ function SummaryPanel({ issues }: { issues: Issue[] }) {
           ) : (
             <ul className="m-0 list-none p-0">
               {Array.from(projectCounts.entries()).map(([id, count]) => (
-                <li
+                <SummaryRow
                   key={id}
-                  className="flex items-center justify-between py-1.5 text-xs"
-                >
-                  <span className="text-muted-foreground truncate">
-                    {id === "none" ? "No project" : id}
-                  </span>
-                  <span className="text-muted-foreground">{count}</span>
-                </li>
+                  active={isActive("project", id)}
+                  count={count}
+                  onClick={() => toggleFilterValue("project", id)}
+                  label={
+                    <span className="truncate">
+                      {id === "none" ? "No project" : id}
+                    </span>
+                  }
+                />
               ))}
             </ul>
           ))}
       </div>
     </aside>
+  )
+}
+
+function SummaryRow({
+  active,
+  count,
+  onClick,
+  label,
+}: {
+  active: boolean
+  count: number
+  onClick: () => void
+  label: React.ReactNode
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onClick}
+        className={`group flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-xs transition-colors ${
+          active
+            ? "bg-accent text-foreground"
+            : "hover:bg-accent/60 hover:text-foreground"
+        }`}
+      >
+        <span className="flex items-center gap-2">{label}</span>
+        <span className="text-muted-foreground text-[11px]">
+          {active ? (
+            <span className="text-foreground">Clear filter</span>
+          ) : (
+            <span className="hidden group-hover:inline">See issues</span>
+          )}
+          {!active && (
+            <span className="ml-1 inline group-hover:hidden">{count}</span>
+          )}
+          {active && <span className="ml-1">{count}</span>}
+        </span>
+      </button>
+    </li>
   )
 }
 
@@ -1197,10 +1463,10 @@ function PanelPill({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
         active
-          ? "bg-accent text-foreground"
-          : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+          ? "border-border bg-accent text-foreground"
+          : "border-border/60 text-muted-foreground hover:bg-accent/60 hover:text-foreground"
       }`}
     >
       {children}

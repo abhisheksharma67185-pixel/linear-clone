@@ -68,7 +68,6 @@ import {
 } from "@hugeicons/core-free-icons"
 import { CreateIssueDialog } from "@/components/create-issue-dialog"
 import { CreateTeamDialog } from "@/components/create-team-dialog"
-import { ImportIssuesDialog } from "@/components/import-issues-dialog"
 import { InvitePeopleDialog } from "@/components/invite-people-dialog"
 import { DownloadAppDialog } from "@/components/download-app-dialog"
 import { SearchDialog } from "@/components/search-dialog"
@@ -113,7 +112,6 @@ export function AppSidebar() {
   const [createOpen, setCreateOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [createTeamOpen, setCreateTeamOpen] = useState(false)
-  const [importOpen, setImportOpen] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const [customizeOpen, setCustomizeOpen] = useState(false)
@@ -206,17 +204,6 @@ export function AppSidebar() {
                 >
                   <span>Settings</span>
                   <DropdownMenuShortcut>G then S</DropdownMenuShortcut>
-                </DropdownMenuItem>
-                {/* Invite people: opens the InvitePeopleDialog
-                    inline so the user doesn't context-switch to
-                    settings just to send an invite. The
-                    "Invite and manage members" link below remains
-                    for the heavier admin flow. */}
-                <DropdownMenuItem
-                  data-testid="workspace-menu-invite-people"
-                  onClick={() => setInviteOpen(true)}
-                >
-                  <span>Invite people</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   render={<Link href="/settings?section=members" />}
@@ -328,9 +315,6 @@ export function AppSidebar() {
                 >
                   <HugeiconsIcon icon={InboxIcon} />
                   <span>Inbox</span>
-                  <span className="bg-muted-foreground/20 text-muted-foreground ml-auto flex size-4 items-center justify-center rounded-full text-[10px] font-medium">
-                    1
-                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem
@@ -808,7 +792,9 @@ export function AppSidebar() {
                 <CollapsibleContent>
                   <SidebarMenu>
                     <SidebarMenuItem>
-                      <SidebarMenuButton onClick={() => setImportOpen(true)}>
+                      <SidebarMenuButton
+                        render={<Link href="/settings?section=import-export" />}
+                      >
                         <HugeiconsIcon icon={InboxDownloadIcon} />
                         <span>Import issues</span>
                       </SidebarMenuButton>
@@ -821,7 +807,7 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton
-                        render={<Link href="/settings?tab=integrations" />}
+                        render={<Link href="/settings?section=integrations&provider=github" />}
                       >
                         <HugeiconsIcon icon={Github01Icon} />
                         <span>Connect GitHub</span>
@@ -835,7 +821,7 @@ export function AppSidebar() {
         </SidebarContent>
 
         <SidebarFooter>
-          <div className="flex items-center justify-between px-1">
+          <div className="flex items-center px-1">
             <button
               type="button"
               aria-label="Help"
@@ -843,10 +829,6 @@ export function AppSidebar() {
             >
               <HugeiconsIcon icon={HelpCircleIcon} className="size-4" />
             </button>
-            <div className="border-sidebar-border bg-background text-muted-foreground flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
-              <span className="size-1.5 rounded-full bg-emerald-500" />
-              <span>Free plan</span>
-            </div>
           </div>
         </SidebarFooter>
       </Sidebar>
@@ -860,7 +842,6 @@ export function AppSidebar() {
         // stops taking sidebar real estate.
         onCreated={() => dismissTrySection()}
       />
-      <ImportIssuesDialog open={importOpen} onOpenChange={setImportOpen} />
       <InvitePeopleDialog open={inviteOpen} onOpenChange={setInviteOpen} />
       <DownloadAppDialog open={downloadOpen} onOpenChange={setDownloadOpen} />
       <CustomizeSidebarDialog

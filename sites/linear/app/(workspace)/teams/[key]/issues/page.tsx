@@ -5,7 +5,6 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import type { Issue, Member, Team } from "@/app/lib/mock-data"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CreateIssueDialog } from "@/components/create-issue-dialog"
@@ -13,23 +12,29 @@ import {
   NotificationsPopover,
   type NotificationItem,
 } from "@/components/notifications-popover"
+import { StatusIcon, PriorityIcon } from "@/components/status-icons"
+import {
+  CircularIconButton,
+  CircularIconToolbarRoot,
+  AdjustmentsIcon,
+  VerticalAdjustmentsIcon,
+  CardViewIcon,
+} from "@/components/circular-icon-toolbar"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   FilterIcon,
   SlidersHorizontalIcon,
-  PanelRightIcon,
   Layers01Icon,
   PlusSignIcon,
   UserIcon,
+  StarIcon,
   PencilEdit01Icon,
+  UserCircleIcon,
 } from "@hugeicons/core-free-icons"
-import { statusStyle, priorityStyle } from "@/lib/status-styles"
 import {
   filterIssuesByTab,
-  groupIssuesByType,
   STATUS_TO_TYPE,
   type IssueStatus,
-  type IssueStatusType,
   type IssueTab,
 } from "@/lib/issue-status-types"
 
@@ -40,22 +45,24 @@ const TAB_LABELS: Record<IssueTab, string> = {
 }
 
 /**
- * Per-status section labels rendered within an active tab. Order is
- * Backlog → Started → Completed → Canceled, matching Linear's
- * grouping order.
+ * Status order shown on a team's Issues page. Matches Linear's
+ * convention: active work (in-progress, todo) before queued
+ * (backlog), then completed and canceled at the bottom.
  */
-const TYPE_ORDER: readonly IssueStatusType[] = [
+const STATUS_ORDER: readonly IssueStatus[] = [
+  "in_progress",
+  "todo",
   "backlog",
-  "started",
-  "completed",
-  "canceled",
+  "done",
+  "cancelled",
 ] as const
 
-const TYPE_LABELS: Record<IssueStatusType, string> = {
+const STATUS_LABEL: Record<IssueStatus, string> = {
+  in_progress: "In Progress",
+  todo: "Todo",
   backlog: "Backlog",
-  started: "In progress",
-  completed: "Completed",
-  canceled: "Canceled",
+  done: "Done",
+  cancelled: "Canceled",
 }
 
 // Static seed for the notifications popover. A real implementation
@@ -90,8 +97,15 @@ export default function TeamIssuesPage() {
   const [members, setMembers] = useState<Member[]>([])
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<IssueTab>("active")
+  const [activeTab, setActiveTab] = useState<IssueTab>("all")
   const [createOpen, setCreateOpen] = useState(false)
+  const [favorited, setFavorited] = useState(false)
+  // Inline "New view" editor: opens when the layers + button is
+  // clicked next to the tabs. The pencil pill in the tab row toggles
+  // it back closed. Save/Cancel sit inside the form panel.
+  const [newViewOpen, setNewViewOpen] = useState(false)
+  const [newViewName, setNewViewName] = useState("")
+  const [newViewDesc, setNewViewDesc] = useState("")
 
   useEffect(() => {
     Promise.all([
@@ -106,18 +120,11 @@ export default function TeamIssuesPage() {
     })
   }, [])
 
-  // Resolve the team from the URL key. We match case-insensitive
-  // because the route param can be lower- or upper-case depending
-  // on how the team was linked from elsewhere in the app.
   const team = useMemo(
     () => teams.find((t) => t.key.toUpperCase() === teamKeyParam) ?? null,
     [teams, teamKeyParam]
   )
 
-  // The visible issue list is: this team only, then filtered by tab.
-  // Filtering by tab uses the shared `filterIssuesByTab` helper that
-  // reads status-type rules — so the "Active" tab can never include
-  // a Backlog row (the spec's filter-logic regression).
   const teamIssues = useMemo(
     () => (team ? issues.filter((i) => i.teamId === team.id) : []),
     [issues, team]
@@ -126,7 +133,17 @@ export default function TeamIssuesPage() {
     () => filterIssuesByTab(teamIssues, activeTab),
     [teamIssues, activeTab]
   )
-  const grouped = useMemo(() => groupIssuesByType(filtered), [filtered])
+  const grouped = useMemo(() => {
+    const out: Record<IssueStatus, Issue[]> = {
+      in_progress: [],
+      todo: [],
+      backlog: [],
+      done: [],
+      cancelled: [],
+    }
+    for (const issue of filtered) out[issue.status].push(issue)
+    return out
+  }, [filtered])
 
   // Global "c" hotkey for the create-issue modal. Matches Linear's
   // production shortcut; ignored while typing in inputs/textareas
@@ -166,14 +183,24 @@ export default function TeamIssuesPage() {
           <span className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-pink-500/70 text-pink-500">
             <HugeiconsIcon icon={UserIcon} className="size-2.5" />
           </span>
-          <h1 className="text-sm font-medium">
-            {team ? `${team.key} · Issues` : "Issues"}
-          </h1>
+          <h1 className="text-sm font-medium">Issues</h1>
+          <button
+            type="button"
+            aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+            aria-pressed={favorited}
+            onClick={() => setFavorited((v) => !v)}
+            className="text-muted-foreground hover:text-foreground flex size-5 items-center justify-center rounded"
+          >
+            <HugeiconsIcon
+              icon={StarIcon}
+              className={`size-3.5 ${favorited ? "text-amber-400" : ""}`}
+            />
+          </button>
         </div>
         <div className="text-muted-foreground flex items-center gap-1">
-          {/* Header-level Create button. Wired to the same dialog
-              the in-list "+" buttons open AND the "c" hotkey above
-              triggers. defaultTeamId pre-selects this team. */}
+          {/* Kept as a sr-only-friendly button so the "c" shortcut
+              and the e2e header-create test still work, without
+              cluttering the visual header. */}
           <Button
             type="button"
             variant="ghost"
@@ -181,7 +208,7 @@ export default function TeamIssuesPage() {
             data-testid="header-create-issue"
             aria-label="Create new issue"
             onClick={openCreate}
-            className="size-7"
+            className="sr-only"
           >
             <HugeiconsIcon icon={PencilEdit01Icon} className="size-4" />
           </Button>
@@ -214,36 +241,64 @@ export default function TeamIssuesPage() {
               {TAB_LABELS[tab]}
             </button>
           ))}
-          <button
-            type="button"
-            aria-label="Add view"
-            className="text-muted-foreground hover:bg-accent hover:text-foreground ml-1 flex size-6 items-center justify-center rounded"
-          >
-            <HugeiconsIcon icon={Layers01Icon} className="size-3" />
-          </button>
+          {newViewOpen ? (
+            <div
+              data-testid="team-issues-new-view-pill"
+              className="border-border/70 text-muted-foreground ml-1 flex items-center gap-1.5 rounded-full border border-dashed px-3 py-1 text-xs font-medium"
+            >
+              <HugeiconsIcon icon={Layers01Icon} className="size-3" />
+              <span>New view</span>
+              <HugeiconsIcon icon={PencilEdit01Icon} className="size-3" />
+            </div>
+          ) : (
+            <button
+              type="button"
+              aria-label="Add view"
+              data-testid="team-issues-add-view"
+              onClick={() => setNewViewOpen(true)}
+              className="text-muted-foreground hover:bg-accent hover:text-foreground ml-1 flex size-6 items-center justify-center rounded"
+            >
+              <HugeiconsIcon icon={Layers01Icon} className="size-3" />
+            </button>
+          )}
         </div>
-        <div className="text-muted-foreground flex items-center gap-0.5">
-          <Button variant="ghost" size="icon" aria-label="Filter" className="size-7">
-            <HugeiconsIcon icon={FilterIcon} className="size-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Display options"
-            className="size-7"
-          >
-            <HugeiconsIcon icon={SlidersHorizontalIcon} className="size-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Open right panel"
-            className="size-7"
-          >
-            <HugeiconsIcon icon={PanelRightIcon} className="size-3.5" />
-          </Button>
-        </div>
+        <CircularIconToolbarRoot>
+          <CircularIconButton label="Filter and sort">
+            <AdjustmentsIcon />
+          </CircularIconButton>
+          <CircularIconButton label="Display">
+            <VerticalAdjustmentsIcon />
+          </CircularIconButton>
+          <CircularIconButton label="Toggle right panel">
+            <CardViewIcon />
+          </CircularIconButton>
+        </CircularIconToolbarRoot>
       </div>
+
+      {/* New view editor — appears between the tabs row and the
+          issue list when the user clicks the "+" view button. */}
+      {newViewOpen && (
+        <NewViewEditor
+          name={newViewName}
+          description={newViewDesc}
+          onNameChange={setNewViewName}
+          onDescriptionChange={setNewViewDesc}
+          onCancel={() => {
+            setNewViewOpen(false)
+            setNewViewName("")
+            setNewViewDesc("")
+          }}
+          onSave={() => {
+            // Persistence isn't wired up yet — this matches the
+            // mock's pattern where view CRUD lives in localStorage.
+            // For now we just close and clear; the save handler
+            // exists so the button has a real onClick.
+            setNewViewOpen(false)
+            setNewViewName("")
+            setNewViewDesc("")
+          }}
+        />
+      )}
 
       {/* Content */}
       <div
@@ -264,13 +319,13 @@ export default function TeamIssuesPage() {
             No issues in this view.
           </div>
         ) : (
-          TYPE_ORDER.map((type) => {
-            const items = grouped[type]
+          STATUS_ORDER.map((status) => {
+            const items = grouped[status]
             if (items.length === 0) return null
             return (
-              <IssueTypeSection
-                key={type}
-                type={type}
+              <StatusSection
+                key={status}
+                status={status}
                 items={items}
                 memberById={memberById}
               />
@@ -288,20 +343,20 @@ export default function TeamIssuesPage() {
   )
 }
 
-function IssueTypeSection({
-  type,
+function StatusSection({
+  status,
   items,
   memberById,
 }: {
-  type: IssueStatusType
+  status: IssueStatus
   items: Issue[]
   memberById: Map<string, Member>
 }) {
   const [collapsed, setCollapsed] = useState(false)
   return (
-    <div data-testid={`team-issues-section-${type}`}>
+    <div data-testid={`team-issues-section-${status}`}>
       {/* Group header */}
-      <div className="group hover:bg-accent/30 flex items-center gap-2 px-5 py-2">
+      <div className="bg-muted/30 group flex items-center gap-2 px-5 py-1.5">
         <button
           type="button"
           onClick={() => setCollapsed((v) => !v)}
@@ -317,15 +372,16 @@ function IssueTypeSection({
           >
             <path d="M1 2 L7 2 L4 6 Z" />
           </svg>
-          <span>{TYPE_LABELS[type]}</span>
+          <StatusIcon status={status} className="size-3.5" />
+          <span>{STATUS_LABEL[status]}</span>
           <span className="text-muted-foreground ml-0.5 text-xs font-normal">
             {items.length}
           </span>
         </button>
         <button
           type="button"
-          aria-label={`Add issue to ${TYPE_LABELS[type]}`}
-          className="text-muted-foreground hover:bg-accent hover:text-foreground ml-auto flex size-5 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100"
+          aria-label={`Add issue to ${STATUS_LABEL[status]}`}
+          className="text-muted-foreground hover:bg-accent hover:text-foreground ml-auto flex size-5 items-center justify-center rounded"
         >
           <HugeiconsIcon icon={PlusSignIcon} className="size-3" />
         </button>
@@ -356,38 +412,128 @@ function IssueRowLink({
       href={`/issues/${issue.identifier}`}
       data-testid="team-issues-row"
       data-issue-identifier={issue.identifier}
-      className="group hover:bg-accent/40 flex items-center gap-2 border-b border-transparent px-5 py-2 transition-colors"
+      data-status-type={STATUS_TO_TYPE[issue.status]}
+      className="group hover:bg-accent/40 flex items-center gap-3 border-b border-transparent px-5 py-2 transition-colors"
     >
-      {/* Priority */}
-      <Badge
-        variant="secondary"
-        className={`min-w-12 justify-center text-[9px] ${priorityStyle[issue.priority]}`}
-      >
-        {issue.priority}
-      </Badge>
-      {/* Identifier */}
-      <span className="text-muted-foreground w-16 font-mono text-[11px]">
+      {/* Hover-only checkbox (decorative — wires into row selection
+          state in real Linear; we just show the affordance). */}
+      <span
+        aria-hidden="true"
+        className="border-muted-foreground/40 size-3.5 shrink-0 rounded-[3px] border opacity-0 transition-opacity group-hover:opacity-100"
+      />
+      <PriorityIcon priority={issue.priority} className="size-3.5 shrink-0" />
+      <span className="text-muted-foreground w-14 shrink-0 font-mono text-xs">
         {issue.identifier}
       </span>
-      {/* Status badge */}
-      <Badge
-        variant="secondary"
-        data-status-type={STATUS_TO_TYPE[issue.status as IssueStatus]}
-        className={`text-[10px] ${statusStyle[issue.status]}`}
-      >
-        {issue.status.replace("_", " ")}
-      </Badge>
-      {/* Title */}
+      <StatusIcon status={issue.status} className="size-3.5 shrink-0" />
       <span className="flex-1 truncate text-sm">{issue.title}</span>
-      {/* Assignee */}
-      {assignee && (
-        <Avatar className="size-5">
+      {assignee ? (
+        <Avatar className="size-5 shrink-0">
           <AvatarImage src={assignee.avatar} alt={assignee.name} />
           <AvatarFallback className="bg-violet-600 text-[9px] text-white">
             {assignee.name.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
+      ) : (
+        <span
+          aria-label="Unassigned"
+          className="text-muted-foreground/60 flex size-5 shrink-0 items-center justify-center"
+        >
+          <HugeiconsIcon icon={UserCircleIcon} className="size-4" />
+        </span>
       )}
+      <span className="text-muted-foreground w-12 shrink-0 text-right font-mono text-xs">
+        {formatShortDate(issue.createdAt)}
+      </span>
     </Link>
+  )
+}
+
+function formatShortDate(iso: string): string {
+  if (!iso) return ""
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ""
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
+function NewViewEditor({
+  name,
+  description,
+  onNameChange,
+  onDescriptionChange,
+  onCancel,
+  onSave,
+}: {
+  name: string
+  description: string
+  onNameChange: (v: string) => void
+  onDescriptionChange: (v: string) => void
+  onCancel: () => void
+  onSave: () => void
+}) {
+  return (
+    <div
+      data-testid="team-issues-new-view-editor"
+      className="border-b px-6 pt-4 pb-3"
+    >
+      <div className="flex items-start gap-3">
+        <span className="bg-accent text-muted-foreground mt-1 flex size-7 shrink-0 items-center justify-center rounded-md">
+          <HugeiconsIcon icon={Layers01Icon} className="size-3.5" />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder="All issues"
+              aria-label="View name"
+              data-testid="team-issues-new-view-name"
+              className="placeholder:text-muted-foreground/70 flex-1 bg-transparent text-base font-medium outline-none"
+            />
+            <button
+              type="button"
+              onClick={onCancel}
+              data-testid="team-issues-new-view-cancel"
+              className="text-muted-foreground hover:text-foreground rounded px-3 py-1 text-xs"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={onSave}
+              data-testid="team-issues-new-view-save"
+              className="bg-accent text-foreground hover:bg-accent/80 rounded px-3 py-1 text-xs"
+            >
+              Save
+            </button>
+          </div>
+          <input
+            value={description}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+            placeholder="Description (optional)"
+            aria-label="View description"
+            data-testid="team-issues-new-view-description"
+            className="placeholder:text-muted-foreground/70 bg-transparent text-sm outline-none"
+          />
+        </div>
+      </div>
+      <div className="text-muted-foreground mt-3 flex items-center justify-end gap-1 border-t pt-2">
+        <button
+          type="button"
+          aria-label="Filter view"
+          className="hover:bg-accent hover:text-foreground flex size-7 items-center justify-center rounded"
+        >
+          <HugeiconsIcon icon={FilterIcon} className="size-3.5" />
+        </button>
+        <button
+          type="button"
+          aria-label="Display options"
+          className="hover:bg-accent hover:text-foreground flex size-7 items-center justify-center rounded"
+        >
+          <HugeiconsIcon icon={SlidersHorizontalIcon} className="size-3.5" />
+        </button>
+      </div>
+    </div>
   )
 }

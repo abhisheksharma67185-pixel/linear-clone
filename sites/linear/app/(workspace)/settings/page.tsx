@@ -96,6 +96,7 @@ import {
   Search01Icon,
   ArrowDown01Icon,
   ArrowUp01Icon,
+  Tick02Icon,
   Copy01Icon,
   MoreHorizontalIcon,
   Delete01Icon,
@@ -3854,13 +3855,21 @@ const STATUS_FILTER_OPTIONS: { key: MemberStatus | "all"; label: string }[] = [
  * to a `MemberStatus`; "members" is a higher-level UI concept that
  * gets its own filter predicate downstream.
  */
-type MembersTabKey = "members" | "invited" | "suspended" | "applications"
+type MembersTabKey =
+  | "all"
+  | "members"
+  | "applications"
+  | "invited"
+  | "suspended"
+  | "left"
 
 const MEMBERS_TABS: { key: MembersTabKey; label: string }[] = [
+  { key: "all", label: "All" },
   { key: "members", label: "Members" },
-  { key: "invited", label: "Invited" },
-  { key: "suspended", label: "Suspended" },
   { key: "applications", label: "Applications" },
+  { key: "invited", label: "Pending invites" },
+  { key: "suspended", label: "Suspended" },
+  { key: "left", label: "Left workspace" },
 ]
 
 /**
@@ -3992,11 +4001,7 @@ function MembersSection() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("")
   const debouncedFilter = useDebounced(filter, 150)
-  // Segmented tabs replace the previous status dropdown. "members"
-  // is a virtual tab — humans (active or suspended-but-not-suspended-tab)
-  // who aren't applications. The four-tab split mirrors Linear's
-  // production layout.
-  const [tab, setTab] = useState<MembersTabKey>("members")
+  const [tab, setTab] = useState<MembersTabKey>("all")
   const [exporting, setExporting] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [confirm, setConfirm] = useState<{
@@ -4040,11 +4045,13 @@ function MembersSection() {
   // moves the Linear application bot off the human list.
   const tabMatches = useMemo(() => {
     const matchers: Record<MembersTabKey, (m: MemberSummary) => boolean> = {
+      all: () => true,
       members: (m) =>
         !m.isApplication && !m.isInvite && m.status !== "suspended",
+      applications: (m) => m.isApplication,
       invited: (m) => m.isInvite,
       suspended: (m) => m.status === "suspended",
-      applications: (m) => m.isApplication,
+      left: () => false,
     }
     return matchers
   }, [])
@@ -4063,13 +4070,14 @@ function MembersSection() {
     })
   }, [summaries, debouncedFilter, tab, tabMatches])
 
-  // Per-tab counts for the segmented tabs badge.
   const tabCounts = useMemo(() => {
     const counts: Record<MembersTabKey, number> = {
+      all: 0,
       members: 0,
+      applications: 0,
       invited: 0,
       suspended: 0,
-      applications: 0,
+      left: 0,
     }
     for (const m of summaries) {
       for (const key of Object.keys(counts) as MembersTabKey[]) {
@@ -4244,42 +4252,45 @@ function MembersSection() {
             )}
           </div>
 
-          {/* Segmented tabs replace the dropdown. Always-visible
-              filter affordance — the user can see at a glance which
-              bucket they're in and what the per-bucket counts are. */}
-          <div
-            role="tablist"
-            aria-label="Member status"
-            data-testid="members-tabs"
-            className="bg-muted/30 inline-flex h-8 items-center rounded-md border p-0.5 text-xs"
-          >
-            {MEMBERS_TABS.map((t) => {
-              const active = tab === t.key
-              return (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
                 <button
-                  key={t.key}
-                  role="tab"
                   type="button"
-                  aria-selected={active}
-                  data-testid={`members-tab-${t.key}`}
+                  data-testid="members-filter-trigger"
+                  aria-label="Filter members"
+                  className="hover:bg-accent/40 inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs"
+                >
+                  <span>
+                    {MEMBERS_TABS.find((t) => t.key === tab)?.label ?? "All"}
+                  </span>
+                  <HugeiconsIcon
+                    icon={ArrowDown01Icon}
+                    className="text-muted-foreground size-3"
+                  />
+                </button>
+              }
+            />
+            <DropdownMenuContent align="end" className="w-44">
+              {MEMBERS_TABS.map((t) => (
+                <DropdownMenuItem
+                  key={t.key}
+                  data-testid={`members-filter-${t.key}`}
                   onClick={() => setTab(t.key)}
-                  className={`inline-flex h-7 items-center gap-1.5 rounded-sm px-2.5 text-xs font-medium transition-colors ${
-                    active
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  className="flex items-center justify-between gap-2 text-xs"
                 >
                   <span>{t.label}</span>
-                  <span
-                    data-testid={`members-tab-count-${t.key}`}
-                    className="bg-muted text-muted-foreground inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums"
-                  >
-                    {tabCounts[t.key]}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+                  {tab === t.key && (
+                    <HugeiconsIcon
+                      icon={Tick02Icon}
+                      className="size-3.5"
+                      aria-label="Selected"
+                    />
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <div className="ml-auto flex items-center gap-2">
             <Button
@@ -7736,15 +7747,14 @@ const CLI_IMPORT_URL =
 const IMPORT_SOURCES: {
   key: string
   name: string
-  color: string
   abbr: string
 }[] = [
-  { key: "asana", name: "Asana", color: "bg-rose-500", abbr: "AS" },
-  { key: "shortcut", name: "Shortcut", color: "bg-amber-500", abbr: "SC" },
-  { key: "github", name: "GitHub", color: "bg-[#24292e]", abbr: "GH" },
-  { key: "jira", name: "Jira", color: "bg-[#0052CC]", abbr: "JR" },
-  { key: "linear", name: "Linear", color: "bg-violet-600", abbr: "LN" },
-  { key: "trello", name: "Trello", color: "bg-[#0079BF]", abbr: "TR" },
+  { key: "asana", name: "Asana", abbr: "AS" },
+  { key: "shortcut", name: "Shortcut", abbr: "SC" },
+  { key: "github", name: "GitHub", abbr: "GH" },
+  { key: "jira", name: "Jira", abbr: "JR" },
+  { key: "linear", name: "Linear", abbr: "LN" },
+  { key: "trello", name: "Trello", abbr: "TR" },
 ]
 
 type IncludePrivateTeams = "none" | "all"
@@ -7924,7 +7934,7 @@ function ImportExportSection() {
           </a>
         </p>
         <div className="divide-border divide-y overflow-hidden rounded-lg border">
-          {IMPORT_SOURCES.map(({ key, name, color, abbr }) => (
+          {IMPORT_SOURCES.map(({ key, name, abbr }) => (
             <Link
               key={key}
               href={`/settings/import-export/migration-assistant?service=${key}`}
@@ -7933,7 +7943,7 @@ function ImportExportSection() {
               className="hover:bg-white/5 focus-visible:bg-white/5 focus-visible:ring-ring group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               <div
-                className={`flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold text-white ${color}`}
+                className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-semibold"
               >
                 {abbr}
               </div>

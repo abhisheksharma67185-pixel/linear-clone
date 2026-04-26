@@ -67,6 +67,28 @@ export function AdjustmentsIcon() {
   )
 }
 
+export function VerticalAdjustmentsIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <line x1="4" y1="2.5" x2="4" y2="13.5" />
+      <circle cx="4" cy="6" r="1.5" fill={BG} />
+      <line x1="8" y1="2.5" x2="8" y2="13.5" />
+      <circle cx="8" cy="10" r="1.5" fill={BG} />
+      <line x1="12" y1="2.5" x2="12" y2="13.5" />
+      <circle cx="12" cy="7" r="1.5" fill={BG} />
+    </svg>
+  )
+}
+
 export function CardViewIcon() {
   return (
     <svg

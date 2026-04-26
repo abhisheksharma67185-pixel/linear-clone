@@ -6,6 +6,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { RoutePageSkeleton } from "@/components/route-page-skeleton"
 import { TodayProvider } from "@/app/lib/today-context"
+import { AskLinear } from "@/components/ask-linear"
 
 export default function WorkspaceLayout({
   children,
@@ -47,6 +48,7 @@ export default function WorkspaceLayout({
             {children}
           </Suspense>
         </SidebarInset>
+        <AskLinear />
       </SidebarProvider>
     </TodayProvider>
   )
