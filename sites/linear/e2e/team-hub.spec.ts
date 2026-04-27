@@ -34,9 +34,7 @@ test.describe("Team Settings Hub", () => {
       await expect(row).toBeVisible()
       const href = await row.getAttribute("href")
       expect(href).not.toBe("#")
-      expect(href).toMatch(
-        new RegExp(`/settings/teams/${TEAM_KEY}/${id}$`)
-      )
+      expect(href).toMatch(new RegExp(`/settings/teams/${TEAM_KEY}/${id}$`))
       await row.click()
       await expect(page).toHaveURL(
         new RegExp(`/settings/teams/${TEAM_KEY}/${id}$`)
@@ -48,10 +46,7 @@ test.describe("Team Settings Hub", () => {
   test("breadcrumb routes back to Teams", async ({ page }) => {
     const back = page.getByRole("link", { name: "Back to Teams" })
     await expect(back).toBeVisible()
-    await expect(back).toHaveAttribute(
-      "href",
-      /\/settings\?section=teams/
-    )
+    await expect(back).toHaveAttribute("href", /\/settings\?section=teams/)
   })
 
   test("Delete modal requires typing the team name before enabling", async ({
@@ -61,13 +56,9 @@ test.describe("Team Settings Hub", () => {
     const dialog = page.getByRole("dialog")
     const confirm = dialog.getByRole("button", { name: "Delete" })
     await expect(confirm).toBeDisabled()
-    await dialog
-      .getByLabel(/Team name to confirm deletion/i)
-      .fill("wrong-name")
+    await dialog.getByLabel(/Team name to confirm deletion/i).fill("wrong-name")
     await expect(confirm).toBeDisabled()
-    await dialog
-      .getByLabel(/Team name to confirm deletion/i)
-      .fill("Platform")
+    await dialog.getByLabel(/Team name to confirm deletion/i).fill("Platform")
     await expect(confirm).toBeEnabled()
   })
 })

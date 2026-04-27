@@ -164,8 +164,7 @@ export function CustomizeSidebarDialog({
       const moved = { ...items[fromIndex], section: targetSection }
       items.splice(fromIndex, 1)
       // After splice, the toIndex shifts if fromIndex < toIndex.
-      const adjustedTo =
-        fromIndex < toIndex ? toIndex - 1 : toIndex
+      const adjustedTo = fromIndex < toIndex ? toIndex - 1 : toIndex
       items.splice(adjustedTo, 0, moved)
       const next = { ...prev, items }
       saveSidebarCustomization(next)
@@ -183,9 +182,8 @@ export function CustomizeSidebarDialog({
         <DialogHeader>
           <DialogTitle>Customize sidebar</DialogTitle>
           <DialogDescription>
-            Choose which items appear in your sidebar, drag to reorder
-            within and across sections, and pick how badges are
-            displayed.
+            Choose which items appear in your sidebar, drag to reorder within
+            and across sections, and pick how badges are displayed.
           </DialogDescription>
         </DialogHeader>
 
@@ -246,8 +244,8 @@ export function CustomizeSidebarDialog({
               data-testid="badge-style-helper"
               className="text-muted-foreground text-xs"
             >
-              <span className="text-foreground font-medium">Count</span>{" "}
-              shows the exact number (e.g. <span className="font-mono">3</span>).{" "}
+              <span className="text-foreground font-medium">Count</span> shows
+              the exact number (e.g. <span className="font-mono">3</span>).{" "}
               <span className="text-foreground font-medium">Dot</span> shows a
               small unread indicator without the number.
             </p>
@@ -315,9 +313,7 @@ function Section({
               <ItemRow
                 key={item.key}
                 item={item}
-                onChangeVisibility={(v) =>
-                  onChangeVisibility(item.key, v)
-                }
+                onChangeVisibility={(v) => onChangeVisibility(item.key, v)}
               />
             ))
           )}
@@ -335,8 +331,14 @@ function ItemRow({
   onChangeVisibility: (v: SidebarVisibility) => void
 }) {
   const sortable = useSortable({ id: item.key })
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    sortable
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = sortable
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -373,9 +375,7 @@ function ItemRow({
         </button>
         <span
           className={`text-sm ${
-            isLocked
-              ? "text-muted-foreground"
-              : "text-foreground"
+            isLocked ? "text-muted-foreground" : "text-foreground"
           }`}
         >
           {item.label}

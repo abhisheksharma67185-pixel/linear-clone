@@ -266,36 +266,43 @@ export const MyIssuesFilterPopover = React.forwardRef<
   const [internalOpen, setInternalOpen] = React.useState(false)
   const isControlled = open !== undefined
   const isOpen = isControlled ? open : internalOpen
-  const setOpen = React.useCallback(
-    (v: boolean) => {
-      if (!isControlled) setInternalOpen(v)
-      onOpenChange?.(v)
-    },
-    [isControlled, onOpenChange]
-  )
-
-  React.useImperativeHandle(ref, () => ({ open: () => setOpen(true) }), [setOpen])
 
   const [hoveredKind, setHoveredKind] = React.useState<FilterKind | null>(null)
   const [focusedIndex, setFocusedIndex] = React.useState(0)
   const [query, setQuery] = React.useState("")
-  const [sideOffset, setSideOffset] = React.useState(0)
   const searchRef = React.useRef<HTMLInputElement>(null)
   const mainPanelRef = React.useRef<HTMLDivElement>(null)
   const sidePanelRef = React.useRef<HTMLDivElement>(null)
   const rowRefs = React.useRef<Map<FilterKind, HTMLButtonElement>>(new Map())
 
+  // Wrap setOpen to also reset/seed local state at the open transition. This
+  // replaces a sync-state-on-prop-change effect; all open/close paths run
+  // through here (Radix's onOpenChange + the imperative `open()` handle).
+  const setOpen = React.useCallback(
+    (v: boolean) => {
+      if (!isControlled) setInternalOpen(v)
+      if (v) {
+        setHoveredKind(initialKind ?? null)
+        setQuery("")
+        setFocusedIndex(0)
+      } else {
+        setHoveredKind(null)
+      }
+      onOpenChange?.(v)
+    },
+    [isControlled, onOpenChange, initialKind]
+  )
+
+  React.useImperativeHandle(ref, () => ({ open: () => setOpen(true) }), [
+    setOpen,
+  ])
+
+  // Autofocus the search input when the popover opens.
   React.useEffect(() => {
-    if (isOpen) {
-      setHoveredKind(initialKind ?? null)
-      setQuery("")
-      setFocusedIndex(0)
-      const t = setTimeout(() => searchRef.current?.focus(), 30)
-      return () => clearTimeout(t)
-    } else {
-      setHoveredKind(null)
-    }
-  }, [isOpen, initialKind])
+    if (!isOpen) return
+    const t = setTimeout(() => searchRef.current?.focus(), 30)
+    return () => clearTimeout(t)
+  }, [isOpen])
 
   const visibleGroups = React.useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -310,32 +317,30 @@ export const MyIssuesFilterPopover = React.forwardRef<
     [visibleGroups]
   )
 
-  // Reset focus to first row whenever the visible set changes (e.g., user typed)
-  React.useEffect(() => {
-    setFocusedIndex(0)
-  }, [query])
-
-  // Measure the hovered row's vertical offset so the side panel aligns next to it.
-  // Cap the offset so the side panel never extends past the main panel's bottom —
-  // otherwise long pickers (e.g. Subscribers) would push the popover off-screen.
+  // Measure the hovered row's vertical offset so the side panel aligns next
+  // to it. Position via DOM mutation rather than React state — the
+  // measurement is a one-shot layout sync, not data the rest of the tree
+  // needs to read. Caps the offset so the side panel never extends past the
+  // main panel's bottom (long pickers like Subscribers would otherwise push
+  // the popover off-screen).
   React.useLayoutEffect(() => {
+    const sideEl = sidePanelRef.current
+    if (!sideEl) return
     if (!hoveredKind) {
-      setSideOffset(0)
+      sideEl.style.marginTop = "0px"
       return
     }
     const rowEl = rowRefs.current.get(hoveredKind)
     const mainEl = mainPanelRef.current
-    const sideEl = sidePanelRef.current
     if (!rowEl || !mainEl) return
     const rowOffset = Math.max(
       0,
-      rowEl.getBoundingClientRect().top -
-        mainEl.getBoundingClientRect().top
+      rowEl.getBoundingClientRect().top - mainEl.getBoundingClientRect().top
     )
-    const sideH = sideEl?.offsetHeight ?? 0
+    const sideH = sideEl.offsetHeight
     const mainH = mainEl.offsetHeight
     const maxOffset = Math.max(0, mainH - sideH)
-    setSideOffset(Math.min(rowOffset, maxOffset))
+    sideEl.style.marginTop = `${Math.min(rowOffset, maxOffset)}px`
   }, [hoveredKind])
 
   const onPickCategory = (kind: FilterKind) => {
@@ -361,9 +366,7 @@ export const MyIssuesFilterPopover = React.forwardRef<
       setFocusedIndex((i) => (i + 1) % flatItems.length)
     } else if (e.key === "ArrowUp") {
       e.preventDefault()
-      setFocusedIndex(
-        (i) => (i - 1 + flatItems.length) % flatItems.length
-      )
+      setFocusedIndex((i) => (i - 1 + flatItems.length) % flatItems.length)
     } else if (e.key === "Enter") {
       e.preventDefault()
       const kind = flatItems[focusedIndex]
@@ -396,9 +399,11 @@ export const MyIssuesFilterPopover = React.forwardRef<
             <div
               ref={sidePanelRef}
               className="bg-popover ring-foreground/10 w-[230px] overflow-hidden rounded-lg shadow-md ring-1"
-              style={{ marginTop: sideOffset }}
             >
               <ValuePicker
+                // Remount per kind so the local search query resets fresh
+                // without a sync-from-prop effect.
+                key={hoveredKind}
                 kind={hoveredKind}
                 currentValues={filters[hoveredKind] ?? []}
                 issues={issues}
@@ -420,7 +425,12 @@ export const MyIssuesFilterPopover = React.forwardRef<
                 ref={searchRef}
                 type="text"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  // Reset highlight to the first match while the user types
+                  // — handled here in the change event so no extra effect.
+                  setFocusedIndex(0)
+                }}
                 onKeyDown={onSearchKeyDown}
                 placeholder="Add Filter..."
                 aria-label="Search filters"
@@ -445,8 +455,7 @@ export const MyIssuesFilterPopover = React.forwardRef<
                       <div className="border-border/40 my-1.5 border-t" />
                     )}
                     {g.items.map((kind) => {
-                      const active =
-                        filters[kind] && filters[kind]!.length > 0
+                      const active = filters[kind] && filters[kind]!.length > 0
                       const highlight =
                         hoveredKind === kind || focusedKind === kind
                       return (
@@ -513,12 +522,9 @@ function ValuePicker({
   projects: Project[]
   onChange: (values: string[]) => void
 }) {
+  // Parent remounts ValuePicker per kind via a `key` prop, so this query
+  // is always fresh when switching to a new picker.
   const [query, setQuery] = React.useState("")
-
-  // Reset query when switching to a different kind so the user starts fresh
-  React.useEffect(() => {
-    setQuery("")
-  }, [kind])
 
   const options = useOptions(kind, { members, labels, projects })
   const filtered = React.useMemo(() => {
@@ -564,56 +570,57 @@ function ValuePicker({
         />
       </div>
       {kind === "content" ? null : (
-      <div className="max-h-[28rem] overflow-auto py-1.5">
-        {filtered.length === 0 ? (
-          <div className="text-muted-foreground px-3 py-2 text-center text-xs">
-            No matching options
-          </div>
-        ) : (
-          filtered.map((o) => {
-            const selected = currentValues.includes(o.value)
-            const count = counts.get(o.value) ?? 0
-            return (
-              <button
-                key={o.value}
-                type="button"
-                onClick={() => toggle(o.value)}
-                className="hover:bg-accent flex h-7 w-full items-center gap-2 px-2.5 text-left text-[13px]"
-              >
-                <span
-                  className={cn(
-                    "border-muted-foreground/40 flex size-3.5 shrink-0 items-center justify-center rounded-sm border",
-                    selected && "border-primary bg-primary text-primary-foreground"
-                  )}
-                  aria-hidden="true"
+        <div className="max-h-[28rem] overflow-auto py-1.5">
+          {filtered.length === 0 ? (
+            <div className="text-muted-foreground px-3 py-2 text-center text-xs">
+              No matching options
+            </div>
+          ) : (
+            filtered.map((o) => {
+              const selected = currentValues.includes(o.value)
+              const count = counts.get(o.value) ?? 0
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  onClick={() => toggle(o.value)}
+                  className="hover:bg-accent flex h-7 w-full items-center gap-2 px-2.5 text-left text-[13px]"
                 >
-                  {selected && (
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 10 10"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M2 5 L4 7 L8 3" />
-                    </svg>
-                  )}
-                </span>
-                {o.icon}
-                <span className="flex-1 truncate">{o.label}</span>
-                {count > 0 && (
-                  <span className="text-muted-foreground text-[11px]">
-                    {count} {count === 1 ? "issue" : "issues"}
+                  <span
+                    className={cn(
+                      "border-muted-foreground/40 flex size-3.5 shrink-0 items-center justify-center rounded-sm border",
+                      selected &&
+                        "border-primary bg-primary text-primary-foreground"
+                    )}
+                    aria-hidden="true"
+                  >
+                    {selected && (
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M2 5 L4 7 L8 3" />
+                      </svg>
+                    )}
                   </span>
-                )}
-              </button>
-            )
-          })
-        )}
-      </div>
+                  {o.icon}
+                  <span className="flex-1 truncate">{o.label}</span>
+                  {count > 0 && (
+                    <span className="text-muted-foreground text-[11px]">
+                      {count} {count === 1 ? "issue" : "issues"}
+                    </span>
+                  )}
+                </button>
+              )
+            })
+          )}
+        </div>
       )}
     </div>
   )
@@ -845,7 +852,11 @@ function FilterCategoryIcon({ kind }: { kind: FilterKind }) {
 
 function useOptions(
   kind: FilterKind,
-  { members, labels, projects }: { members: Member[]; labels: Label[]; projects: Project[] }
+  {
+    members,
+    labels,
+    projects,
+  }: { members: Member[]; labels: Label[]; projects: Project[] }
 ): { value: string; label: string; icon?: React.ReactNode }[] {
   return React.useMemo(() => {
     if (kind === "status") {

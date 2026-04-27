@@ -94,7 +94,9 @@ test.describe("Projects area bug fixes", () => {
    * 3. PROJECT TABS — Issues / Activity tabs do NOT render the right
    * panel.
    */
-  test("Properties panel renders ONLY on the Overview tab", async ({ page }) => {
+  test("Properties panel renders ONLY on the Overview tab", async ({
+    page,
+  }) => {
     await gotoProject(page)
     await expect(page.getByTestId("project-properties-panel")).toBeVisible()
 
@@ -160,7 +162,9 @@ test.describe("Projects area bug fixes", () => {
   /**
    * 8. HEADER CREATE — Create button opens the create-issue modal.
    */
-  test("Header Create button opens the create-issue modal", async ({ page }) => {
+  test("Header Create button opens the create-issue modal", async ({
+    page,
+  }) => {
     await gotoProject(page)
     await page.getByTestId("project-header-create").click()
     await expect(

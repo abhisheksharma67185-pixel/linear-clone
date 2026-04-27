@@ -45,10 +45,8 @@ describe("parseRedirectUris", () => {
       "https://a.com/cb, https://b.com/cb\nhttps://a.com/cb"
     )
     expect(r.success).toBe(true)
-    if (r.success) expect(r.data).toEqual([
-      "https://a.com/cb",
-      "https://b.com/cb",
-    ])
+    if (r.success)
+      expect(r.data).toEqual(["https://a.com/cb", "https://b.com/cb"])
   })
 
   it("rejects when any entry is invalid", () => {

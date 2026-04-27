@@ -42,9 +42,10 @@ test.describe("Teams page regressions", () => {
 
     await page.keyboard.press("Escape")
 
-    await expect(
-      page.getByTestId("teams-display-options-popover")
-    ).toHaveCount(0, { timeout: 1000 })
+    await expect(page.getByTestId("teams-display-options-popover")).toHaveCount(
+      0,
+      { timeout: 1000 }
+    )
   })
 
   /**
@@ -116,9 +117,7 @@ test.describe("Teams page regressions", () => {
     page,
   }) => {
     await gotoTeams(page)
-    const link = page
-      .getByTestId("teams-card-title-link")
-      .first()
+    const link = page.getByTestId("teams-card-title-link").first()
     const href = await link.getAttribute("href")
     expect(href).toMatch(/\/teams\/[^/]+\/issues$/)
     await link.click()

@@ -46,7 +46,10 @@ test.describe("Import & Export settings page", () => {
     const docs = page.getByRole("link", {
       name: /Import issues documentation/i,
     })
-    await expect(docs).toHaveAttribute("href", /linear\.app\/docs\/import-issues/)
+    await expect(docs).toHaveAttribute(
+      "href",
+      /linear\.app\/docs\/import-issues/
+    )
     await expect(docs).toHaveAttribute("target", "_blank")
     await expect(docs).toHaveAttribute("rel", /noopener/)
 

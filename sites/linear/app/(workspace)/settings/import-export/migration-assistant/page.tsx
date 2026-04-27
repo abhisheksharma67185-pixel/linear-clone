@@ -21,12 +21,10 @@ function MigrationAssistantInner() {
   const serviceId = raw.toLowerCase()
   const name =
     SERVICE_LABELS[serviceId] ??
-    (serviceId.charAt(0).toUpperCase() + serviceId.slice(1))
+    serviceId.charAt(0).toUpperCase() + serviceId.slice(1)
 
   useEffect(() => {
-    document.title = name
-      ? `Migrate from ${name}`
-      : "Migration assistant"
+    document.title = name ? `Migrate from ${name}` : "Migration assistant"
   }, [name])
 
   return (

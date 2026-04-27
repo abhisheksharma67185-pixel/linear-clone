@@ -74,14 +74,13 @@ beforeEach(() => {
   vi.stubGlobal("window", makeWindowStub())
   vi.stubGlobal(
     "CustomEvent",
-    (
-      vi.mocked(globalThis.CustomEvent) as unknown as typeof CustomEvent
-    ) ?? class {
-      type: string
-      constructor(type: string) {
-        this.type = type
+    (vi.mocked(globalThis.CustomEvent) as unknown as typeof CustomEvent) ??
+      class {
+        type: string
+        constructor(type: string) {
+          this.type = type
+        }
       }
-    }
   )
 })
 
@@ -140,13 +139,11 @@ describe("setItemVisibility", () => {
     }
     const next = setItemVisibility(initial, "inbox", "never")
     expect(next).not.toBe(initial)
-    expect(
-      next.items.find((i) => i.key === "inbox")?.visibility
-    ).toBe("never")
+    expect(next.items.find((i) => i.key === "inbox")?.visibility).toBe("never")
     // Other items are unchanged.
-    expect(
-      next.items.find((i) => i.key === "projects")?.visibility
-    ).toBe(initial.items.find((i) => i.key === "projects")?.visibility)
+    expect(next.items.find((i) => i.key === "projects")?.visibility).toBe(
+      initial.items.find((i) => i.key === "projects")?.visibility
+    )
   })
 })
 
@@ -215,9 +212,9 @@ describe("save / load round-trip", () => {
     saveSidebarCustomization(next)
 
     const loaded = loadSidebarCustomization()
-    expect(
-      loaded.items.find((i) => i.key === "projects")?.visibility
-    ).toBe("never")
+    expect(loaded.items.find((i) => i.key === "projects")?.visibility).toBe(
+      "never"
+    )
   })
 
   it("badgeStyle round-trips", () => {
@@ -230,10 +227,9 @@ describe("save / load round-trip", () => {
 
   it("invalid persisted payload falls back to defaults", () => {
     // Manually plant a corrupt value.
-    ;(window as unknown as { localStorage: LocalStorageStub }).localStorage.setItem(
-      "sidebar:customization:v1",
-      "{not json"
-    )
+    ;(
+      window as unknown as { localStorage: LocalStorageStub }
+    ).localStorage.setItem("sidebar:customization:v1", "{not json")
     const loaded = loadSidebarCustomization()
     expect(loaded.items.length).toBe(DEFAULT_SIDEBAR_LAYOUT.length)
     expect(loaded.badgeStyle).toBe(DEFAULT_BADGE_STYLE)

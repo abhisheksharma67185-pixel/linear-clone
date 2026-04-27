@@ -23,10 +23,7 @@ describe("buildProjectBreadcrumb", () => {
   })
 
   it("falls back to 'Projects' as root when team is null (race / unknown)", () => {
-    const crumbs = buildProjectBreadcrumb(
-      { id: "p1", name: "Bbkbk" },
-      null
-    )
+    const crumbs = buildProjectBreadcrumb({ id: "p1", name: "Bbkbk" }, null)
     expect(crumbs).toEqual([
       { label: "Projects", href: "/projects" },
       { label: "Bbkbk" },

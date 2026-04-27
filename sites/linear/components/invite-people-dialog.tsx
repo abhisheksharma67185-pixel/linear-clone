@@ -2,11 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Cancel01Icon, Tick02Icon } from "@hugeicons/core-free-icons"
 
@@ -141,7 +137,9 @@ export function InvitePeopleDialog({
               >
                 AB
               </span>
-              <h2 className="text-base font-medium">Invite to your workspace</h2>
+              <h2 className="text-base font-medium">
+                Invite to your workspace
+              </h2>
             </div>
 
             <div className="mt-4 flex flex-col gap-1.5">
@@ -176,9 +174,7 @@ export function InvitePeopleDialog({
                   multiple
                   data-testid="invite-emails-input"
                   aria-invalid={error ? true : undefined}
-                  aria-describedby={
-                    error ? "invite-emails-error" : undefined
-                  }
+                  aria-describedby={error ? "invite-emails-error" : undefined}
                   value={draft}
                   onChange={(e) => {
                     setDraft(e.target.value)
@@ -198,9 +194,7 @@ export function InvitePeopleDialog({
                   }}
                   onBlur={commitDraft}
                   placeholder={
-                    emails.length
-                      ? ""
-                      : "email@gmail.com, email2@gmail.com…"
+                    emails.length ? "" : "email@gmail.com, email2@gmail.com…"
                   }
                   className="placeholder:text-muted-foreground/60 flex-1 bg-transparent text-sm outline-none"
                 />

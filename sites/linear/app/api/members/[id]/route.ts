@@ -28,10 +28,7 @@ export async function PATCH(
   switch (body.action) {
     case "set-role":
       if (!body.role) {
-        return NextResponse.json(
-          { error: "Role is required" },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: "Role is required" }, { status: 400 })
       }
       result = setMemberRole(id, body.role)
       break

@@ -8,10 +8,7 @@ import { cn } from "@/lib/utils"
 const CircularIconButton = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & { label: string }
->(function CircularIconButton(
-  { label, className, children, ...props },
-  ref
-) {
+>(function CircularIconButton({ label, className, children, ...props }, ref) {
   return (
     <button
       ref={ref}
@@ -101,7 +98,10 @@ export function CircularIconToolbarRoot({
 }) {
   return (
     <div
-      className={cn("text-muted-foreground flex items-center gap-1.5", className)}
+      className={cn(
+        "text-muted-foreground flex items-center gap-1.5",
+        className
+      )}
     >
       {children}
     </div>

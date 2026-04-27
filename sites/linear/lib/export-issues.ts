@@ -11,10 +11,7 @@ export function buildExportRequest(
 ): ExportIssuesRequest {
   // Narrow unknown → the canonical union, defaulting to "none" for anything
   // unexpected so the payload shape is always well-formed.
-  const v =
-    includePrivateTeams === "all"
-      ? ("all" as const)
-      : ("none" as const)
+  const v = includePrivateTeams === "all" ? ("all" as const) : ("none" as const)
   return { includePrivateTeams: v }
 }
 

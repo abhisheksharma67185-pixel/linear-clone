@@ -16,11 +16,7 @@ import type { Issue } from "@/app/lib/mock-data"
 export type IssueStatus = Issue["status"]
 
 /** The four status-type buckets currently modelled in the mock. */
-export type IssueStatusType =
-  | "backlog"
-  | "started"
-  | "completed"
-  | "canceled"
+export type IssueStatusType = "backlog" | "started" | "completed" | "canceled"
 
 /**
  * Authoritative mapping from individual workflow statuses → their

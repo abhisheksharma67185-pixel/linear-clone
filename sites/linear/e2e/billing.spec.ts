@@ -25,7 +25,9 @@ test.describe("Billing settings page", () => {
   test("contact us / All plans / View all plans / Upgrade now are wired", async ({
     page,
   }) => {
-    const contactUs = page.getByRole("link", { name: /Contact Linear support/i })
+    const contactUs = page.getByRole("link", {
+      name: /Contact Linear support/i,
+    })
     await expect(contactUs).toHaveAttribute("href", /^https?:\/\//)
     await expect(contactUs).toHaveAttribute("target", "_blank")
 
@@ -64,7 +66,9 @@ test.describe("Billing settings page", () => {
     expect(viewport).not.toBeNull()
     if (!viewport) return
 
-    const sidebar = page.getByRole("navigation", { name: "Settings navigation" })
+    const sidebar = page.getByRole("navigation", {
+      name: "Settings navigation",
+    })
     const sidebarBox = await sidebar.boundingBox()
     expect(sidebarBox).not.toBeNull()
     if (!sidebarBox) return

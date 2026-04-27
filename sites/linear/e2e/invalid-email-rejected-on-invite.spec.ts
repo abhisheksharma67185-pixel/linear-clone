@@ -58,8 +58,7 @@ test.describe("Invite dialog rejects invalid emails", () => {
     await expect(input).toHaveAttribute("aria-invalid", "true")
 
     // No chip was created — the malformed input wasn't silently kept.
-    const chip = page
-      .getByRole("button", { name: /Remove not-an-email/ })
+    const chip = page.getByRole("button", { name: /Remove not-an-email/ })
     await expect(chip).toHaveCount(0)
   })
 

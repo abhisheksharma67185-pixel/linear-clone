@@ -40,8 +40,9 @@ export default function IntegrationDetailPage({
       <div>
         <h1 className="text-2xl font-semibold">{name}</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Full integration configuration for <span className="font-medium">{name}</span>.
-          Connect your workspace to sync data and enable workflow automations.
+          Full integration configuration for{" "}
+          <span className="font-medium">{name}</span>. Connect your workspace to
+          sync data and enable workflow automations.
         </p>
       </div>
 
@@ -55,9 +56,7 @@ export default function IntegrationDetailPage({
         <div className="mt-4 flex gap-2">
           <Button
             size="sm"
-            onClick={() =>
-              toast.info(`${name} OAuth connect flow coming soon`)
-            }
+            onClick={() => toast.info(`${name} OAuth connect flow coming soon`)}
           >
             <HugeiconsIcon icon={Link01Icon} className="size-3.5" />
             Connect {name}

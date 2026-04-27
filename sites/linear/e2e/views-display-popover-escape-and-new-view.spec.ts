@@ -47,12 +47,8 @@ test.describe("Views — Display Options Escape + New view breadcrumb", () => {
     // Inner labels unmount too — the bug variant the spec describes
     // is "outer styles unset but inner content remains in the DOM."
     // Asserting on the literal child text catches that regression.
-    await expect(
-      page.getByText("Grouping", { exact: true })
-    ).toHaveCount(0)
-    await expect(
-      page.getByText("Ordering", { exact: true })
-    ).toHaveCount(0)
+    await expect(page.getByText("Grouping", { exact: true })).toHaveCount(0)
+    await expect(page.getByText("Ordering", { exact: true })).toHaveCount(0)
   })
 
   /**

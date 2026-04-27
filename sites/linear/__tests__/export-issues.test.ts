@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest"
-import {
-  buildExportRequest,
-  privateTeamsLabel,
-} from "../lib/export-issues"
+import { buildExportRequest, privateTeamsLabel } from "../lib/export-issues"
 
 describe("buildExportRequest", () => {
   it("produces { includePrivateTeams: 'none' } when value is 'none'", () => {

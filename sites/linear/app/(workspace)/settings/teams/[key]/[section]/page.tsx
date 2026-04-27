@@ -83,7 +83,9 @@ export default function TeamSectionSubPage({
       </Link>
 
       {section === "general" ? (
-        <GeneralSection team={team} />
+        // Remount once `team` is loaded so the form's local state seeds
+        // from the loaded values without a sync-from-prop effect.
+        <GeneralSection key={team?.id ?? "loading"} team={team} />
       ) : section === "members" ? (
         <MembersSection team={team} />
       ) : section === "notifications" ? (
@@ -95,7 +97,11 @@ export default function TeamSectionSubPage({
       ) : section === "recurring-issues" ? (
         <RecurringIssuesSection />
       ) : (
-        <PlaceholderSection label={copy.label} subtitle={copy.subtitle} team={team} />
+        <PlaceholderSection
+          label={copy.label}
+          subtitle={copy.subtitle}
+          team={team}
+        />
       )}
     </div>
   )
@@ -108,13 +114,6 @@ function GeneralSection({ team }: { team: TeamRef | null }) {
   const [estimation, setEstimation] = useState("none")
   const [emailEnabled, setEmailEnabled] = useState(false)
   const [historyEnabled, setHistoryEnabled] = useState(false)
-
-  useEffect(() => {
-    if (team) {
-      setName(team.name)
-      setIdentifier(team.key)
-    }
-  }, [team])
 
   return (
     <div className="flex flex-col gap-8">
@@ -137,7 +136,9 @@ function GeneralSection({ team }: { team: TeamRef | null }) {
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div>
             <div className="text-sm font-medium">Identifier</div>
-            <div className="text-muted-foreground text-xs">Used in issue IDs</div>
+            <div className="text-muted-foreground text-xs">
+              Used in issue IDs
+            </div>
           </div>
           <Input
             value={identifier}
@@ -181,14 +182,21 @@ function GeneralSection({ team }: { team: TeamRef | null }) {
       >
         <div className="bg-card flex items-center justify-between gap-4 rounded-lg border px-4 py-3">
           <div className="text-sm font-medium">Issue estimation</div>
-          <Select value={estimation} onValueChange={(v) => v && setEstimation(v)}>
+          <Select
+            value={estimation}
+            onValueChange={(v) => v && setEstimation(v)}
+          >
             <SelectTrigger className="h-8 w-40 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Not in use</SelectItem>
-              <SelectItem value="exponential">Exponential (1, 2, 4, 8, 16)</SelectItem>
-              <SelectItem value="fibonacci">Fibonacci (1, 2, 3, 5, 8)</SelectItem>
+              <SelectItem value="exponential">
+                Exponential (1, 2, 4, 8, 16)
+              </SelectItem>
+              <SelectItem value="fibonacci">
+                Fibonacci (1, 2, 3, 5, 8)
+              </SelectItem>
               <SelectItem value="linear">Linear (1, 2, 3, 4, 5)</SelectItem>
               <SelectItem value="tshirt">T-shirt (XS, S, M, L, XL)</SelectItem>
             </SelectContent>
@@ -209,12 +217,18 @@ function GeneralSection({ team }: { team: TeamRef | null }) {
       <Section title="Other">
         <div className="bg-card flex items-start justify-between gap-4 rounded-lg border px-4 py-3">
           <div>
-            <div className="text-sm font-medium">Enable detailed issue history</div>
+            <div className="text-sm font-medium">
+              Enable detailed issue history
+            </div>
             <div className="text-muted-foreground mt-1 text-xs leading-5">
-              Each change to an issue receives and persists a distinct history entry, creating a more detailed history for auditing purposes.
+              Each change to an issue receives and persists a distinct history
+              entry, creating a more detailed history for auditing purposes.
             </div>
           </div>
-          <Switch checked={historyEnabled} onCheckedChange={setHistoryEnabled} />
+          <Switch
+            checked={historyEnabled}
+            onCheckedChange={setHistoryEnabled}
+          />
         </div>
       </Section>
     </div>
@@ -259,9 +273,7 @@ function MembersSection({ team }: { team: TeamRef | null }) {
   const filtered = rows.filter((r) => {
     const q = filter.trim().toLowerCase()
     if (!q) return true
-    return (
-      r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)
-    )
+    return r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)
   })
 
   return (
@@ -566,8 +578,8 @@ function RecurringIssuesSection() {
         <h1 className="text-2xl font-semibold">Recurring issues</h1>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
           Automatically create issues that need to be completed on a regular
-          schedule. Each issue is created with a due date set by the schedule.
-          A new instance is created after each due date passes.{" "}
+          schedule. Each issue is created with a due date set by the schedule. A
+          new instance is created after each due date passes.{" "}
           <a
             href="https://linear.app/docs/recurring-issues"
             target="_blank"
@@ -580,7 +592,9 @@ function RecurringIssuesSection() {
       </div>
 
       <div className="bg-card flex items-center justify-between rounded-lg border px-4 py-3">
-        <span className="text-muted-foreground text-sm">No recurring issues</span>
+        <span className="text-muted-foreground text-sm">
+          No recurring issues
+        </span>
         <Button
           variant="ghost"
           size="sm"
@@ -613,9 +627,10 @@ function PlaceholderSection({
       <div className="bg-card rounded-lg border p-5">
         <h2 className="text-sm font-semibold">Coming soon</h2>
         <p className="text-muted-foreground mt-2 text-sm leading-6">
-          This is a placeholder for the <span className="font-medium">{label}</span>{" "}
-          section of the {team?.name ?? ""} team. The production page would host
-          the detailed configuration UI for this area.
+          This is a placeholder for the{" "}
+          <span className="font-medium">{label}</span> section of the{" "}
+          {team?.name ?? ""} team. The production page would host the detailed
+          configuration UI for this area.
         </p>
       </div>
     </div>

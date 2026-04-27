@@ -103,8 +103,8 @@ export default function ViewsPage() {
               onClick={() => setTab(t)}
               className={`rounded-full px-2.5 py-1 text-[13px] font-medium transition-colors ${
                 tab === t
-                  ? "bg-zinc-800 text-foreground"
-                  : "text-muted-foreground hover:bg-zinc-800/40 hover:text-foreground"
+                  ? "text-foreground bg-zinc-800"
+                  : "text-muted-foreground hover:text-foreground hover:bg-zinc-800/40"
               }`}
             >
               {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -343,9 +343,7 @@ function ViewsDisplayPopover({
               <button
                 type="button"
                 onClick={() => onOrderAscChange(!orderAsc)}
-                aria-label={
-                  orderAsc ? "Sort descending" : "Sort ascending"
-                }
+                aria-label={orderAsc ? "Sort descending" : "Sort ascending"}
                 aria-pressed={orderAsc}
                 data-testid="views-ordering-direction"
                 className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-5 items-center justify-center rounded transition-colors"

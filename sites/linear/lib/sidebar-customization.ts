@@ -207,9 +207,7 @@ export function reorderItems(
   const fromIndex = items.findIndex((i) => i.key === fromKey)
   if (fromIndex < 0) return current
   const [moved] = items.splice(fromIndex, 1)
-  const updated = targetSection
-    ? { ...moved, section: targetSection }
-    : moved
+  const updated = targetSection ? { ...moved, section: targetSection } : moved
   // Clamp targetIndex into the new array bounds.
   const insertIndex = Math.max(0, Math.min(toIndex, items.length))
   items.splice(insertIndex, 0, updated)

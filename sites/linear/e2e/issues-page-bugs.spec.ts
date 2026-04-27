@@ -39,10 +39,9 @@ test.describe("Team issues page bug fixes", () => {
     expect(identifier).toBeTruthy()
     await firstRow.click()
     // Issue detail page lives at /issues/[identifier].
-    await expect(page).toHaveURL(
-      new RegExp(`/issues/${identifier}$`),
-      { timeout: 3000 }
-    )
+    await expect(page).toHaveURL(new RegExp(`/issues/${identifier}$`), {
+      timeout: 3000,
+    })
   })
 
   /**
@@ -52,9 +51,7 @@ test.describe("Team issues page bug fixes", () => {
   test("Active tab excludes Backlog rows (regression)", async ({ page }) => {
     await gotoTeamIssues(page)
     await page.getByTestId("team-issues-tab-active").click()
-    await expect(
-      page.getByTestId("team-issues-content-active")
-    ).toBeVisible()
+    await expect(page.getByTestId("team-issues-content-active")).toBeVisible()
 
     // No row inside the Active tab can have data-status-type="backlog".
     const backlogStatusBadges = page.locator(
@@ -154,9 +151,7 @@ test.describe("Team issues page bug fixes", () => {
     await gotoTeamIssues(page)
     await page.getByRole("button", { name: /Workspace menu/i }).click()
     await expect(page.getByTestId("workspace-menu-settings")).toBeVisible()
-    await expect(
-      page.getByTestId("workspace-menu-invite-people")
-    ).toBeVisible()
+    await expect(page.getByTestId("workspace-menu-invite-people")).toBeVisible()
     await expect(page.getByTestId("workspace-menu-switch")).toBeVisible()
     await expect(page.getByTestId("workspace-menu-logout")).toBeVisible()
   })

@@ -78,10 +78,7 @@ export interface InitialsAvatarSpec {
   backgroundColor: AvatarColor
 }
 
-export function specForUser(
-  name: string,
-  seed: string
-): InitialsAvatarSpec {
+export function specForUser(name: string, seed: string): InitialsAvatarSpec {
   return {
     initials: initialsFromName(name, seed),
     backgroundColor: colorForSeed(seed || name),

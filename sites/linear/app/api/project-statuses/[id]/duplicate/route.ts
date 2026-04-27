@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server"
-import {
-  duplicateStatus,
-  usageCountFor,
-} from "@/lib/project-statuses-mocks"
+import { duplicateStatus, usageCountFor } from "@/lib/project-statuses-mocks"
 
 export async function POST(
   _req: Request,

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import {
   Popover,
   PopoverContent,
@@ -54,7 +54,6 @@ export function FilterPopover({
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
-  const [sideOffset, setSideOffset] = useState(0)
   const [activeChildren, setActiveChildren] = useState<Set<string>>(new Set())
   const [aiMode, setAiMode] = useState(false)
   const [aiQuery, setAiQuery] = useState("")
@@ -62,14 +61,15 @@ export function FilterPopover({
   const sidePanelRef = useRef<HTMLDivElement>(null)
   const rowRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
 
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next)
+    if (!next) {
       setAiMode(false)
       setAiQuery("")
       setSearch("")
       setHoveredKey(null)
     }
-  }, [open])
+  }
 
   const filtered = options.filter((o) =>
     o.label.toLowerCase().includes(search.toLowerCase())
@@ -79,30 +79,34 @@ export function FilterPopover({
   )
 
   const hovered = hoveredKey
-    ? options.find((o) => o.label === hoveredKey) ?? null
+    ? (options.find((o) => o.label === hoveredKey) ?? null)
     : null
   const hoveredHasFlyout = !!(
     hovered &&
     (hovered.kind === "search" || hovered.submenu !== undefined)
   )
 
-  useEffect(() => {
+  // Position the side panel via DOM mutation rather than React state — the
+  // measurement is a one-shot layout sync, not data the rest of the tree
+  // needs to read. This keeps `react-hooks/set-state-in-effect` quiet.
+  useLayoutEffect(() => {
+    const sideEl = sidePanelRef.current
+    if (!sideEl) return
     if (!hoveredKey) {
-      setSideOffset(0)
+      sideEl.style.marginTop = "0px"
       return
     }
     const rowEl = rowRefs.current.get(hoveredKey)
     const mainEl = mainPanelRef.current
-    const sideEl = sidePanelRef.current
     if (!rowEl || !mainEl) return
     const rowOffset = Math.max(
       0,
       rowEl.getBoundingClientRect().top - mainEl.getBoundingClientRect().top
     )
-    const sideH = sideEl?.offsetHeight ?? 0
+    const sideH = sideEl.offsetHeight
     const mainH = mainEl.offsetHeight
     const maxOffset = Math.max(0, mainH - sideH)
-    setSideOffset(Math.min(rowOffset, maxOffset))
+    sideEl.style.marginTop = `${Math.min(rowOffset, maxOffset)}px`
   }, [hoveredKey])
 
   const toggleChild = (key: string) => {
@@ -115,7 +119,7 @@ export function FilterPopover({
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       {triggerRender ? (
         <PopoverTrigger render={triggerRender} />
       ) : (
@@ -149,9 +153,7 @@ export function FilterPopover({
             </div>
             <div className="py-1">
               {aiSuggestions
-                .filter((s) =>
-                  s.toLowerCase().includes(aiQuery.toLowerCase())
-                )
+                .filter((s) => s.toLowerCase().includes(aiQuery.toLowerCase()))
                 .map((s) => (
                   <button
                     key={s}
@@ -179,7 +181,6 @@ export function FilterPopover({
                   <div
                     ref={sidePanelRef}
                     className="bg-popover ring-foreground/10 w-[230px] overflow-hidden rounded-lg px-2.5 py-2 shadow-md ring-1"
-                    style={{ marginTop: sideOffset }}
                   >
                     <input
                       autoFocus
@@ -191,7 +192,6 @@ export function FilterPopover({
                   <div
                     ref={sidePanelRef}
                     className="bg-popover text-muted-foreground ring-foreground/10 w-[230px] rounded-lg px-2.5 py-3 text-center text-xs shadow-md ring-1"
-                    style={{ marginTop: sideOffset }}
                   >
                     No matching options
                   </div>
@@ -199,7 +199,6 @@ export function FilterPopover({
                   <div
                     ref={sidePanelRef}
                     className="bg-popover ring-foreground/10 w-[230px] overflow-hidden rounded-lg shadow-md ring-1"
-                    style={{ marginTop: sideOffset }}
                   >
                     <div className="max-h-72 overflow-y-auto py-1">
                       {hovered.submenu!.map((s) => {
@@ -212,9 +211,7 @@ export function FilterPopover({
                             key={s.label}
                             type="button"
                             onClick={
-                              showCheckbox
-                                ? () => toggleChild(key)
-                                : undefined
+                              showCheckbox ? () => toggleChild(key) : undefined
                             }
                             className="hover:bg-accent group flex w-full items-center gap-2 px-2.5 py-1.5 text-xs transition-colors"
                           >
@@ -253,9 +250,7 @@ export function FilterPopover({
                             {s.count !== undefined && (
                               <span className="text-muted-foreground text-[11px]">
                                 {s.count}{" "}
-                                {s.count === 1
-                                  ? countNoun
-                                  : `${countNoun}s`}
+                                {s.count === 1 ? countNoun : `${countNoun}s`}
                               </span>
                             )}
                             {showChevron && (

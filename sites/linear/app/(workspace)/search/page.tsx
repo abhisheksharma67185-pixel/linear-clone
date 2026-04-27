@@ -123,10 +123,7 @@ function SearchPageInner({ initialQuery }: { initialQuery: string }) {
             aria-label="Display options"
             className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
           >
-            <HugeiconsIcon
-              icon={SlidersHorizontalIcon}
-              className="size-3.5"
-            />
+            <HugeiconsIcon icon={SlidersHorizontalIcon} className="size-3.5" />
           </button>
         </div>
       </div>

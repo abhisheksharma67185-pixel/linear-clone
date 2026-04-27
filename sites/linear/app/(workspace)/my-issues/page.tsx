@@ -3,12 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
-import type {
-  Issue,
-  Member,
-  Label,
-  Project,
-} from "@/app/lib/mock-data"
+import type { Issue, Member, Label, Project } from "@/app/lib/mock-data"
 import { CURRENT_USER_ID } from "@/app/lib/current-user"
 import {
   assignedQuery,
@@ -148,6 +143,7 @@ export default function MyIssuesPage() {
   const [display, setDisplay] = useState<DisplayState>(DEFAULT_DISPLAY)
   // Hydrate from localStorage after mount to avoid SSR mismatch.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load on mount
     setDisplay(loadDisplay())
   }, [])
   const updateDisplay = useCallback((next: DisplayState) => {
@@ -324,10 +320,7 @@ export default function MyIssuesPage() {
               open={displayOpen}
               onOpenChange={setDisplayOpen}
               trigger={
-                <CircularIconButton
-                  label="Display"
-                  aria-haspopup="dialog"
-                >
+                <CircularIconButton label="Display" aria-haspopup="dialog">
                   <AdjustmentsIcon />
                 </CircularIconButton>
               }
@@ -504,13 +497,21 @@ function IssueListView({
   forceLayout?: "list" | "board"
   ungrouped?: boolean
 }) {
-  const sorted = useMemo(() => sortIssues(issues, display.ordering), [issues, display.ordering])
+  const sorted = useMemo(
+    () => sortIssues(issues, display.ordering),
+    [issues, display.ordering]
+  )
   const effectiveLayout = forceLayout ?? display.layout
   // Board view is a kanban — always group by status so columns are meaningful.
   const effectiveGrouping: GroupingKind =
     effectiveLayout === "board" ? "status" : display.grouping
   const groups = useMemo(
-    () => buildGroups(sorted, effectiveGrouping, { memberById, labelById, projectById }),
+    () =>
+      buildGroups(sorted, effectiveGrouping, {
+        memberById,
+        labelById,
+        projectById,
+      }),
     [sorted, effectiveGrouping, memberById, labelById, projectById]
   )
 
@@ -533,7 +534,9 @@ function IssueListView({
             issue={issue}
             assignee={memberById.get(issue.assigneeId ?? "") ?? null}
             project={
-              issue.projectId ? projectById.get(issue.projectId) ?? null : null
+              issue.projectId
+                ? (projectById.get(issue.projectId) ?? null)
+                : null
             }
             issueLabels={
               issue.labelIds
@@ -642,7 +645,9 @@ function BoardColumn({
         <div className="flex items-center gap-2 text-sm">
           {group.icon}
           <span className="font-medium">{group.label}</span>
-          <span className="text-muted-foreground text-xs">{group.items.length}</span>
+          <span className="text-muted-foreground text-xs">
+            {group.items.length}
+          </span>
         </div>
         <div className="text-muted-foreground flex items-center gap-1 text-xs">
           <button
@@ -675,7 +680,9 @@ function BoardColumn({
         aria-label="Add issue"
         className="text-muted-foreground hover:bg-accent/60 hover:text-foreground mt-1 flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs"
       >
-        <span aria-hidden="true" className="text-base leading-none">+</span>
+        <span aria-hidden="true" className="text-base leading-none">
+          +
+        </span>
         <span>Add issue</span>
       </button>
     </div>
@@ -731,17 +738,27 @@ function BoardCard({
   )
 }
 
-function sortIssues(issues: Issue[], ordering: DisplayState["ordering"]): Issue[] {
+function sortIssues(
+  issues: Issue[],
+  ordering: DisplayState["ordering"]
+): Issue[] {
   const out = issues.slice()
   if (ordering === "priority") {
-    out.sort((a, b) => PRIORITY_ORDER_INDEX[a.priority] - PRIORITY_ORDER_INDEX[b.priority])
+    out.sort(
+      (a, b) =>
+        PRIORITY_ORDER_INDEX[a.priority] - PRIORITY_ORDER_INDEX[b.priority]
+    )
   } else if (ordering === "lastUpdated") {
     out.sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt))
   } else if (ordering === "lastCreated") {
     out.sort(
       (a, b) =>
-        +new Date(((b as unknown as { createdAt: string }).createdAt ?? b.updatedAt)) -
-        +new Date(((a as unknown as { createdAt: string }).createdAt ?? a.updatedAt))
+        +new Date(
+          (b as unknown as { createdAt: string }).createdAt ?? b.updatedAt
+        ) -
+        +new Date(
+          (a as unknown as { createdAt: string }).createdAt ?? a.updatedAt
+        )
     )
   }
   // "manual" and "importance" fall through to original order
@@ -923,7 +940,7 @@ function Group({
               assignee={memberById.get(issue.assigneeId ?? "") ?? null}
               project={
                 issue.projectId
-                  ? projectById.get(issue.projectId) ?? null
+                  ? (projectById.get(issue.projectId) ?? null)
                   : null
               }
               issueLabels={
@@ -1047,9 +1064,7 @@ function StatusMenu({
       trigger={<StatusIcon status={status} className="size-3.5" />}
       options={STATUS_OPTIONS}
       currentValue={status}
-      renderIcon={(value) => (
-        <StatusIcon status={value} className="size-3.5" />
-      )}
+      renderIcon={(value) => <StatusIcon status={value} className="size-3.5" />}
       onSelect={onChange}
     />
   )
@@ -1097,12 +1112,13 @@ function OptionMenu<T extends string>({
   renderIcon: (value: T) => React.ReactNode
   onSelect: (next: T) => void
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpenRaw] = useState(false)
   const [query, setQuery] = useState("")
 
-  useEffect(() => {
-    if (!open) setQuery("")
-  }, [open])
+  const setOpen = useCallback((next: boolean) => {
+    if (!next) setQuery("")
+    setOpenRaw(next)
+  }, [])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -1165,7 +1181,9 @@ function OptionMenu<T extends string>({
                 {renderIcon(o.value)}
               </span>
               <span className="flex-1 truncate">{o.label}</span>
-              {o.value === currentValue && <span className="text-[10px]">✓</span>}
+              {o.value === currentValue && (
+                <span className="text-[10px]">✓</span>
+              )}
               <span className="text-muted-foreground text-[10px]">
                 {o.shortcut}
               </span>
@@ -1194,7 +1212,7 @@ function TabPill({
   return (
     <TabsTrigger
       value={value}
-      className="text-muted-foreground border-border/50 hover:bg-muted/50 data-[state=active]:bg-accent data-[state=active]:text-foreground data-[state=active]:border-transparent rounded-full border bg-transparent px-3 py-1 text-xs font-medium shadow-none transition-colors data-[state=active]:shadow-none"
+      className="text-muted-foreground border-border/50 hover:bg-muted/50 data-[state=active]:bg-accent data-[state=active]:text-foreground rounded-full border bg-transparent px-3 py-1 text-xs font-medium shadow-none transition-colors data-[state=active]:border-transparent data-[state=active]:shadow-none"
     >
       {children}
     </TabsTrigger>
@@ -1296,8 +1314,7 @@ function SummaryPanel({
   )
 
   const isActive = useCallback(
-    (kind: FilterKind, value: string) =>
-      (filters[kind] ?? []).includes(value),
+    (kind: FilterKind, value: string) => (filters[kind] ?? []).includes(value),
     [filters]
   )
 

@@ -133,7 +133,10 @@ test.describe("My Issues + board regressions", () => {
     const previousH1 = page.getByRole("heading", { name: /^My issues$/ })
     await expect(previousH1).toBeVisible()
 
-    await page.getByRole("link", { name: /^Projects$/ }).first().click()
+    await page
+      .getByRole("link", { name: /^Projects$/ })
+      .first()
+      .click()
 
     // The previous heading must be gone OR the skeleton must be on
     // screen within 200ms — that's the regression guard against the
