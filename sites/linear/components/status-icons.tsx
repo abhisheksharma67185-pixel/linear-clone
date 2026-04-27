@@ -76,10 +76,7 @@ export function PriorityIcon({
 }) {
   if (priority === "none") {
     return (
-      <svg
-        viewBox="0 0 16 16"
-        className={`text-muted-foreground ${className}`}
-      >
+      <svg viewBox="0 0 16 16" className={`text-muted-foreground ${className}`}>
         <line
           x1="3"
           y1="8"

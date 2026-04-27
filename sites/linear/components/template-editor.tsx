@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -17,7 +17,6 @@ import {
 import type { Team, Member } from "@/app/lib/mock-data"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -113,9 +112,9 @@ export function TemplateEditor(props: Props) {
         setTeams(t)
         setMembers(m)
         if (props.mode === "edit") {
-          const tpl = (await fetch(
-            `/api/templates/${props.templateId}`
-          ).then((r) => (r.ok ? r.json() : null))) as IssueTemplate | null
+          const tpl = (await fetch(`/api/templates/${props.templateId}`).then(
+            (r) => (r.ok ? r.json() : null)
+          )) as IssueTemplate | null
           if (tpl && !cancelled) {
             setType(tpl.type)
             setName(tpl.name)
@@ -267,13 +266,11 @@ export function TemplateEditor(props: Props) {
         <Button
           onClick={onSubmit}
           disabled={!canSave}
-          aria-label={props.mode === "new" ? "Create template" : "Save template"}
+          aria-label={
+            props.mode === "new" ? "Create template" : "Save template"
+          }
         >
-          {submitting
-            ? "Saving…"
-            : props.mode === "new"
-              ? "Create"
-              : "Save"}
+          {submitting ? "Saving…" : props.mode === "new" ? "Create" : "Save"}
         </Button>
       </div>
     </div>
@@ -308,8 +305,9 @@ function StandardTemplateBody({
         rows={10}
         className="placeholder:text-muted-foreground/60 w-full resize-none bg-transparent px-4 pb-4 text-sm outline-none"
       />
-      <div className="border-t px-3 py-1.5 text-[11px] text-muted-foreground">
-        Supports markdown and <code className="font-mono">/</code> slash commands
+      <div className="text-muted-foreground border-t px-3 py-1.5 text-[11px]">
+        Supports markdown and <code className="font-mono">/</code> slash
+        commands
       </div>
     </div>
   )
@@ -367,7 +365,9 @@ function CustomFormBody({
             <div className="flex items-center gap-2">
               <Input
                 value={field.label}
-                onChange={(e) => updateField(field.id, { label: e.target.value })}
+                onChange={(e) =>
+                  updateField(field.id, { label: e.target.value })
+                }
                 placeholder="Field label"
                 aria-label="Field label"
                 className="h-8 flex-1 text-sm"
@@ -433,7 +433,15 @@ function CustomFormBody({
 
       <div className="flex flex-wrap gap-1.5 pt-1">
         {(
-          ["text", "textarea", "select", "multi-select", "number", "date", "toggle"] as const
+          [
+            "text",
+            "textarea",
+            "select",
+            "multi-select",
+            "number",
+            "date",
+            "toggle",
+          ] as const
         ).map((kind) => (
           <Button
             key={kind}

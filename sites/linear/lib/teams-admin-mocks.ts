@@ -83,8 +83,7 @@ export function summarizeTeams(args: {
       memberCount: left ? Math.max(0, memberCount - 1) : memberCount,
       issueCount,
       status: getTeamStatus(t.id),
-      currentUserIsMember:
-        !left && t.memberIds.includes(args.currentUserId),
+      currentUserIsMember: !left && t.memberIds.includes(args.currentUserId),
     }
   })
 }

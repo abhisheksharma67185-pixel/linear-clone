@@ -11,7 +11,5 @@ export async function GET() {
       teamMemberIdsByMember[mid] = (teamMemberIdsByMember[mid] ?? 0) + 1
     }
   }
-  return NextResponse.json(
-    summarizeMembers({ members, teamMemberIdsByMember })
-  )
+  return NextResponse.json(summarizeMembers({ members, teamMemberIdsByMember }))
 }

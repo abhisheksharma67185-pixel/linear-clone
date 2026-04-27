@@ -145,7 +145,7 @@ function withDerivedSubscribers(issue: Issue): Issue {
     h = (h * 31 + issue.id.charCodeAt(i)) | 0
   }
   // Mix in `usr-1` for ~⅓ of issues so My Issues → Subscribed has content.
-  if ((Math.abs(h) % 3) === 0) subs.add("usr-1")
+  if (Math.abs(h) % 3 === 0) subs.add("usr-1")
   // Add one rotating member from the roster for variety.
   const extras = ["usr-2", "usr-3", "usr-4", "usr-5", "usr-6"]
   subs.add(extras[Math.abs(h) % extras.length])

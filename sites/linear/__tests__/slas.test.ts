@@ -60,7 +60,11 @@ describe("policy CRUD", () => {
   })
 
   it("rejects a policy with non-positive duration", () => {
-    const r = createPolicy({ name: "x", durationValue: 0, durationUnit: "hours" })
+    const r = createPolicy({
+      name: "x",
+      durationValue: 0,
+      durationUnit: "hours",
+    })
     expect(r.success).toBe(false)
   })
 

@@ -248,10 +248,7 @@ function MiniSelect<T extends string>({
   options: { value: T; label: string }[]
 }) {
   return (
-    <Select
-      value={value}
-      onValueChange={(v) => v && onValueChange(v as T)}
-    >
+    <Select value={value} onValueChange={(v) => v && onValueChange(v as T)}>
       <SelectTrigger className="h-6 w-auto min-w-24 gap-1 px-2 py-0 text-xs">
         <SelectValue />
       </SelectTrigger>

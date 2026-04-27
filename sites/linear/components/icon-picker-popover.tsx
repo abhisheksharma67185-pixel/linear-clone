@@ -1708,10 +1708,6 @@ export function IconPickerPopover({
 
   const color = PICKER_COLORS.find((c) => c.id === colorId) ?? PICKER_COLORS[1]
 
-  const filtered = search
-    ? PICKER_ICONS.filter((e) => e.name.includes(search.toLowerCase()))
-    : PICKER_ICONS
-
   function handleSelect(icon: IconType) {
     setSelectedIcon(icon)
     setSelectedEmoji(null)
@@ -1880,41 +1876,18 @@ function IconsPanel({
     <>
       {/* Color palette */}
       <div className="flex items-center gap-1.5 px-3 py-2.5">
-          {PICKER_COLORS.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setColorId(c.id)}
-              className={`flex size-6 shrink-0 items-center justify-center rounded-full ${c.bg} transition-all ${
-                colorId === c.id
-                  ? "ring-offset-popover ring-2 ring-white/30 ring-offset-1"
-                  : "opacity-75 hover:opacity-100"
-              }`}
-            >
-              {colorId === c.id && (
-                <svg viewBox="0 0 10 10" className="size-3.5" fill="none">
-                  <path
-                    d="M2 5l2 2.5L8 2.5"
-                    stroke="white"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
-            </button>
-          ))}
-          {/* Rainbow */}
+        {PICKER_COLORS.map((c) => (
           <button
+            key={c.id}
             type="button"
-            onClick={() => setColorId("rainbow")}
-            className={`flex size-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-red-400 via-yellow-300 to-blue-400 transition-all ${
-              colorId === "rainbow"
+            onClick={() => setColorId(c.id)}
+            className={`flex size-6 shrink-0 items-center justify-center rounded-full ${c.bg} transition-all ${
+              colorId === c.id
                 ? "ring-offset-popover ring-2 ring-white/30 ring-offset-1"
                 : "opacity-75 hover:opacity-100"
             }`}
           >
-            {colorId === "rainbow" && (
+            {colorId === c.id && (
               <svg viewBox="0 0 10 10" className="size-3.5" fill="none">
                 <path
                   d="M2 5l2 2.5L8 2.5"
@@ -1926,7 +1899,30 @@ function IconsPanel({
               </svg>
             )}
           </button>
-        </div>
+        ))}
+        {/* Rainbow */}
+        <button
+          type="button"
+          onClick={() => setColorId("rainbow")}
+          className={`flex size-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-red-400 via-yellow-300 to-blue-400 transition-all ${
+            colorId === "rainbow"
+              ? "ring-offset-popover ring-2 ring-white/30 ring-offset-1"
+              : "opacity-75 hover:opacity-100"
+          }`}
+        >
+          {colorId === "rainbow" && (
+            <svg viewBox="0 0 10 10" className="size-3.5" fill="none">
+              <path
+                d="M2 5l2 2.5L8 2.5"
+                stroke="white"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </button>
+      </div>
 
       {/* Search */}
       <div className="flex items-center gap-2 border-t border-b px-3 py-2">

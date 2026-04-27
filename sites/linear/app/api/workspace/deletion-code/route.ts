@@ -15,7 +15,10 @@ export async function POST() {
     expiresAt,
     // Expose the code only in non-production builds so the mock can be
     // exercised end-to-end without a real mailbox.
-    devCode: process.env.NODE_ENV === "production" ? undefined : peekDeletionCode()?.code,
+    devCode:
+      process.env.NODE_ENV === "production"
+        ? undefined
+        : peekDeletionCode()?.code,
   })
 }
 

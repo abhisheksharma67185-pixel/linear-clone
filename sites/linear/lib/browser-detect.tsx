@@ -1,7 +1,14 @@
 import * as React from "react"
 
 export type BrowserInfo = {
-  browser: "Chrome" | "Safari" | "Firefox" | "Edge" | "Brave" | "Opera" | "Browser"
+  browser:
+    | "Chrome"
+    | "Safari"
+    | "Firefox"
+    | "Edge"
+    | "Brave"
+    | "Opera"
+    | "Browser"
   os: string
   label: string
 }
@@ -36,8 +43,22 @@ type IconProps = { className?: string }
 function ChromeGlyph({ className }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" className={className} aria-hidden="true">
-      <circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="10" cy="10" r="3.2" fill="none" stroke="currentColor" strokeWidth="1.4" />
+      <circle
+        cx="10"
+        cy="10"
+        r="8.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
+      <circle
+        cx="10"
+        cy="10"
+        r="3.2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
       <path
         d="M10 1.5v5.2M17.5 6.25l-4.5 2.6M2.5 6.25l4.5 2.6"
         fill="none"
@@ -52,8 +73,20 @@ function ChromeGlyph({ className }: IconProps) {
 function SafariGlyph({ className }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" className={className} aria-hidden="true">
-      <circle cx="10" cy="10" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M10 3.5v1.5M10 15v1.5M3.5 10h1.5M15 10h1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <circle
+        cx="10"
+        cy="10"
+        r="8.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
+      <path
+        d="M10 3.5v1.5M10 15v1.5M3.5 10h1.5M15 10h1.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
       <path d="M13.2 6.8 10 10l-3.2 3.2L10 10Z" fill="currentColor" />
     </svg>
   )

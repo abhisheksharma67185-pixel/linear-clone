@@ -28,9 +28,7 @@ test.describe("Submenu does not overlap parent popover", () => {
     // Open the workspace switcher dropdown — it has a "Switch
     // workspace" sub-trigger which opens a real submenu.
     await page.getByRole("button", { name: /Workspace menu/ }).click()
-    const parent = page
-      .locator('[data-slot="dropdown-menu-content"]')
-      .first()
+    const parent = page.locator('[data-slot="dropdown-menu-content"]').first()
     await expect(parent).toBeVisible()
 
     // Find a submenu trigger (data-slot="dropdown-menu-sub-trigger"

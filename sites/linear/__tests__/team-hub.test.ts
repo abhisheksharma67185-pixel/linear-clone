@@ -77,7 +77,9 @@ describe("sectionValueLabel snapshot", () => {
   it("renders '1 member' / 'Off' / '{n} labels' / 'None' / '5 statuses'", () => {
     expect(sectionValueLabel(sections.members, summary)).toBe("1 member")
     expect(sectionValueLabel(sections.notifications, summary)).toBe("Off")
-    expect(sectionValueLabel(sections["issue-labels"], summary)).toBe("3 labels")
+    expect(sectionValueLabel(sections["issue-labels"], summary)).toBe(
+      "3 labels"
+    )
     expect(sectionValueLabel(sections.templates, summary)).toBe("None")
     expect(sectionValueLabel(sections["recurring-issues"], summary)).toBe(
       "None"
@@ -86,7 +88,11 @@ describe("sectionValueLabel snapshot", () => {
   })
 
   it("pluralises labels / members correctly", () => {
-    const plural: TeamHubSectionSummary = { ...summary, members: 4, issueLabels: 1 }
+    const plural: TeamHubSectionSummary = {
+      ...summary,
+      members: 4,
+      issueLabels: 1,
+    }
     expect(sectionValueLabel(sections.members, plural)).toBe("4 members")
     expect(sectionValueLabel(sections["issue-labels"], plural)).toBe("1 label")
   })

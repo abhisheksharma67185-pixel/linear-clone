@@ -22,10 +22,10 @@ async function openAndExpectGone(
   const content = page.locator(contentSelector).first()
   await expect(content, `${label} should open`).toBeVisible()
   await page.keyboard.press("Escape")
-  await expect(
-    content,
-    `${label} should fully unmount on Escape`
-  ).toHaveCount(0, { timeout: 1000 })
+  await expect(content, `${label} should fully unmount on Escape`).toHaveCount(
+    0,
+    { timeout: 1000 }
+  )
 }
 
 test.describe("Escape closes every popover/dropdown surface", () => {
@@ -47,8 +47,7 @@ test.describe("Escape closes every popover/dropdown surface", () => {
   test("Team card More menu (DropdownMenu)", async ({ page }) => {
     await openAndExpectGone(
       page,
-      async () =>
-        await page.getByTestId("teams-card-more").first().click(),
+      async () => await page.getByTestId("teams-card-more").first().click(),
       '[data-slot="dropdown-menu-content"]',
       "Team More dropdown"
     )

@@ -131,12 +131,10 @@ test.describe("Team-row dropdown menu", () => {
       "team-menu-subscribe-issue_completed"
     )
     // Subscribed items render a Tick02 icon with aria-label="Subscribed".
-    await expect(
-      addedItem.locator('[aria-label="Subscribed"]')
-    ).toHaveCount(1)
-    await expect(
-      triagedItem.locator('[aria-label="Subscribed"]')
-    ).toHaveCount(1)
+    await expect(addedItem.locator('[aria-label="Subscribed"]')).toHaveCount(1)
+    await expect(triagedItem.locator('[aria-label="Subscribed"]')).toHaveCount(
+      1
+    )
     // The third event was never toggled — must NOT show a check.
     await expect(
       completedItem.locator('[aria-label="Subscribed"]')
@@ -175,7 +173,9 @@ test.describe("Team-row dropdown menu", () => {
     ).toBeVisible({ timeout: 2000 })
   })
 
-  test("New issue menu item opens the create-issue dialog", async ({ page }) => {
+  test("New issue menu item opens the create-issue dialog", async ({
+    page,
+  }) => {
     await gotoAndOpenTeamMenu(page)
     await page.getByTestId("team-menu-new-issue").click()
     // The dialog content slot is portalled to body.

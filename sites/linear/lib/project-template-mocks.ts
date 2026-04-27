@@ -70,9 +70,11 @@ function defaults(): Omit<
   }
 }
 
-export function createProjectTemplate(input: {
-  name?: string
-} & Partial<ProjectTemplate>) {
+export function createProjectTemplate(
+  input: {
+    name?: string
+  } & Partial<ProjectTemplate>
+) {
   if (!input.name?.trim()) {
     return { success: false as const, error: "Name is required" }
   }

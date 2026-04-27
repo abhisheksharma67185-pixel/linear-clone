@@ -85,9 +85,7 @@ describe("My Issues filters — predicate behavior", () => {
       issue({ id: "4", assigneeId: ME, status: "cancelled" }), // ✗ cancelled
       issue({ id: "5", assigneeId: SOMEONE_ELSE, status: "todo" }), // ✗ not me
     ]
-    const got = fixtures
-      .filter(assignedQuery(ME).predicate)
-      .map((i) => i.id)
+    const got = fixtures.filter(assignedQuery(ME).predicate).map((i) => i.id)
     expect(got).toEqual(["1", "2"])
   })
 
@@ -97,9 +95,7 @@ describe("My Issues filters — predicate behavior", () => {
       issue({ id: "2", creatorId: ME, status: "todo" }), // ✓
       issue({ id: "3", creatorId: SOMEONE_ELSE }), // ✗
     ]
-    const got = fixtures
-      .filter(createdQuery(ME).predicate)
-      .map((i) => i.id)
+    const got = fixtures.filter(createdQuery(ME).predicate).map((i) => i.id)
     expect(got).toEqual(["1", "2"])
   })
 
@@ -128,9 +124,7 @@ describe("My Issues filters — predicate behavior", () => {
       // Missing subscriberIds field entirely should be treated as `[]`.
       issue({ id: "no-subscribers-field", creatorId: ME }),
     ]
-    const got = fixtures
-      .filter(subscribedQuery(ME).predicate)
-      .map((i) => i.id)
+    const got = fixtures.filter(subscribedQuery(ME).predicate).map((i) => i.id)
     expect(got).toEqual(["subscribed-not-creator"])
   })
 

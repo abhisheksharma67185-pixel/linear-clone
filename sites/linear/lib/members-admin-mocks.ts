@@ -6,11 +6,7 @@
 import type { Member } from "@/app/lib/mock-data"
 
 export type MemberRole = "admin" | "member" | "guest"
-export type MemberStatus =
-  | "active"
-  | "invited"
-  | "suspended"
-  | "application"
+export type MemberStatus = "active" | "invited" | "suspended" | "application"
 
 // Shadow state — keeps base member data untouched while letting the page
 // change roles, suspend/resend, etc.
@@ -183,9 +179,7 @@ export function summarizeMembers(args: {
 // Actions
 // ---------------------------------------------------------------------------
 
-type Result<T> =
-  | { success: true; data: T }
-  | { success: false; error: string }
+type Result<T> = { success: true; data: T } | { success: false; error: string }
 
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -208,7 +202,10 @@ export function validateInviteEmails(raw: unknown): Result<string[]> {
     }
   }
   // De-dupe
-  return { success: true, data: [...new Set(parts.map((p) => p.toLowerCase()))] }
+  return {
+    success: true,
+    data: [...new Set(parts.map((p) => p.toLowerCase()))],
+  }
 }
 
 /**
@@ -281,7 +278,10 @@ export function inviteMembers(
   return { success: true, data: created }
 }
 
-export function setMemberRole(id: string, role: MemberRole): Result<{ id: string; role: MemberRole }> {
+export function setMemberRole(
+  id: string,
+  role: MemberRole
+): Result<{ id: string; role: MemberRole }> {
   if (!["admin", "member", "guest"].includes(role)) {
     return { success: false, error: "Invalid role" }
   }
@@ -314,11 +314,16 @@ export function removeMember(id: string): Result<{ id: string }> {
   return { success: true, data: { id } }
 }
 
-export function resendInvite(id: string): Result<{ id: string; sentAt: string }> {
+export function resendInvite(
+  id: string
+): Result<{ id: string; sentAt: string }> {
   const extra = _extras.find((x) => x.id === id)
   if (!extra || extra.status !== "invited") {
     // Base members flagged as invited in DEFAULT_STATUS also qualify.
-    if (_statusOverrides.get(id) !== "invited" && DEFAULT_STATUS[id] !== "invited") {
+    if (
+      _statusOverrides.get(id) !== "invited" &&
+      DEFAULT_STATUS[id] !== "invited"
+    ) {
       return { success: false, error: "Member is not invited" }
     }
   }

@@ -83,9 +83,9 @@ test.describe("Members page", () => {
     await page.getByTestId("invite-submit").click()
 
     // The dialog closes and a toast surfaces the success.
-    await expect(
-      page.getByTestId("invite-emails-textarea")
-    ).toHaveCount(0, { timeout: 3000 })
+    await expect(page.getByTestId("invite-emails-textarea")).toHaveCount(0, {
+      timeout: 3000,
+    })
 
     await page.getByTestId("members-tab-invited").click()
     const newRow = page.locator(
@@ -241,8 +241,8 @@ test.describe("Members page", () => {
     const firstRow = page.getByTestId("members-row").first()
     await expect(firstRow).toBeVisible()
     await firstRow.click({ button: "right" })
-    await expect(
-      page.getByTestId("members-row-action-copy-email")
-    ).toBeVisible({ timeout: 1000 })
+    await expect(page.getByTestId("members-row-action-copy-email")).toBeVisible(
+      { timeout: 1000 }
+    )
   })
 })

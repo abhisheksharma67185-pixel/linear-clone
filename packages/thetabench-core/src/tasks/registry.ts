@@ -4,31 +4,24 @@ import type {
   TaskDifficulty,
   TaskType,
 } from "./types"
+import { defaultEngine } from "../sim-engine"
 
 // ---------------------------------------------------------------------------
-// Generic task registry — sites register their tasks into this
+// Task registry — thin shims around `defaultEngine`. Sites continue to call
+// `registerTasks(...)` at module init; the underlying state lives on the
+// SimEngine instance.
 // ---------------------------------------------------------------------------
-
-const allTasks: TaskDefinition[] = []
-const taskById = new Map<string, TaskDefinition>()
 
 export function registerTasks(tasks: TaskDefinition[]): void {
-  for (const task of tasks) {
-    if (taskById.has(task.id)) {
-      console.warn(`[thetabench] Duplicate task ID "${task.id}" — skipping`)
-      continue
-    }
-    allTasks.push(task)
-    taskById.set(task.id, task)
-  }
+  defaultEngine.registerTasks(tasks)
 }
 
 export function getTaskById(id: string): TaskDefinition | undefined {
-  return taskById.get(id)
+  return defaultEngine.getTaskById(id)
 }
 
 export function getAllTasks(): TaskDefinition[] {
-  return allTasks
+  return defaultEngine.getAllTasks()
 }
 
 export function getTasksByCriteria(criteria: {
@@ -38,23 +31,13 @@ export function getTasksByCriteria(criteria: {
   stage?: number
   site?: string
 }): TaskDefinition[] {
-  return allTasks.filter((t) => {
-    if (criteria.domain && t.domain !== criteria.domain) return false
-    if (criteria.difficulty && t.difficulty !== criteria.difficulty)
-      return false
-    if (criteria.type && t.type !== criteria.type) return false
-    if (criteria.stage !== undefined && t.curriculumStage !== criteria.stage)
-      return false
-    if (criteria.site && t.site !== criteria.site) return false
-    return true
-  })
+  return defaultEngine.getTasksByCriteria(criteria)
 }
 
 export function getTaskCount(): number {
-  return allTasks.length
+  return defaultEngine.getTaskCount()
 }
 
 export function clearTasks(): void {
-  allTasks.length = 0
-  taskById.clear()
+  defaultEngine.clearTasks()
 }

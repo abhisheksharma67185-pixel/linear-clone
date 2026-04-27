@@ -57,7 +57,8 @@ export function generateSecret(): string {
   if (typeof crypto !== "undefined" && crypto.getRandomValues) {
     crypto.getRandomValues(bytes)
   } else {
-    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256)
+    for (let i = 0; i < bytes.length; i++)
+      bytes[i] = Math.floor(Math.random() * 256)
   }
   let binary = ""
   for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
@@ -95,9 +96,7 @@ if (!g.__linearMock_webhooks) g.__linearMock_webhooks = []
 export const oauthApps: OAuthApp[] = g.__linearMock_oauthApps
 export const webhooks: Webhook[] = g.__linearMock_webhooks
 
-type Result<T> =
-  | { success: true; data: T }
-  | { success: false; error: string }
+type Result<T> = { success: true; data: T } | { success: false; error: string }
 
 const now = () => new Date().toISOString()
 

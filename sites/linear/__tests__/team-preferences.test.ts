@@ -212,10 +212,9 @@ describe("loadTeamPreferences resilience", () => {
   })
 
   it("falls back to defaults on corrupted JSON", () => {
-    ;(window as unknown as { localStorage: LocalStorageStub }).localStorage.setItem(
-      "team:preferences:v1",
-      "{not json"
-    )
+    ;(
+      window as unknown as { localStorage: LocalStorageStub }
+    ).localStorage.setItem("team:preferences:v1", "{not json")
     const loaded = loadTeamPreferences()
     expect(loaded).toEqual({
       subscribeEvents: {},
@@ -225,7 +224,9 @@ describe("loadTeamPreferences resilience", () => {
   })
 
   it("filters out unknown event values from persisted payload", () => {
-    ;(window as unknown as { localStorage: LocalStorageStub }).localStorage.setItem(
+    ;(
+      window as unknown as { localStorage: LocalStorageStub }
+    ).localStorage.setItem(
       "team:preferences:v1",
       JSON.stringify({
         subscribeEvents: {

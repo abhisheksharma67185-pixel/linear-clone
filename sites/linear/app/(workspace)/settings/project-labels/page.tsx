@@ -74,12 +74,15 @@ function ProjectLabelsInner() {
 
   const [labels, setLabels] = useState<LabelType[]>([])
   const [groups, setGroups] = useState<LabelGroup[]>([])
-  const [draft, setDraft] = useState<
-    { color: string; name: string; description: string } | null
-  >(null)
-  const [groupDraft, setGroupDraft] = useState<
-    { color: string; name: string } | null
-  >(null)
+  const [draft, setDraft] = useState<{
+    color: string
+    name: string
+    description: string
+  } | null>(null)
+  const [groupDraft, setGroupDraft] = useState<{
+    color: string
+    name: string
+  } | null>(null)
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
@@ -326,7 +329,6 @@ function ProjectLabelsInner() {
             type="button"
             onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
             aria-label={`Sort by name ${sortDir === "asc" ? "descending" : "ascending"}`}
-            aria-sort={sortDir === "asc" ? "ascending" : "descending"}
             className="hover:text-foreground focus-visible:ring-primary/50 focus-visible:ring-offset-background flex items-center gap-1 rounded-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
           >
             Name
@@ -374,9 +376,7 @@ function ProjectLabelsInner() {
             <input
               value={draft.description}
               onChange={(e) =>
-                setDraft((d) =>
-                  d ? { ...d, description: e.target.value } : d
-                )
+                setDraft((d) => (d ? { ...d, description: e.target.value } : d))
               }
               onKeyDown={(e) => {
                 if (e.key === "Enter") saveNew()
@@ -399,9 +399,7 @@ function ProjectLabelsInner() {
           <div />
           <SwatchPicker
             color={groupDraft.color}
-            onChange={(c) =>
-              setGroupDraft((g) => (g ? { ...g, color: c } : g))
-            }
+            onChange={(c) => setGroupDraft((g) => (g ? { ...g, color: c } : g))}
             ariaLabel="Group color"
           />
           <div className="col-span-6 pr-2">

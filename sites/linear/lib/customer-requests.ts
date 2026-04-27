@@ -11,11 +11,7 @@ export type CustomerRequestEntry = {
 
 export type DomainEntry = { id: string; value: string }
 
-export type ExternalDataProvider =
-  | "none"
-  | "attio"
-  | "hubspot"
-  | "salesforce"
+export type ExternalDataProvider = "none" | "attio" | "hubspot" | "salesforce"
 
 export const EXTERNAL_DATA_PROVIDERS: {
   value: ExternalDataProvider
@@ -28,9 +24,7 @@ export const EXTERNAL_DATA_PROVIDERS: {
 ]
 
 export function externalDataProviderLabel(p: ExternalDataProvider): string {
-  return (
-    EXTERNAL_DATA_PROVIDERS.find((x) => x.value === p)?.label ?? "None"
-  )
+  return EXTERNAL_DATA_PROVIDERS.find((x) => x.value === p)?.label ?? "None"
 }
 
 /**

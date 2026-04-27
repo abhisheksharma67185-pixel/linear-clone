@@ -42,7 +42,11 @@ const NAV: NavGroup[] = [
     items: [
       { key: "preferences", label: "Preferences", icon: Settings02Icon },
       { key: "profile", label: "Profile", icon: UserIcon },
-      { key: "notifications", label: "Notifications", icon: Notification01Icon },
+      {
+        key: "notifications",
+        label: "Notifications",
+        icon: Notification01Icon,
+      },
       { key: "security", label: "Security & access", icon: SecurityLockIcon },
       { key: "connected", label: "Connected accounts", icon: Link01Icon },
       { key: "agents", label: "Agent personalization", icon: AiBrain01Icon },

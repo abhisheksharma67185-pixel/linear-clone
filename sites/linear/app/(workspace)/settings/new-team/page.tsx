@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -12,12 +12,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowLeft01Icon, ArrowDown01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
+import {
+  ArrowLeft01Icon,
+  ArrowDown01Icon,
+  Cancel01Icon,
+} from "@hugeicons/core-free-icons"
 import {
   COPY_FROM_NONE_VALUE,
   DEFAULT_TEAM_ICON,
   DEFAULT_TIMEZONE_ID,
-  KEY_PATTERN,
   NEW_TEAM_COPY,
   TEAM_ICON_COLORS,
   TEAM_ICON_EMOJIS,
@@ -142,10 +145,7 @@ export default function NewTeamPage() {
           />
         </div>
         <div className="flex items-start justify-between gap-4 border-b px-4 py-3">
-          <label
-            htmlFor="team-name"
-            className="text-sm font-medium"
-          >
+          <label htmlFor="team-name" className="text-sm font-medium">
             Team name
           </label>
           <div className="flex w-64 flex-col items-stretch gap-1">
@@ -323,9 +323,7 @@ export default function NewTeamPage() {
       </div>
 
       {/* makePrivate is read-only on the free tier — parity with Linear. */}
-      <span className="sr-only">
-        Private team: {String(makePrivate)}
-      </span>
+      <span className="sr-only">Private team: {String(makePrivate)}</span>
     </div>
   )
 }
@@ -396,7 +394,7 @@ function TeamIconPicker({
                 onClick={() => onPickEmoji(emoji)}
                 aria-pressed={iconEmoji === emoji}
                 aria-label={`Emoji ${emoji}`}
-                className={`focus-visible:ring-ring flex size-8 items-center justify-center rounded-md text-lg hover:bg-accent/60 focus-visible:ring-2 focus-visible:outline-none ${
+                className={`focus-visible:ring-ring hover:bg-accent/60 flex size-8 items-center justify-center rounded-md text-lg focus-visible:ring-2 focus-visible:outline-none ${
                   iconEmoji === emoji ? "bg-accent" : ""
                 }`}
               >
@@ -424,7 +422,8 @@ function CopyFromTeamPicker({
   const activeLabel =
     value === COPY_FROM_NONE_VALUE
       ? NEW_TEAM_COPY.copyFromNoneLabel
-      : (teams.find((t) => t.key === value)?.name ?? NEW_TEAM_COPY.copyFromNoneLabel)
+      : (teams.find((t) => t.key === value)?.name ??
+        NEW_TEAM_COPY.copyFromNoneLabel)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -492,13 +491,17 @@ function TimezonePicker({
   activeLabel: string
   onChange: (id: string) => void
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpenRaw] = useState(false)
   const [query, setQuery] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const setOpen = useCallback((next: boolean) => {
+    setOpenRaw(next)
+    if (next) setQuery("")
+  }, [])
+
   useEffect(() => {
     if (!open) return
-    setQuery("")
     const t = window.setTimeout(() => inputRef.current?.focus(), 10)
     return () => window.clearTimeout(t)
   }, [open])

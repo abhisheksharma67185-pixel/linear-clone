@@ -309,8 +309,7 @@ export function validateNewTeamForm(input: {
   if (input.identifier.trim().length === 0) {
     errors.identifier = "Identifier is required"
   } else if (!KEY_PATTERN.test(input.identifier)) {
-    errors.identifier =
-      "Identifier must be 2–6 uppercase letters or numbers"
+    errors.identifier = "Identifier must be 2–6 uppercase letters or numbers"
   } else if (input.usedKeys.has(input.identifier)) {
     errors.identifier = `Identifier ${input.identifier} is already in use`
   }

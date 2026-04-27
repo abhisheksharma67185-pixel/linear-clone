@@ -33,9 +33,7 @@ test.describe("Display options popover dismisses cleanly", () => {
     ).toBeVisible()
 
     // Click well outside the popover to trigger the outside-click path.
-    await page
-      .getByRole("heading", { name: /^Teams$/ })
-      .click({ force: true })
+    await page.getByRole("heading", { name: /^Teams$/ }).click({ force: true })
 
     await expect(popover).toHaveCount(0, { timeout: 1000 })
     // Inner text nodes are gone too — the popover unmounted, not

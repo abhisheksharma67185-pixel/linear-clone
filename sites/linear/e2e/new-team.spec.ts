@@ -28,9 +28,7 @@ test.describe("Create a new team", () => {
     await expect(trigger).toContainText("Don't copy")
     await trigger.click()
     // Option list also uses the identical label.
-    await expect(
-      page.getByRole("option", { name: "Don't copy" })
-    ).toBeVisible()
+    await expect(page.getByRole("option", { name: "Don't copy" })).toBeVisible()
   })
 
   test("Timezone trigger defaults to a human-readable Kolkata label", async ({
@@ -60,7 +58,9 @@ test.describe("Create a new team", () => {
     await expect(
       page.getByRole("heading", { name: "Make team private", level: 2 })
     ).toBeVisible()
-    await expect(page.getByText(/Private teams and their issues/i)).toBeVisible()
+    await expect(
+      page.getByText(/Private teams and their issues/i)
+    ).toBeVisible()
     await expect(
       page.getByRole("button", { name: /Available on Business/i }).last()
     ).toBeVisible()

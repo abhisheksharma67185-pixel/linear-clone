@@ -20,9 +20,7 @@ export const workspace: WorkspaceState = {
 // Matches Linear's slug rules closely enough for the mock.
 export const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,30}[a-z0-9])?$/
 
-type Result<T> =
-  | { success: true; data: T }
-  | { success: false; error: string }
+type Result<T> = { success: true; data: T } | { success: false; error: string }
 
 export function validateName(raw: unknown): Result<string> {
   if (typeof raw !== "string" || raw.trim().length === 0) {
@@ -51,7 +49,10 @@ export function validateSlug(raw: unknown): Result<string> {
 
 export function updateWorkspace(
   patch: Partial<
-    Pick<WorkspaceState, "name" | "slug" | "logoDataUrl" | "fiscalYearStartMonth">
+    Pick<
+      WorkspaceState,
+      "name" | "slug" | "logoDataUrl" | "fiscalYearStartMonth"
+    >
   >
 ): Result<WorkspaceState> {
   if (patch.name !== undefined) {

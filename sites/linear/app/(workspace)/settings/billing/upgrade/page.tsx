@@ -80,7 +80,11 @@ export default function BillingUpgradePage() {
                 </li>
               ))}
             </ul>
-            <Button size="sm" className="mt-4 w-full" disabled={p.name === "Free"}>
+            <Button
+              size="sm"
+              className="mt-4 w-full"
+              disabled={p.name === "Free"}
+            >
               {p.name === "Free" ? "Current plan" : `Upgrade to ${p.name}`}
             </Button>
           </div>

@@ -12,8 +12,7 @@ export async function POST(request: Request) {
   } catch {
     // empty body is fine; we'll fall back to a default name
   }
-  const name =
-    body.name?.trim() || `Passkey · ${new Date().toLocaleString()}`
+  const name = body.name?.trim() || `Passkey · ${new Date().toLocaleString()}`
   const pk = addPasskey(name)
   return NextResponse.json(pk, { status: 201 })
 }
