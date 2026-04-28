@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import {
   Popover,
   PopoverContent,
