@@ -7863,13 +7863,46 @@ const IMPORT_SOURCES: {
   key: string
   name: string
   abbr: string
+  // Tile background — Linear shows service-tinted letter monograms here so
+  // each row reads like a brand chip instead of a generic muted square.
+  tileClass: string
 }[] = [
-  { key: "asana", name: "Asana", abbr: "AS" },
-  { key: "shortcut", name: "Shortcut", abbr: "SC" },
-  { key: "github", name: "GitHub", abbr: "GH" },
-  { key: "jira", name: "Jira", abbr: "JR" },
-  { key: "linear", name: "Linear", abbr: "LN" },
-  { key: "trello", name: "Trello", abbr: "TR" },
+  {
+    key: "asana",
+    name: "Asana",
+    abbr: "AS",
+    tileClass: "bg-[#f06a6a] text-white",
+  },
+  {
+    key: "shortcut",
+    name: "Shortcut",
+    abbr: "SC",
+    tileClass: "bg-[#7e57c2] text-white",
+  },
+  {
+    key: "github",
+    name: "GitHub",
+    abbr: "GH",
+    tileClass: "bg-[#24292e] text-white",
+  },
+  {
+    key: "jira",
+    name: "Jira",
+    abbr: "JR",
+    tileClass: "bg-[#2684ff] text-white",
+  },
+  {
+    key: "linear",
+    name: "Linear",
+    abbr: "LN",
+    tileClass: "bg-[#5e6ad2] text-white",
+  },
+  {
+    key: "trello",
+    name: "Trello",
+    abbr: "TR",
+    tileClass: "bg-[#0079bf] text-white",
+  },
 ]
 
 type IncludePrivateTeams = "none" | "all"
@@ -8055,7 +8088,7 @@ function ImportExportSection() {
           </a>
         </p>
         <div className="divide-border divide-y overflow-hidden rounded-lg border">
-          {IMPORT_SOURCES.map(({ key, name, abbr }) => (
+          {IMPORT_SOURCES.map(({ key, name, abbr, tileClass }) => (
             <Link
               key={key}
               href={`/settings/import-export/migration-assistant?service=${key}`}
@@ -8063,7 +8096,9 @@ function ImportExportSection() {
               aria-label={`Import from ${name}`}
               className="focus-visible:ring-ring group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:outline-none"
             >
-              <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-semibold">
+              <div
+                className={`flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-semibold ${tileClass}`}
+              >
                 {abbr}
               </div>
               <span className="flex-1 text-sm font-medium">{name}</span>
