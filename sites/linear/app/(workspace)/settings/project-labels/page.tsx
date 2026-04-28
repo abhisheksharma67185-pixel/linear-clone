@@ -87,7 +87,7 @@ function ProjectLabelsInner() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    fetch("/api/data/labels")
+    fetch("/api/data/project-labels")
       .then((r) => r.json())
       .then(setLabels)
       .catch(() => {})
@@ -131,7 +131,7 @@ function ProjectLabelsInner() {
       return
     }
     try {
-      const res = await fetch("/api/data/labels", {
+      const res = await fetch("/api/data/project-labels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -161,7 +161,7 @@ function ProjectLabelsInner() {
       list.map((l) => (l.id === id ? ({ ...l, ...patch } as LabelType) : l))
     )
     try {
-      const res = await fetch(`/api/data/labels/${id}`, {
+      const res = await fetch(`/api/data/project-labels/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
@@ -177,7 +177,7 @@ function ProjectLabelsInner() {
     const prev = labels
     setLabels((list) => list.filter((l) => l.id !== label.id))
     try {
-      const res = await fetch(`/api/data/labels/${label.id}`, {
+      const res = await fetch(`/api/data/project-labels/${label.id}`, {
         method: "DELETE",
       })
       if (!res.ok) throw new Error()
@@ -197,7 +197,7 @@ function ProjectLabelsInner() {
   const duplicateLabel = async (label: LabelType) => {
     const name = `${label.name} (copy)`
     try {
-      const res = await fetch("/api/data/labels", {
+      const res = await fetch("/api/data/project-labels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

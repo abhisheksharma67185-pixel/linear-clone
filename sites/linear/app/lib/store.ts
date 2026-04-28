@@ -99,6 +99,10 @@ let _projects: Project[] = deepClone(initialProjects)
 let _cycles: Cycle[] = deepClone(initialCycles)
 let _issues: Issue[] = deepClone(initialIssues)
 let _labels: Label[] = deepClone(initialLabels)
+// Project labels are scoped to projects (not issues) and start empty so the
+// settings page renders the "No labels yet" empty state until the user
+// creates one. Issue labels remain in `_labels`.
+let _projectLabels: Label[] = []
 let _views: View[] = deepClone(initialViews)
 
 // Auto-increment counters per team key. Start above spec-defined ranges so
@@ -115,6 +119,7 @@ let _nextIssueId = 185
 let _nextProjectId = 4
 let _nextCycleId = 15
 let _nextLabelId = 13
+let _nextProjectLabelId = 1
 let _nextTeamId = 5
 let _nextViewId = 5
 
@@ -711,6 +716,92 @@ export function archiveLabel(id: string): Result<Label> {
 
 export function restoreLabel(id: string): Result<Label> {
   return updateLabel(id, { archivedAt: null })
+}
+
+// ---------------------------------------------------------------------------
+// Project labels (parallel CRUD on a separate array — issue labels live in
+// `_labels`; this set is scoped to projects and starts empty).
+// ---------------------------------------------------------------------------
+
+export function getProjectLabels(): Label[] {
+  return deepClone(_projectLabels)
+}
+
+export function getProjectLabelById(id: string): Label | undefined {
+  const label = _projectLabels.find((l) => l.id === id)
+  return label ? deepClone(label) : undefined
+}
+
+export function createProjectLabel(fields: {
+  name?: string
+  color?: string
+  description?: string
+}): Result<Label> {
+  if (!fields.name || String(fields.name).trim() === "") {
+    return { success: false, error: "Name is required" }
+  }
+  if (!fields.color || String(fields.color).trim() === "") {
+    return { success: false, error: "Color is required" }
+  }
+  if (_projectLabels.some((l) => l.name === fields.name!.trim())) {
+    return { success: false, error: `Label already exists: ${fields.name}` }
+  }
+  const label: Label = {
+    id: `project-label-${_nextProjectLabelId++}`,
+    name: fields.name.trim(),
+    description: fields.description?.trim() ?? "",
+    color: fields.color.trim(),
+    teamId: null,
+    group: "Type",
+    archivedAt: null,
+  }
+  _projectLabels.push(label)
+  return { success: true, data: deepClone(label) }
+}
+
+export function updateProjectLabel(
+  id: string,
+  fields: {
+    name?: string
+    color?: string
+    description?: string
+    archivedAt?: string | null
+  }
+): Result<Label> {
+  const label = _projectLabels.find((l) => l.id === id)
+  if (!label) return { success: false, error: "Label not found" }
+
+  if (fields.name !== undefined) {
+    if (String(fields.name).trim() === "") {
+      return { success: false, error: "Name cannot be empty" }
+    }
+    if (
+      _projectLabels.some((l) => l.id !== id && l.name === fields.name!.trim())
+    ) {
+      return { success: false, error: `Label already exists: ${fields.name}` }
+    }
+    label.name = fields.name.trim()
+  }
+  if (fields.color !== undefined) {
+    if (String(fields.color).trim() === "") {
+      return { success: false, error: "Color cannot be empty" }
+    }
+    label.color = fields.color.trim()
+  }
+  if (fields.description !== undefined) {
+    label.description = String(fields.description).trim()
+  }
+  if (fields.archivedAt !== undefined) {
+    label.archivedAt = fields.archivedAt
+  }
+  return { success: true, data: deepClone(label) }
+}
+
+export function deleteProjectLabel(id: string): Result<{ id: string }> {
+  const idx = _projectLabels.findIndex((l) => l.id === id)
+  if (idx === -1) return { success: false, error: "Label not found" }
+  _projectLabels.splice(idx, 1)
+  return { success: true, data: { id } }
 }
 
 // ---------------------------------------------------------------------------
