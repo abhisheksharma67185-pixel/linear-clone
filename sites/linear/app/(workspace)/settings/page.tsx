@@ -60,9 +60,17 @@ import { BrowserIcon, detectBrowser } from "@/lib/browser-detect"
 import {
   SlackLogo,
   GitHubLogo,
+  GitLabLogo,
   GoogleCalendarLogo,
   NotionLogo,
   ExternalLinkGlyph,
+  ClaudeLogo,
+  CopilotLogo,
+  CursorLogo,
+  DevinLogo,
+  FactoryLogo,
+  OpenAILogo,
+  VSCodeLogo,
 } from "@/components/provider-icons"
 import { TeamSettingsHub } from "@/components/team-settings-hub"
 import { CustomizeSidebarDialog } from "@/components/customize-sidebar-dialog"
@@ -393,7 +401,10 @@ function SettingsPageInner() {
       </aside>
 
       {/* Content */}
-      <div className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto">
+      <div
+        data-settings-scroll-container
+        className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto"
+      >
         <SectionContent section={section} teams={teams} />
       </div>
     </div>
@@ -691,6 +702,7 @@ function SectionContent({
   if (section === "emojis") return <EmojisSection />
   if (section === "integrations") return <IntegrationsSection />
   if (section === "preferences") return <PreferencesSection />
+  if (section === "coding-tools") return <CodingToolsSection />
   if (section === "profile") return <ProfileSection />
   if (section === "notifications") return <NotificationsSection />
   if (section === "security") return <SecuritySection />
@@ -729,15 +741,85 @@ function SectionContent({
 
 // ─── Sections ────────────────────────────────────────────────────────────────
 
+// Theme entries — each option in the Interface theme dropdown is shown with
+// an "Aa" sample swatch and a color-dot indicator that previews the palette.
+const THEME_OPTIONS: Array<{
+  value: string
+  label: string
+  swatchClass: string
+  dotClass: string
+}> = [
+  {
+    value: "system",
+    label: "System preference",
+    swatchClass:
+      "bg-gradient-to-r from-neutral-100 to-neutral-900 text-neutral-700",
+    dotClass: "bg-gradient-to-r from-sky-400 to-violet-500",
+  },
+  {
+    value: "light",
+    label: "Light",
+    swatchClass: "bg-neutral-100 text-neutral-900 ring-1 ring-neutral-200",
+    dotClass: "bg-sky-400",
+  },
+  {
+    value: "pure-light",
+    label: "Pure Light",
+    swatchClass: "bg-white text-neutral-900 ring-1 ring-neutral-300",
+    dotClass: "bg-white ring-1 ring-neutral-300",
+  },
+  {
+    value: "dark",
+    label: "Dark",
+    swatchClass: "bg-neutral-900 text-neutral-100 ring-1 ring-white/10",
+    dotClass: "bg-violet-500",
+  },
+  {
+    value: "magic-blue",
+    label: "Magic Blue",
+    swatchClass: "bg-[#0a1532] text-sky-200 ring-1 ring-sky-500/30",
+    dotClass: "bg-sky-500",
+  },
+  {
+    value: "classic-dark",
+    label: "Classic Dark",
+    swatchClass: "bg-[#1a1a1a] text-neutral-100 ring-1 ring-white/10",
+    dotClass: "bg-neutral-500",
+  },
+  {
+    value: "custom",
+    label: "Custom",
+    swatchClass:
+      "bg-[conic-gradient(at_50%_50%,#f87171,#fbbf24,#34d399,#60a5fa,#a78bfa,#f472b6,#f87171)] text-neutral-900 ring-1 ring-white/10",
+    dotClass:
+      "bg-[conic-gradient(at_50%_50%,#f87171,#fbbf24,#34d399,#60a5fa,#a78bfa,#f472b6,#f87171)]",
+  },
+]
+
+const FONT_SIZE_SCALE: Record<string, number> = {
+  smaller: 0.875,
+  small: 0.9375,
+  default: 1,
+  large: 1.0625,
+  larger: 1.125,
+}
+
 function PreferencesSection() {
-  const [homeView, setHomeView] = useState("active")
+  const router = useRouter()
+  const [homeView, setHomeView] = usePersistedState(
+    "linear:default-home-view",
+    "active-issues"
+  )
   const [displayNames, setDisplayNames] = useState("fullname")
   const [firstDay, setFirstDay] = useState("monday")
   const [textEmoticons, setTextEmoticons] = useState(true)
   const [sendOn, setSendOn] = useState("enter")
-  const [fontSize, setFontSize] = useState("default")
+  const [fontSize, setFontSize] = usePersistedState(
+    "linear:font-size",
+    "default"
+  )
   const [pointerCursors, setPointerCursors] = useState(false)
-  const [theme, setTheme] = useState("dark")
+  const [theme, setTheme] = useState("system")
   const [desktopApp, setDesktopApp] = useState(false)
   const [autoAssign, setAutoAssign] = useState(false)
   const [gitFormat, setGitFormat] = useState("title")
@@ -745,14 +827,21 @@ function PreferencesSection() {
   const [codingToolMove, setCodingToolMove] = useState(false)
   const [startedAssign, setStartedAssign] = useState(false)
   const [customizeOpen, setCustomizeOpen] = useState(false)
-  const [codingToolsOpen, setCodingToolsOpen] = useState(false)
 
-  const themeColor =
-    theme === "dark"
-      ? "bg-violet-500"
-      : theme === "light"
-        ? "bg-sky-400"
-        : "bg-gradient-to-r from-sky-400 to-violet-500"
+  // Wire the Font size dropdown into the root font-size scale CSS variable so
+  // every text-* utility resizes together. Cleanup resets to the page default
+  // when the user navigates away.
+  useEffect(() => {
+    if (typeof document === "undefined") return
+    const scale = FONT_SIZE_SCALE[fontSize] ?? 1
+    document.documentElement.style.setProperty(
+      "--font-size-scale",
+      String(scale)
+    )
+  }, [fontSize])
+
+  const goToCodingTools = () =>
+    router.push("/settings?section=coding-tools", { scroll: false })
 
   return (
     <div className="flex max-w-2xl flex-col gap-6 p-6">
@@ -762,20 +851,31 @@ function PreferencesSection() {
 
       {/* General */}
       <SettingsCard title="General">
-        <SettingsRow label="Default home view">
+        <SettingsRow
+          label="Default home view"
+          description="Select which view to display when launching Linear"
+        >
           <Select value={homeView} onValueChange={onSelectChange(setHomeView)}>
             <SelectTrigger className="h-8 w-44 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="active">Active issues</SelectItem>
+              <SelectItem value="linear-agent">Linear Agent</SelectItem>
               <SelectItem value="inbox">Inbox</SelectItem>
               <SelectItem value="my-issues">My issues</SelectItem>
+              <SelectItem value="all-issues">All issues</SelectItem>
+              <SelectItem value="active-issues">Active issues</SelectItem>
+              <SelectItem value="current-cycle">Current cycle</SelectItem>
+              <SelectItem value="projects">Projects</SelectItem>
+              <SelectItem value="initiatives">Initiatives</SelectItem>
             </SelectContent>
           </Select>
         </SettingsRow>
         <Separator />
-        <SettingsRow label="Display names">
+        <SettingsRow
+          label="Display names"
+          description="Select how names are displayed in the Linear interface"
+        >
           <Select
             value={displayNames}
             onValueChange={onSelectChange(setDisplayNames)}
@@ -790,31 +890,44 @@ function PreferencesSection() {
           </Select>
         </SettingsRow>
         <Separator />
-        <SettingsRow label="First day of week">
+        <SettingsRow
+          label="First day of the week"
+          description="Used for date pickers"
+        >
           <Select value={firstDay} onValueChange={onSelectChange(setFirstDay)}>
             <SelectTrigger className="h-8 w-44 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="monday">Monday</SelectItem>
               <SelectItem value="sunday">Sunday</SelectItem>
+              <SelectItem value="monday">Monday</SelectItem>
+              <SelectItem value="tuesday">Tuesday</SelectItem>
+              <SelectItem value="wednesday">Wednesday</SelectItem>
+              <SelectItem value="thursday">Thursday</SelectItem>
+              <SelectItem value="friday">Friday</SelectItem>
               <SelectItem value="saturday">Saturday</SelectItem>
             </SelectContent>
           </Select>
         </SettingsRow>
         <Separator />
-        <SettingsRow label="Convert text emoticons into emojis">
+        <SettingsRow
+          label="Convert text emoticons into emojis"
+          description="Strings like :) will be converted to 🙂"
+        >
           <Switch checked={textEmoticons} onCheckedChange={setTextEmoticons} />
         </SettingsRow>
         <Separator />
-        <SettingsRow label="Send comment on...">
+        <SettingsRow
+          label="Send comment on…"
+          description="Choose which key press is used to submit a comment"
+        >
           <Select value={sendOn} onValueChange={onSelectChange(setSendOn)}>
             <SelectTrigger className="h-8 w-44 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="enter">Enter</SelectItem>
-              <SelectItem value="cmd-enter">⌘ + Enter</SelectItem>
+              <SelectItem value="cmd-enter">⌘+Enter</SelectItem>
             </SelectContent>
           </Select>
         </SettingsRow>
@@ -822,7 +935,10 @@ function PreferencesSection() {
 
       {/* Interface and theme */}
       <SettingsCard title="Interface and theme">
-        <SettingsRow label="App sidebar">
+        <SettingsRow
+          label="App sidebar"
+          description="Customize sidebar item visibility, ordering, and badge style"
+        >
           <Button
             variant="outline"
             size="sm"
@@ -833,38 +949,58 @@ function PreferencesSection() {
           </Button>
         </SettingsRow>
         <Separator />
-        <SettingsRow label="Font size">
+        <SettingsRow
+          label="Font size"
+          description="Adjust the size of text across the app"
+        >
           <Select value={fontSize} onValueChange={onSelectChange(setFontSize)}>
             <SelectTrigger className="h-8 w-44 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="default">Default</SelectItem>
+              <SelectItem value="smaller">Smaller</SelectItem>
               <SelectItem value="small">Small</SelectItem>
+              <SelectItem value="default">Default</SelectItem>
               <SelectItem value="large">Large</SelectItem>
+              <SelectItem value="larger">Larger</SelectItem>
             </SelectContent>
           </Select>
         </SettingsRow>
         <Separator />
-        <SettingsRow label="Use pointer cursors">
+        <SettingsRow
+          label="Use pointer cursors"
+          description="Change the cursor to a pointer when hovering over any interactive elements"
+        >
           <Switch
             checked={pointerCursors}
             onCheckedChange={setPointerCursors}
           />
         </SettingsRow>
         <Separator />
-        <SettingsRow label="Interface theme">
+        <SettingsRow
+          label="Interface theme"
+          description="Select or customize your interface color scheme"
+        >
           <Select value={theme} onValueChange={onSelectChange(setTheme)}>
             <SelectTrigger className="h-8 w-44 text-xs">
-              <span
-                className={`mr-1.5 inline-block size-2.5 shrink-0 rounded-full ${themeColor}`}
-              />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              {THEME_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  <span
+                    aria-hidden
+                    className={`inline-flex h-4 w-5 shrink-0 items-center justify-center rounded text-[9px] font-medium ${opt.swatchClass}`}
+                  >
+                    Aa
+                  </span>
+                  <span
+                    aria-hidden
+                    className={`inline-block size-2 shrink-0 rounded-full ${opt.dotClass}`}
+                  />
+                  {opt.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </SettingsRow>
@@ -872,33 +1008,60 @@ function PreferencesSection() {
 
       {/* Desktop application */}
       <SettingsCard title="Desktop application">
-        <SettingsRow label="Open in desktop app">
+        <SettingsRow
+          label="Open in desktop app"
+          description="Automatically open links in desktop app when possible"
+        >
           <Switch checked={desktopApp} onCheckedChange={setDesktopApp} />
         </SettingsRow>
       </SettingsCard>
 
       {/* Coding tools */}
       <SettingsCard title="Coding tools">
-        <button
-          type="button"
-          onClick={() => setCodingToolsOpen(true)}
+        <Link
+          href="/settings?section=coding-tools"
+          scroll={false}
+          onClick={(e) => {
+            if (
+              e.metaKey ||
+              e.ctrlKey ||
+              e.shiftKey ||
+              e.altKey ||
+              e.button !== 0
+            ) {
+              return
+            }
+            e.preventDefault()
+            goToCodingTools()
+          }}
           className="flex w-full items-center justify-between py-0.5 text-left transition-colors hover:opacity-70"
         >
-          <span className="text-sm font-medium">Configure coding tools</span>
+          <div className="min-w-0">
+            <div className="text-sm font-medium">Configure coding tools</div>
+            <div className="text-muted-foreground text-xs">
+              Configure tools which can be opened from Linear
+            </div>
+          </div>
           <HugeiconsIcon
             icon={ArrowRight01Icon}
             className="text-muted-foreground size-3.5"
           />
-        </button>
+        </Link>
       </SettingsCard>
 
       {/* Automations and workflows */}
       <SettingsCard title="Automations and workflows">
-        <SettingsRow label="Auto-assign to self">
+        <SettingsRow
+          label="Auto-assign to self"
+          description="When creating new issues, always assign them to yourself by default"
+        >
           <Switch checked={autoAssign} onCheckedChange={setAutoAssign} />
         </SettingsRow>
         <Separator />
-        <SettingsRow label="Git attachment format">
+        <SettingsRow
+          label="Git attachment format"
+          description="The format of GitHub/GitLab attachments on issues"
+        >
           <Select
             value={gitFormat}
             onValueChange={onSelectChange(setGitFormat)}
@@ -908,24 +1071,32 @@ function PreferencesSection() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="title">Title</SelectItem>
-              <SelectItem value="id-title">ID + Title</SelectItem>
-              <SelectItem value="url">URL</SelectItem>
+              <SelectItem value="title-repo">Title + Repository</SelectItem>
             </SelectContent>
           </Select>
         </SettingsRow>
         <Separator />
-        <SettingsRow label="On git branch copy move to started">
+        <SettingsRow
+          label="On git branch copy, move issue to started status"
+          description="After copying the git branch name, issue status is moved to the team’s first started workflow status. Hold ⌥ to disable."
+        >
           <Switch checked={gitBranchMove} onCheckedChange={setGitBranchMove} />
         </SettingsRow>
         <Separator />
-        <SettingsRow label="On open in coding tool move to started">
+        <SettingsRow
+          label="On open in coding tool, move issue to started status"
+          description="After opening an issue in a coding tool or copying as prompt, issue status is moved to the team’s first started workflow status. Hold ⌥ to disable."
+        >
           <Switch
             checked={codingToolMove}
             onCheckedChange={setCodingToolMove}
           />
         </SettingsRow>
         <Separator />
-        <SettingsRow label="On move to started assign to yourself">
+        <SettingsRow
+          label="On move to started status, assign to yourself"
+          description="When you move an unassigned issue to started, it will be automatically assigned to you"
+        >
           <Switch checked={startedAssign} onCheckedChange={setStartedAssign} />
         </SettingsRow>
       </SettingsCard>
@@ -934,82 +1105,176 @@ function PreferencesSection() {
         open={customizeOpen}
         onOpenChange={setCustomizeOpen}
       />
-      <CodingToolsDialog
-        open={codingToolsOpen}
-        onOpenChange={setCodingToolsOpen}
-      />
     </div>
   )
 }
 
-const CODING_TOOLS = [
+type CodingToolRow = {
+  key: string
+  label: string
+  description: string
+  /** Brand-logo SVG to render inside the icon tile. */
+  Logo?: (props: { className?: string }) => React.ReactElement
+  /** Tile background — used as a backdrop for either the logo or `abbr`. */
+  tileClass: string
+  /** Two-letter fallback shown when the tool has no dedicated logo. */
+  abbr?: string
+  /** Whether the tool is enabled by default in the mock. */
+  defaultEnabled?: boolean
+}
+
+const CODING_TOOLS: readonly CodingToolRow[] = [
+  {
+    key: "amp",
+    label: "Amp",
+    description: "Opens in your terminal. Requires the desktop app.",
+    tileClass: "bg-amber-500",
+    abbr: "AM",
+  },
+  {
+    key: "claude-code",
+    label: "Claude Code",
+    description: "Opens in your terminal. Requires the desktop app.",
+    Logo: ClaudeLogo,
+    tileClass: "bg-[#cc785c]",
+  },
+  {
+    key: "codex-cli",
+    label: "Codex CLI",
+    description: "Opens in your terminal. Requires the desktop app.",
+    Logo: OpenAILogo,
+    tileClass: "bg-black",
+  },
+  {
+    key: "codex-desktop",
+    label: "Codex desktop",
+    description: "Opens in the Codex desktop app.",
+    Logo: OpenAILogo,
+    tileClass: "bg-black",
+  },
+  {
+    key: "conductor",
+    label: "Conductor",
+    description: "Opens in the Conductor desktop app.",
+    tileClass: "bg-blue-600",
+    abbr: "CN",
+  },
+  {
+    key: "cursor",
+    label: "Cursor",
+    description: "Opens in the Cursor desktop app.",
+    Logo: CursorLogo,
+    tileClass: "bg-neutral-900",
+  },
+  {
+    key: "devin",
+    label: "Devin",
+    description: "Opens on devin.ai.",
+    Logo: DevinLogo,
+    tileClass: "bg-violet-600",
+  },
+  {
+    key: "factory",
+    label: "Factory",
+    description: "Opens in the Factory desktop app.",
+    Logo: FactoryLogo,
+    tileClass: "bg-emerald-700",
+  },
+  {
+    key: "copilot",
+    label: "GitHub Copilot",
+    description: "Opens in VS Code.",
+    Logo: CopilotLogo,
+    tileClass: "bg-neutral-800",
+  },
+  {
+    key: "lovable",
+    label: "Lovable",
+    description: "Opens on lovable.dev.",
+    tileClass: "bg-rose-500",
+    abbr: "LO",
+  },
   {
     key: "github",
     label: "GitHub",
-    description: "Link commits, branches, and pull requests",
+    description: "Link commits, branches, and pull requests.",
+    Logo: GitHubLogo,
+    tileClass: "bg-[#24292e]",
+    defaultEnabled: true,
   },
   {
     key: "gitlab",
     label: "GitLab",
-    description: "Link commits, branches, and merge requests",
+    description: "Link commits, branches, and merge requests.",
+    Logo: GitLabLogo,
+    tileClass: "bg-[#FC6D26]",
   },
-  { key: "cursor", label: "Cursor", description: "Open issues in Cursor" },
-  { key: "vscode", label: "VS Code", description: "Open issues in VS Code" },
-  { key: "zed", label: "Zed", description: "Open issues in Zed" },
+  {
+    key: "vscode",
+    label: "VS Code",
+    description: "Open issues in VS Code.",
+    Logo: VSCodeLogo,
+    tileClass: "bg-[#1f6feb]",
+  },
+  {
+    key: "zed",
+    label: "Zed",
+    description: "Open issues in Zed.",
+    tileClass: "bg-emerald-600",
+    abbr: "ZD",
+  },
 ] as const
 
-function CodingToolsDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const [enabled, setEnabled] = useState<Record<string, boolean>>(() =>
+function CodingToolsSection() {
+  const [enabled, setEnabled] = usePersistedState<Record<string, boolean>>(
+    "linear:coding-tools-enabled",
     Object.fromEntries(
-      CODING_TOOLS.map((tool) => [tool.key, tool.key === "github"])
+      CODING_TOOLS.map((tool) => [tool.key, tool.defaultEnabled ?? false])
     )
   )
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Configure coding tools</DialogTitle>
-          <DialogDescription>
-            Connect your editors and source control so Linear can link issues to
-            your code.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="divide-border/50 border-border flex flex-col divide-y rounded-md border">
-          {CODING_TOOLS.map((tool) => (
-            <div
-              key={tool.key}
-              className="flex items-center justify-between gap-4 px-3 py-3"
-            >
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium">{tool.label}</span>
-                <span className="text-muted-foreground text-xs">
-                  {tool.description}
-                </span>
+    <div className="flex max-w-2xl flex-col gap-6 p-6">
+      <div>
+        <h1 className="text-xl font-semibold">Coding tools</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Tools enabled here can be used to work on issues from the issue page.
+        </p>
+      </div>
+
+      <div className="flex flex-col rounded-lg border">
+        {CODING_TOOLS.map((tool, index) => (
+          <div
+            key={tool.key}
+            className={`flex items-center justify-between gap-4 px-4 py-3${
+              index !== CODING_TOOLS.length - 1 ? "border-b" : ""
+            }`}
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div
+                className={`flex size-8 shrink-0 items-center justify-center rounded-md text-[10px] font-bold text-white ${tool.tileClass}`}
+                aria-hidden
+              >
+                {tool.Logo ? <tool.Logo className="size-5" /> : tool.abbr}
               </div>
-              <Switch
-                checked={enabled[tool.key] ?? false}
-                onCheckedChange={(checked) =>
-                  setEnabled((prev) => ({ ...prev, [tool.key]: checked }))
-                }
-              />
+              <div className="min-w-0">
+                <div className="text-sm font-medium">{tool.label}</div>
+                <div className="text-muted-foreground text-xs">
+                  {tool.description}
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={() => onOpenChange(false)}>Done</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            <Switch
+              checked={enabled[tool.key] ?? false}
+              onCheckedChange={(checked) =>
+                setEnabled((prev) => ({ ...prev, [tool.key]: checked }))
+              }
+              aria-label={`${tool.label} enabled`}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -13558,12 +13823,20 @@ function EmojiDeleteDialog({
 
 // ─── Integration data ────────────────────────────────────────────────────────
 
+// Key for persisting the integrations grid scroll position across the
+// detail-page round-trip. The detail page's "Back to integrations" link
+// triggers a re-mount of <IntegrationsSection>, which reads this value to
+// restore where the user was scrolled before clicking into a card.
+const INTEGRATIONS_SCROLL_STORAGE_KEY = "linear:settings:integrations-scroll"
+
 type IntCard = {
   key: string
   name: string
   desc: string
   color: string
   abbr: string
+  /** Optional hosted logo URL — when provided, replaces the abbr badge. */
+  logoUrl?: string
   preinstalled?: boolean
   connected?: boolean
 }
@@ -13579,6 +13852,8 @@ const INTEG_ESSENTIALS: IntCard[] = [
     desc: "Automate your pull request and commit workflows and keep issues synced both ways",
     color: "bg-[#24292e]",
     abbr: "GH",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/c6a06d2d2349df613faf9de2879142b1e60e59ec-640x640.png?q=95&auto=format&dpr=2",
     connected: true,
   },
   {
@@ -13587,6 +13862,8 @@ const INTEG_ESSENTIALS: IntCard[] = [
     desc: "Get notifications and create issues from Slack messages.",
     color: "bg-[#4A154B]",
     abbr: "SL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/28e6449162d4a338f94e6e9d05ae2c9c7b988efb-640x640.png?q=95&auto=format&dpr=2",
     connected: true,
   },
   {
@@ -13595,6 +13872,8 @@ const INTEG_ESSENTIALS: IntCard[] = [
     desc: "Automate your Merge Request workflow",
     color: "bg-[#FC6D26]",
     abbr: "GL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/e0b90c083341744ed891a22ae746b7d1c7244ec3-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "figma",
@@ -13602,6 +13881,8 @@ const INTEG_ESSENTIALS: IntCard[] = [
     desc: "Embed and create Figma designs directly in issues.",
     color: "bg-[#F24E1E]",
     abbr: "FG",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/449959adb357c35991dbbdf9c369c162937ebd7a-640x640.png?q=95&auto=format&dpr=2",
     connected: true,
   },
   {
@@ -13610,6 +13891,8 @@ const INTEG_ESSENTIALS: IntCard[] = [
     desc: "Link customer conversations to issues.",
     color: "bg-[#286EFA]",
     abbr: "IC",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/7296805f298e7093fa4856f7f9f81430fcd6e897-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "gsheets",
@@ -13617,6 +13900,8 @@ const INTEG_ESSENTIALS: IntCard[] = [
     desc: "Export and sync Linear data with spreadsheets.",
     color: "bg-[#34A853]",
     abbr: "GS",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/0ca0591196315b3e8a8a0c3ab80fa56807bcb40c-640x640.png?q=95&auto=format&dpr=2",
   },
 ]
 const INTEG_AGENTS: IntCard[] = [
@@ -13626,6 +13911,8 @@ const INTEG_AGENTS: IntCard[] = [
     desc: "Automate code tasks with OpenAI Codex agents.",
     color: "bg-[#1a1a1a]",
     abbr: "CX",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/a7789d9c4baa178dc6043070519e7e32b238bffa-980x980.jpg?q=95&auto=format&dpr=2",
   },
   {
     key: "cursor",
@@ -13633,6 +13920,8 @@ const INTEG_AGENTS: IntCard[] = [
     desc: "AI code editor — assign issues to Cursor to auto-implement.",
     color: "bg-[#1C1C1C]",
     abbr: "CR",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/66a992ec6b5036e3d3c71793e2f4305e039ce187-2048x2048.png?q=95&auto=format&dpr=2",
   },
   {
     key: "copilot",
@@ -13640,6 +13929,8 @@ const INTEG_AGENTS: IntCard[] = [
     desc: "AI coding assistant natively integrated with GitHub.",
     color: "bg-[#24292e]",
     abbr: "CO",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/c275964a06f4f86e5d5333a7cd0755746f8601d7-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "factory",
@@ -13647,6 +13938,8 @@ const INTEG_AGENTS: IntCard[] = [
     desc: "Automate pull request workflows with AI.",
     color: "bg-[#5B2D8E]",
     abbr: "FA",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/1c352b9507c038b57a3cf3c8b18aa6de4c3534e5-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "sentry-ag",
@@ -13654,6 +13947,8 @@ const INTEG_AGENTS: IntCard[] = [
     desc: "Auto-create and triage issues from Sentry errors.",
     color: "bg-[#362D59]",
     abbr: "SA",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/e3f6a96cc27842761e4d1d3a9236fff1d91caf8c-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "devin",
@@ -13661,6 +13956,8 @@ const INTEG_AGENTS: IntCard[] = [
     desc: "AI software engineer agent that can resolve issues.",
     color: "bg-[#0057FF]",
     abbr: "DV",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/30ce4517f876ac3e290a80f4cfb0b7b3b8c998b7-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "chatprd",
@@ -13668,6 +13965,8 @@ const INTEG_AGENTS: IntCard[] = [
     desc: "AI-powered product spec writing and planning.",
     color: "bg-[#FF5C00]",
     abbr: "CP",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/e2802c92deeba2cec1bfc48c94836e55118be18e-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "charlie",
@@ -13675,6 +13974,8 @@ const INTEG_AGENTS: IntCard[] = [
     desc: "AI agent for project management automation.",
     color: "bg-[#2A9D8F]",
     abbr: "CH",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/f1e777c2bbc41686efe42e2e73191e9d19ad6fe8-320x320.svg?q=95&auto=format&dpr=2",
   },
 ]
 const INTEG_AI_CLIENTS: IntCard[] = [
@@ -13684,6 +13985,8 @@ const INTEG_AI_CLIENTS: IntCard[] = [
     desc: "Model context protocol integration for Cursor IDE.",
     color: "bg-[#1C1C1C]",
     abbr: "CM",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/a2bb8e6a60f530cb07b4c7363301206597b5e8b5-400x400.jpg?q=95&auto=format&dpr=2",
   },
   {
     key: "chatgpt",
@@ -13691,6 +13994,8 @@ const INTEG_AI_CLIENTS: IntCard[] = [
     desc: "Access and manage your Linear data inside ChatGPT.",
     color: "bg-[#10A37F]",
     abbr: "GP",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/a7789d9c4baa178dc6043070519e7e32b238bffa-980x980.jpg?q=95&auto=format&dpr=2",
   },
   {
     key: "claude-ai",
@@ -13698,6 +14003,8 @@ const INTEG_AI_CLIENTS: IntCard[] = [
     desc: "Use your Linear workspace context inside Claude.",
     color: "bg-[#D97757]",
     abbr: "CL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/b95ad5ddcb4b835b54ba093d237df7e019a9cb76-338x338.png?q=95&auto=format&dpr=2",
   },
   {
     key: "v0",
@@ -13705,6 +14012,8 @@ const INTEG_AI_CLIENTS: IntCard[] = [
     desc: "Build and iterate on UI components with v0.",
     color: "bg-[#1a1a1a]",
     abbr: "V0",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/90f005b1b6422abd2f5a485dd7c3a0ba4487807e-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "windsurf",
@@ -13712,6 +14021,8 @@ const INTEG_AI_CLIENTS: IntCard[] = [
     desc: "AI-native development environment by Codeium.",
     color: "bg-[#0B6EFD]",
     abbr: "WS",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/010368ce15dcc0864d483c82d10abe075a133096-2048x2048.png?q=95&auto=format&dpr=2",
   },
   {
     key: "replit",
@@ -13719,6 +14030,8 @@ const INTEG_AI_CLIENTS: IntCard[] = [
     desc: "Build and deploy apps with AI in Replit.",
     color: "bg-[#F26207]",
     abbr: "RP",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/64cbb0c4172e19b417bdb5a1249953e8acdb5a4c-512x512.png?q=95&auto=format&dpr=2",
   },
   {
     key: "dust",
@@ -13726,6 +14039,8 @@ const INTEG_AI_CLIENTS: IntCard[] = [
     desc: "AI assistant platform connected to your tools.",
     color: "bg-[#5865F2]",
     abbr: "DU",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/81562aadf0902e7b6d90bbcbc0328a679ba9caca-400x400.jpg?q=95&auto=format&dpr=2",
   },
   {
     key: "adk",
@@ -13733,6 +14048,8 @@ const INTEG_AI_CLIENTS: IntCard[] = [
     desc: "Agent Development Kit by Google for building agents.",
     color: "bg-[#4285F4]",
     abbr: "AK",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/37e9f1467d369be3a027b65fe883e3eafe6257fd-512x512.png?q=95&auto=format&dpr=2",
   },
 ]
 const INTEG_ENGINEERING: IntCard[] = [
@@ -13742,6 +14059,8 @@ const INTEG_ENGINEERING: IntCard[] = [
     desc: "Automate your pull request and commit workflows and keep issues synced both ways",
     color: "bg-[#24292e]",
     abbr: "GH",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/c6a06d2d2349df613faf9de2879142b1e60e59ec-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "gitlab-eng",
@@ -13749,6 +14068,8 @@ const INTEG_ENGINEERING: IntCard[] = [
     desc: "Automate your Merge Request workflow",
     color: "bg-[#FC6D26]",
     abbr: "GL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/e0b90c083341744ed891a22ae746b7d1c7244ec3-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "pagerduty",
@@ -13756,6 +14077,8 @@ const INTEG_ENGINEERING: IntCard[] = [
     desc: "Automate the rotation of triage responsibility with PagerDuty schedules",
     color: "bg-[#06AC38]",
     abbr: "PD",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/5270d5bb25156b96bc47435cae3e9945898b2bbe-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "sentry-eng",
@@ -13763,6 +14086,8 @@ const INTEG_ENGINEERING: IntCard[] = [
     desc: "Create and link issues with Sentry and automate issue creation",
     color: "bg-[#362D59]",
     abbr: "SE",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/064fe767b3259577c743a29fdd10c5d89b882986-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "vscode",
@@ -13770,6 +14095,8 @@ const INTEG_ENGINEERING: IntCard[] = [
     desc: "Easily build VS Code extensions with Linear Connect",
     color: "bg-[#007ACC]",
     abbr: "VS",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/af181833bf682f74ddf80677010a45f5336458f1-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "datadog",
@@ -13777,6 +14104,8 @@ const INTEG_ENGINEERING: IntCard[] = [
     desc: "Create issues from Datadog monitors and alerts",
     color: "bg-[#632CA6]",
     abbr: "DD",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/d3874255fb62313e4a400a646daded2dd3134ad3-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "incidentio",
@@ -13784,6 +14113,8 @@ const INTEG_ENGINEERING: IntCard[] = [
     desc: "Manage incidents and triage responsibility directly in Linear",
     color: "bg-[#FF4500]",
     abbr: "IO",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/ec4ee75448119256c87a7e73a04cd654316a5081-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "raycast-eng",
@@ -13791,6 +14122,8 @@ const INTEG_ENGINEERING: IntCard[] = [
     desc: "Create, search, and modify your issues from anywhere",
     color: "bg-[#FF6363]",
     abbr: "RC",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/4924296a6790edbed3f78d9f9d2feade10475432-640x640.png?q=95&auto=format&dpr=2",
   },
 ]
 const INTEG_LINEAR_CRAFTED: IntCard[] = [
@@ -13800,6 +14133,8 @@ const INTEG_LINEAR_CRAFTED: IntCard[] = [
     desc: "Automate your pull request and commit workflows and keep issues synced both ways",
     color: "bg-[#24292e]",
     abbr: "GH",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/c6a06d2d2349df613faf9de2879142b1e60e59ec-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "slack-lc",
@@ -13807,6 +14142,8 @@ const INTEG_LINEAR_CRAFTED: IntCard[] = [
     desc: "Create issues from Slack messages and sync threads",
     color: "bg-[#4A154B]",
     abbr: "SL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/28e6449162d4a338f94e6e9d05ae2c9c7b988efb-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "gitlab-lc",
@@ -13814,6 +14151,8 @@ const INTEG_LINEAR_CRAFTED: IntCard[] = [
     desc: "Automate your Merge Request workflow",
     color: "bg-[#FC6D26]",
     abbr: "GL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/e0b90c083341744ed891a22ae746b7d1c7244ec3-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "figma-lc",
@@ -13821,6 +14160,8 @@ const INTEG_LINEAR_CRAFTED: IntCard[] = [
     desc: "Create and link issues directly from Figma",
     color: "bg-[#F24E1E]",
     abbr: "FG",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/449959adb357c35991dbbdf9c369c162937ebd7a-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "linear-asks",
@@ -13828,6 +14169,8 @@ const INTEG_LINEAR_CRAFTED: IntCard[] = [
     desc: "Turn requests from Slack or email into actionable issues and enable helpdesk workflows",
     color: "bg-violet-600",
     abbr: "LA",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/50523dc935cc10d87e73339ac5993e1cee96f96b-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "notion-lc",
@@ -13842,6 +14185,8 @@ const INTEG_LINEAR_CRAFTED: IntCard[] = [
     desc: "Automate the rotation of triage responsibility with PagerDuty schedules",
     color: "bg-[#06AC38]",
     abbr: "PD",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/5270d5bb25156b96bc47435cae3e9945898b2bbe-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "zapier-lc",
@@ -13849,6 +14194,8 @@ const INTEG_LINEAR_CRAFTED: IntCard[] = [
     desc: "Build custom automations to create or update Linear issues",
     color: "bg-[#FF4A00]",
     abbr: "ZP",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/94bd5466ea791027d70d782aaff47ef4d3c18799-640x640.png?q=95&auto=format&dpr=2",
   },
 ]
 const INTEG_BUG_REPORTING: IntCard[] = [
@@ -13858,6 +14205,8 @@ const INTEG_BUG_REPORTING: IntCard[] = [
     desc: "Turn requests from Slack or email into actionable issues and enable helpdesk workflows",
     color: "bg-violet-600",
     abbr: "LA",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/830e30a69616db480837dd03f5c17c67f1e6fbf5-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "sentry-br",
@@ -13865,6 +14214,8 @@ const INTEG_BUG_REPORTING: IntCard[] = [
     desc: "Create and link issues with Sentry and automate issue creation",
     color: "bg-[#362D59]",
     abbr: "SE",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/064fe767b3259577c743a29fdd10c5d89b882986-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "incidentio-br",
@@ -13872,6 +14223,8 @@ const INTEG_BUG_REPORTING: IntCard[] = [
     desc: "Manage incidents and triage responsibility directly in Linear",
     color: "bg-[#FF4500]",
     abbr: "IO",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/ec4ee75448119256c87a7e73a04cd654316a5081-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "birdeats",
@@ -13879,6 +14232,8 @@ const INTEG_BUG_REPORTING: IntCard[] = [
     desc: "Speed up your bug reporting workflow with Bird Eats Bug",
     color: "bg-rose-600",
     abbr: "BB",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/65cf0a9026350b5d3c8f1324d8ef3b742e44166c-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "honeybadger",
@@ -13886,6 +14241,8 @@ const INTEG_BUG_REPORTING: IntCard[] = [
     desc: "Manage Honeybadger errors via Linear issues",
     color: "bg-amber-600",
     abbr: "HB",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/7466424a5a8ec87795773a6b98a06ff1718cc990-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "jam",
@@ -13893,6 +14250,8 @@ const INTEG_BUG_REPORTING: IntCard[] = [
     desc: "Create Linear issues with all the details developers need to resolve bugs faster",
     color: "bg-[#6B21A8]",
     abbr: "JM",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/404cd197c83e602d8cc911cb4300198c8cac03f3-361x361.png?q=95&auto=format&dpr=2",
   },
   {
     key: "vercel-br",
@@ -13900,6 +14259,8 @@ const INTEG_BUG_REPORTING: IntCard[] = [
     desc: "Turn Vercel Preview Deployment comments into action items",
     color: "bg-[#1a1a1a]",
     abbr: "VC",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/a03e6ddf8e9a8b62a4dbc271c74ac922179c69f3-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "arc",
@@ -13907,6 +14268,8 @@ const INTEG_BUG_REPORTING: IntCard[] = [
     desc: "Create new issues right from your browser command bar",
     color: "bg-gradient-to-br from-amber-400 to-orange-500",
     abbr: "AC",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/38bd3ef307de0e988855ec3cf35ba66062f4da3d-640x640.png?q=95&auto=format&dpr=2",
     preinstalled: true,
   },
 ]
@@ -13917,6 +14280,8 @@ const INTEG_AUTOMATIONS: IntCard[] = [
     desc: "Build custom automations to create or update Linear issues",
     color: "bg-[#FF4A00]",
     abbr: "ZP",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/94bd5466ea791027d70d782aaff47ef4d3c18799-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "email-au",
@@ -13924,6 +14289,8 @@ const INTEG_AUTOMATIONS: IntCard[] = [
     desc: "Set up email addresses for teams or templates to create issues via email",
     color: "bg-sky-600",
     abbr: "EM",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/c9e4e724a49df49600340f58b5dc0b67de9f5908-320x320.png?q=95&auto=format&dpr=2",
     preinstalled: true,
   },
   {
@@ -13932,6 +14299,8 @@ const INTEG_AUTOMATIONS: IntCard[] = [
     desc: "Smoothly transition from Jira to Linear",
     color: "bg-[#0052CC]",
     abbr: "JR",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/6c8f4a282d5543687b285a001333f552e3a1c168-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "raycast-au",
@@ -13939,6 +14308,8 @@ const INTEG_AUTOMATIONS: IntCard[] = [
     desc: "Create, search, and modify your issues from anywhere",
     color: "bg-[#FF6363]",
     abbr: "RC",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/4924296a6790edbed3f78d9f9d2feade10475432-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "fivetran",
@@ -13946,6 +14317,8 @@ const INTEG_AUTOMATIONS: IntCard[] = [
     desc: "Sync your Linear data with the Fivetran connector",
     color: "bg-[#0073E6]",
     abbr: "FT",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/cc537fc23546e656b9b0834dadfe222575989c0a-480x480.webp?q=95&auto=format&dpr=2",
   },
   {
     key: "axolo",
@@ -13953,6 +14326,8 @@ const INTEG_AUTOMATIONS: IntCard[] = [
     desc: "Make code reviews easier by syncing your pull request channels with your Linear issues",
     color: "bg-emerald-600",
     abbr: "AX",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/916c00e3f63de8555baa082911ee365240d37ee5-1595x1600.png?q=95&auto=format&dpr=2",
   },
   {
     key: "capybara",
@@ -13960,6 +14335,8 @@ const INTEG_AUTOMATIONS: IntCard[] = [
     desc: "Create Linear issues and comments based on Jira tasks",
     color: "bg-amber-700",
     abbr: "CB",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/138003a7f1cc184124271e84b4f25c078a94abb1-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "circleback",
@@ -13967,6 +14344,8 @@ const INTEG_AUTOMATIONS: IntCard[] = [
     desc: "Automatically create Linear issues from meeting action items",
     color: "bg-[#7C3AED]",
     abbr: "CK",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/ac258376c6682856b7dbefb735a2f426f29ca6a9-640x640.png?q=95&auto=format&dpr=2",
   },
 ]
 const INTEG_CUSTOMER_EXP: IntCard[] = [
@@ -13976,6 +14355,8 @@ const INTEG_CUSTOMER_EXP: IntCard[] = [
     desc: "Link Zendesk tickets to Linear issues and sync status updates back to support agents.",
     color: "bg-[#03363D]",
     abbr: "ZD",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/de2ffe1da4e2a19d4a2bff0eb54eb7772a31d968-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "intercom-cx",
@@ -13983,6 +14364,8 @@ const INTEG_CUSTOMER_EXP: IntCard[] = [
     desc: "Triage Intercom conversations into Linear issues and track resolution progress.",
     color: "bg-[#286EFA]",
     abbr: "IC",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/7296805f298e7093fa4856f7f9f81430fcd6e897-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "front",
@@ -13990,6 +14373,8 @@ const INTEG_CUSTOMER_EXP: IntCard[] = [
     desc: "Turn Front shared-inbox messages into Linear issues and keep customer replies in sync.",
     color: "bg-[#F5365C]",
     abbr: "FR",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/8ff0c78c4358fda5a98bce1d6e8bf0fe3716d902-390x390.png?q=95&auto=format&dpr=2",
   },
   {
     key: "canny",
@@ -13997,6 +14382,8 @@ const INTEG_CUSTOMER_EXP: IntCard[] = [
     desc: "Sync Canny posts to Linear issues to keep customers in the loop",
     color: "bg-[#0C64E4]",
     abbr: "CA",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/5320afb074f86bd08bf2c3a34333b721ea984856-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "productlane",
@@ -14004,6 +14391,8 @@ const INTEG_CUSTOMER_EXP: IntCard[] = [
     desc: "Helpdesk, customer requests portal, public roadmap, and changelog built on Linear",
     color: "bg-violet-700",
     abbr: "PL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/e5ab4b2ac91a5e345c91a55aa17c22f842547912-1128x1128.png?q=95&auto=format&dpr=2",
   },
   {
     key: "index",
@@ -14011,6 +14400,8 @@ const INTEG_CUSTOMER_EXP: IntCard[] = [
     desc: "The Productboard and Jira Product Discovery alternative for Product Management on Linear",
     color: "bg-[#374151]",
     abbr: "IX",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/57cf1ecae593d35acbde56de591d2e82088ee977-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "salesforce",
@@ -14018,6 +14409,8 @@ const INTEG_CUSTOMER_EXP: IntCard[] = [
     desc: "Create Linear issues from Salesforce cases",
     color: "bg-[#00A1E0]",
     abbr: "SF",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/38a6f572826cc73efbf3a171c4117ed469d78b3f-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "atlas",
@@ -14025,15 +14418,28 @@ const INTEG_CUSTOMER_EXP: IntCard[] = [
     desc: "Keep a tight feedback loop with customers and streamline customer requests",
     color: "bg-[#6366F1]",
     abbr: "AS",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/05378a6a58912a1a5dc75596dc90905014f31787-361x360.png?q=95&auto=format&dpr=2",
   },
 ]
 const INTEG_COLLABORATION: IntCard[] = [
+  {
+    key: "slack-co",
+    name: "Slack",
+    desc: "Create issues from Slack messages and sync threads",
+    color: "bg-[#4A154B]",
+    abbr: "SL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/28e6449162d4a338f94e6e9d05ae2c9c7b988efb-640x640.png?q=95&auto=format&dpr=2",
+  },
   {
     key: "linear-asks-co",
     name: "Linear Asks for Slack",
     desc: "Turn requests from Slack or email into actionable issues and enable helpdesk workflows",
     color: "bg-violet-600",
     abbr: "LA",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/50523dc935cc10d87e73339ac5993e1cee96f96b-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "notion-co",
@@ -14041,6 +14447,8 @@ const INTEG_COLLABORATION: IntCard[] = [
     desc: "Previews of Linear issues, views and projects and query Notion AI",
     color: "bg-[#1a1a1a]",
     abbr: "NO",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/830e30a69616db480837dd03f5c17c67f1e6fbf5-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "msteams",
@@ -14048,6 +14456,8 @@ const INTEG_COLLABORATION: IntCard[] = [
     desc: "Drive work forward by turning conversations into issues, projects, and documents",
     color: "bg-[#6264A7]",
     abbr: "MT",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/007986d3aa0bf2af94e069f35504badd8f3c5a76-16x16.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "discord",
@@ -14055,6 +14465,8 @@ const INTEG_COLLABORATION: IntCard[] = [
     desc: "Create issues, share updates, and keep everyone in sync",
     color: "bg-[#5865F2]",
     abbr: "DS",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/03f104f3260fa9b019fc42dd95f97e5879d3b1cf-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "glean",
@@ -14062,6 +14474,8 @@ const INTEG_COLLABORATION: IntCard[] = [
     desc: "Search Linear for instant insights",
     color: "bg-[#3B82F6]",
     abbr: "GL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/efe22db0da266aaa937e9416f84e542ff43b662e-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "productlane-co",
@@ -14069,6 +14483,8 @@ const INTEG_COLLABORATION: IntCard[] = [
     desc: "Helpdesk, customer requests portal, public roadmap, and changelog built on Linear",
     color: "bg-violet-700",
     abbr: "PL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/e5ab4b2ac91a5e345c91a55aa17c22f842547912-1128x1128.png?q=95&auto=format&dpr=2",
   },
   {
     key: "range",
@@ -14076,6 +14492,8 @@ const INTEG_COLLABORATION: IntCard[] = [
     desc: "Pull Linear issues into async check-ins to keep your software development team in sync",
     color: "bg-[#374151]",
     abbr: "RG",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/ebc565fa12d244bcbd0bd5dcd1f0b0d0013f9f09-320x320.png?q=95&auto=format&dpr=2",
   },
 ]
 const INTEG_MEDIA_DESIGN: IntCard[] = [
@@ -14085,6 +14503,8 @@ const INTEG_MEDIA_DESIGN: IntCard[] = [
     desc: "Create and link issues directly from Figma",
     color: "bg-[#F24E1E]",
     abbr: "FG",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/449959adb357c35991dbbdf9c369c162937ebd7a-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "canva",
@@ -14092,6 +14512,8 @@ const INTEG_MEDIA_DESIGN: IntCard[] = [
     desc: "Create and link Linear workflow content directly within Canva",
     color: "bg-[#00C4CC]",
     abbr: "CA",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/1f93effd803c1819902e2115accaf94bece02698-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "claap",
@@ -14099,6 +14521,8 @@ const INTEG_MEDIA_DESIGN: IntCard[] = [
     desc: "Record bugs and directly create issues in Linear",
     color: "bg-rose-600",
     abbr: "CL",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/82881a9e2bc47bf43dbe562a73badb32f02c85fd-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "descript",
@@ -14106,6 +14530,8 @@ const INTEG_MEDIA_DESIGN: IntCard[] = [
     desc: "Embed Descript share URLs in Linear issues and documents",
     color: "bg-[#1a1a2e]",
     abbr: "DE",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/e77d17db16c2b18efd9bd628289a38a82b7b8af0-640x640.png?q=95&auto=format&dpr=2",
     preinstalled: true,
   },
   {
@@ -14114,6 +14540,8 @@ const INTEG_MEDIA_DESIGN: IntCard[] = [
     desc: "Embed Loom videos in Linear issues and documents",
     color: "bg-[#625DF5]",
     abbr: "LO",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/af196cdef354cfbd5961a66034797c0328b1a4da-640x640.png?q=95&auto=format&dpr=2",
     preinstalled: true,
   },
   {
@@ -14122,6 +14550,8 @@ const INTEG_MEDIA_DESIGN: IntCard[] = [
     desc: "Import, create and manage issues directly in Miro",
     color: "bg-amber-500",
     abbr: "MI",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/6177e5df4fcdba9246d0d2e7b0939d682aca9792-512x512.png?q=95&auto=format&dpr=2",
   },
   {
     key: "screenpresso",
@@ -14129,13 +14559,8 @@ const INTEG_MEDIA_DESIGN: IntCard[] = [
     desc: "Effectively report an issue with embedded screenshots and videos",
     color: "bg-red-600",
     abbr: "SP",
-  },
-  {
-    key: "tella",
-    name: "Tella",
-    desc: "Embed Tella videos in Linear",
-    color: "bg-violet-600",
-    abbr: "TE",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/b0ca9ca4b3799155de703872c9d0eaab02adfba0-256x256.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "youtube",
@@ -14143,6 +14568,8 @@ const INTEG_MEDIA_DESIGN: IntCard[] = [
     desc: "Embed YouTube videos in Linear issues and documents",
     color: "bg-[#FF0000]",
     abbr: "YT",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/b1a4b2cae4d0b948219dddbd6402a0fd488d341b-640x640.png?q=95&auto=format&dpr=2",
     preinstalled: true,
   },
 ]
@@ -14153,6 +14580,8 @@ const INTEG_ANALYTICS: IntCard[] = [
     desc: "Connect Linear to Airbyte and consolidate data in data warehouses, lakes, and databases",
     color: "bg-[#6E4FF6]",
     abbr: "AB",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/0f42f3da7d039c3af3b645f0321d8f2a3c02adae-320x320.png?q=95&auto=format&dpr=2",
   },
   {
     key: "gsheets-an",
@@ -14160,6 +14589,8 @@ const INTEG_ANALYTICS: IntCard[] = [
     desc: "Build custom dashboards and analytics from issue and project data",
     color: "bg-[#34A853]",
     abbr: "GS",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/0ca0591196315b3e8a8a0c3ab80fa56807bcb40c-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "fivetran-an",
@@ -14167,6 +14598,8 @@ const INTEG_ANALYTICS: IntCard[] = [
     desc: "Sync your Linear data with the Fivetran connector",
     color: "bg-[#0073E6]",
     abbr: "FT",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/cc537fc23546e656b9b0834dadfe222575989c0a-480x480.webp?q=95&auto=format&dpr=2",
   },
   {
     key: "retool",
@@ -14174,6 +14607,8 @@ const INTEG_ANALYTICS: IntCard[] = [
     desc: "Create, update, and analyze Linear issues in custom internal tools",
     color: "bg-[#3E63DD]",
     abbr: "RT",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/f0d7e81bd66cf21e123bb9448961ab336bd29376-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "span",
@@ -14181,6 +14616,8 @@ const INTEG_ANALYTICS: IntCard[] = [
     desc: "See how work translates into engineering impact",
     color: "bg-[#374151]",
     abbr: "SP",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/5cb438d4348ae738386dc1562f619f859c3df68f-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "jellyfish",
@@ -14188,6 +14625,8 @@ const INTEG_ANALYTICS: IntCard[] = [
     desc: "Developer productivity insights and AI impact signals in one dashboard",
     color: "bg-violet-700",
     abbr: "JF",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/91ae0adf3bd79b0892528b74417544f9d680849a-450x450.webp?q=95&auto=format&dpr=2",
   },
   {
     key: "coda",
@@ -14195,6 +14634,8 @@ const INTEG_ANALYTICS: IntCard[] = [
     desc: "Analyze your team's performance, project lifecycles, issues and more with the Linear Pack for Coda",
     color: "bg-[#F46A54]",
     abbr: "CD",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/fb84f455f55ca52420c7ddcc0dba652fd7cf0242-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "cyclereport",
@@ -14202,6 +14643,8 @@ const INTEG_ANALYTICS: IntCard[] = [
     desc: "Create reports of your cycles that your clients can review and sign off on",
     color: "bg-[#7C3AED]",
     abbr: "CR",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/6a4a74789aecf9092299b78413bb482b93e2be18-640x640.png?q=95&auto=format&dpr=2",
   },
 ]
 const INTEG_SECURITY: IntCard[] = [
@@ -14211,6 +14654,8 @@ const INTEG_SECURITY: IntCard[] = [
     desc: "Put your application security on autopilot",
     color: "bg-[#6366F1]",
     abbr: "AK",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/2247569c11ceede6b8ab993deb4dca2374e61207-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "cloudback",
@@ -14218,6 +14663,8 @@ const INTEG_SECURITY: IntCard[] = [
     desc: "Automated daily backups of your Linear workspace with on-demand restore",
     color: "bg-[#374151]",
     abbr: "CB",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/a9cf5ef7335894fc81b6ff769b9845ca92498db4-640x640.png?q=95&auto=format&dpr=2",
   },
   {
     key: "drata",
@@ -14225,6 +14672,8 @@ const INTEG_SECURITY: IntCard[] = [
     desc: "Simplify risk and managing frameworks like SOC 2, ISO 27001, PCI and more",
     color: "bg-[#1a1a1a]",
     abbr: "DR",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/17f2e1ab4ce6811e31808e1cb3396ec25d662e2a-756x756.png?q=95&auto=format&dpr=2",
   },
   {
     key: "fencer",
@@ -14232,6 +14681,8 @@ const INTEG_SECURITY: IntCard[] = [
     desc: "Create and link issues directly from Fencer",
     color: "bg-emerald-600",
     abbr: "FE",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/00117d17fd6a70ecdef1577e9d074d7544e96f9d-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "kawach",
@@ -14239,6 +14690,8 @@ const INTEG_SECURITY: IntCard[] = [
     desc: "Keep your workspace compliant with org policies using Kawach.AI",
     color: "bg-[#374151]",
     abbr: "KW",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/bd7a8e53236c30e3ce7e05615d276721d2e88b1b-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "orca",
@@ -14246,6 +14699,8 @@ const INTEG_SECURITY: IntCard[] = [
     desc: "Streamline security fixes by sharing relevant context with the right people",
     color: "bg-[#1D4ED8]",
     abbr: "OR",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/d6aeebd5708915bd9ed51041ad5deddc49b32afe-320x320.svg?q=95&auto=format&dpr=2",
   },
   {
     key: "secureslate",
@@ -14253,6 +14708,8 @@ const INTEG_SECURITY: IntCard[] = [
     desc: "Create and link SecureSlate security tickets to Linear",
     color: "bg-emerald-700",
     abbr: "SS",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/e7d37e91802f84c4004482806ef309a70c44d89c-320x320.png?q=95&auto=format&dpr=2",
   },
   {
     key: "vanta",
@@ -14260,6 +14717,8 @@ const INTEG_SECURITY: IntCard[] = [
     desc: "Automate compliance. Simplify security. Demonstrate trust.",
     color: "bg-[#1a1a1a]",
     abbr: "VA",
+    logoUrl:
+      "https://webassets.linear.app/images/ornj730p/production/cc51049ac9db240c517f9220841930eeae20abdd-320x320.svg?q=95&auto=format&dpr=2",
   },
 ]
 
@@ -14268,6 +14727,7 @@ function IntegrationCard({
   desc,
   color,
   abbr,
+  logoUrl,
   preinstalled,
   connected,
   slug,
@@ -14277,13 +14737,37 @@ function IntegrationCard({
       href={`/settings/integrations/${slug}`}
       scroll={false}
       aria-label={`${name} integration`}
+      onClick={() => {
+        // Stash the current scroll position so we can restore it when
+        // the user clicks "Back to integrations" from the detail page.
+        if (typeof window === "undefined") return
+        const scroller = document.querySelector<HTMLElement>(
+          "[data-settings-scroll-container]"
+        )
+        if (scroller) {
+          sessionStorage.setItem(
+            INTEGRATIONS_SCROLL_STORAGE_KEY,
+            String(scroller.scrollTop)
+          )
+        }
+      }}
       className="bg-card hover:border-foreground/20 focus-visible:ring-ring group relative flex items-start gap-3 rounded-lg border p-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
     >
-      <div
-        className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white ${color}`}
-      >
-        {abbr}
-      </div>
+      {logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={logoUrl}
+          alt=""
+          aria-hidden="true"
+          className="size-10 shrink-0 rounded-xl object-cover"
+        />
+      ) : (
+        <div
+          className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white ${color}`}
+        >
+          {abbr}
+        </div>
+      )}
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-sm leading-tight font-semibold">{name}</span>
@@ -14326,14 +14810,25 @@ function ShowAllCard({
       className="bg-card hover:bg-muted hover:border-foreground/20 focus-visible:ring-ring flex cursor-pointer flex-col items-start justify-between gap-3 rounded-lg border p-4 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
     >
       <div className="grid grid-cols-3 gap-2">
-        {palette.map((item) => (
-          <div
-            key={item.key}
-            className={`flex size-8 items-center justify-center rounded-lg text-[9px] font-bold text-white ${item.color}`}
-          >
-            {item.abbr}
-          </div>
-        ))}
+        {palette.map((item) =>
+          item.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={item.key}
+              src={item.logoUrl}
+              alt=""
+              aria-hidden="true"
+              className="size-8 rounded-lg object-cover"
+            />
+          ) : (
+            <div
+              key={item.key}
+              className={`flex size-8 items-center justify-center rounded-lg text-[9px] font-bold text-white ${item.color}`}
+            >
+              {item.abbr}
+            </div>
+          )
+        )}
       </div>
       <span className="text-muted-foreground group-hover:text-foreground flex items-center gap-1 text-xs font-medium">
         Show all
@@ -14455,6 +14950,26 @@ function IntegrationsSection() {
   const [activeTab, setActiveTab] = useState("all")
   const [morePopoverOpen, setMorePopoverOpen] = useState(false)
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
+
+  // Restore scroll position when returning from a detail page. The card's
+  // onClick stashes scrollTop into sessionStorage; we read & clear it here
+  // on mount so subsequent fresh visits start at the top.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const saved = sessionStorage.getItem(INTEGRATIONS_SCROLL_STORAGE_KEY)
+    if (!saved) return
+    sessionStorage.removeItem(INTEGRATIONS_SCROLL_STORAGE_KEY)
+    const top = Number(saved)
+    if (!Number.isFinite(top)) return
+    const scroller = document.querySelector<HTMLElement>(
+      "[data-settings-scroll-container]"
+    )
+    if (!scroller) return
+    // Wait for content to lay out before applying the scrollTop.
+    requestAnimationFrame(() => {
+      scroller.scrollTop = top
+    })
+  }, [])
 
   const allSections = useMemo(() => sectionsWithCategory(), [])
 

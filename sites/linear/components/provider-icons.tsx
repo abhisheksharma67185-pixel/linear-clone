@@ -144,6 +144,124 @@ export function IntercomLogo({ className }: IconProps) {
   )
 }
 
+// Salesforce — sky-blue rounded square with the brand cloud silhouette in
+// white. Approximates the official cloud mark using overlapping circles.
+export function SalesforceLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#00A1E0" />
+      {/* Cloud silhouette built from overlapping circles */}
+      <path
+        fill="#fff"
+        d="M11.2 11.5a3.4 3.4 0 0 1 6.5-.6 2.6 2.6 0 0 1 3.4 3.6 2.4 2.4 0 0 1-1.5 4.4h-9.4a2.9 2.9 0 0 1-1.6-5.3 3 3 0 0 1 2.6-2.1Z"
+      />
+    </svg>
+  )
+}
+
+// Atlas Support — indigo→purple gradient rounded square with a stylised
+// upward chevron (the brand's "compass" mark).
+export function AtlasSupportLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <defs>
+        <linearGradient id="atlasBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#5C5CE0" />
+          <stop offset="1" stopColor="#9C5BE6" />
+        </linearGradient>
+      </defs>
+      <rect width="28" height="28" rx="6" fill="url(#atlasBg)" />
+      {/* Upward chevron / compass needle */}
+      <path fill="#fff" d="m14 7 5 13-5-3-5 3 5-13Z" />
+    </svg>
+  )
+}
+
+// Productlane — near-black rounded square with a stylised "PL" mark made
+// from two interlocking arrow shapes. Brand uses pure black + white.
+export function ProductlaneLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#0B0B0F" />
+      {/* Down-right arrow */}
+      <path
+        fill="#fff"
+        d="M9 6h4l-1.5 5.5L17 8.5l2 3.5-5.5 3.2L18 16l-1.5 5h-4l1.5-5.5-5.5 3.3-2-3.5L11.5 12 7 11l1.5-5Z"
+      />
+    </svg>
+  )
+}
+
+// Index — dark navy rounded square with three white horizontal bars (the
+// brand's stacked "≡" mark, slightly tapered at the right edge).
+export function IndexLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <defs>
+        <linearGradient id="indexBg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1A1B26" />
+          <stop offset="1" stopColor="#0A0B12" />
+        </linearGradient>
+      </defs>
+      <rect width="28" height="28" rx="6" fill="url(#indexBg)" />
+      <rect x="7" y="9" width="14" height="2" rx="1" fill="#fff" />
+      <rect x="7" y="13" width="13" height="2" rx="1" fill="#fff" />
+      <rect x="7" y="17" width="11" height="2" rx="1" fill="#fff" />
+    </svg>
+  )
+}
+
+// Front — rounded square with a stylised "F"/notification dot mark. Front's
+// brand uses a violet/purple background with a white inset glyph.
+export function FrontLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#A276FF" />
+      {/* Inner upper-left rounded rectangle */}
+      <rect x="6" y="6" width="10" height="10" rx="3" fill="#fff" />
+      {/* Inner lower-right circle (notification dot) */}
+      <circle cx="18.5" cy="18.5" r="4.5" fill="#fff" />
+    </svg>
+  )
+}
+
+// Canny — rounded indigo square with an outlined "C" mark. The brand uses a
+// stylised crescent that reads as both a "C" and a sound-wave glyph.
+export function CannyLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#5C5BD6" />
+      <path
+        fill="none"
+        stroke="#fff"
+        strokeWidth="2.25"
+        strokeLinecap="round"
+        d="M19 9.5a6.5 6.5 0 1 0 0 9"
+      />
+      <circle cx="19" cy="14" r="1.5" fill="#fff" />
+    </svg>
+  )
+}
+
+// Zendesk — abstract "Z" mark made from two right-angle wedges. The brand
+// uses a deep teal background; the mark itself is white space cut from the
+// fill. Caller controls the background via parent text colour.
+export function ZendeskLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#03363D" />
+      {/* Top-left wedge: filled triangle pointing down-right */}
+      <path fill="#fff" d="M6 8h10L6 20V8Z" />
+      {/* Top-right wedge: rounded "fan" shape */}
+      <path fill="#fff" d="M22 12a6 6 0 0 1-6-6h6v6Z" />
+      {/* Bottom-right wedge: filled triangle pointing up-left */}
+      <path fill="#fff" d="M22 20H12L22 8v12Z" />
+      {/* Bottom-left wedge: rounded "fan" shape */}
+      <path fill="#fff" d="M6 16a6 6 0 0 1 6 6H6v-6Z" />
+    </svg>
+  )
+}
+
 // Google Sheets — official green document mark with the folded corner and
 // the inner spreadsheet grid. Sized for a 24px viewBox so it composes cleanly
 // with other provider icons.
@@ -699,6 +817,481 @@ export function VercelLogo({ className }: IconProps) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
       <path fill="currentColor" d="M16 6 28 26H4Z" />
+    </svg>
+  )
+}
+
+// Descript — blue rounded square with a stylised lowercase "d" wordmark
+// glyph in white. Approximates the Descript brand mark: a chunky letter "D"
+// with the descender curving back into a partial circle.
+export function DescriptLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#2D7FF9" />
+      <path
+        fill="#fff"
+        d="M19 7v10.5c0 2.5-2 4.5-4.5 4.5h-1.4a4.6 4.6 0 1 1 0-9.2h2.5V9.6c0-.4.3-.7.6-.7H18c.5 0 1 .5 1 1Zm-3.4 9.3v-2.7H13c-1.4 0-2.5 1.2-2.5 2.7s1.1 2.7 2.5 2.7h.1c1.4 0 2.5-1.2 2.5-2.7Z"
+      />
+    </svg>
+  )
+}
+
+// Canva AI Connector — cyan→blue gradient rounded square with a stylised
+// white "C" wordmark glyph plus a sparkle accent. Approximates the new
+// "Canva AI" iconography (the spiralling C with a star to the upper-right).
+export function CanvaLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <defs>
+        <linearGradient id="canvaBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#7B8DFF" />
+          <stop offset="0.55" stopColor="#3CC4FF" />
+          <stop offset="1" stopColor="#28E0CF" />
+        </linearGradient>
+      </defs>
+      <rect width="28" height="28" rx="6" fill="url(#canvaBg)" />
+      {/* Stylised C arc */}
+      <path
+        d="M19 11.5a5.6 5.6 0 1 0 0 5"
+        stroke="#fff"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* Sparkle */}
+      <path
+        d="M21 7.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6Z"
+        fill="#fff"
+      />
+    </svg>
+  )
+}
+
+// Claap — coral/pink rounded square with the "claap" lowercase wordmark in
+// white. The brand mark is the word with a few accent dots. Caller passes
+// className for sizing.
+export function ClaapLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#FF5C7A" />
+      <text
+        x="14"
+        y="17.5"
+        textAnchor="middle"
+        fontFamily="ui-sans-serif, system-ui"
+        fontSize="7"
+        fontWeight="700"
+        fill="#fff"
+      >
+        claap
+      </text>
+      {/* Accent dots — three pairs flanking the wordmark */}
+      <circle cx="6" cy="9" r="0.7" fill="#fff" opacity="0.7" />
+      <circle cx="22" cy="9" r="0.7" fill="#fff" opacity="0.7" />
+      <circle cx="5.2" cy="20.5" r="0.6" fill="#fff" opacity="0.55" />
+      <circle cx="22.8" cy="20.5" r="0.6" fill="#fff" opacity="0.55" />
+    </svg>
+  )
+}
+
+// Range — white rounded square with a rainbow-striped arch (the brand's
+// "bridge" mark). The arch uses five bands cycling through red→purple to
+// approximate the official multicolour stripe stack.
+export function RangeLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#fff" />
+      <path
+        d="M4 19a10 10 0 0 1 20 0"
+        stroke="#FF6B6B"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M5.6 19.4a8.4 8.4 0 0 1 16.8 0"
+        stroke="#FFB454"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M7.2 19.8a6.8 6.8 0 0 1 13.6 0"
+        stroke="#5BD891"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8.8 20.2a5.2 5.2 0 0 1 10.4 0"
+        stroke="#5DAEFF"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10.4 20.6a3.6 3.6 0 0 1 7.2 0"
+        stroke="#A276FF"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+// Microsoft Teams — purple rounded square with the official-style "T" mark
+// rendered in white, plus a small accent dot. Tile background is part of the
+// glyph so it composes correctly when the parent has no fill.
+export function MicrosoftTeamsLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#6264A7" />
+      {/* People silhouettes – primary group on the left */}
+      <circle cx="11" cy="9.25" r="2.4" fill="#fff" />
+      <rect x="6.6" y="12" width="8.8" height="9" rx="1.4" fill="#fff" />
+      <rect x="8.6" y="13.4" width="1.4" height="6.2" fill="#6264A7" />
+      <rect x="12" y="13.4" width="1.4" height="6.2" fill="#6264A7" />
+      <rect x="8.6" y="13.4" width="4.8" height="1.4" fill="#6264A7" />
+      {/* Secondary smaller silhouette on the right */}
+      <circle cx="19" cy="8.5" r="1.9" fill="#fff" opacity="0.85" />
+      <path
+        d="M16.4 12h5.2c.6 0 1 .4 1 1v5.4c0 1.6-1.3 2.9-2.9 2.9h-.4a2.9 2.9 0 0 1-2.9-2.9V13c0-.6.4-1 1-1Z"
+        fill="#fff"
+        opacity="0.85"
+      />
+    </svg>
+  )
+}
+
+// Discord — indigo rounded square with the official two-eye game-controller
+// silhouette in white. Approximates the brand mark using simple ellipses for
+// the eyes plus a rounded body shape.
+export function DiscordLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#5865F2" />
+      <path
+        fill="#fff"
+        d="M19.7 8.6a13 13 0 0 0-3.3-1l-.2.3c1.2.2 2.3.6 3.3 1.2-1.5-.8-3.2-1.2-4.9-1.2-1.7 0-3.4.4-4.9 1.2 1-.6 2.1-1 3.3-1.2l-.2-.3a13 13 0 0 0-3.3 1c-2 3-2.6 6-2.4 9 .1 0 1.3 1 3.5 1.2.3-.4.6-.9.8-1.4-.7-.3-1.4-.6-2-1l.5-.4a9.4 9.4 0 0 0 8.4 0l.5.4c-.6.4-1.3.7-2 1l.8 1.4c2.2-.2 3.4-1.2 3.5-1.2.2-3.5-.6-6.4-2.4-9ZM10.7 16.5c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5Zm6.6 0c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5Z"
+      />
+    </svg>
+  )
+}
+
+// Glean — soft white rounded square with a dark "g" arc mark. Mirrors the
+// brand's monochrome wordmark glyph: a curved "g" with a short tail.
+export function GleanLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 28 28" className={className} aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#F4F4F2" />
+      <path
+        fill="none"
+        stroke="#0B0B0F"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        d="M19.5 11.5a5.6 5.6 0 1 0 0 5"
+      />
+      <path
+        fill="none"
+        stroke="#0B0B0F"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        d="M19.5 11.5v8.4a3.4 3.4 0 0 1-3.4 3.4h-1.6"
+      />
+    </svg>
+  )
+}
+
+// Loom — sunburst mark, drawn white so it can sit on a purple background.
+export function LoomLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g fill="#fff">
+        {Array.from({ length: 12 }).map((_, i) => {
+          const angle = (i * 30 * Math.PI) / 180
+          const cx = 16 + Math.cos(angle - Math.PI / 2) * 9
+          const cy = 16 + Math.sin(angle - Math.PI / 2) * 9
+          return <circle key={i} cx={cx} cy={cy} r="2.4" />
+        })}
+        <circle cx="16" cy="16" r="3.4" />
+      </g>
+    </svg>
+  )
+}
+
+// Miro — three black vertical glyphs on a transparent canvas; caller supplies
+// the yellow backing.
+export function MiroLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g fill="#0b0b0f">
+        <path d="M21.5 5.5h2.6l-2.7 7.6 4.4-7.6h2.6l-3.7 8.6 4.5-8.6h2.4l-5 11.6q-1.6 3.7-4.7 3.7-2 0-2-1.7 0-1.1.7-2.6l2.4-5.6-4 8.2q-1.3 2.6-3.6 2.6-1.9 0-1.9-1.7 0-1.1.7-2.7l2.6-5.5-4.1 8q-1.2 2.5-3.6 2.5-1.9 0-1.9-1.8 0-1.1.6-2.7L8.6 5.5h2.6l-3 7.7 4.5-7.7h2.4l-3.7 8.5 4.5-8.5h2.5l-3.6 8.5z" />
+      </g>
+    </svg>
+  )
+}
+
+// Screenpresso — italic "p" mark in white on a red background (caller-provided).
+export function ScreenpressoLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <path
+        fill="#fff"
+        d="M11.6 25.5 14.8 7.5h6.4q3.4 0 5.1 1.6 1.7 1.5 1.7 4.3 0 3.1-2.1 5-2.1 1.9-5.6 1.9h-3.5l-1 5.2zM18.4 16h2.5q1.6 0 2.5-.8.9-.8.9-2.3 0-1.1-.7-1.7-.7-.6-2.1-.6h-2.1z"
+      />
+    </svg>
+  )
+}
+
+// Airbyte — stylized white tunnel/arch mark on the caller-provided indigo
+// background.
+export function AirbyteLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g
+        fill="none"
+        stroke="#fff"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M7 24V14a6 6 0 0 1 12 0v10" />
+        <path d="M13 24v-9a3 3 0 0 1 6 0v9" />
+        <path d="M19 24v-7a3 3 0 0 1 6 0v7" />
+      </g>
+    </svg>
+  )
+}
+
+// Retool — stylized "F" / staircase mark in white on the caller-provided dark
+// background.
+export function RetoolLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g fill="#fff">
+        <rect x="6" y="7" width="14" height="3.6" rx="0.6" />
+        <rect x="6" y="14.2" width="10" height="3.6" rx="0.6" />
+        <rect x="6" y="21.4" width="6" height="3.6" rx="0.6" />
+        <rect x="22" y="14.2" width="3.6" height="10.8" rx="0.6" />
+      </g>
+    </svg>
+  )
+}
+
+// Span — abstract upward-curving arch glyph (as seen on span.app), drawn dark
+// so it can sit on a white tile.
+export function SpanLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <path
+        fill="#0b0b0f"
+        d="M5 24 14 8h4l9 16h-4.5l-2.1-3.8h-9L9.5 24Zm9.6-7.6h5.8L17.5 11Z"
+      />
+    </svg>
+  )
+}
+
+// Tella — square mark with a play triangle and recording dot, in white so it
+// can sit on the brand violet background supplied by the caller.
+export function TellaLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g fill="#fff">
+        <circle cx="9" cy="9" r="3" />
+        <path d="M11 19h12v3H11zM11 24h8v3h-8z" />
+        <path d="M22 8.5 28 12l-6 3.5z" />
+      </g>
+    </svg>
+  )
+}
+
+// YouTube — rounded red play badge.
+export function YouTubeLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect x="3" y="8" width="26" height="16" rx="4" fill="#FF0000" />
+      <path d="M14 13.2v5.6l5-2.8z" fill="#fff" />
+    </svg>
+  )
+}
+
+// Jellyfish — stylized jellyfish silhouette in white on the caller-provided
+// violet background. Dome with three trailing tendrils.
+export function JellyfishLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g fill="#fff">
+        <path d="M6 14.5a10 10 0 0 1 20 0v1.5H6z" />
+        <path d="M9.5 17.5q.8 2.4 0 4.6-.8 2.2.8 3.4 1.6 1.2 2-.6.4-1.8-.4-3.6-.8-1.8.4-3.8z" />
+        <path d="M15 17.5q.6 3 .6 5.6 0 2.6-1 3.4-1 .8-1.4-1-.4-1.8.4-4 .8-2.2.4-4z" />
+        <path d="M21.5 17.5q-.6 2.4-.4 4.4.2 2 -.8 3.6-1 1.6-1.8.4-.8-1.2.2-3.4 1-2.2.8-5z" />
+      </g>
+    </svg>
+  )
+}
+
+// Kawach AI — shield with a "K" cut-out in white on the caller-provided
+// dark grey tile (subtle gradient fill is added by the caller).
+export function KawachLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <path
+        fill="#fff"
+        d="M16 4 6 8v8q0 6 4.4 9.4Q14 28 16 28t5.6-2.6Q26 22 26 16V8z"
+      />
+      <path
+        d="M13 11v10M13 16l5-5M13 16l5 5"
+        stroke="#1f1f23"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  )
+}
+
+// Orca Security — stacked "orca / SECURITY" wordmark drawn dark on a white
+// tile (caller controls the tile colour). Simplified mark uses a small
+// orca-fin glyph + uppercase rule.
+export function OrcaSecurityLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g fill="#0b1f4d">
+        <path d="M5 13q3-2 7-2 5 0 9 4l3-1-2 3q1 2 1 4h-3q-1-3-3-4-3-2-7-2-3 0-5 1zM7 16h2v2H7zM12 16h2v2h-2z" />
+      </g>
+      <g fill="#0b1f4d">
+        <rect x="6" y="22" width="20" height="0.8" />
+        <text
+          x="16"
+          y="27.6"
+          textAnchor="middle"
+          fontFamily="ui-sans-serif, system-ui, sans-serif"
+          fontSize="3.6"
+          fontWeight="700"
+          letterSpacing="0.4"
+        >
+          SECURITY
+        </text>
+      </g>
+    </svg>
+  )
+}
+
+// Drata — sharpened "A" / shield wordmark in white on the caller-provided
+// dark navy tile.
+export function DrataLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g fill="#fff">
+        <path d="M16 5 5 26h4l1.6-3.2h10.8L23 26h4zm-3.4 14.4L16 12.8l3.4 6.6z" />
+      </g>
+    </svg>
+  )
+}
+
+// Fencer — open shield/book mark in white on the caller-provided emerald
+// tile.
+export function FencerLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g fill="#fff">
+        <path d="M7 6h8.4q1.6 0 2.6 1 1 1 1 2.6V26h-8.4q-1.6 0-2.6-1-1-1-1-2.6z" />
+        <path d="M25 6h-4v17q0 1.4-1 2.4-.6.6-1.4.8h6.4q.4 0 .6-.2.4-.4.4-.8z" />
+      </g>
+      <path
+        d="M11 12h4M11 15h4M11 18h3"
+        stroke="#0b7a3a"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+// Aikido Security — bold "A" / upward chevron lockup in white on the
+// caller-provided indigo tile, with a small bar beneath suggesting a base.
+export function AikidoLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g fill="#fff">
+        <path d="M16 6 6 22h4l6-9.6 6 9.6h4z" />
+        <rect x="9" y="23" width="14" height="2.4" rx="0.8" />
+      </g>
+    </svg>
+  )
+}
+
+// Cloudback — abstract "C/L" backup glyph in dark on a white tile (caller
+// provides the tile colour). Stylized as an interlocked link badge.
+export function CloudbackLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g
+        fill="none"
+        stroke="#0b0b0f"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M22 11a7 7 0 1 0 0 10" />
+        <path d="M14 16h6" />
+        <path d="M17 13l3 3-3 3" />
+      </g>
+    </svg>
+  )
+}
+
+// Cycle Report — circular refresh-arrow glyph drawn in violet on the
+// caller-provided dark tile. Two arc segments suggest a sprint cycle.
+export function CycleReportLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <g
+        fill="none"
+        stroke="#A78BFA"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M24 12a9 9 0 1 0 1.5 8.5" />
+        <path d="M25 6.5V12h-5.5" />
+      </g>
+      <circle cx="16" cy="16" r="2.6" fill="#A78BFA" />
+    </svg>
+  )
+}
+
+// Coda — rounded orange tile with a stylized white "C" mark.
+export function CodaLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <path
+        fill="#fff"
+        d="M22 9q-2.6-1.6-6-1.6-4.2 0-7.1 2.5Q6 12.4 6 16t2.9 6.1q2.9 2.5 7.1 2.5 3.4 0 6-1.6l-2.4-3.4q-1.6 1-3.6 1-2.4 0-4.1-1.3-1.7-1.3-1.7-3.3t1.7-3.3q1.7-1.3 4.1-1.3 2 0 3.6 1z"
+      />
+    </svg>
+  )
+}
+
+// SecureSlate — stylized lightning-bolt "S" in emerald on the caller-provided
+// dark tile.
+export function SecureSlateLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <path fill="#10B981" d="M19.4 5.5h-7.2L7 16h6l-2.6 10.5 9.6-13.6h-5.8z" />
+    </svg>
+  )
+}
+
+// Vanta — bold "V" wordmark glyph in white on the caller-provided dark tile.
+// A small peace-sign dot caps the right stroke, echoing the production mark.
+export function VantaLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <path fill="#fff" d="m6 8 7.4 16h5.2L26 8h-4.2l-5.6 12.4L10.2 8z" />
+      <circle cx="24.4" cy="9.6" r="1.7" fill="#fff" />
     </svg>
   )
 }

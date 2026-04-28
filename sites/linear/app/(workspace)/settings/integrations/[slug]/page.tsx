@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import * as React from "react"
-import { use, useState } from "react"
+import { use, useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,44 +17,77 @@ import { Kbd } from "@/components/ui/kbd"
 import { cn } from "@/lib/utils"
 import {
   AdkLogo,
+  AikidoLogo,
+  AirbyteLogo,
   ArcLogo,
+  AtlasSupportLogo,
   AxoloLogo,
   BirdEatsBugLogo,
+  CannyLogo,
+  CanvaLogo,
   CapybaraLogo,
   CharlieLogo,
+  ClaapLogo,
   ChatPrdLogo,
   CirclebackLogo,
   ClaudeLogo,
+  CloudbackLogo,
+  CodaLogo,
   CopilotLogo,
   CursorLogo,
+  CycleReportLogo,
   DatadogLogo,
+  DescriptLogo,
   DevinLogo,
+  DrataLogo,
+  DiscordLogo,
   DustLogo,
   EmailIntakeLogo,
   FactoryLogo,
+  FencerLogo,
   FigmaLogo,
   FivetranLogo,
+  FrontLogo,
   GitHubLogo,
   GitLabLogo,
+  GleanLogo,
   GoogleSheetsLogo,
   HoneybadgerLogo,
   IncidentIoLogo,
+  IndexLogo,
   IntercomLogo,
   JamLogo,
+  JellyfishLogo,
   JiraLogo,
+  KawachLogo,
   LinearAsksLogo,
+  LoomLogo,
+  MicrosoftTeamsLogo,
+  MiroLogo,
   NotionLogo,
   OpenAILogo,
+  OrcaSecurityLogo,
   PagerDutyLogo,
+  ProductlaneLogo,
+  RangeLogo,
   RaycastLogo,
   ReplitLogo,
+  RetoolLogo,
+  SalesforceLogo,
+  ScreenpressoLogo,
+  SecureSlateLogo,
   SentryLogo,
   SlackLogo,
+  SpanLogo,
+  TellaLogo,
   V0Logo,
+  VantaLogo,
   VercelLogo,
   VSCodeLogo,
   WindsurfLogo,
+  YouTubeLogo,
   ZapierLogo,
+  ZendeskLogo,
 } from "@/components/provider-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -76,6 +110,127 @@ function titleFromSlug(slug: string): string {
     .join(" ")
 }
 
+// Back link that uses browser history when available so the previous
+// settings scroll position is preserved. Falls back to the integrations
+// route on direct navigation (e.g. opened in a new tab).
+function BackToIntegrationsLink({
+  label = "Integrations",
+}: {
+  label?: string
+}) {
+  const router = useRouter()
+  return (
+    <Link
+      href="/settings?section=integrations"
+      scroll={false}
+      onClick={(e) => {
+        if (
+          e.metaKey ||
+          e.ctrlKey ||
+          e.shiftKey ||
+          e.altKey ||
+          e.button !== 0
+        ) {
+          return
+        }
+        // Go back via browser history when possible so the previous
+        // settings scroll position is restored. Falls through to the href
+        // (full client-side navigation to /settings?section=integrations)
+        // on direct loads / new-tab opens.
+        if (typeof window !== "undefined" && window.history.length > 1) {
+          e.preventDefault()
+          router.back()
+        }
+      }}
+      className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
+      aria-label="Back to integrations"
+    >
+      <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
+      {label}
+    </Link>
+  )
+}
+
+// Horizontal carousel for the per-integration screenshot tiles. Renders
+// children in a snap-scroll row and shows prev/next arrow controls that
+// disable themselves when there's nothing to scroll to in that direction.
+function TileCarousel({ children }: { children: React.ReactNode }) {
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [canPrev, setCanPrev] = useState(false)
+  const [canNext, setCanNext] = useState(false)
+
+  const updateButtons = React.useCallback(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    const max = el.scrollWidth - el.clientWidth
+    setCanPrev(el.scrollLeft > 1)
+    setCanNext(el.scrollLeft < max - 1)
+  }, [])
+
+  useEffect(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    updateButtons()
+    el.addEventListener("scroll", updateButtons, { passive: true })
+    const ro = new ResizeObserver(updateButtons)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener("scroll", updateButtons)
+      ro.disconnect()
+    }
+  }, [updateButtons])
+
+  const scroll = (dir: -1 | 1) => {
+    const el = scrollerRef.current
+    if (!el) return
+    // Step by ~one tile width on small screens, two on wider ones.
+    const step = Math.max(el.clientWidth * 0.9, 200)
+    el.scrollBy({ left: dir * step, behavior: "smooth" })
+  }
+
+  const items = React.Children.toArray(children)
+
+  return (
+    <div className="relative">
+      <div
+        ref={scrollerRef}
+        className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {items.map((child, i) => (
+          <div
+            key={i}
+            className="w-[85%] shrink-0 snap-start sm:w-[calc(50%-0.375rem)]"
+          >
+            {child}
+          </div>
+        ))}
+      </div>
+      {(canPrev || canNext) && (
+        <>
+          <button
+            type="button"
+            aria-label="Previous"
+            onClick={() => scroll(-1)}
+            disabled={!canPrev}
+            className="bg-background/90 hover:bg-background absolute top-1/2 left-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition disabled:cursor-default disabled:opacity-0"
+          >
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
+          </button>
+          <button
+            type="button"
+            aria-label="Next"
+            onClick={() => scroll(1)}
+            disabled={!canNext}
+            className="bg-background/90 hover:bg-background absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition disabled:cursor-default disabled:opacity-0"
+          >
+            <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function IntegrationDetailPage({
   params,
 }: {
@@ -87,7 +242,7 @@ export default function IntegrationDetailPage({
     return <GitHubIntegrationDetail />
   }
 
-  if (slug === "slack" || slug === "slack-lc") {
+  if (slug === "slack" || slug === "slack-lc" || slug === "slack-co") {
     return <SlackIntegrationDetail />
   }
 
@@ -95,16 +250,112 @@ export default function IntegrationDetailPage({
     return <GitLabIntegrationDetail />
   }
 
-  if (slug === "figma") {
+  if (slug === "figma" || slug === "figma-md") {
     return <FigmaIntegrationDetail />
   }
 
-  if (slug === "intercom") {
+  if (slug === "canva") {
+    return <CanvaIntegrationDetail />
+  }
+
+  if (slug === "claap") {
+    return <ClaapIntegrationDetail />
+  }
+
+  if (slug === "descript") {
+    return <DescriptIntegrationDetail />
+  }
+
+  if (slug === "intercom" || slug === "intercom-cx") {
     return <IntercomIntegrationDetail />
   }
 
-  if (slug === "gsheets") {
+  if (slug === "zendesk") {
+    return <ZendeskIntegrationDetail />
+  }
+
+  if (slug === "front") {
+    return <FrontIntegrationDetail />
+  }
+
+  if (slug === "canny") {
+    return <CannyIntegrationDetail />
+  }
+
+  if (slug === "productlane" || slug === "productlane-co") {
+    return <ProductlaneIntegrationDetail />
+  }
+
+  if (slug === "index") {
+    return <IndexIntegrationDetail />
+  }
+
+  if (slug === "salesforce") {
+    return <SalesforceIntegrationDetail />
+  }
+
+  if (slug === "atlas") {
+    return <AtlasSupportIntegrationDetail />
+  }
+
+  if (slug === "gsheets" || slug === "gsheets-an") {
     return <GoogleSheetsIntegrationDetail />
+  }
+
+  if (slug === "airbyte") {
+    return <AirbyteIntegrationDetail />
+  }
+
+  if (slug === "retool") {
+    return <RetoolIntegrationDetail />
+  }
+
+  if (slug === "span") {
+    return <SpanIntegrationDetail />
+  }
+
+  if (slug === "jellyfish") {
+    return <JellyfishIntegrationDetail />
+  }
+
+  if (slug === "coda") {
+    return <CodaIntegrationDetail />
+  }
+
+  if (slug === "cyclereport") {
+    return <CycleReportIntegrationDetail />
+  }
+
+  if (slug === "aikido") {
+    return <AikidoIntegrationDetail />
+  }
+
+  if (slug === "cloudback") {
+    return <CloudbackIntegrationDetail />
+  }
+
+  if (slug === "drata") {
+    return <DrataIntegrationDetail />
+  }
+
+  if (slug === "fencer") {
+    return <FencerIntegrationDetail />
+  }
+
+  if (slug === "secureslate") {
+    return <SecureSlateIntegrationDetail />
+  }
+
+  if (slug === "vanta") {
+    return <VantaIntegrationDetail />
+  }
+
+  if (slug === "kawach") {
+    return <KawachIntegrationDetail />
+  }
+
+  if (slug === "orca") {
+    return <OrcaSecurityIntegrationDetail />
   }
 
   if (slug === "codex") {
@@ -239,7 +490,7 @@ export default function IntegrationDetailPage({
     return <JiraIntegrationDetail />
   }
 
-  if (slug === "fivetran") {
+  if (slug === "fivetran" || slug === "fivetran-an") {
     return <FivetranIntegrationDetail />
   }
 
@@ -253,6 +504,42 @@ export default function IntegrationDetailPage({
 
   if (slug === "circleback") {
     return <CirclebackIntegrationDetail />
+  }
+
+  if (slug === "msteams") {
+    return <MicrosoftTeamsIntegrationDetail />
+  }
+
+  if (slug === "discord") {
+    return <DiscordIntegrationDetail />
+  }
+
+  if (slug === "glean") {
+    return <GleanIntegrationDetail />
+  }
+
+  if (slug === "range") {
+    return <RangeIntegrationDetail />
+  }
+
+  if (slug === "loom") {
+    return <LoomIntegrationDetail />
+  }
+
+  if (slug === "miro") {
+    return <MiroIntegrationDetail />
+  }
+
+  if (slug === "screenpresso") {
+    return <ScreenpressoIntegrationDetail />
+  }
+
+  if (slug === "tella") {
+    return <TellaIntegrationDetail />
+  }
+
+  if (slug === "youtube") {
+    return <YouTubeIntegrationDetail />
   }
 
   return <GenericIntegrationDetail slug={slug} />
@@ -276,15 +563,7 @@ function GitHubIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -339,34 +618,22 @@ function GitHubIntegrationDetail() {
       </div>
 
       {/* Screenshot tiles */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div
-          aria-hidden
-          className="flex aspect-[4/3] items-center justify-center rounded-lg border bg-gradient-to-br from-blue-500/30 via-indigo-500/30 to-purple-600/40"
-        >
-          <div className="bg-background/70 rounded-md border px-3 py-2 text-xs shadow-sm">
-            <span className="text-muted-foreground">Issue · LIN-320</span>
-            <div className="mt-1 font-mono text-[11px]">git|</div>
-            <div className="text-muted-foreground mt-1 text-[10px]">
-              Copy git branch name to clipboard
-            </div>
-          </div>
-        </div>
-        <div
-          aria-hidden
-          className="flex aspect-[4/3] items-center justify-center rounded-lg border bg-gradient-to-br from-blue-500/30 via-indigo-500/30 to-purple-600/40"
-        >
-          <div className="bg-background/70 rounded-md border px-3 py-2 text-xs shadow-sm">
-            <span className="text-muted-foreground">Activity</span>
-            <div className="mt-1 text-[10px]">
-              GitHub changed status from Todo → In Progress
-            </div>
-            <div className="mt-0.5 text-[10px]">
-              GitHub changed status from In Review → Done
-            </div>
-          </div>
-        </div>
-      </div>
+      <TileCarousel>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://webassets.linear.app/images/ornj730p/production/a4233883974dc2ed75bc41153d95bdda3f38ff25-1500x960.png?q=95&auto=format&dpr=2"
+          alt='Searching "git" in the command menu, with a resulting item "copy git branch name to clipboard".'
+          className="aspect-[1500/960] w-full rounded-lg border object-cover"
+          loading="lazy"
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://webassets.linear.app/images/ornj730p/production/42a296da028e03b3e81462e18d62f4da31a0e730-1500x960.png?q=95&auto=format&dpr=2"
+          alt="A GitHub Pull Request linked to a Linear issue."
+          className="aspect-[1500/960] w-full rounded-lg border object-cover"
+          loading="lazy"
+        />
+      </TileCarousel>
 
       {/* Overview */}
       <section>
@@ -602,15 +869,7 @@ function SlackIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -664,64 +923,29 @@ function SlackIntegrationDetail() {
       </div>
 
       {/* Screenshot tiles */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div
-          aria-hidden
-          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-[#f3eee7]"
-        >
-          <div className="absolute -bottom-6 -left-10 size-48 rounded-full bg-[#5abee2]" />
-          <div className="bg-background/95 relative z-10 w-3/4 rounded-md border px-3 py-2 text-[10px] shadow-sm">
-            <div className="text-muted-foreground flex items-center justify-between border-b pb-1">
-              <span>Create a new issue</span>
-              <span>×</span>
-            </div>
-            <div className="mt-1.5 space-y-1">
-              <div>
-                <span className="text-muted-foreground">Team</span>
-                <div className="bg-muted/50 mt-0.5 rounded px-1.5 py-0.5">
-                  Design
-                </div>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Title</span>
-                <div className="bg-muted/50 mt-0.5 rounded px-1.5 py-0.5">
-                  Redesign sidebar
-                </div>
-              </div>
-            </div>
-            <div className="mt-2 flex justify-end gap-1">
-              <span className="bg-muted/50 rounded px-1.5 py-0.5">Cancel</span>
-              <span className="rounded bg-indigo-500 px-1.5 py-0.5 text-white">
-                Submit
-              </span>
-            </div>
-          </div>
-        </div>
-        <div
-          aria-hidden
-          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-[#f3eee7]"
-        >
-          <div className="absolute -right-10 -bottom-6 size-48 rounded-full bg-[#52a98b]" />
-          <div className="bg-background/95 relative z-10 w-3/4 rounded-md border px-3 py-2 text-[10px] shadow-sm">
-            <div className="font-medium">karri · 2:25 PM</div>
-            <div className="text-muted-foreground mt-0.5">
-              Who&apos;s able to take this?
-            </div>
-            <div className="bg-muted/30 mt-1.5 rounded border-l-2 border-indigo-500 px-1.5 py-1">
-              <div className="font-medium">
-                ENC-238 Snooze for notifications
-              </div>
-              <div className="text-muted-foreground mt-0.5 leading-tight">
-                Can you add snooze for inbox notifications? I find I keep some…
-              </div>
-              <div className="text-muted-foreground mt-1 flex justify-between">
-                <span>Status · Triage</span>
-                <span>Subscribe ▾</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TileCarousel>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://webassets.linear.app/images/ornj730p/production/3de20f7c5fc4e6c0b39ba75e8e2d172e8db0a1ae-1500x960.png?q=95&auto=format&dpr=2"
+          alt={`Linear's "Create a new issue" dialog inside Slack with fields for issue metadata`}
+          className="aspect-[1500/960] w-full rounded-lg border object-cover"
+          loading="lazy"
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://webassets.linear.app/images/ornj730p/production/b1b7e6cf3225f7d5a24fe466cc8e955aa7b389b2-1500x960.png?q=95&auto=format&dpr=2"
+          alt={`A Linear issue posted in Slack titled "Snooze for notifications" including its description and status.`}
+          className="aspect-[1500/960] w-full rounded-lg border object-cover"
+          loading="lazy"
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://webassets.linear.app/images/ornj730p/production/425b9ad2462b6f21c1f7ab5852077b5c444d605a-1500x960.png?q=95&auto=format&dpr=2"
+          alt="A Linear comment thread showing synced messages from Slack"
+          className="aspect-[1500/960] w-full rounded-lg border object-cover"
+          loading="lazy"
+        />
+      </TileCarousel>
 
       {/* Overview */}
       <section>
@@ -927,15 +1151,7 @@ function GitLabIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -1159,15 +1375,7 @@ function FigmaIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -1373,15 +1581,7 @@ function IntercomIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -1660,6 +1860,1777 @@ function IntercomIntegrationDetail() {
   )
 }
 
+function ZendeskIntegrationDetail() {
+  const [overviewExpanded, setOverviewExpanded] = useState(false)
+  const [notesOnComment, setNotesOnComment] = useState(false)
+  const [notesOnStatus, setNotesOnStatus] = useState(false)
+  const [reopenOnIssueCompleted, setReopenOnIssueCompleted] = useState(false)
+  const [reopenOnIssueCancelled, setReopenOnIssueCancelled] = useState(false)
+  const [reopenOnIssueComment, setReopenOnIssueComment] = useState(false)
+  const [reopenOnProjectCompleted, setReopenOnProjectCompleted] =
+    useState(false)
+  const [reopenOnProjectCancelled, setReopenOnProjectCancelled] =
+    useState(false)
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl">
+          <ZendeskLogo className="size-14" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Zendesk</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Keep a tight feedback loop with customers and streamline bug reports
+          </p>
+        </div>
+      </header>
+
+      {/* Built by / Docs / Enable rail */}
+      <div className="bg-card flex flex-wrap items-start justify-between gap-4 rounded-lg border p-4">
+        <div className="flex gap-8">
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Built by
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+              <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+              Linear
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Docs
+            </div>
+            <a
+              href="https://linear.app/docs/zendesk"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Zendesk integration docs (opens in new tab)"
+              className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+            >
+              <HugeiconsIcon icon={Book02Icon} className="size-3.5" />
+              Docs
+            </a>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={() => toast.info("Zendesk OAuth connect flow coming soon")}
+          aria-label="Enable Zendesk integration"
+        >
+          <HugeiconsIcon icon={PuzzleIcon} className="size-3.5" />
+          Enable
+        </Button>
+      </div>
+
+      {/* Screenshot tiles — pink (Zendesk → Linear) and green (Linear → Zendesk) */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {/* Left tile — Zendesk ticket with side-by-side "Create new Linear issue" */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-[#f7d6e0]"
+        >
+          <div className="bg-background/95 flex w-4/5 gap-1 rounded-md border p-1.5 text-[6px] shadow-sm">
+            <div className="flex-1 space-y-1 border-r pr-1.5">
+              <div className="font-medium">I need help</div>
+              <div className="text-muted-foreground">Via sample ticket</div>
+              <div className="flex items-center gap-1">
+                <span className="bg-muted/60 inline-block size-2 rounded-full" />
+                <span className="font-medium">Julieta Carreyra</span>
+              </div>
+              <div className="text-muted-foreground leading-tight">
+                Hello,
+                <br />
+                Something dramatic happened and I could really use your help.
+                <br />
+                Thanks in advance
+              </div>
+            </div>
+            <div className="flex-1 space-y-1 pl-1">
+              <div className="border-b pb-1 font-medium">⊙ Linear</div>
+              <div className="text-muted-foreground">
+                Create new Linear issue
+              </div>
+              <div className="mt-1 flex gap-0.5">
+                <div className="bg-muted/60 flex-1 rounded py-0.5 text-center">
+                  New issue
+                </div>
+                <div className="bg-muted/60 flex-1 rounded py-0.5 text-center">
+                  Link issue
+                </div>
+              </div>
+              <div className="text-muted-foreground pt-1 text-[5px]">
+                Logged in as Kam Saarinen · Log out
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right tile — Linear "Customers > ENC-350" with linked Zendesk message */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-[#a3d9b1]"
+        >
+          <div className="bg-background/95 w-4/5 rounded-md border px-2 py-1.5 text-[7px] shadow-sm">
+            <div className="text-muted-foreground border-b pb-1">
+              Customers › ENC-350
+            </div>
+            <div className="mt-1 font-medium">I need help</div>
+            <div className="text-muted-foreground mt-1 leading-tight">
+              Hello,
+              <br />
+              Something dramatic happened and I could really use your help.
+              <br />
+              Thanks in advance
+            </div>
+            <div className="text-muted-foreground mt-1.5">+ Add sub-issues</div>
+            <div className="mt-1.5 flex items-center justify-between rounded border bg-[#03363D]/10 px-1 py-0.5">
+              <span className="flex items-center gap-1">
+                <span className="inline-block size-2 rounded bg-[#03363D]" />
+                Message from Julieta
+              </span>
+              <span className="text-muted-foreground">1 hour ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Overview */}
+      <section className="bg-card rounded-lg border p-5">
+        <h2 className="text-sm font-semibold">Overview</h2>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          This integration enables a tight feedback loop between customer and
+          product teams if you use Zendesk for customer support. Use it to
+          create Linear issues from customer tickets, link tickets to existing
+          Linear issues, display data from the linked Zendesk ticket in Linear
+          as an attachment, and make it easier to get back to customers when
+          bugs are fixed or feedback has been implemented.
+        </p>
+        {overviewExpanded ? (
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Linked tickets stay in sync both ways: Zendesk replies are mirrored
+            as comments on the Linear issue, and status transitions in Linear
+            can automatically reopen the Zendesk ticket so agents can follow up.
+            Workspace-wide templates make it easy to triage common reports
+            straight from the support queue.
+          </p>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => setOverviewExpanded((v) => !v)}
+          className="text-muted-foreground hover:text-foreground mt-2 text-xs"
+          aria-expanded={overviewExpanded}
+        >
+          {overviewExpanded ? "Show less" : "Read more"}
+        </button>
+      </section>
+
+      {/* Linear app for Zendesk install row */}
+      <a
+        href="https://www.zendesk.com/marketplace/apps/support/198929/linear/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Install Linear app for Zendesk (opens in new tab)"
+        className="bg-card hover:border-foreground/20 flex w-full items-center justify-between rounded-lg border p-4 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <ZendeskLogo className="size-9" />
+          <div>
+            <div className="text-sm font-medium">Linear app for Zendesk</div>
+            <div className="text-muted-foreground text-xs">
+              Installed by 0 members
+            </div>
+          </div>
+        </div>
+        <span className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm">
+          Install in Zendesk
+          <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+        </span>
+      </a>
+
+      {/* Enable internal notes */}
+      <section className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-sm font-semibold">Enable internal notes</h2>
+          <p className="text-muted-foreground mt-2 text-xs leading-5">
+            Choose when to add internal notes to linked Zendesk tickets.
+            Internal notes will always be added when an issue is linked,
+            completed or cancelled.
+          </p>
+        </div>
+        <div className="bg-card flex flex-col rounded-lg border">
+          <ToggleListRow
+            id="zendesk-notes-comment"
+            label="A comment is made in an issue"
+            checked={notesOnComment}
+            onCheckedChange={setNotesOnComment}
+          />
+          <ToggleListRow
+            id="zendesk-notes-status"
+            label="An issue changes to any status"
+            checked={notesOnStatus}
+            onCheckedChange={setNotesOnStatus}
+            isLast
+          />
+        </div>
+      </section>
+
+      {/* Automate ticket reopening */}
+      <section className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-sm font-semibold">Automate ticket reopening</h2>
+          <p className="text-muted-foreground mt-2 text-xs leading-5">
+            Choose when to automatically reopen Zendesk tickets that are linked
+            to a Linear issue or project
+          </p>
+        </div>
+        <div className="bg-card flex flex-col rounded-lg border">
+          <ToggleListRow
+            id="zendesk-reopen-issue-completed"
+            label="An issue is completed"
+            checked={reopenOnIssueCompleted}
+            onCheckedChange={setReopenOnIssueCompleted}
+          />
+          <ToggleListRow
+            id="zendesk-reopen-issue-cancelled"
+            label="An issue is cancelled"
+            checked={reopenOnIssueCancelled}
+            onCheckedChange={setReopenOnIssueCancelled}
+          />
+          <ToggleListRow
+            id="zendesk-reopen-issue-comment"
+            label="A comment is made in an issue"
+            checked={reopenOnIssueComment}
+            onCheckedChange={setReopenOnIssueComment}
+          />
+          <ToggleListRow
+            id="zendesk-reopen-project-completed"
+            label="A project is completed"
+            checked={reopenOnProjectCompleted}
+            onCheckedChange={setReopenOnProjectCompleted}
+          />
+          <ToggleListRow
+            id="zendesk-reopen-project-cancelled"
+            label="A project is cancelled"
+            checked={reopenOnProjectCancelled}
+            onCheckedChange={setReopenOnProjectCancelled}
+            isLast
+          />
+        </div>
+      </section>
+
+      {/* Templates */}
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-sm font-semibold">Templates</h2>
+          <p className="text-muted-foreground mt-2 text-xs leading-5">
+            Add team or workspace issue templates to make them available in
+            Zendesk
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => toast.info("Template selector coming soon")}
+          className="bg-card hover:border-foreground/20 flex w-full items-center justify-between rounded-lg border p-4 text-left transition-colors"
+          aria-label="Add a template"
+        >
+          <span className="text-muted-foreground text-sm">No templates</span>
+          <HugeiconsIcon
+            icon={PlusSignIcon}
+            className="text-muted-foreground size-4"
+          />
+        </button>
+      </section>
+
+      <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        <span
+          aria-hidden
+          className="border-muted-foreground/40 text-muted-foreground inline-flex size-3.5 items-center justify-center rounded-full border text-[8px]"
+        >
+          !
+        </span>
+        Closed Zendesk tickets do not support automated comments or reopening.
+      </p>
+    </div>
+  )
+}
+
+function FrontIntegrationDetail() {
+  const [overviewExpanded, setOverviewExpanded] = useState(false)
+  const [commentsOnComment, setCommentsOnComment] = useState(false)
+  const [commentsOnStatus, setCommentsOnStatus] = useState(false)
+  const [reopenOnIssueCompleted, setReopenOnIssueCompleted] = useState(false)
+  const [reopenOnIssueCancelled, setReopenOnIssueCancelled] = useState(false)
+  const [reopenOnIssueComment, setReopenOnIssueComment] = useState(false)
+  const [reopenOnProjectCompleted, setReopenOnProjectCompleted] =
+    useState(false)
+  const [reopenOnProjectCancelled, setReopenOnProjectCancelled] =
+    useState(false)
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl">
+          <FrontLogo className="size-14" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Front</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Keep a tight feedback loop with customers and streamline bug reports
+          </p>
+        </div>
+      </header>
+
+      {/* Built by / Docs / Enable rail */}
+      <div className="bg-card flex flex-wrap items-start justify-between gap-4 rounded-lg border p-4">
+        <div className="flex gap-8">
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Built by
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+              <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+              Linear
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Docs
+            </div>
+            <a
+              href="https://linear.app/docs/front"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Front integration docs (opens in new tab)"
+              className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+            >
+              <HugeiconsIcon icon={Book02Icon} className="size-3.5" />
+              Docs
+            </a>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={() => toast.info("Front OAuth connect flow coming soon")}
+          aria-label="Enable Front integration"
+        >
+          <HugeiconsIcon icon={PuzzleIcon} className="size-3.5" />
+          Enable
+        </Button>
+      </div>
+
+      {/* Screenshot tiles — orange/coral gradient */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {/* Left tile — Front inbox with linked Linear issue panel */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-gradient-to-br from-[#fde3cf] via-[#f5b48a] to-[#ec6f3f]"
+        >
+          <div className="bg-background/95 flex w-4/5 gap-1 rounded-md border p-1.5 text-[6px] shadow-sm">
+            <div className="flex-1 space-y-1 border-r pr-1">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">2 · supportlife…</span>
+                <span className="text-muted-foreground">⌃</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="bg-muted/60 inline-block size-2 rounded-full" />
+                <span className="font-medium">Erin Frey</span>
+              </div>
+              <div className="text-muted-foreground leading-tight">
+                …notifications that I want to refer back to later, but…
+              </div>
+              <div className="text-muted-foreground leading-tight">
+                …nks for sending in the feedback!
+              </div>
+            </div>
+            <div className="w-[42%] space-y-0.5">
+              <div className="border-b pb-0.5 font-medium">⊙ Linear</div>
+              <div className="text-muted-foreground">Message from Jordan</div>
+              <div className="mt-0.5 flex gap-0.5">
+                <div className="bg-muted/60 flex-1 rounded py-0.5 text-center">
+                  Create
+                </div>
+                <div className="bg-muted/60 flex-1 rounded py-0.5 text-center">
+                  Link
+                </div>
+              </div>
+              <div className="text-muted-foreground pt-0.5 leading-tight">
+                FEA-294 · Inbox
+                <br />
+                Snooze for notifications
+              </div>
+              <div className="text-muted-foreground flex justify-between">
+                <span>Status</span>
+                <span className="text-foreground">Done</span>
+              </div>
+              <div className="text-muted-foreground flex justify-between">
+                <span>Priority</span>
+                <span className="text-foreground">No priority</span>
+              </div>
+              <div className="text-muted-foreground flex justify-between">
+                <span>Assignee</span>
+                <span className="text-foreground">Raissa</span>
+              </div>
+              <div className="text-muted-foreground flex justify-between">
+                <span>Project</span>
+                <span className="text-foreground">Feature Req…</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right tile — Linear "Feature Requests · FEA-294" with linked Front msg */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-gradient-to-br from-[#ec6f3f] via-[#f59ab8] to-[#bfd6f6]"
+        >
+          <div className="bg-background/95 w-4/5 rounded-md border px-2 py-1.5 text-[7px] shadow-sm">
+            <div className="text-muted-foreground border-b pb-1">
+              <span className="mr-1 inline-block size-1.5 rounded-sm bg-[#A276FF]/20" />
+              Feature Requests · FEA-294
+            </div>
+            <div className="mt-1 font-medium">Snooze for notifications</div>
+            <div className="text-muted-foreground mt-1 leading-tight">
+              Can you add snooze for Inbox notifications? I find I keep some
+              notifications that I want to refer back to later, but then I
+              can&apos;t clear my Inbox.
+            </div>
+            <div className="text-muted-foreground mt-1.5">+ Add sub-issues</div>
+            <div className="mt-1.5 flex items-center justify-between rounded border bg-[#A276FF]/10 px-1 py-0.5">
+              <span className="flex items-center gap-1">
+                <span className="inline-block size-2 rounded bg-[#A276FF]" />
+                Message from Jordan
+              </span>
+              <span className="text-muted-foreground">
+                Can you add snooze for inb…
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Overview */}
+      <section className="bg-card rounded-lg border p-5">
+        <h2 className="text-sm font-semibold">Overview</h2>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          This integration enables a tight feedback loop between customer and
+          product teams if you use Front for customer support. Use it to create
+          Linear issues from customer conversations, link conversations to
+          existing Linear issues, surface key information between tools, and
+          make it easier to get back to customers when bugs are fixed or
+          feedback has been implemented.
+        </p>
+        {overviewExpanded ? (
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Linked conversations stay in sync both ways: Front replies are
+            mirrored as comments on the Linear issue, and status transitions in
+            Linear can automatically reopen the Front conversation so agents can
+            follow up. Workspace-wide templates make it easy to triage common
+            reports straight from the shared inbox.
+          </p>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => setOverviewExpanded((v) => !v)}
+          className="text-muted-foreground hover:text-foreground mt-2 text-xs"
+          aria-expanded={overviewExpanded}
+        >
+          {overviewExpanded ? "Show less" : "Read more"}
+        </button>
+      </section>
+
+      {/* Linear app for Front install row */}
+      <a
+        href="https://app.frontapp.com/settings/company/integrations/linear"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Install Linear app for Front (opens in new tab)"
+        className="bg-card hover:border-foreground/20 flex w-full items-center justify-between rounded-lg border p-4 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <FrontLogo className="size-9" />
+          <div>
+            <div className="text-sm font-medium">Linear app for Front</div>
+            <div className="text-muted-foreground text-xs">
+              Installed by 0 members
+            </div>
+          </div>
+        </div>
+        <span className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm">
+          Install in Front
+          <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+        </span>
+      </a>
+
+      {/* Enable comments */}
+      <section className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-sm font-semibold">Enable comments</h2>
+          <p className="text-muted-foreground mt-2 text-xs leading-5">
+            Choose when to add comments to linked Front conversations. Comments
+            will always be added when an issue is linked, completed or
+            cancelled.
+          </p>
+        </div>
+        <div className="bg-card flex flex-col rounded-lg border">
+          <ToggleListRow
+            id="front-comments-comment"
+            label="A comment is made in an issue"
+            checked={commentsOnComment}
+            onCheckedChange={setCommentsOnComment}
+          />
+          <ToggleListRow
+            id="front-comments-status"
+            label="An issue changes to any status"
+            checked={commentsOnStatus}
+            onCheckedChange={setCommentsOnStatus}
+            isLast
+          />
+        </div>
+      </section>
+
+      {/* Automate conversation reopening */}
+      <section className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-sm font-semibold">
+            Automate conversation reopening
+          </h2>
+          <p className="text-muted-foreground mt-2 text-xs leading-5">
+            Choose when to automatically reopen Front conversations that are
+            linked to a Linear issue or project
+          </p>
+        </div>
+        <div className="bg-card flex flex-col rounded-lg border">
+          <ToggleListRow
+            id="front-reopen-issue-completed"
+            label="An issue is completed"
+            checked={reopenOnIssueCompleted}
+            onCheckedChange={setReopenOnIssueCompleted}
+          />
+          <ToggleListRow
+            id="front-reopen-issue-cancelled"
+            label="An issue is cancelled"
+            checked={reopenOnIssueCancelled}
+            onCheckedChange={setReopenOnIssueCancelled}
+          />
+          <ToggleListRow
+            id="front-reopen-issue-comment"
+            label="A comment is made in an issue"
+            checked={reopenOnIssueComment}
+            onCheckedChange={setReopenOnIssueComment}
+          />
+          <ToggleListRow
+            id="front-reopen-project-completed"
+            label="A project is completed"
+            checked={reopenOnProjectCompleted}
+            onCheckedChange={setReopenOnProjectCompleted}
+          />
+          <ToggleListRow
+            id="front-reopen-project-cancelled"
+            label="A project is cancelled"
+            checked={reopenOnProjectCancelled}
+            onCheckedChange={setReopenOnProjectCancelled}
+            isLast
+          />
+        </div>
+      </section>
+
+      <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+        <span
+          aria-hidden
+          className="border-muted-foreground/40 text-muted-foreground inline-flex size-3.5 items-center justify-center rounded-full border text-[8px]"
+        >
+          !
+        </span>
+        Conversations in private inboxes do not support automated comments or
+        reopening.
+      </p>
+    </div>
+  )
+}
+
+function CannyIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl">
+          <CannyLogo className="size-14" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Canny</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Sync Canny posts to Linear issues to keep customers in the loop
+          </p>
+        </div>
+      </header>
+
+      {/* Built by / Website / Enable rail */}
+      <div className="bg-card flex flex-wrap items-start justify-between gap-4 rounded-lg border p-4">
+        <div className="flex gap-8">
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Built by
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+              <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+              Canny
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Website
+            </div>
+            <a
+              href="https://canny.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Canny website (opens in new tab)"
+              className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+            >
+              <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+              canny.io
+            </a>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={() =>
+            window.open(
+              "https://canny.io/integrations/linear",
+              "_blank",
+              "noopener,noreferrer"
+            )
+          }
+          aria-label="Enable Canny integration (opens in new tab)"
+        >
+          Enable
+          <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+        </Button>
+      </div>
+
+      {/* Screenshot tiles — solid indigo with mock cards */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {/* Left tile — "Link Canny posts with Linear issues" */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] flex-col items-center justify-end overflow-hidden rounded-lg border bg-[#5C5BD6] p-3"
+        >
+          <div className="absolute top-3 left-3 max-w-[8rem] text-[10px] leading-tight font-medium text-white">
+            Link Canny posts with Linear issues
+          </div>
+          <div className="bg-background/95 ml-auto w-3/5 rounded-md border px-2 py-1.5 text-[6px] shadow-sm">
+            <div className="border-b pb-1 font-medium">New field for links</div>
+            <div className="text-muted-foreground mt-1 leading-tight">
+              For some roles, people want to be able to submit links to work
+              like their portfolio or their GitHub.
+            </div>
+            <div className="text-muted-foreground mt-1">+ Add sub-issues</div>
+            <div className="mt-1 font-medium">Activity</div>
+            <div className="text-muted-foreground mt-0.5 leading-tight">
+              <span className="bg-muted/50 mr-1 inline-block size-1.5 rounded" />
+              Canny created the issue · 3 minutes ago
+            </div>
+            <div className="text-muted-foreground mt-0.5 leading-tight">
+              <span className="bg-muted/50 mr-1 inline-block size-1.5 rounded" />
+              Canny · 3 minutes ago
+            </div>
+            <div className="text-muted-foreground mt-0.5 leading-tight">
+              This issue has been linked to a Canny post:
+              <br />
+              feedback.awesome.co/admin/board/feature-requests/p/new-field-for-links
+            </div>
+            <div className="border-muted-foreground/30 text-muted-foreground mt-1 rounded border px-1 py-0.5 text-[5px]">
+              Leave a comment…
+            </div>
+            <div className="mt-1 flex justify-end">
+              <div className="bg-muted/60 rounded px-1 py-0.5">Comment</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right tile — "Push ideas to Linear" */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] flex-col items-center justify-end overflow-hidden rounded-lg border bg-[#4845D2] p-3"
+        >
+          <div className="absolute top-3 left-3 max-w-[7rem] text-[10px] leading-tight font-medium text-white">
+            Push ideas to Linear
+          </div>
+          <div className="bg-background/95 ml-auto w-3/5 rounded-md border px-2 py-1.5 text-[6px] shadow-sm">
+            <div className="border-b pb-1 font-medium">
+              Create a new Linear issue
+            </div>
+            <div className="mt-1 grid grid-cols-2 gap-1">
+              <div>
+                <div className="text-muted-foreground">TEAM</div>
+                <div className="bg-muted/50 mt-0.5 rounded px-1 py-0.5">
+                  Mert test
+                </div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">STATUS</div>
+                <div className="bg-muted/50 mt-0.5 rounded px-1 py-0.5">
+                  Done
+                </div>
+              </div>
+            </div>
+            <div className="mt-1">
+              <div className="text-muted-foreground">TITLE</div>
+              <div className="bg-muted/50 mt-0.5 rounded px-1 py-0.5">
+                New field for links
+              </div>
+            </div>
+            <div className="mt-1">
+              <div className="text-muted-foreground">DESCRIPTION</div>
+              <div className="text-muted-foreground bg-muted/30 mt-0.5 rounded px-1 py-0.5 leading-tight">
+                For some roles, people want to be able to submit links to work
+                like their portfolio or their GitHub.
+              </div>
+            </div>
+            <div className="mt-1.5 rounded bg-indigo-500 py-0.5 text-center font-medium text-white">
+              CREATE & LINK ISSUE
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Overview */}
+      <section className="bg-card rounded-lg border p-5">
+        <h2 className="text-sm font-semibold">Overview</h2>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          Understand customer needs to determine priority before executing in
+          Linear. Never forget to update customers and other stakeholders
+          because statuses are synced.
+        </p>
+
+        <h3 className="mt-5 text-sm font-semibold">How it works</h3>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          Canny keeps track of customer feedback so your team can understand
+          needs and impact. From there, the Canny roadmap is used to prioritize
+          new features based on impact and effort. When your team is ready to
+          execute, push projects/features into Linear.
+        </p>
+        <p className="text-muted-foreground mt-3 text-sm leading-6">
+          In Linear, you&apos;ll see a link that goes back to the Canny post.
+          This is a great way to refer back to customer needs as you build out a
+          feature. Your team can also easily go back to Canny to request
+          additional information about how they&apos;d want a feature to work.
+        </p>
+        <p className="text-muted-foreground mt-3 text-sm leading-6">
+          You can also set up rules so that when statuses are updated in Linear,
+          they are reflected in Canny. This is a great way to keep your
+          stakeholders in the loop. They will appreciate being kept up to date
+          and your team will appreciate the simple workflow.
+        </p>
+
+        <h3 className="mt-5 text-sm font-semibold">Configure</h3>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          Admins in Canny that have an Owner or Manager role can configure the
+          Linear integration in Canny. Simply head to your integrations page,
+          find Linear, and go through the installation steps. Once the
+          integration is installed, you&apos;ll be able to set up rules to
+          trigger status syncing.
+        </p>
+      </section>
+    </div>
+  )
+}
+
+function ProductlaneIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl">
+          <ProductlaneLogo className="size-14" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Productlane</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Helpdesk, customer requests portal, public roadmap, and changelog
+            built on Linear
+          </p>
+        </div>
+      </header>
+
+      {/* Built by / Website / Enable rail */}
+      <div className="bg-card flex flex-wrap items-start justify-between gap-4 rounded-lg border p-4">
+        <div className="flex gap-8">
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Built by
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+              <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+              Productlane
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Website
+            </div>
+            <a
+              href="https://productlane.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Productlane website (opens in new tab)"
+              className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+            >
+              <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+              productlane.com
+            </a>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={() =>
+            window.open(
+              "https://productlane.com",
+              "_blank",
+              "noopener,noreferrer"
+            )
+          }
+          aria-label="Enable Productlane integration (opens in new tab)"
+        >
+          Enable
+          <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+        </Button>
+      </div>
+
+      {/* Screenshot tiles — dark UI mocks */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {/* Left tile — Productlane Inbox */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-[#0F1115]"
+        >
+          <div className="w-[88%] rounded-md border border-white/10 bg-[#15171C] px-2 py-1.5 text-[6px] text-white/80 shadow-sm">
+            <div className="flex items-center justify-between border-b border-white/10 pb-1">
+              <span className="font-medium">Inbox · Open</span>
+              <span className="text-white/40">
+                Help with setting up the Stack plan
+              </span>
+            </div>
+            <div className="mt-1 flex gap-1">
+              <div className="w-[40%] space-y-0.5">
+                <div className="text-white/40">Topics</div>
+                <div className="rounded bg-white/5 px-1 py-0.5">Tasks</div>
+                <div className="text-white/40">My team</div>
+                <div className="text-white/40">Personal</div>
+                <div className="text-white/40">Onboarding</div>
+              </div>
+              <div className="flex-1 space-y-0.5 border-l border-white/10 pl-1">
+                <div className="rounded bg-white/5 px-1 py-0.5">Pedro · 2m</div>
+                <div className="text-white/40">
+                  Hi, I&apos;m the new sign-up agent in the Stack tier and want
+                  to make sure we set everything up correctly before rolling it
+                  out to the team. I&apos;m mainly unsure about permissions,
+                  complete edition rolling, and whether or not…
+                </div>
+              </div>
+            </div>
+            <div className="border-muted-foreground/30 mt-1 rounded border px-1 py-0.5 text-[5px] text-white/40">
+              Reply…
+            </div>
+          </div>
+        </div>
+
+        {/* Right tile — Productlane Roadmap */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-[#0F1115]"
+        >
+          <div className="w-[88%] space-y-1 rounded-md border border-white/10 bg-[#15171C] p-2 text-[6px] text-white/80 shadow-sm">
+            <div className="flex items-center justify-between rounded bg-white/5 px-1.5 py-1">
+              <span className="flex items-center gap-1 font-medium">
+                <span className="inline-block size-1.5 rounded-full bg-[#A276FF]" />
+                In Progress
+              </span>
+            </div>
+            <div className="rounded bg-white/5 px-1.5 py-1">
+              <div className="font-medium">⊙ Live Chat</div>
+              <div className="text-white/40">
+                Add a chat to your widget to talk with customers in realtime.
+              </div>
+            </div>
+            <div className="rounded bg-white/5 px-1.5 py-1">
+              <div className="font-medium">⊙ Outbound mailing</div>
+              <div className="text-white/40">
+                Send Changelogs and feedback Loop emails to multiple customers.
+              </div>
+            </div>
+            <div className="flex items-center justify-between rounded bg-white/5 px-1.5 py-1 font-medium">
+              <span className="flex items-center gap-1">
+                <span className="inline-block size-1.5 rounded-full bg-emerald-400" />
+                Planned
+              </span>
+            </div>
+            <div className="rounded bg-white/5 px-1.5 py-1">
+              <div className="font-medium">⊙ AI Agent</div>
+              <div className="text-white/40">
+                Making the AI Agent more powerful and go beyond just answering
+                questions.
+              </div>
+            </div>
+            <div className="text-white/40">⊙ API Improvement</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Overview */}
+      <section className="bg-card rounded-lg border p-5">
+        <h2 className="text-sm font-semibold">Overview</h2>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          Productlane is a lightning-fast, AI-native customer support tool with
+          a customer portal, public roadmap, and Changelog that&rsquo;s built
+          exclusively on Linear. Handle live chat, Slack, and email in a single
+          inbox with a 50ms UI and turn every conversation into Linear issues
+          without duplicating work.
+        </p>
+
+        <h3 className="mt-5 text-sm font-semibold">How it works</h3>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          <span className="text-foreground font-medium">Helpdesk</span>:
+          Productlane consolidates live chat, Slack Connect channels, and shared
+          email into a unified inbox. An embedded widget lets customers reach
+          out directly from your app, where an AI agent trained on your help
+          center articles and Linear issues can resolve common questions
+          instantly. When a conversation needs human attention, your team can
+          reply from Productlane or directly from a Slack thread, link requests
+          to Linear issues, and get notified when work is completed.
+        </p>
+        <p className="text-muted-foreground mt-3 text-sm leading-6">
+          <span className="text-foreground font-medium">
+            Linear Customer requests portal and public roadmap:
+          </span>
+          <br />
+          Give customers visibility into what you&rsquo;re building with a
+          portal that combines a support requests with your Linear tickets and
+          requests. Customers can submit and prioritize their own requests, see
+          real-time status updates synced from Linear, and browse your roadmap.
+        </p>
+        <p className="text-muted-foreground mt-3 text-sm leading-6">
+          <span className="text-foreground font-medium">Changelog</span>:
+          Productlane&rsquo;s Release Intelligence automatically generates
+          Changelog drafts from your completed Linear issues and projects. When
+          you finish a project, Productlane pulls in the relevant issues,
+          categorizes them by label, and writes a draft for you. Add a cover
+          image with built-in styling tools, then broadcast the update via
+          email, Slack, or an in-app notification through the embedded widget.
+        </p>
+
+        <h3 className="mt-5 text-sm font-semibold">Configure</h3>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          Sign up for Productlane with your Linear account. Admin rights are
+          required the first time to grant access. After that, anyone in your
+          Linear workspace can log in to Productlane to view conversations and
+          answer customers.
+          <br />
+          Productlane requires read and write access to sync issues and projects
+          in real time. You can update permissions anytime in Linear&rsquo;s API
+          settings.
+        </p>
+      </section>
+    </div>
+  )
+}
+
+function IndexIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl">
+          <IndexLogo className="size-14" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Index</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            The Productboard and Jira Product Discovery alternative for Product
+            Management on Linear
+          </p>
+        </div>
+      </header>
+
+      {/* Built by / Website / Enable rail */}
+      <div className="bg-card flex flex-wrap items-start justify-between gap-4 rounded-lg border p-4">
+        <div className="flex gap-8">
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Built by
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+              <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+              Index
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Website
+            </div>
+            <a
+              href="https://index.inc"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Index website (opens in new tab)"
+              className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+            >
+              <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+              index.inc
+            </a>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={() =>
+            window.open("https://index.inc", "_blank", "noopener,noreferrer")
+          }
+          aria-label="Enable Index integration (opens in new tab)"
+        >
+          Enable
+          <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+        </Button>
+      </div>
+
+      {/* Screenshot tiles — purple/blue gradient mocks */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {/* Left tile — Index whiteboard with sticky-note ideas */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-[#1a1b3a] via-[#3b3a6e] to-[#d2a3c9]"
+        >
+          <div className="w-[88%] space-y-1 rounded-md border border-white/10 bg-[#0F1027]/90 p-2 text-[6px] text-white/80 shadow-sm">
+            <div className="flex items-center justify-between border-b border-white/10 pb-1">
+              <span className="font-medium">Index › Recent Ideas</span>
+              <span className="rounded bg-indigo-500 px-1 py-0.5 text-[5px] font-medium text-white">
+                Linear
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-white/40">
+              <span>Status: small · Done · ⌃ Add filter</span>
+            </div>
+            <div className="grid grid-cols-3 gap-1 pt-1">
+              <div className="rounded bg-[#3057e8]/40 p-1">
+                <div className="font-medium">Canvas idea</div>
+                <div className="text-white/40">⋆ ⋆ ⋆ ⋆</div>
+              </div>
+              <div className="rounded bg-[#1f9e6a]/40 p-1">
+                <div className="font-medium">Whiteboard ideas</div>
+                <div className="text-white/40">⋆ ⋆ ⋆ ⋆</div>
+              </div>
+              <div className="rounded bg-[#caa14a]/40 p-1">
+                <div className="font-medium">Roadmap</div>
+                <div className="text-white/40">⋆ ⋆ ⋆ ⋆</div>
+              </div>
+            </div>
+            <div className="rounded bg-yellow-200/90 p-1 text-[5px] text-black">
+              Sticky note: try the new
+              <br />
+              prioritization framework
+              <br />
+              for Q2 planning queue
+            </div>
+          </div>
+        </div>
+
+        {/* Right tile — Index spreadsheet view */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-gradient-to-b from-[#1a1b3a] via-[#3b3a6e] to-[#d2a3c9]"
+        >
+          <div className="w-[88%] space-y-0.5 rounded-md border border-white/10 bg-[#0F1027]/90 p-2 text-[6px] text-white/80 shadow-sm">
+            <div className="flex items-center justify-between border-b border-white/10 pb-1">
+              <span className="font-medium">⊙ Q3 planning</span>
+              <span className="rounded bg-indigo-500 px-1 py-0.5 text-[5px] font-medium text-white">
+                Linear
+              </span>
+            </div>
+            <div className="mt-1 grid grid-cols-[1.4fr_0.7fr_0.7fr_0.6fr] gap-1 border-b border-white/5 pb-0.5 text-white/40">
+              <span>Title</span>
+              <span>Insights</span>
+              <span>Owner</span>
+              <span>Status</span>
+            </div>
+            {[
+              ["Notification system", "Becky", "Open"],
+              ["Dependency management", "Mique", "Open"],
+              ["Data exception", "Stripe", "Open"],
+              ["A/B testing experiments", "Ulysse", "Open"],
+              ["Onboarding rebuild", "Becky", "Done"],
+              ["Roadmap publisher", "Mique", "Done"],
+              ["User feedback portal", "Stripe", "Open"],
+              ["Multi-currency billing", "Becky", "Done"],
+              ["Dynamic subscription billing", "Mique", "Done"],
+              ["Analytics half", "Ulysse", "Open"],
+            ].map(([title, owner, status]) => (
+              <div
+                key={title}
+                className="grid grid-cols-[1.4fr_0.7fr_0.7fr_0.6fr] gap-1 border-b border-white/5 py-0.5"
+              >
+                <span className="truncate">{title}</span>
+                <span className="text-white/40">⋆⋆⋆⋆</span>
+                <span className="truncate">{owner}</span>
+                <span
+                  className={cn(
+                    "truncate text-[5px]",
+                    status === "Done" ? "text-emerald-300" : "text-blue-300"
+                  )}
+                >
+                  {status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Overview */}
+      <section className="bg-card rounded-lg border p-5">
+        <h2 className="text-sm font-semibold">Overview</h2>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          Index&apos;s Linear integration enables new planning and discovery
+          capabilities for Product Management, and is the first alternative to
+          Productboard and Jira Product Discovery that connects to Linear.
+        </p>
+        <p className="text-muted-foreground mt-3 text-sm leading-6">
+          Create and connect Linear projects and view their issues from the
+          Index app. Run planning, prioritization, and discovery in the only
+          whiteboard for Linear, with spreadsheet and board views also
+          available. Dates and status will automatically stay in sync between
+          both tools for a connected discovery and planning experience.
+        </p>
+
+        <h3 className="mt-5 text-sm font-semibold">How it works</h3>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          When you create a project in Index, you&apos;ll have the option to
+          push it to Linear, which will automatically create and connect the
+          corresponding Linear project. New ideas which you&apos;re still
+          shaping can stay in Index until you&apos;re ready. This enables the
+          following workflows:
+        </p>
+        <ul className="text-muted-foreground mt-2 list-disc space-y-1 pl-6 text-sm leading-6">
+          <li>
+            Brainstorming new ideas with your team on a whiteboard, and pushing
+            it to Linear when complete
+          </li>
+          <li>
+            Managing customer requests in a spreadsheet with custom fields, and
+            viewing the Linear status
+          </li>
+          <li>
+            Running prioritization exercises in frameworks like RICE and WSJF on
+            your Linear project list
+          </li>
+        </ul>
+        <p className="text-muted-foreground mt-3 text-sm leading-6">
+          Additionally, when visiting a project page in Index, you&apos;ll be
+          able to view the list of issues in Linear, along with the owner and
+          status for each issue. You can click on any issue to jump to it in the
+          Linear app.
+        </p>
+
+        <h3 className="mt-5 text-sm font-semibold">Configure</h3>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          To get started, go to Index&apos;s{" "}
+          <a
+            href="https://index.inc/integrations/linear"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-indigo-400 underline-offset-2 hover:underline"
+          >
+            Linear integration page
+          </a>{" "}
+          and proceed through the CTA to add the integration. If you&apos;re
+          migrating from an alternative app like Productboard or Jira Product
+          Discovery, you&apos;ll be prompted to import your data so you can use
+          it with Index and Linear.
+        </p>
+      </section>
+    </div>
+  )
+}
+
+function SalesforceIntegrationDetail() {
+  const [overviewExpanded, setOverviewExpanded] = useState(false)
+  const [notesOnComment, setNotesOnComment] = useState(false)
+  const [notesOnStatus, setNotesOnStatus] = useState(false)
+  const [caseStatus, setCaseStatus] = useState("")
+  const [updateOnIssueCompleted, setUpdateOnIssueCompleted] = useState(false)
+  const [updateOnIssueCancelled, setUpdateOnIssueCancelled] = useState(false)
+  const [updateOnIssueComment, setUpdateOnIssueComment] = useState(false)
+  const [updateOnProjectCompleted, setUpdateOnProjectCompleted] =
+    useState(false)
+  const [updateOnProjectCancelled, setUpdateOnProjectCancelled] =
+    useState(false)
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl">
+          <SalesforceLogo className="size-14" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Salesforce</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Create Linear issues from Salesforce cases
+          </p>
+        </div>
+      </header>
+
+      {/* Built by / Docs / Enable rail */}
+      <div className="bg-card flex flex-wrap items-start justify-between gap-4 rounded-lg border p-4">
+        <div className="flex gap-8">
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Built by
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+              <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+              Linear
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Docs
+            </div>
+            <a
+              href="https://linear.app/docs/salesforce"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Salesforce integration docs (opens in new tab)"
+              className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+            >
+              <HugeiconsIcon icon={Book02Icon} className="size-3.5" />
+              Docs
+            </a>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={() =>
+            toast.info("Salesforce OAuth connect flow coming soon")
+          }
+          aria-label="Enable Salesforce integration"
+        >
+          <HugeiconsIcon icon={PuzzleIcon} className="size-3.5" />
+          Enable
+        </Button>
+      </div>
+
+      {/* Screenshot tiles — Salesforce case + Linear issue with linked case */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {/* Left tile — Salesforce Case Details */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-white"
+        >
+          <div className="w-[78%] rounded-md border bg-white px-2 py-1.5 text-[6px] text-neutral-700 shadow-sm">
+            <div className="flex items-center gap-1 border-b pb-1 font-medium">
+              <SalesforceLogo className="size-2.5" />
+              Case Details
+            </div>
+            <div className="mt-1 grid grid-cols-2 gap-1">
+              <div>
+                <div className="text-neutral-400">Case Number</div>
+                <div>0001337</div>
+              </div>
+              <div>
+                <div className="text-neutral-400">Case Owner</div>
+                <div>Pepper Vu</div>
+              </div>
+              <div>
+                <div className="text-neutral-400">Status</div>
+                <div>New</div>
+              </div>
+              <div>
+                <div className="text-neutral-400">Customer</div>
+                <div>Edge AI</div>
+              </div>
+              <div className="col-span-2">
+                <div className="text-neutral-400">Subject</div>
+                <div>HIPAA compliance</div>
+              </div>
+              <div className="col-span-2">
+                <div className="text-neutral-400">Description</div>
+                <div className="leading-tight">
+                  Is HIPAA compliance on your roadmap?
+                  <br />
+                  It&apos;s the only missing feature preventing us
+                  <br />
+                  from moving forward!
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right tile — Linear issue with linked Salesforce case */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-[#0F1115]"
+        >
+          <div className="w-[88%] rounded-md border border-white/10 bg-[#15171C] px-2 py-1.5 text-[6px] text-white/80 shadow-sm">
+            <div className="border-b border-white/10 pb-1 text-white/60">
+              ⊙ Product · PRO-217
+            </div>
+            <div className="mt-1 font-medium">HIPAA compliance</div>
+            <div className="mt-1 leading-tight text-white/40">
+              Is HIPAA compliance on your roadmap? It&apos;s the only missing
+              feature preventing us from moving forward.
+            </div>
+            <div className="mt-1 flex items-center justify-between rounded border border-white/10 bg-white/5 px-1 py-0.5">
+              <span className="flex items-center gap-1">
+                <span className="inline-block size-2 rounded bg-[#00A1E0]" />
+                Edge AI
+              </span>
+            </div>
+            <div className="mt-1.5 font-medium">Activity</div>
+            <div className="mt-0.5 leading-tight text-white/40">
+              <span className="mr-1 inline-block size-1.5 rounded-full bg-white/30" />
+              Pepper Vu created an issue from Salesforce
+            </div>
+            <div className="mt-1 grid grid-cols-2 gap-x-1 gap-y-0.5 text-white/40">
+              <span>⊙ Edge AI</span>
+              <span className="text-right">Owner · guillaume</span>
+              <span>Status</span>
+              <span className="text-right">Active</span>
+              <span>Tier</span>
+              <span className="text-right">Business</span>
+              <span>Revenue</span>
+              <span className="text-right">$3.3K/mo</span>
+              <span>Size</span>
+              <span className="text-right">3,500</span>
+              <span>Data source</span>
+              <span className="text-right">Salesforce</span>
+            </div>
+            <div className="mt-1 leading-tight text-white/40">
+              <span className="mr-1 inline-block size-1.5 rounded-full bg-white/30" />
+              Pepper Vu created the issue from Salesforce · 3d ago
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Overview */}
+      <section className="bg-card rounded-lg border p-5">
+        <h2 className="text-sm font-semibold">Overview</h2>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          Linear&apos;s Salesforce integration connects customer feedback
+          directly to product development. Capture and track requests, sync
+          customer context, and stay updated on development progress — all from
+          Salesforce.
+        </p>
+        {overviewExpanded ? (
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Linked cases stay in sync both ways: comments and status changes
+            from Linear are mirrored back to Salesforce so account teams can
+            keep customers informed without leaving their CRM. Workspace-wide
+            templates make it easy to triage common requests straight from a
+            case record.
+          </p>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => setOverviewExpanded((v) => !v)}
+          className="text-muted-foreground hover:text-foreground mt-2 text-xs"
+          aria-expanded={overviewExpanded}
+        >
+          {overviewExpanded ? "Show less" : "Read more"}
+        </button>
+      </section>
+
+      {/* Linear app for Salesforce install row */}
+      <a
+        href="https://appexchange.salesforce.com/appxListingDetail?listingId=linear"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Install Linear app for Salesforce (opens in new tab)"
+        className="bg-card hover:border-foreground/20 flex w-full items-center justify-between rounded-lg border p-4 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <SalesforceLogo className="size-9" />
+          <div>
+            <div className="text-sm font-medium">Linear app for Salesforce</div>
+            <div className="text-muted-foreground text-xs">
+              Installed by 0 members
+            </div>
+          </div>
+        </div>
+        <span className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm">
+          Install in Salesforce
+          <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+        </span>
+      </a>
+
+      {/* Enable internal notes */}
+      <section className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-sm font-semibold">Enable internal notes</h2>
+          <p className="text-muted-foreground mt-2 text-xs leading-5">
+            Choose when to add internal notes to linked Salesforce cases.
+            Internal notes will always be added when an issue is linked,
+            completed or cancelled.
+          </p>
+        </div>
+        <div className="bg-card flex flex-col rounded-lg border">
+          <ToggleListRow
+            id="salesforce-notes-comment"
+            label="A comment is made in an issue"
+            checked={notesOnComment}
+            onCheckedChange={setNotesOnComment}
+          />
+          <ToggleListRow
+            id="salesforce-notes-status"
+            label="An issue changes to any status"
+            checked={notesOnStatus}
+            onCheckedChange={setNotesOnStatus}
+            isLast
+          />
+        </div>
+      </section>
+
+      {/* Automate case status */}
+      <section className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-sm font-semibold">Automate case status</h2>
+          <p className="text-muted-foreground mt-2 text-xs leading-5">
+            Choose when to automatically update Salesforce cases that are linked
+            to a Linear issue or project
+          </p>
+        </div>
+        <div className="bg-card flex flex-col rounded-lg border">
+          <div className="flex items-start justify-between gap-4 px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium">Case status</div>
+              <p className="text-muted-foreground mt-1 text-xs leading-5">
+                Status set on the Salesforce case whenever a linked Linear issue
+                or project is updated to one of the statuses below.
+              </p>
+            </div>
+            <NativeSelect
+              value={caseStatus}
+              onChange={(e) => setCaseStatus(e.target.value)}
+              aria-label="Salesforce case status"
+              className="w-32 shrink-0"
+            >
+              <option value="">Select…</option>
+              <option value="closed">Closed</option>
+              <option value="closed-resolved">Closed — Resolved</option>
+              <option value="working">Working</option>
+              <option value="escalated">Escalated</option>
+            </NativeSelect>
+          </div>
+        </div>
+        <div className="bg-card flex flex-col rounded-lg border">
+          <ToggleListRow
+            id="salesforce-update-issue-completed"
+            label="An issue is completed"
+            checked={updateOnIssueCompleted}
+            onCheckedChange={setUpdateOnIssueCompleted}
+          />
+          <ToggleListRow
+            id="salesforce-update-issue-cancelled"
+            label="An issue is cancelled"
+            checked={updateOnIssueCancelled}
+            onCheckedChange={setUpdateOnIssueCancelled}
+          />
+          <ToggleListRow
+            id="salesforce-update-issue-comment"
+            label="A comment is made in an issue"
+            checked={updateOnIssueComment}
+            onCheckedChange={setUpdateOnIssueComment}
+          />
+          <ToggleListRow
+            id="salesforce-update-project-completed"
+            label="A project is completed"
+            checked={updateOnProjectCompleted}
+            onCheckedChange={setUpdateOnProjectCompleted}
+          />
+          <ToggleListRow
+            id="salesforce-update-project-cancelled"
+            label="A project is cancelled"
+            checked={updateOnProjectCancelled}
+            onCheckedChange={setUpdateOnProjectCancelled}
+            isLast
+          />
+        </div>
+      </section>
+
+      {/* Templates */}
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-sm font-semibold">Templates</h2>
+          <p className="text-muted-foreground mt-2 text-xs leading-5">
+            Add team or workspace issue templates to make them available in
+            Salesforce
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => toast.info("Template selector coming soon")}
+          className="bg-card hover:border-foreground/20 flex w-full items-center justify-between rounded-lg border p-4 text-left transition-colors"
+          aria-label="Add a template"
+        >
+          <span className="text-muted-foreground text-sm">No templates</span>
+          <HugeiconsIcon
+            icon={PlusSignIcon}
+            className="text-muted-foreground size-4"
+          />
+        </button>
+      </section>
+    </div>
+  )
+}
+
+function AtlasSupportIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl">
+          <AtlasSupportLogo className="size-14" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">
+            Atlas Support
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Keep a tight feedback loop with customers and streamline customer
+            requests
+          </p>
+        </div>
+      </header>
+
+      {/* Built by / Website / Enable rail */}
+      <div className="bg-card flex flex-wrap items-start justify-between gap-4 rounded-lg border p-4">
+        <div className="flex gap-8">
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Built by
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+              <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+              Atlas
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+              Website
+            </div>
+            <a
+              href="https://atlas.so"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Atlas website (opens in new tab)"
+              className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+            >
+              <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+              atlas.so
+            </a>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={() =>
+            window.open("https://atlas.so", "_blank", "noopener,noreferrer")
+          }
+          aria-label="Enable Atlas Support integration (opens in new tab)"
+        >
+          Enable
+          <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+        </Button>
+      </div>
+
+      {/* Screenshot tiles — light marble/pink background with Atlas mocks */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {/* Left tile — Atlas "Linear issue" creation modal */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-[#f3edff]"
+        >
+          <div className="w-[80%] rounded-md border bg-white px-2 py-1.5 text-[6px] text-neutral-700 shadow-sm">
+            <div className="flex items-center justify-between border-b pb-1 font-medium">
+              Linear issue
+              <span className="text-neutral-400">×</span>
+            </div>
+            <div className="mt-1">
+              <div className="text-neutral-400">Labels</div>
+              <div className="mt-0.5 inline-block rounded bg-rose-100 px-1 py-0.5 text-rose-600">
+                Bug
+              </div>
+            </div>
+            <div className="mt-1">
+              <div className="text-neutral-400">Description</div>
+              <div className="border-b pb-0.5 text-neutral-400">
+                B I U S ⌐ ¶ ≡ ≡ ≡ {} ∷ ▣
+              </div>
+              <div className="mt-0.5 leading-tight">
+                Bob Mortis (Sandy Space Inc) said:
+                <br />I can&apos;t checkout, can you please help?
+              </div>
+            </div>
+            <div className="bg-muted/30 mt-1 flex h-5 items-center justify-center rounded">
+              <div className="size-3 rounded bg-amber-300" />
+            </div>
+            <div className="mt-1 flex justify-end gap-1">
+              <div className="rounded px-1 py-0.5 text-neutral-400">Cancel</div>
+              <div className="rounded bg-indigo-500 px-1 py-0.5 text-white">
+                Create issue
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right tile — Atlas Automations panel */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-[#f3edff]"
+        >
+          <div className="w-[82%] rounded-md border bg-white px-2 py-1.5 text-[6px] text-neutral-700 shadow-sm">
+            <div className="font-medium">Automations</div>
+            <div className="mt-0.5 leading-tight text-neutral-400">
+              Specify the events that should create activities and notes in
+              Atlas and Linear
+            </div>
+            <div className="mt-1.5 flex items-center justify-between border-t pt-1">
+              <span>Enable automatic re-opening of Atlas tickets</span>
+              <span className="inline-block h-2 w-3.5 rounded-full bg-indigo-500" />
+            </div>
+            <div className="mt-1 flex items-center justify-between border-t pt-1">
+              <span>When ticket status in Atlas is</span>
+              <span className="flex gap-0.5 text-neutral-400">
+                <span className="bg-muted/40 rounded px-1">Snoozed ×</span>
+                <span className="bg-muted/40 rounded px-1">Pending ×</span>
+                <span className="bg-muted/40 rounded px-1">Closed ×</span>
+              </span>
+            </div>
+            <div className="mt-1 flex items-center justify-between border-t pt-1">
+              <span>When a Linear ticket moves into</span>
+              <span className="flex gap-0.5 text-neutral-400">
+                <span className="bg-muted/40 rounded px-1">Closed ×</span>
+                <span className="bg-muted/40 rounded px-1">Cancelled ×</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Overview */}
+      <section className="bg-card rounded-lg border p-5">
+        <h2 className="text-sm font-semibold">Overview</h2>
+        <p className="text-muted-foreground mt-2 text-sm leading-6">
+          Easily create Linear issues from Atlas support tickets with all the
+          context your engineering team needs. Descriptions are automatically
+          generated from the first message, saving time and making every issue
+          clear and actionable. Customize how tickets and issues sync between
+          Atlas and Linear to fit your workflow. With fine-grained controls and
+          rich text support, your teams can collaborate seamlessly across tools.
+        </p>
+
+        <h3 className="mt-5 text-sm font-semibold">How it works</h3>
+        <ul className="text-muted-foreground mt-2 list-disc space-y-3 pl-6 text-sm leading-6">
+          <li>
+            <span className="text-foreground font-medium">
+              Create issues with context
+            </span>
+            <br />
+            Send Atlas tickets to Linear in a single click. Descriptions are
+            auto-generated from the first customer message, providing engineers
+            with all the information they need, without extra manual effort.
+          </li>
+          <li>
+            <span className="text-foreground font-medium">
+              Sync updates across tools
+            </span>
+            <br />
+            Keep Atlas and Linear in sync with customizable activity syncing.
+            Choose what updates flow between the tools—like status changes, new
+            comments, or assignee updates—so your team gets the right
+            information in the right place.
+          </li>
+          <li>
+            <span className="text-foreground font-medium">
+              Rich text support
+            </span>
+            <br />
+            Add more context to your Linear issues with rich text formatting.
+            Use headers, bold text, and images to make sure everyone is on the
+            same page.
+          </li>
+          <li>
+            <span className="text-foreground font-medium">
+              Fine-grained workflow controls
+            </span>
+            <br />
+            Control when Atlas tickets re-open based on Linear issue statuses.
+            For example, configure tickets to reopen only if they were
+            previously{" "}
+            <span className="text-foreground font-medium">Snoozed</span>,{" "}
+            <span className="text-foreground font-medium">Pending</span>, or{" "}
+            <span className="text-foreground font-medium">Closed</span>.
+          </li>
+        </ul>
+
+        <h3 className="mt-6 text-sm font-semibold">Configure</h3>
+        <ul className="text-muted-foreground mt-2 list-disc space-y-3 pl-6 text-sm leading-6">
+          <li>
+            <span className="text-foreground font-medium">
+              Connect Atlas and Linear
+            </span>
+            <br />
+            Log in to your Atlas and Linear accounts, and enable the integration
+            in just a few clicks from{" "}
+            <a
+              href="https://atlas.so/settings/integrations/linear"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-400 underline-offset-2 hover:underline"
+            >
+              this page
+            </a>
+            .
+          </li>
+          <li>
+            <span className="text-foreground font-medium">
+              Set your sync preferences
+            </span>
+            <br />
+            Decide which activities sync between Atlas and Linear, like ticket
+            status changes, new customer messages, or assignee updates.
+          </li>
+          <li>
+            <span className="text-foreground font-medium">
+              Customize your workflows
+            </span>
+            <br />
+            Use advanced workflow settings to control when tickets reopen and
+            how issues interact across tools.
+          </li>
+        </ul>
+      </section>
+    </div>
+  )
+}
+
 function ToggleListRow({
   id,
   label,
@@ -1709,15 +3680,7 @@ function GoogleSheetsIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -2032,15 +3995,7 @@ function SyncToggleCard({
 function CodexIntegrationDetail() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -2324,15 +4279,7 @@ function CodexSection({
 function CursorIntegrationDetail() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -2561,15 +4508,7 @@ function CursorIntegrationDetail() {
 function CopilotIntegrationDetail() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -2826,15 +4765,7 @@ function FactoryIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -3080,15 +5011,7 @@ function FactoryIntegrationDetail() {
 function SentryAgentIntegrationDetail() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -3400,15 +5323,7 @@ function DevinIntegrationDetail() {
   ]
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -3706,15 +5621,7 @@ function DevinIntegrationDetail() {
 function ChatPrdIntegrationDetail() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -4068,15 +5975,7 @@ function CharlieIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -4386,15 +6285,7 @@ function CursorMcpIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -4568,15 +6459,7 @@ function ChatGptIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -4793,15 +6676,7 @@ function ClaudeIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -4946,15 +6821,7 @@ function ClaudeIntegrationDetail() {
 function V0IntegrationDetail() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -5148,15 +7015,7 @@ function WindsurfIntegrationDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -5327,15 +7186,7 @@ function WindsurfIntegrationDetail() {
 function ReplitIntegrationDetail() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -5635,15 +7486,7 @@ function ReplitIntegrationDetail() {
 function DustIntegrationDetail() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -5981,15 +7824,7 @@ function DustIntegrationDetail() {
 function AdkIntegrationDetail() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -6177,15 +8012,7 @@ function EngineeringIntegrationShell({
 }) {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-        aria-label="Back to integrations"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Integrations
-      </Link>
+      <BackToIntegrationsLink />
 
       {/* Header */}
       <header className="flex items-start gap-4">
@@ -10111,6 +11938,6470 @@ function CirclebackIntegrationDetail() {
 }
 
 // ---------------------------------------------------------------------------
+// Microsoft Teams — Linear-built collaboration integration. Mirrors the
+// production layout: header + Built-by/Enable rail, two screenshot tiles
+// (create issues from conversations, ask questions about your work),
+// Overview with Read more, then a Personal Microsoft account row and a
+// Connections / Connected tenants section beneath.
+// ---------------------------------------------------------------------------
+function MicrosoftTeamsIntegrationDetail() {
+  const [overviewExpanded, setOverviewExpanded] = useState(false)
+  const [tenantsOpen, setTenantsOpen] = useState(false)
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#6264A7]">
+          <MicrosoftTeamsLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">
+            Microsoft Teams
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Drive work forward by turning conversations into issues, projects,
+            and documents
+          </p>
+        </div>
+      </header>
+
+      {/* Body card */}
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Linear
+              </div>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() =>
+              toast.info("Microsoft Teams OAuth connect flow coming soon")
+            }
+            aria-label="Enable Microsoft Teams integration"
+          >
+            <HugeiconsIcon icon={PuzzleIcon} className="size-3.5" />
+            Enable
+          </Button>
+        </div>
+
+        {/* Screenshot tiles */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg border bg-neutral-100 p-3"
+          >
+            <div className="text-[9px] font-semibold text-neutral-700">
+              Create
+              <br />
+              issues from
+              <br />
+              conversations
+            </div>
+            <div className="bg-background absolute right-2 bottom-2 left-12 rounded-md border p-1.5 text-[7px] shadow-sm">
+              <div className="text-muted-foreground text-[6px]">
+                Wednesday, 12:34 AM
+              </div>
+              <div className="mt-1 flex items-start gap-1">
+                <span className="size-3 rounded-full bg-[#6264A7]" />
+                <div className="flex-1">
+                  <div className="text-[7px] font-medium">karri</div>
+                  <div className="text-muted-foreground leading-tight">
+                    Flagging a bug I ran into this morning on the Rider app.
+                    After entering a destination…
+                  </div>
+                </div>
+              </div>
+              <div className="bg-muted/40 mt-1 rounded border-l-2 border-indigo-500 p-1">
+                <div className="font-medium">Linear</div>
+                <div className="text-muted-foreground leading-tight">
+                  Created issue id-1620
+                </div>
+                <div className="text-muted-foreground mt-0.5">
+                  Linear · file a bug for this
+                </div>
+              </div>
+              <div className="text-muted-foreground mt-1 flex justify-between">
+                <span>Reply in thread</span>
+                <span>Send to · linear-only</span>
+              </div>
+            </div>
+            <div className="absolute bottom-1.5 left-2 flex items-center gap-1">
+              <span className="size-2 rounded-sm bg-[#6264A7]" />
+              <span className="text-[6px] font-semibold text-neutral-700">
+                Linear
+              </span>
+            </div>
+          </div>
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg border bg-neutral-100 p-3"
+          >
+            <div className="text-[9px] font-semibold text-neutral-700">
+              Ask
+              <br />
+              questions
+              <br />
+              about your
+              <br />
+              work
+            </div>
+            <div className="bg-background absolute right-2 bottom-2 left-12 rounded-md border p-1.5 text-[7px] shadow-sm">
+              <div className="flex items-start gap-1">
+                <span className="size-3 rounded-full bg-emerald-500" />
+                <div className="flex-1">
+                  <div className="text-[7px] font-medium">karri</div>
+                  <div className="text-muted-foreground leading-tight">
+                    Notifications aren&apos;t coming through for me on mobile,
+                    so they should be. I&apos;ve past the 5 minute desktop
+                    timeout. Linear who usually works in this area?
+                  </div>
+                </div>
+              </div>
+              <div className="bg-muted/40 mt-1 rounded border-l-2 border-indigo-500 p-1">
+                <div className="font-medium">Linear</div>
+                <div className="text-muted-foreground leading-tight">
+                  On mobile notifications, @bob is usually the go-to on iOS, and
+                  @alice works on Android.
+                </div>
+              </div>
+              <div className="text-muted-foreground mt-1 flex justify-between">
+                <span>Reply in thread</span>
+                <span>···</span>
+              </div>
+            </div>
+            <div className="absolute bottom-1.5 left-2 flex items-center gap-1">
+              <span className="size-2 rounded-sm bg-[#6264A7]" />
+              <span className="text-[6px] font-semibold text-neutral-700">
+                Linear
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Mention <span className="font-medium">@Linear</span> in any
+            Microsoft Teams channel to turn your discussions into actionable
+            work. You can file issues, update projects, or ask questions about
+            your Linear workspace without leaving Teams.
+          </p>
+          {overviewExpanded ? (
+            <p className="text-muted-foreground mt-2 text-sm leading-6">
+              Linear replies inline with rich previews so context never has to
+              leave the conversation. Issues created from Teams keep a backlink
+              to the original message, and assignees are inferred automatically
+              when the agent recognises a teammate from the thread.
+            </p>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => setOverviewExpanded((v) => !v)}
+            className="text-muted-foreground hover:text-foreground mt-2 text-xs"
+            aria-expanded={overviewExpanded}
+          >
+            {overviewExpanded ? "Show less" : "Read more"}
+          </button>
+        </section>
+      </div>
+
+      {/* Personal account */}
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold">Personal account</h2>
+        <Link
+          href="/settings?section=connected-accounts"
+          scroll={false}
+          className="bg-card hover:border-foreground/20 flex items-center justify-between rounded-lg border p-4 transition-colors"
+          aria-label="Personal Microsoft account: connect to sync attribution"
+        >
+          <div className="min-w-0">
+            <div className="text-sm font-medium">
+              Personal Microsoft account
+            </div>
+            <div className="text-muted-foreground mt-0.5 text-xs">
+              Sync attribution of your Microsoft Teams messages
+            </div>
+          </div>
+          <span className="text-muted-foreground flex items-center gap-1 text-xs">
+            Connect
+            <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+          </span>
+        </Link>
+      </section>
+
+      {/* Connections */}
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold">Connections</h2>
+        <Collapsible open={tenantsOpen} onOpenChange={setTenantsOpen}>
+          <CollapsibleTrigger
+            className="bg-card hover:border-foreground/20 flex w-full items-center justify-between rounded-lg border p-4 text-left transition-colors"
+            aria-label="Connected tenants"
+          >
+            <span className="text-sm font-medium">Connected tenants</span>
+            <HugeiconsIcon
+              icon={PlusSignIcon}
+              className="text-muted-foreground size-4"
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="bg-card mt-2 rounded-lg border p-4">
+            <p className="text-muted-foreground text-xs">
+              No Microsoft Teams tenants are connected yet. Enable the
+              integration above to add one.
+            </p>
+          </CollapsibleContent>
+        </Collapsible>
+      </section>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Discord — Linear-built integration that creates issues from Discord
+// channels and lets users mention /linear to query their workspace. Layout
+// mirrors the production page: header, Built-by/Docs/Enable rail, two
+// indigo screenshot tiles, Overview with Read more, then a single
+// "Connect your user account" row beneath.
+// ---------------------------------------------------------------------------
+function DiscordIntegrationDetail() {
+  const [overviewExpanded, setOverviewExpanded] = useState(false)
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#5865F2]">
+          <DiscordLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Discord</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Create issues, share updates, and keep everyone in sync
+          </p>
+        </div>
+      </header>
+
+      {/* Body card */}
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Docs / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Linear
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Docs
+              </div>
+              <a
+                href="https://linear.app/docs/discord"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Discord integration docs (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={Book02Icon} className="size-3.5" />
+                Docs
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => toast.info("Discord OAuth connect flow coming soon")}
+            aria-label="Enable Discord integration"
+          >
+            <HugeiconsIcon icon={PuzzleIcon} className="size-3.5" />
+            Enable
+          </Button>
+        </div>
+
+        {/* Screenshot tiles */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #818cf8 0%, #6366f1 55%, #4f46e5 100%)",
+            }}
+          >
+            <div className="rounded-md bg-[#1f2235] p-2 text-[7px] text-white shadow-sm ring-1 ring-white/10">
+              <div className="flex items-center gap-1 border-b border-white/10 pb-1">
+                <span className="rounded bg-[#5865F2] px-1 py-0.5 text-[6px] font-semibold">
+                  /linear issue
+                </span>
+                <span className="text-white/60">Create an issue on Linear</span>
+              </div>
+              <div className="mt-1 flex items-center gap-1">
+                <span className="size-2.5 rounded-full bg-[#5865F2]" />
+                <span className="rounded bg-[#5865F2] px-1 py-0.5 text-[6px] font-semibold">
+                  /linear issue
+                </span>
+                <span className="text-white/70">title</span>
+                <span className="rounded bg-white/10 px-1 py-0.5">
+                  Redesign sidebar
+                </span>
+                <span className="text-white/70">team</span>
+                <span className="rounded bg-white/10 px-1 py-0.5">Design</span>
+                <span className="text-white/70">+4 more</span>
+              </div>
+            </div>
+            <div className="mt-2 rounded-md bg-[#1f2235] p-2 text-[7px] text-white shadow-sm ring-1 ring-white/10">
+              <div className="flex items-center gap-1 text-white/60">
+                <span className="font-mono text-[6px]">10:03 AM</span>
+                <span className="font-semibold text-white">adrien used</span>
+                <span className="rounded bg-[#5865F2]/30 px-1 py-0.5 font-mono text-[6px] text-[#a5b4fc]">
+                  /linear
+                </span>
+              </div>
+              <div className="mt-0.5 flex items-center gap-1">
+                <span className="rounded bg-[#5865F2] px-1 py-0.5 text-[6px] font-semibold">
+                  BOT
+                </span>
+                <span className="text-white/80">
+                  Linear Issue{" "}
+                  <span className="rounded bg-white/10 px-1 text-white">
+                    DES-52
+                  </span>{" "}
+                  created.
+                </span>
+              </div>
+              <div className="mt-1 rounded border-l-2 border-[#a5b4fc] bg-white/5 p-1">
+                <div className="font-semibold text-white">
+                  DES-52 — Redesign sidebar
+                </div>
+                <div className="mt-0.5 text-white/60">
+                  Status <span className="text-white">Triage</span>
+                </div>
+                <div className="text-white/60">Design · Today at 10:03 AM</div>
+              </div>
+            </div>
+          </div>
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #818cf8 0%, #6366f1 55%, #4f46e5 100%)",
+            }}
+          >
+            <div className="rounded-md bg-[#1f2235] p-2 text-[7px] text-white shadow-sm ring-1 ring-white/10">
+              <div className="flex items-center gap-1 text-white/60">
+                <span className="font-mono text-[6px]">7:15 PM</span>
+                <span className="font-semibold text-white">adrien used</span>
+                <span className="rounded bg-[#5865F2]/30 px-1 py-0.5 font-mono text-[6px] text-[#a5b4fc]">
+                  /linear
+                </span>
+              </div>
+              <div className="mt-0.5 flex items-center gap-1">
+                <span className="rounded bg-[#5865F2] px-1 py-0.5 text-[6px] font-semibold">
+                  BOT
+                </span>
+                <span className="text-white/80">
+                  <span className="font-semibold text-white">Linear</span>{" "}
+                  Started:
+                </span>
+              </div>
+              <ul className="mt-1 list-disc space-y-0.5 pl-4 text-white/70">
+                <li>Redesign sidebar</li>
+                <li>Secure enclave</li>
+                <li>Snooze for notifications</li>
+              </ul>
+              <div className="mt-1 font-semibold text-white">Completed:</div>
+              <ul className="mt-0.5 list-disc space-y-0.5 pl-4 text-white/70">
+                <li>Add images for integrations</li>
+                <li>Special hover effect on the &quot;install&quot; button</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            This integration connects your Linear workspace to your Discord
+            server so that you can create issues from Discord. Additional
+            features let you search for and then post a link to an existing
+            issue as well as share a summary of your day&apos;s work.
+          </p>
+          {overviewExpanded ? (
+            <p className="text-muted-foreground mt-2 text-sm leading-6">
+              Use the <span className="font-medium">/linear</span> slash command
+              in any channel to create or look up issues. Linear posts a rich
+              preview back into the channel so the rest of the team stays in the
+              loop.
+            </p>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => setOverviewExpanded((v) => !v)}
+            className="text-muted-foreground hover:text-foreground mt-2 text-xs"
+            aria-expanded={overviewExpanded}
+          >
+            {overviewExpanded ? "Show less" : "Read more"}
+          </button>
+        </section>
+      </div>
+
+      {/* Connect your user account */}
+      <Link
+        href="/settings?section=connected-accounts"
+        scroll={false}
+        className="bg-card hover:border-foreground/20 flex items-center justify-between rounded-lg border p-4 transition-colors"
+        aria-label="Connect your Discord user account"
+      >
+        <div className="min-w-0">
+          <div className="text-sm font-medium">Connect your user account</div>
+          <div className="text-muted-foreground mt-0.5 text-xs">
+            Sync attribution of your messages, and enable Discord slash commands
+          </div>
+        </div>
+        <span className="text-muted-foreground flex items-center gap-1 text-xs">
+          Connect
+          <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+        </span>
+      </Link>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Glean — third-party search integration. Layout matches the production
+// page: header, Built-by / Website / Enable (external) rail, a stacked
+// isometric hero illustration, Overview, How it works, and a Configure
+// section with bullet steps plus a callout that Glean is also available as
+// an MCP server for use with Linear Agent.
+// ---------------------------------------------------------------------------
+function GleanIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white">
+          <GleanLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Glean</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Search Linear for instant insights
+          </p>
+        </div>
+      </header>
+
+      {/* Body card */}
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Glean
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://glean.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Glean website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                glean.com
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Glean integration (opens in new tab)"
+          >
+            <a
+              href="https://app.glean.com/admin/setup/apps"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Hero — stacked isometric tiles */}
+        <div
+          aria-hidden
+          className="relative flex aspect-[16/10] items-center justify-center overflow-hidden rounded-lg"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 40%, #2a2a2e 0%, #18181b 70%, #0b0b0f 100%)",
+          }}
+        >
+          <div className="relative">
+            {/* Top tile (Glean) */}
+            <div
+              className="flex size-24 items-center justify-center rounded-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)]"
+              style={{
+                background: "linear-gradient(135deg, #f4f4f2 0%, #d6d6d2 100%)",
+                transform: "rotate(-14deg) translateY(-12px)",
+              }}
+            >
+              <svg
+                viewBox="0 0 64 64"
+                className="size-14"
+                aria-hidden
+                fill="none"
+              >
+                <path
+                  d="M44 24a14 14 0 1 0 0 16"
+                  stroke="#0b0b0f"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+            {/* Connecting chevrons */}
+            <div className="my-3 flex flex-col items-center gap-0.5 text-white/50">
+              <span className="text-xs">⌃</span>
+              <span className="text-xs">⌃</span>
+              <span className="text-xs">⌃</span>
+            </div>
+            {/* Bottom tile (Linear) */}
+            <div
+              className="flex size-24 items-center justify-center rounded-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)]"
+              style={{
+                background: "linear-gradient(135deg, #1a1b26 0%, #0a0b12 100%)",
+                transform: "rotate(14deg) translateY(12px)",
+              }}
+            >
+              <svg viewBox="0 0 64 64" className="size-14" aria-hidden>
+                <defs>
+                  <clipPath id="glean-linear-clip">
+                    <circle cx="32" cy="32" r="26" />
+                  </clipPath>
+                </defs>
+                <g clipPath="url(#glean-linear-clip)">
+                  <rect width="64" height="64" fill="#fff" />
+                  <g stroke="#0b0b0f" strokeWidth="3" opacity="0.85">
+                    <line x1="-20" y1="40" x2="84" y2="-64" />
+                    <line x1="-20" y1="56" x2="84" y2="-48" />
+                    <line x1="-20" y1="72" x2="84" y2="-32" />
+                    <line x1="-20" y1="88" x2="84" y2="-16" />
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The Glean integration for Linear enables you to search your Linear
+            project plans, teams, and workflows for immediate insights into
+            timelines, issues, and status.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Glean indexes your Linear environment to capture project content and
+            issues so that you can query it easily to gain insight into project
+            timelines, milestones, and issue updates across teams. Glean enables
+            you to easily stay up to date with product development in your
+            organization.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <ul className="text-muted-foreground mt-2 list-disc space-y-1.5 pl-5 text-sm leading-6">
+            <li>
+              To connect Linear to Glean, log into your Glean account and
+              navigate to the Admin console.
+            </li>
+            <li>
+              In the Admin console, go to the &quot;Data sources&quot; section
+              and click on the &quot;Add data source&quot; button.
+            </li>
+            <li>
+              From the list of connectors, choose Linear and follow the steps.
+            </li>
+          </ul>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Glean is also available as an{" "}
+            <a
+              href="https://docs.glean.com/mcp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              MCP server
+            </a>{" "}
+            for use with Linear Agent
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Range — third-party async check-ins integration. Layout follows the
+// production page: header + Built-by/Website/Enable (external) rail, two
+// blue/teal screenshot tiles (Connected Tools list, Plan check-in feed),
+// then Overview / How it works / Configure prose sections.
+// ---------------------------------------------------------------------------
+function RangeIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white">
+          <RangeLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Range</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Pull Linear issues into async check-ins to keep your software
+            development team in sync
+          </p>
+        </div>
+      </header>
+
+      {/* Body card */}
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Range
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://range.co"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Range website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                range.co
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Range integration (opens in new tab)"
+          >
+            <a
+              href="https://range.co/integrations/linear"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Screenshot tiles */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Left tile — Connected Tools / Recent Activity */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "radial-gradient(circle at 30% 20%, #dbeafe 0%, #bfdbfe 60%, #93c5fd 100%)",
+            }}
+          >
+            <div className="grid h-full grid-cols-2 gap-1.5">
+              <div className="rounded-md bg-white p-1.5 text-[6px] text-neutral-700 ring-1 ring-neutral-200">
+                <div className="flex items-center justify-between border-b border-neutral-200 pb-1">
+                  <span className="font-semibold text-neutral-900">
+                    Connected Tools
+                  </span>
+                  <span className="text-neutral-400">⌄</span>
+                </div>
+                <div className="mt-1 space-y-0.5">
+                  <div className="flex items-center gap-1 rounded bg-indigo-100 px-1 py-0.5">
+                    <span className="size-1.5 rounded-sm bg-indigo-500" />
+                    <span className="text-neutral-900">Linear</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-1 py-0.5">
+                    <span className="size-1.5 rounded-sm bg-neutral-800" />
+                    <span>Github</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-1 py-0.5">
+                    <span className="size-1.5 rounded-sm bg-emerald-500" />
+                    <span>PagerDuty</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-1 py-0.5">
+                    <span className="size-1.5 rounded-sm bg-blue-500" />
+                    <span>Google Docs</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-1 py-0.5">
+                    <span className="size-1.5 rounded-sm bg-blue-400" />
+                    <span>Google Calendar</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-1 py-0.5">
+                    <span className="size-1.5 rounded-sm bg-yellow-400" />
+                    <span>Google Drive</span>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-md bg-white p-1.5 text-[6px] text-neutral-700 ring-1 ring-neutral-200">
+                <div className="flex items-center justify-between border-b border-neutral-200 pb-1">
+                  <span className="flex items-center gap-1 font-semibold text-neutral-900">
+                    <span className="size-1.5 rounded-sm bg-indigo-500" />
+                    Linear
+                    <span className="ml-0.5 rounded bg-emerald-100 px-0.5 text-[5px] text-emerald-700">
+                      Connected
+                    </span>
+                  </span>
+                  <span className="text-neutral-400">⚙</span>
+                </div>
+                <div className="mt-1 text-neutral-500">Recent Activity</div>
+                <div className="mt-0.5 space-y-0.5">
+                  <div className="rounded bg-neutral-50 p-0.5">
+                    <div className="font-semibold text-neutral-900">
+                      ApplicationStore support for new...
+                    </div>
+                    <div className="text-neutral-500">
+                      Assigned · To Do · Backend Cleanup
+                    </div>
+                  </div>
+                  <div className="rounded bg-neutral-50 p-0.5">
+                    <div className="font-semibold text-neutral-900">
+                      Error handling for empty userStri...
+                    </div>
+                    <div className="text-neutral-500">
+                      Completed · To Do · Registration Upd...
+                    </div>
+                  </div>
+                  <div className="rounded bg-neutral-50 p-0.5">
+                    <div className="font-semibold text-neutral-900">
+                      Config Zapier with new events
+                    </div>
+                    <div className="text-neutral-500">Viewed · PR#11480</div>
+                  </div>
+                  <div className="rounded bg-neutral-50 p-0.5">
+                    <div className="font-semibold text-neutral-900">
+                      Tech Spec: Renewing certificate...
+                    </div>
+                    <div className="text-neutral-500">
+                      Commented · Google Docs
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Right tile — Plan check-in feed */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "radial-gradient(circle at 70% 30%, #d1fae5 0%, #a7f3d0 60%, #6ee7b7 100%)",
+            }}
+          >
+            <div className="rounded-md bg-white p-1.5 text-[6px] text-neutral-700 shadow-sm ring-1 ring-neutral-200">
+              <div className="flex items-center gap-1 border-b border-neutral-200 pb-1">
+                <span className="size-2 rounded-full bg-orange-300" />
+                <span className="font-semibold text-neutral-900">
+                  Allison Curtis
+                </span>
+              </div>
+              <div className="mt-1 font-semibold text-neutral-900">Plan</div>
+              <div className="mt-1 space-y-0.5">
+                <div className="flex items-center gap-1">
+                  <span className="size-1.5 rounded-sm bg-emerald-500" />
+                  <span className="flex-1 text-neutral-700">
+                    Starting this today. Reach o...
+                  </span>
+                </div>
+                <div className="ml-3 rounded bg-neutral-50 p-0.5">
+                  <span className="text-neutral-500">for me!</span>
+                  <span className="ml-0.5 rounded bg-blue-100 px-0.5 text-blue-700">
+                    #backend
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="size-1.5 rounded-sm bg-indigo-500" />
+                  <span className="flex-1 text-neutral-700">
+                    Error handling for empty userStrings
+                  </span>
+                </div>
+                <div className="ml-3 rounded bg-neutral-50 p-0.5 text-neutral-500">
+                  ▢ Weekly Leads Meeting
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="size-1.5 rounded-sm bg-indigo-500" />
+                  <span className="flex-1 text-neutral-700">
+                    Update social params for new c...
+                  </span>
+                </div>
+                <div className="ml-3 rounded bg-neutral-50 p-0.5 text-neutral-500">
+                  Assigned · To Do · Website Updates
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="size-1.5 rounded-sm bg-emerald-500" />
+                  <span className="text-neutral-700">
+                    Released the updated{" "}
+                    <span className="rounded bg-blue-100 px-0.5 text-blue-700">
+                      #social
+                    </span>{" "}
+                    params
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="size-1.5 rounded-sm bg-emerald-500" />
+                  <span className="text-neutral-700">
+                    Update social params for new campaigns
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="size-1.5 rounded-sm bg-emerald-500" />
+                  <span className="text-neutral-700">
+                    1:1 Allison / Natasha
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="rounded bg-amber-100 px-0.5 text-amber-700">
+                    FYI
+                  </span>
+                  <span className="text-neutral-700">
+                    I rolled back the changes to the compilers from...
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            This integration makes it possible for teams to pull Linear issues
+            into their asynchronous Team Check-ins in Range. Once the
+            integration is connected, easily drag and drop recent Linear issues
+            into Range Check-ins to update your team on your progress each day.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Range Check-ins reduce meeting load by keeping every team member
+            informed and connected day-to-day. Check-in asynchronously on a
+            personal and professional level so the whole team feels in sync,
+            wherever you are.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            With the Linear and Range integration, you can pull Linear activity
+            directly into your Range Check-ins. Once you&rsquo;ve connected your
+            Linear and Range workspaces, any Linear issues that you create,
+            comment on, or update will appear in your Range sidebar as suggested
+            items to include in your Check-in.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Messages like &ldquo;Completed&rdquo; and &ldquo;Assigned&rdquo;
+            will appear alongside Linear issues in Range when you make an update
+            to one of your assigned issues.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            In Range, visit{" "}
+            <span className="text-foreground font-medium">
+              Settings &gt; Integrations
+            </span>{" "}
+            and locate Linear. Click{" "}
+            <span className="text-foreground font-medium">Set this up</span> and
+            complete the authorization step. Once you&rsquo;ve connected your
+            team&rsquo;s Linear and Range workspaces, every team member will
+            need to click{" "}
+            <span className="text-foreground font-medium">Link</span> under{" "}
+            <span className="text-foreground font-medium">
+              Settings &gt; Integrations &gt; Linear
+            </span>{" "}
+            in Range to start syncing their Linear activity to Range.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Canva AI Connector — third-party design integration. Layout matches the
+// production page: header + Built-by/Website/Enable (external) rail, a
+// large dark hero with the Linear ↔ Canva pairing illustration above a
+// browser mock, then Overview / How it works / Configure prose with a
+// numbered configure list.
+// ---------------------------------------------------------------------------
+function CanvaIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#0c1220]">
+          <CanvaLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">
+            Canva AI Connector
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Create and link Linear workflow content directly within Canva
+          </p>
+        </div>
+      </header>
+
+      {/* Body card */}
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Canva
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://canva.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Canva website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                canva.com
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Canva AI Connector (opens in new tab)"
+          >
+            <a
+              href="https://www.canva.com/ai/connectors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Hero */}
+        <div
+          aria-hidden
+          className="relative overflow-hidden rounded-lg p-6"
+          style={{
+            background:
+              "linear-gradient(180deg, #1a1d28 0%, #0e1018 50%, #060810 100%)",
+          }}
+        >
+          {/* Pairing logos */}
+          <div className="flex items-center justify-center gap-6">
+            <div className="flex size-12 items-center justify-center rounded-full bg-[#0b0b0f] ring-1 ring-white/15">
+              <svg viewBox="0 0 64 64" className="size-7" aria-hidden>
+                <defs>
+                  <clipPath id="canva-linear-clip">
+                    <circle cx="32" cy="32" r="28" />
+                  </clipPath>
+                </defs>
+                <g clipPath="url(#canva-linear-clip)">
+                  <rect width="64" height="64" fill="#fff" />
+                  <g stroke="#0b0b0f" strokeWidth="3" opacity="0.85">
+                    <line x1="-20" y1="40" x2="84" y2="-64" />
+                    <line x1="-20" y1="56" x2="84" y2="-48" />
+                    <line x1="-20" y1="72" x2="84" y2="-32" />
+                    <line x1="-20" y1="88" x2="84" y2="-16" />
+                  </g>
+                </g>
+              </svg>
+            </div>
+            <div className="flex items-center gap-1 text-white/40">
+              <span className="size-1 rounded-full bg-white/40" />
+              <span className="size-1 rounded-full bg-white/40" />
+              <span className="size-1 rounded-full bg-white/40" />
+            </div>
+            <div className="flex size-12 items-center justify-center rounded-full bg-white shadow-[0_0_30px_rgba(60,196,255,0.45)]">
+              <CanvaLogo className="size-8" />
+            </div>
+          </div>
+
+          {/* Browser mock */}
+          <div className="mt-6 overflow-hidden rounded-t-xl border border-white/10 bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)]">
+            <div
+              className="relative flex h-44 items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(180deg, #f5f3ff 0%, #ffffff 60%, #ecfeff 100%)",
+              }}
+            >
+              {/* Left rail */}
+              <div className="absolute top-2 bottom-2 left-2 flex w-7 flex-col items-center gap-1 rounded-md bg-white/70 py-1.5 ring-1 ring-neutral-200">
+                <span className="size-3 rounded bg-neutral-200" />
+                <span className="size-3 rounded bg-violet-300" />
+                <span className="size-2.5 rounded bg-neutral-200" />
+                <span className="size-2.5 rounded bg-neutral-200" />
+                <span className="size-2.5 rounded bg-neutral-200" />
+              </div>
+              {/* Headline */}
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 text-[11px] font-semibold tracking-tight">
+                <span
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #7B8DFF, #3CC4FF, #28E0CF)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  What will you design today?
+                </span>
+              </div>
+              {/* Prompt input */}
+              <div className="absolute right-6 bottom-3 left-12 rounded-lg border border-violet-200 bg-white px-2 py-2 shadow-[0_10px_24px_-12px_rgba(124,58,237,0.35)]">
+                <div className="flex items-center gap-1.5 text-[10px] text-neutral-700">
+                  <span className="flex size-4 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                    +
+                  </span>
+                  <span className="flex-1 truncate">
+                    List all high-priority issues from the current cycle in
+                    Linear
+                  </span>
+                  <span className="rounded-full bg-emerald-500 px-1.5 py-0.5 text-[8px] font-medium text-white">
+                    Linh
+                  </span>
+                  <span className="flex size-5 items-center justify-center rounded-full bg-violet-600 text-white">
+                    →
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Connect Linear to Canva AI to bring your issues, projects, and team
+            context directly into your design workflow. Use Linear data as
+            context to generate presentations, social posts, reports, and other
+            designs without leaving Canva.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The Canva integration for Linear connects your Linear workspace to
+            Canva AI, letting you pull issues, projects, and team data into your
+            conversations. Once connected, you can ask Canva AI to retrieve
+            information from Linear and use it as context to generate designs,
+            documents, and visual content. For example, you could ask Canva AI
+            to create a sprint review presentation based on your recently
+            completed issues, or summarize a project&rsquo;s progress in a
+            status report.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            To get started, open Canva AI and select the Linear connector from
+            the connectors menu. You&rsquo;ll be prompted to authenticate with
+            your Linear account via OAuth. Once connected, Canva AI can access
+            your Linear data and use it alongside its design and content
+            generation capabilities. You can reference your Linear issues,
+            projects, and workflows naturally in your prompts, and Canva AI will
+            fetch the relevant context to inform what it creates.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            The integration is read-only, meaning Canva AI can retrieve data
+            from your Linear workspace but will not create, modify, or delete
+            any issues or other data in Linear. You can disconnect the
+            integration at any time from the connectors menu in Canva AI.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            To get started, open Canva AI and select the Linear connector from
+            the connectors menu. You&rsquo;ll be prompted to authenticate with
+            your Linear account via OAuth.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Once connected, Canva AI can access your Linear data and use it
+            alongside its design and content generation capabilities. You can
+            reference your Linear issues, projects, and workflows naturally in
+            your prompts, and Canva AI will fetch the relevant context to inform
+            what it creates.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            To configure:
+          </p>
+          <ol className="text-muted-foreground mt-2 list-decimal space-y-1.5 pl-5 text-sm leading-6">
+            <li>
+              Open Canva AI from{" "}
+              <a
+                href="https://canva.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline"
+              >
+                canva.com
+              </a>{" "}
+              and click the connectors menu (the + button).
+            </li>
+            <li>Select Linear from the list of available connectors.</li>
+            <li>
+              Authenticate with your Linear account when prompted. This uses a
+              standard OAuth flow.
+            </li>
+            <li>
+              Once connected, Linear will appear as an enabled connector in your
+              Canva AI session. You can start referencing your Linear data in
+              prompts immediately.
+            </li>
+          </ol>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            No admin permissions are required. Any Linear user can connect their
+            own account. To disconnect, open the connectors menu and toggle
+            Linear off.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Claap — third-party screen-recording integration that creates Linear
+// issues from recorded videos. Header + Built-by / Website / Enable
+// (external) rail, two screenshot tiles (the Claap → Linear automation
+// card on the left, the "Add Linear issue" modal on the right), then
+// Overview / How it works / Configure prose with a deep link to Claap
+// settings.
+// ---------------------------------------------------------------------------
+function ClaapIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#FF5C7A]">
+          <ClaapLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Claap</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Record bugs and directly create issues in Linear
+          </p>
+        </div>
+      </header>
+
+      {/* Body card */}
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Claap
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://claap.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Claap website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                claap.io
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Claap integration (opens in new tab)"
+          >
+            <a
+              href="https://app.claap.io/integrations/linear"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Screenshot tiles */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Left tile — automation card */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-4"
+            style={{
+              background:
+                "linear-gradient(135deg, #6B2A6E 0%, #4A1F58 60%, #2A1138 100%)",
+            }}
+          >
+            <div className="flex h-full items-center justify-center gap-2">
+              <div className="flex flex-col items-center gap-2 rounded-lg bg-white/5 p-2 ring-1 ring-white/15">
+                <ClaapLogo className="size-7" />
+                <div className="text-center text-[7px] leading-tight text-white/85">
+                  When a claap video
+                  <br />
+                  is shared in
+                  <br />
+                  the topic{" "}
+                  <span className="rounded bg-rose-500/20 px-1 text-rose-200">
+                    🐞 Bug Report
+                  </span>
+                </div>
+              </div>
+              <span className="text-white/60">→</span>
+              <div className="flex flex-col items-center gap-2 rounded-lg bg-white/5 p-2 ring-1 ring-white/15">
+                <svg viewBox="0 0 32 32" className="size-7" aria-hidden>
+                  <defs>
+                    <clipPath id="claap-linear-clip">
+                      <circle cx="16" cy="16" r="14" />
+                    </clipPath>
+                  </defs>
+                  <g clipPath="url(#claap-linear-clip)">
+                    <rect width="32" height="32" fill="#fff" />
+                    <g stroke="#0b0b0f" strokeWidth="2" opacity="0.85">
+                      <line x1="-12" y1="20" x2="44" y2="-32" />
+                      <line x1="-12" y1="28" x2="44" y2="-24" />
+                      <line x1="-12" y1="36" x2="44" y2="-16" />
+                    </g>
+                  </g>
+                </svg>
+                <div className="text-center text-[7px] leading-tight text-white/85">
+                  Create an issue{" "}
+                  <span className="text-rose-200">in Linear</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Right tile — Add Linear issue modal */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #C2410C 0%, #7C2D12 55%, #1f0f0a 100%)",
+            }}
+          >
+            <div className="rounded-md bg-[#1a1c25] p-1.5 text-[6px] text-white/85 shadow-sm ring-1 ring-white/10">
+              <div className="flex items-center justify-between border-b border-white/10 pb-1">
+                <span className="font-semibold">▸ Add Linear issue</span>
+                <span className="text-white/40">···</span>
+              </div>
+              <div className="mt-1 grid grid-cols-3 gap-1">
+                <div className="col-span-1 space-y-0.5">
+                  <div className="rounded bg-white/5 p-0.5">
+                    <div className="text-white/50">Create new issue</div>
+                    <div className="font-medium">Live editing bug</div>
+                  </div>
+                  <div className="rounded bg-white/5 p-0.5 text-white/50">
+                    Team
+                    <div className="text-white">Claap</div>
+                  </div>
+                  <div className="rounded bg-white/5 p-0.5 text-white/50">
+                    Assignee
+                    <div className="text-white">Search assignee</div>
+                  </div>
+                  <div className="rounded bg-white/5 p-0.5 text-white/50">
+                    Labels (Optional)
+                  </div>
+                </div>
+                <div className="col-span-2 space-y-0.5 rounded bg-white/5 p-1">
+                  <div className="text-white/50">Title</div>
+                  <div className="rounded bg-white/10 p-0.5">
+                    Live editing bug
+                  </div>
+                  <div className="text-white/50">Description (Optional)</div>
+                  <div className="rounded bg-white/10 p-0.5 leading-snug text-white/70">
+                    Reference of this Claap version:
+                  </div>
+                  <div className="text-blue-300 underline">
+                    https://app.claap.io/...
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-[5px] text-white/50">
+                    <span>+ Add Attachment</span>
+                    <span className="rounded bg-rose-500 px-1 py-0.5 text-white">
+                      Submit
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            This integration lets you create Linear issues directly from Claap.
+            Get your support team to report bugs with videos and annotations and
+            create detailed Linear issues in seconds.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Create Linear issues from Claap by using the 🔌 Integrations icon on
+            a Claap video. A pop-up will appear to create the issue from Claap.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Creating Linear issues from Claap is particularly useful for support
+            teams reporting issues. It allows them to easily transform their
+            screen recordings and annotations in Claap into Linear issues.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            The app will turn automatically the link into an embedded video so
+            you can play it directly from the issue description.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            If it&rsquo;s your first time using Linear with Claap, you will be
+            prompted to authorize the integration. Follow the prompts to
+            complete the authorization process.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            You can also configure this integration in{" "}
+            <a
+              href="https://app.claap.io/settings/integrations"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              Claap Settings
+            </a>
+            .
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Descript — pre-installed Linear-built embed integration. Layout mirrors
+// the production page: header + Built-by/Docs/Pre-installed rail, a tall
+// blue hero with a mock Linear comment containing an embedded Descript
+// video player, then short Overview / How it works / Configure prose.
+// ---------------------------------------------------------------------------
+function DescriptIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      {/* Header */}
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#2D7FF9]">
+          <DescriptLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Descript</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Embed Descript share URLs in Linear issues and documents
+          </p>
+        </div>
+      </header>
+
+      {/* Body card */}
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Docs / Pre-installed rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Linear
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Docs
+              </div>
+              <a
+                href="https://linear.app/docs/descript"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Descript integration docs (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={Book02Icon} className="size-3.5" />
+                Docs
+              </a>
+            </div>
+          </div>
+          <span className="text-muted-foreground text-sm font-medium">
+            Pre-installed
+          </span>
+        </div>
+
+        {/* Hero */}
+        <div
+          aria-hidden
+          className="relative aspect-[16/10] overflow-hidden rounded-lg p-6"
+          style={{
+            background:
+              "linear-gradient(180deg, #2D7FF9 0%, #2563EB 60%, #1D4ED8 100%)",
+          }}
+        >
+          {/* Background blobs */}
+          <span className="absolute -top-6 -left-6 size-32 rounded-full bg-white/10" />
+          <span className="absolute right-2 bottom-6 size-28 rounded-full bg-white/10" />
+          <span className="absolute right-12 -bottom-2 size-20 rounded-full bg-white/10" />
+
+          {/* Comment card */}
+          <div className="relative mx-auto w-full max-w-md rounded-lg bg-[#1c1f24] p-3 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.45)] ring-1 ring-white/10">
+            <div className="flex items-center gap-1.5 text-[10px] text-white/85">
+              <span className="flex size-4 items-center justify-center rounded-full bg-emerald-500 text-[7px] font-semibold text-white">
+                e
+              </span>
+              <span className="font-semibold">erin</span>
+              <span className="text-white/45">15 minutes ago</span>
+            </div>
+            <div className="mt-1.5 text-[10px] text-white/85">
+              I just had a call with one of our customers
+            </div>
+            {/* Embedded Descript video */}
+            <div className="mt-2 overflow-hidden rounded-md ring-1 ring-white/10">
+              <div
+                className="relative flex aspect-video items-center justify-center"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #232634 0%, #15171c 100%)",
+                }}
+              >
+                <div className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[7px] text-white/85">
+                  <span className="flex size-3 items-center justify-center rounded-full bg-emerald-500 text-[6px] font-semibold text-white">
+                    E
+                  </span>
+                  <div>
+                    <div className="font-semibold">Feature demo</div>
+                    <div className="text-white/50">By Erin Frey</div>
+                    <div className="text-white/50">June 1, 2022</div>
+                  </div>
+                </div>
+                {/* Icon grid */}
+                <div className="grid grid-cols-6 gap-1">
+                  <span className="size-3 rounded bg-rose-500/80" />
+                  <span className="size-3 rounded bg-amber-400/80" />
+                  <span className="size-3 rounded bg-emerald-500/80" />
+                  <span className="size-3 rounded bg-teal-400/80" />
+                  <span className="size-3 rounded bg-sky-400/80" />
+                  <span className="size-3 rounded bg-rose-400/80" />
+                  <span className="size-3 rounded bg-emerald-400/80" />
+                  <span className="size-3 rounded bg-fuchsia-500/80" />
+                  <span className="size-3 rounded bg-rose-500/80" />
+                  <span className="size-3 rounded bg-amber-400/80" />
+                  <span className="size-3 rounded bg-violet-500/80" />
+                  <span className="size-3 rounded bg-rose-500/80" />
+                </div>
+                {/* Player controls */}
+                <div className="absolute right-1.5 bottom-1.5 left-1.5 flex items-center justify-between text-[6px] text-white/70">
+                  <div className="flex items-center gap-1">
+                    <span>▶</span>
+                    <span>🔊</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="rounded bg-white/10 px-0.5">CC</span>
+                    <span>⛶</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-1 text-[8px] text-white/50">
+              View on Descript
+            </div>
+            <div className="mt-1.5 flex items-center gap-1 text-[8px] text-white/50">
+              <span className="rounded bg-white/10 px-1 py-0.5">👍 1</span>
+              <span className="rounded bg-white/10 px-1 py-0.5">＠</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            This integration embeds Descript share URLs into Linear issues,
+            comments, and documents.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Paste any Descript share link into Linear&apos;s Markdown editor.
+            The app will turn the link into an embedded video automatically so
+            that you can play it directly from the issue description, comment,
+            or document.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            None required. Descript links automatically embed in the text
+            editor.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Loom — pre-installed Linear-built embed integration. Header + Built-by/Docs
+// rail with Pre-installed pill, indigo hero with mock Linear comment containing
+// an embedded Loom video player, then short Overview / How it works / Configure
+// prose.
+// ---------------------------------------------------------------------------
+function LoomIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#625DF5]">
+          <LoomLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Loom</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Embed Loom videos in Linear issues and documents
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Linear
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Docs
+              </div>
+              <a
+                href="https://linear.app/docs/loom"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Loom integration docs (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={Book02Icon} className="size-3.5" />
+                Docs
+              </a>
+            </div>
+          </div>
+          <span className="text-muted-foreground text-sm font-medium">
+            Pre-installed
+          </span>
+        </div>
+
+        {/* Hero — purple gradient with diagonal light streaks and a Linear
+            comment card containing an embedded Loom video tile. */}
+        <div
+          aria-hidden
+          className="relative aspect-[16/10] overflow-hidden rounded-lg p-6"
+          style={{
+            background:
+              "linear-gradient(135deg, #5852F2 0%, #625DF5 45%, #8B86F8 100%)",
+          }}
+        >
+          <span className="absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,transparent_38%,rgba(255,255,255,0.18)_42%,transparent_46%,transparent_54%,rgba(255,255,255,0.12)_58%,transparent_62%)]" />
+
+          <div className="relative mx-auto w-full max-w-md rounded-lg bg-[#1c1f24] p-3 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.45)] ring-1 ring-white/10">
+            <div className="flex items-center gap-1.5 text-[10px] text-white/85">
+              <span className="flex size-4 items-center justify-center rounded-full bg-emerald-500 text-[7px] font-semibold text-white">
+                j
+              </span>
+              <span className="font-semibold">julian</span>
+              <span className="text-white/45">15 minutes ago</span>
+            </div>
+            <div className="mt-1.5 text-[10px] text-white/85">
+              Can you try this?
+            </div>
+            <div className="mt-2 overflow-hidden rounded-md ring-1 ring-white/10">
+              <div
+                className="relative flex aspect-video items-center justify-center"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #2a2f3a 0%, #1a1c25 100%)",
+                }}
+              >
+                <div className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[7px] text-white/85">
+                  <span className="flex size-3 items-center justify-center rounded-sm bg-rose-500 text-[6px] font-semibold text-white">
+                    B
+                  </span>
+                  <span className="font-semibold">Bug recording</span>
+                </div>
+                <div className="absolute bottom-1.5 left-1.5 text-[7px] text-white/60">
+                  ⏱ 3 min
+                </div>
+                <span className="flex size-7 items-center justify-center rounded-full bg-white/85 text-[10px] text-[#1c1f24]">
+                  ▶
+                </span>
+              </div>
+            </div>
+            <div className="mt-1 text-[8px] text-white/50">View on Loom</div>
+            <div className="mt-1.5 flex items-center gap-1 text-[8px] text-white/50">
+              <span className="rounded bg-white/10 px-1 py-0.5">👍 1</span>
+              <span className="rounded bg-emerald-500/30 px-1 py-0.5 text-emerald-200">
+                ✓ 1
+              </span>
+              <span className="rounded bg-white/10 px-1 py-0.5">＠</span>
+            </div>
+          </div>
+        </div>
+
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            This integration embeds Loom videos into Linear issues, comments,
+            and documents.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Paste any Loom link into Linear&apos;s Markdown editor. The app will
+            turn the link into an embedded video automatically so that you can
+            play it directly from the issue description, comment, or document.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            None required. Loom links automatically embed in the text editor.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Miro — third-party integration with Enable button. Header + Built-by/Website
+// rail, two screenshot tiles (edit/create flow), then Overview / How it works /
+// Security & Access / Availability / Configure prose.
+// ---------------------------------------------------------------------------
+function MiroIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#FFD02F]">
+          <MiroLogo className="size-8" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Miro</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Import, create and manage issues directly in Miro
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Miro
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://miro.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Miro website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                miro.com
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Miro integration (opens in new tab)"
+          >
+            <a
+              href="https://miro.com/marketplace/linear/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Twin screenshot tiles — left: editing a Linear ticket on a Miro
+            board, right: creating a new ticket from a sticky note. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {[
+            {
+              title: "Edit Linear issues right on the board",
+              header: "Edit Ticket",
+            },
+            {
+              title: "Instantly transform ideas into new issues",
+              header: "Add Ticket",
+            },
+          ].map((tile) => (
+            <div
+              key={tile.header}
+              aria-hidden
+              className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#F5F5F2] p-3"
+            >
+              <div className="flex items-center justify-center gap-1 text-[8px] font-semibold text-[#0b0b0f]">
+                <MiroLogo className="size-3" />
+                <span>miro</span>
+                <span className="text-[#0b0b0f]/40">×</span>
+                <span className="flex size-3 items-center justify-center rounded-sm bg-[#0b0b0f] text-[6px] text-white">
+                  L
+                </span>
+                <span>Linear</span>
+              </div>
+              <div className="mt-1 text-center text-[7px] font-medium text-[#0b0b0f]">
+                {tile.title}
+              </div>
+              <div className="mt-2 rounded-md bg-white p-1.5 text-[6px] shadow-sm ring-1 ring-black/5">
+                <div className="flex items-center justify-between border-b border-black/5 pb-1 text-[#0b0b0f]">
+                  <span className="font-semibold">{tile.header}</span>
+                  <span className="text-[#0b0b0f]/40">···</span>
+                </div>
+                <div className="mt-1 grid grid-cols-2 gap-1">
+                  <div className="space-y-0.5 text-[#0b0b0f]/60">
+                    <div>Type</div>
+                    <div>Priority</div>
+                    <div>Reporter</div>
+                    <div>Assignee</div>
+                    <div>Status</div>
+                    <div>Due</div>
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="rounded bg-amber-200/70 px-0.5 text-[#0b0b0f]">
+                      Update user guides and technical
+                      <br />
+                      documentation
+                    </div>
+                    <div className="flex flex-wrap gap-0.5">
+                      <span className="rounded bg-emerald-200 px-0.5 text-[#0b0b0f]">
+                        ToDo
+                      </span>
+                      <span className="rounded bg-rose-200 px-0.5 text-[#0b0b0f]">
+                        VPN-123
+                      </span>
+                      <span className="rounded bg-sky-200 px-0.5 text-[#0b0b0f]">
+                        Trivial
+                      </span>
+                    </div>
+                    <div className="text-[#0b0b0f]/70">
+                      Enhance data transmission efficiency
+                    </div>
+                    <div className="flex flex-wrap gap-0.5">
+                      <span className="rounded bg-emerald-200 px-0.5 text-[#0b0b0f]">
+                        ToDo
+                      </span>
+                      <span className="rounded bg-rose-200 px-0.5 text-[#0b0b0f]">
+                        VPN-122
+                      </span>
+                      <span className="rounded bg-sky-200 px-0.5 text-[#0b0b0f]">
+                        Trivial
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-1 flex items-center gap-0.5 border-t border-black/5 pt-1 text-[#0b0b0f]/40">
+                  <span>B</span>
+                  <span>I</span>
+                  <span>U</span>
+                  <span>≡</span>
+                  <span>≣</span>
+                  <span>⌗</span>
+                  <span>🔗</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The Linear integration for Miro transforms how teams manage their
+            workflows by connecting visual collaboration with project tracking.
+            Import, view, and edit Linear issues directly within Miro boards
+            without switching between tools, ensuring your workflows stay
+            synchronized and teams remain productive.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <h3 className="mt-2 text-sm font-medium">Issue Management in Miro</h3>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Discover and organize issues using the built-in ticket picker that
+            lets you filter by assignee, project, or status before importing
+            them into your Miro board. Once imported, edit issue details, update
+            statuses, and create new issues directly from the board.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Real-time synchronization ensures that any changes made in Linear
+            are immediately reflected on your Miro board, maintaining
+            consistency across your entire workflow. Action buttons provide
+            quick shortcuts for common tasks, letting you open the issue picker
+            or create new tickets with a single click.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">Security &amp; Access</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Users authenticate with their Linear credentials to interact with
+            the integration, ensuring secure access based on their existing
+            permissions. Admin controls allow workspace administrators to manage
+            access permissions and integration settings for their teams.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">Availability</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            This integration is available for Miro Business and Enterprise plan
+            customers. Teams can start using the integration immediately after
+            connecting their Linear workspace to Miro.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Connect your Linear workspace through Miro&apos;s integration
+            settings or the{" "}
+            <a
+              href="https://miro.com/marketplace/linear/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              marketplace
+            </a>
+            . Once configured, team members can begin importing issues, creating
+            action buttons, and managing their Linear workflow directly from
+            Miro boards while maintaining full synchronization between both
+            platforms.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Screenpresso — third-party Windows screen-capture utility. Header +
+// Built-by/Website rail with Enable button, hero showing the Screenpresso
+// "create Linear issue" dialog, then Overview / How it works / Configure prose.
+// ---------------------------------------------------------------------------
+function ScreenpressoIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#E0322B]">
+          <ScreenpressoLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Screenpresso</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Effectively report an issue with embedded screenshots and videos
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Learnpulse SAS
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://screenpresso.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Screenpresso website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                screenpresso.com
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Screenpresso integration (opens in new tab)"
+          >
+            <a
+              href="https://www.screenpresso.com/download/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Hero — magenta-to-coral gradient with a mock Screenpresso capture
+            tray on the left and the Linear issue dialog on the right. */}
+        <div
+          aria-hidden
+          className="relative aspect-[16/10] overflow-hidden rounded-lg p-5"
+          style={{
+            background:
+              "linear-gradient(120deg, #6D2FA9 0%, #C8389A 45%, #E85B7B 100%)",
+          }}
+        >
+          <div className="flex h-full items-center justify-center gap-3">
+            {/* Capture tray */}
+            <div className="grid grid-cols-2 gap-1.5">
+              {["08h03_44", "08h11_18", "08h16_22", "08h19_07"].map((stamp) => (
+                <div
+                  key={stamp}
+                  className="flex aspect-[4/3] w-20 flex-col rounded-sm bg-white/90 p-1 ring-1 ring-black/5"
+                >
+                  <div className="flex-1 rounded-sm bg-gradient-to-br from-slate-200 to-slate-400" />
+                  <div className="mt-0.5 truncate text-[5px] text-[#0b0b0f]">
+                    2022-09-20_{stamp}.png
+                  </div>
+                </div>
+              ))}
+              <div className="col-span-2 mt-0.5 flex items-center justify-center gap-3 rounded-md bg-black/30 p-1">
+                <span className="flex size-6 items-center justify-center rounded-full ring-2 ring-rose-400">
+                  <span className="text-[10px]">📷</span>
+                </span>
+                <span className="flex size-6 items-center justify-center rounded-full ring-2 ring-rose-400">
+                  <span className="text-[10px]">🎥</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Linear issue dialog */}
+            <div className="w-56 rounded-sm bg-[#f3f3f3] p-1.5 text-[6px] text-[#0b0b0f] shadow-lg ring-1 ring-black/10">
+              <div className="flex items-center justify-between border-b border-black/10 pb-0.5">
+                <span className="font-semibold">Linear</span>
+                <span className="flex gap-0.5 text-[#0b0b0f]/50">
+                  <span>—</span>
+                  <span>▢</span>
+                  <span>×</span>
+                </span>
+              </div>
+              <div className="mt-1 grid grid-cols-2 gap-1">
+                <label className="flex flex-col gap-0.5">
+                  Title:
+                  <input
+                    readOnly
+                    value="Bad color in main text"
+                    className="rounded-sm border border-black/20 bg-white px-0.5 text-[5px] text-[#0b0b0f]"
+                  />
+                </label>
+                <label className="flex flex-col gap-0.5">
+                  Priority:
+                  <input
+                    readOnly
+                    className="rounded-sm border border-black/20 bg-white px-0.5 text-[5px]"
+                  />
+                </label>
+              </div>
+              <div className="mt-1 flex flex-col gap-0.5">
+                Description:
+                <div className="h-10 rounded-sm border border-black/20 bg-white p-0.5 leading-tight">
+                  Please check this issue:
+                  <br />
+                  2022-09-20_08h19_07.png
+                  <br />
+                  <br />
+                  Thank you for your help.
+                </div>
+              </div>
+              <div className="mt-1 grid grid-cols-2 gap-1">
+                <label className="flex flex-col gap-0.5">
+                  Team:
+                  <input
+                    readOnly
+                    value="Learnpulse"
+                    className="rounded-sm border border-black/20 bg-white px-0.5 text-[5px]"
+                  />
+                </label>
+                <label className="flex flex-col gap-0.5">
+                  Assignee:
+                  <input
+                    readOnly
+                    className="rounded-sm border border-black/20 bg-white px-0.5 text-[5px]"
+                  />
+                </label>
+              </div>
+              <div className="mt-1">
+                <div>Labels:</div>
+                <div className="mt-0.5 grid grid-cols-3 gap-x-1 text-[5px]">
+                  <label className="flex items-center gap-0.5">
+                    <span className="size-1 border border-black/40" />
+                    ScreenpressoCloud
+                  </label>
+                  <label className="flex items-center gap-0.5">
+                    <span className="size-1 border border-black/40" />
+                    To be reviewed
+                  </label>
+                  <label className="flex items-center gap-0.5">
+                    <span className="size-1 border border-black/40" />
+                    Improvement
+                  </label>
+                  <label className="flex items-center gap-0.5">
+                    <span className="size-1 border border-black/40" />
+                    Reviewed
+                  </label>
+                  <label className="flex items-center gap-0.5">
+                    <span className="size-1 border border-black/40" />
+                    Invalid
+                  </label>
+                  <label className="flex items-center gap-0.5">
+                    <span className="size-1 border border-black/40" />
+                    Feature
+                  </label>
+                  <label className="flex items-center gap-0.5">
+                    <span className="size-1 border border-black/40" />
+                    Study
+                  </label>
+                  <label className="flex items-center gap-0.5">
+                    <span className="size-1 border border-black/40" />
+                    WinForms
+                  </label>
+                  <label className="flex items-center gap-0.5 rounded-sm bg-sky-300/80 px-0.5">
+                    <span className="size-1 border border-black/60 bg-white" />
+                    Bug
+                  </label>
+                  <label className="flex items-center gap-0.5">
+                    <span className="size-1 border border-black/40" />
+                    Website
+                  </label>
+                  <label className="flex items-center gap-0.5">
+                    <span className="size-1 border border-black/40" />
+                    WPF
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Using Screenpresso, you can take screenshots and annotate them, or
+            record videos with the Webcam, then quickly create Linear issues
+            with these captures embedded.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Screenpresso is the best screen capture for Microsoft Windows. You
+            can capture high quality images then annotate them using beautiful
+            and useful drawing tools. You can also capture high resolution
+            videos with the audio, webcam and zoom on specific areas.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Once this is done, simply click on the{" "}
+            <span className="font-semibold">Publish</span> button to create
+            Linear issues. In the description field you can embed these captures
+            at the right position.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Download Screenpresso from the official site:
+          </p>
+          <p className="mt-2 text-sm leading-6">
+            <a
+              href="https://www.screenpresso.com/download/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              https://www.screenpresso.com/download/
+            </a>
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Run the exe. It does not require to be installed and does not
+            require administrator privileges.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Open the settings and link your Linear account with Screenpresso.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            More details in this short{" "}
+            <a
+              href="https://www.youtube.com/results?search_query=screenpresso+linear"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              Youtube demonstration.
+            </a>
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Tella — third-party screen-recorder embed integration. Header +
+// Built-by/Website rail with Enable button, indigo hero with side-by-side
+// screenshots of the Tella editor and a desktop-with-comments capture, then
+// the multi-paragraph How it works prose from the production page.
+// ---------------------------------------------------------------------------
+function TellaIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#5B4DFF]">
+          <TellaLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Tella</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Embed Tella videos in Linear
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Tella
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://tella.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Tella website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                tella.com
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Tella integration (opens in new tab)"
+          >
+            <a
+              href="https://tella.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Hero — indigo backdrop with caption banner and overlapping
+            screenshots: Tella editor on the left, desktop-with-comments
+            capture on the right. */}
+        <div
+          aria-hidden
+          className="relative aspect-[16/10] overflow-hidden rounded-lg p-5"
+          style={{
+            background:
+              "linear-gradient(180deg, #4F46E5 0%, #5B4DFF 55%, #6F4DFF 100%)",
+          }}
+        >
+          <div className="text-center text-[11px] font-semibold text-white">
+            Embed videos into issues and comments
+          </div>
+
+          <div className="relative mt-3 flex items-end justify-center gap-2">
+            {/* Left: Tella editor screenshot */}
+            <div className="relative w-1/2 overflow-hidden rounded-md ring-1 ring-white/10">
+              <div
+                className="aspect-video"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #6B5BFF 0%, #4F46E5 60%, #1E1B4B 100%)",
+                }}
+              >
+                <div className="flex items-center justify-between px-1.5 pt-1 text-[5px] text-white/85">
+                  <div className="flex items-center gap-0.5">
+                    <span className="font-semibold">TELLA</span>
+                    <span className="text-white/40">›</span>
+                    <span className="rounded-sm bg-white/10 px-0.5">
+                      Template
+                    </span>
+                  </div>
+                  <span className="rounded-sm bg-white/10 px-0.5">Sign up</span>
+                </div>
+                <div className="px-1.5 pt-1 text-[5px] text-white/85">
+                  Website bug
+                </div>
+                <div className="px-1.5 text-[4px] text-white/70">
+                  Here&apos;s a quick reproduction:
+                </div>
+                <div className="mt-1 px-1.5 text-[4px] text-white/60">
+                  Minor bug found while checking screen features ⓘ
+                </div>
+                <div className="mt-1 grid grid-cols-2 gap-1 px-1.5">
+                  <div className="space-y-0.5">
+                    <div className="rounded-sm bg-white/10 p-0.5">
+                      <div className="font-semibold text-white">
+                        Grant Shaddick
+                      </div>
+                      <div className="text-white/60">Log in</div>
+                    </div>
+                    <div className="text-[8px] leading-tight font-bold text-white">
+                      ecord
+                      <br />
+                      ble videos
+                    </div>
+                    <div className="text-[4px] text-white/70">
+                      een recorder that edits
+                      <br />
+                      eos for you.
+                    </div>
+                    <div className="rounded-sm bg-white/15 px-0.5 py-0.5 text-[4px] text-white">
+                      Get started
+                    </div>
+                  </div>
+                  <div className="space-y-0.5 rounded-sm bg-white/5 p-0.5 text-[3px] text-white/60">
+                    <div>{"<div class='hero'>"}</div>
+                    <div>{"<h1>Record</h1>"}</div>
+                    <div>{"<p>screen + cam</p>"}</div>
+                    <div>{"<button/>"}</div>
+                    <div>{"</div>"}</div>
+                    <div>{"<style>"}</div>
+                    <div>{"  body {bg:#fff}"}</div>
+                    <div>{"</style>"}</div>
+                  </div>
+                </div>
+                {/* Bug callout */}
+                <div className="absolute right-12 bottom-3 rounded-sm bg-[#0b0b0f] px-1 py-0.5 text-[5px] text-white">
+                  bug here.
+                </div>
+                {/* Player chrome */}
+                <div className="absolute right-1.5 bottom-1.5 left-1.5 flex items-center gap-1 text-[5px] text-white/85">
+                  <span>▶</span>
+                  <div className="h-0.5 flex-1 rounded-full bg-white/15">
+                    <span className="block h-full w-1/4 rounded-full bg-white" />
+                  </div>
+                  <span>00:02 / 00:13</span>
+                  <span className="rounded-sm bg-white/15 px-0.5">1.3×</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: desktop-with-comments capture, slightly above the left */}
+            <div className="absolute top-3 right-4 w-[58%] -translate-y-1 overflow-hidden rounded-md shadow-[0_25px_45px_-15px_rgba(0,0,0,0.6)] ring-1 ring-white/10">
+              <div
+                className="aspect-video"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #1f1f2b 0%, #281f33 50%, #b14a2a 100%)",
+                }}
+              >
+                <div className="absolute top-1 left-2 rounded bg-[#0b0b0f]/80 px-1 py-0.5 text-[5px] text-white">
+                  <div className="flex items-center gap-0.5">
+                    <span className="flex size-1.5 items-center justify-center rounded-full bg-emerald-400 text-[3px] text-[#0b0b0f]">
+                      G
+                    </span>
+                    <span className="font-semibold">Grant</span>
+                    <span className="text-white/50">just now</span>
+                  </div>
+                  <div className="text-[4px] text-white/85">
+                    Design walkthrough:
+                  </div>
+                </div>
+                {/* Pseudo desktop windows */}
+                <div className="absolute top-3.5 left-4 grid grid-cols-3 gap-0.5">
+                  <div className="aspect-[3/4] w-8 rounded-sm bg-white/10 p-0.5">
+                    <div className="space-y-0.5">
+                      <div className="h-px bg-white/40" />
+                      <div className="h-px bg-white/30" />
+                      <div className="h-px bg-white/30" />
+                      <div className="h-px bg-white/30" />
+                    </div>
+                  </div>
+                  <div className="aspect-[3/4] w-8 rounded-sm bg-white/10 p-0.5">
+                    <div className="space-y-0.5">
+                      <div className="h-px bg-white/40" />
+                      <div className="h-px bg-white/30" />
+                      <div className="h-px bg-white/30" />
+                    </div>
+                  </div>
+                  <div className="aspect-[3/4] w-8 rounded-sm bg-white/10 p-0.5">
+                    <div className="space-y-0.5 text-[3px] text-white/85">
+                      <div className="h-1 bg-emerald-400/70" />
+                      <div className="h-1 bg-rose-400/70" />
+                      <div className="h-1 bg-sky-400/70" />
+                    </div>
+                  </div>
+                </div>
+                {/* Webcam bubble */}
+                <div className="absolute right-1 bottom-3 size-7 overflow-hidden rounded-full bg-gradient-to-br from-amber-200 to-amber-500 ring-2 ring-white/20" />
+                {/* Caption banner */}
+                <div className="absolute bottom-1 left-1 rounded bg-[#0b0b0f]/85 px-1 py-0.5 text-[5px] text-white">
+                  And then at the bottom you{" "}
+                  <span className="text-white/60">can see we&apos;ve</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Tella videos now embed in Linear, so you can paste a link and
+            instantly share screen recordings, walkthroughs, or demos right
+            where your team works. It makes bug reports clearer, async updates
+            more personal, and keeps context visible without switching apps.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            When you paste a Tella video link into Linear, it automatically
+            embeds and displays a playable preview. This works in issue
+            descriptions, comments, and project documents - anywhere you&apos;d
+            normally share a link. Your team can watch videos inline without
+            leaving Linear, keeping all the context in one place.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            This makes it easy to share bug reproductions, feature demos, design
+            walkthroughs, or quick async updates with your team.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            To use the integration, simply copy the share link from any Tella
+            video and paste it into Linear and select the embed option. The
+            embed appears automatically, no configuration or authentication
+            required. Videos remain linked to the original Tella recording, so
+            if you update the video in Tella, the embedded version in Linear
+            stays current.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            No configuration is required. The Tella integration is available to
+            all Linear users by default - just paste a Tella link and it embeds
+            automatically.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// YouTube — pre-installed Linear-built embed integration. Header +
+// Built-by/Docs rail with Pre-installed pill, dark hero with red ribbon
+// shapes and a Linear comment containing an embedded YouTube player, then
+// short Overview / How it works / Configure prose.
+// ---------------------------------------------------------------------------
+function YouTubeIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#1f1f23]">
+          <YouTubeLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">YouTube</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Embed YouTube videos in Linear issues and documents
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Linear
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Docs
+              </div>
+              <a
+                href="https://linear.app/docs/youtube"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube integration docs (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={Book02Icon} className="size-3.5" />
+                Docs
+              </a>
+            </div>
+          </div>
+          <span className="text-muted-foreground text-sm font-medium">
+            Pre-installed
+          </span>
+        </div>
+
+        {/* Hero — dark backdrop with red abstract ribbon shapes and a Linear
+            comment containing an embedded YouTube player. */}
+        <div
+          aria-hidden
+          className="relative aspect-[16/10] overflow-hidden rounded-lg p-6"
+          style={{
+            background:
+              "linear-gradient(135deg, #1a1a1a 0%, #232323 60%, #2c2c2c 100%)",
+          }}
+        >
+          {/* Red ribbon blobs */}
+          <span className="absolute top-1/2 -left-12 size-56 -translate-y-1/2 rounded-full bg-[#FF3B30]/80 blur-xl" />
+          <span className="absolute -top-8 -right-12 size-48 rounded-full bg-white/10 blur-md" />
+          <span className="absolute right-12 -bottom-10 size-40 rounded-full bg-[#FF3B30]/40 blur-lg" />
+
+          {/* Linear comment card */}
+          <div className="relative mx-auto w-full max-w-md rounded-lg bg-[#1c1f24] p-3 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.55)] ring-1 ring-white/10">
+            <div className="flex items-center gap-1.5 text-[10px] text-white/85">
+              <span className="flex size-4 items-center justify-center rounded-full bg-emerald-500 text-[7px] font-semibold text-white">
+                q
+              </span>
+              <span className="font-semibold">quinn</span>
+              <span className="text-white/45">15 minutes ago</span>
+            </div>
+            <div className="mt-1.5 text-[10px] text-white/85">
+              <span className="text-blue-400">@erin</span> Take a look at this!
+            </div>
+            <div className="mt-2 overflow-hidden rounded-md ring-1 ring-white/10">
+              <div
+                className="relative flex aspect-video items-center justify-center"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #15171c 0%, #1f2329 100%)",
+                }}
+              >
+                <div className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[7px] text-white/85">
+                  <span className="flex size-3 items-center justify-center rounded-sm bg-amber-400 text-[6px] font-semibold text-[#0b0b0f]">
+                    L
+                  </span>
+                  <span className="font-semibold">
+                    How to create custom views in Linear
+                  </span>
+                </div>
+                <div className="absolute top-1.5 right-1.5 rounded bg-white/10 px-0.5 text-[6px] text-white/85">
+                  Save this view ⌥V
+                </div>
+                {/* Editor hints + play button */}
+                <div className="absolute bottom-2 left-1.5 flex items-center gap-1 text-[7px] text-white/60">
+                  <span>+</span>
+                  <span>···</span>
+                  <span className="flex items-center gap-0.5 rounded bg-white/10 px-0.5">
+                    <span className="size-1 rounded-full bg-amber-400" />
+                    Progress
+                  </span>
+                  <span>0</span>
+                </div>
+                <span className="flex size-7 items-center justify-center rounded-full bg-[#FF0000] text-[10px] text-white">
+                  ▶
+                </span>
+                <div className="absolute right-2 bottom-2 text-[7px] text-white/60">
+                  +
+                </div>
+                {/* Pseudo person row */}
+                <div className="absolute bottom-6 left-2 flex items-center gap-0.5 text-[6px] text-white/70">
+                  <span className="size-2 rounded-full bg-rose-400" />
+                  <span>ed Einstein</span>
+                </div>
+                {/* Watch on YouTube chip */}
+                <div className="absolute bottom-1 left-1 flex items-center gap-0.5 rounded bg-black/70 px-1 py-0.5 text-[6px] text-white">
+                  Watch on
+                  <span className="flex items-center gap-0.5">
+                    <span className="flex size-2 items-center justify-center rounded-sm bg-[#FF0000]">
+                      <span className="text-[4px] text-white">▶</span>
+                    </span>
+                    YouTube
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-1 text-[8px] text-white/50">View on YouTube</div>
+            <div className="mt-1.5 flex items-center gap-1 text-[8px] text-white/50">
+              <span className="rounded bg-white/10 px-1 py-0.5">👍 1</span>
+              <span className="rounded bg-white/10 px-1 py-0.5">＠</span>
+            </div>
+          </div>
+        </div>
+
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            This integration embeds YouTube videos into Linear issues, comments,
+            and documents.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Paste any YouTube link into Linear&apos;s Markdown editor. The app
+            will turn the link into an embedded video automatically so that you
+            can play it directly from the issue description, comment, or
+            document.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            None required. YouTube links automatically embed in the text editor.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Airbyte — Linear-built ELT connector. Header + Built-by/Docs rail with
+// Enable button, two screenshot tiles for Source setup and Destination
+// selection on a magenta-to-blue gradient, then Overview / How it works /
+// Configure prose.
+// ---------------------------------------------------------------------------
+function AirbyteIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#6E4FF6]">
+          <AirbyteLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Airbyte</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Connect Linear to Airbyte and consolidate data in data warehouses,
+            lakes, and databases
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Linear
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Docs
+              </div>
+              <a
+                href="https://linear.app/docs/airbyte"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Airbyte integration docs (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={Book02Icon} className="size-3.5" />
+                Docs
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => toast.info("Airbyte OAuth connect flow coming soon")}
+            aria-label="Enable Airbyte integration"
+          >
+            <HugeiconsIcon icon={PuzzleIcon} className="size-3.5" />
+            Enable
+          </Button>
+        </div>
+
+        {/* Twin screenshot tiles — left: "Set up the source" wizard with
+            Linear chosen as source, right: "New destination" picker with a
+            stack of supported warehouses. Both sit on a magenta-to-blue
+            gradient like the Linear marketing screenshots. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {[
+            {
+              title: "Set up the source",
+              right: false,
+              steps: [
+                { label: "Create a source", active: true },
+                { label: "Create a destination" },
+                { label: "Set up connection" },
+              ],
+              fields: [
+                { label: "Source type", value: "Linear" },
+                {
+                  label:
+                    "Name * — Pick a name to help you identify this source",
+                  value: "Linear",
+                },
+                {
+                  label: "Airbyte Integration API Key * —",
+                  value: "•••••••••••••••••••••••",
+                },
+              ],
+              cta: "Set up source",
+            },
+            {
+              title: "Set up the destination",
+              right: true,
+              steps: [],
+              destinations: [
+                { name: "BigQuery", color: "bg-rose-400", letter: "B" },
+                { name: "Snowflake", color: "bg-sky-400", letter: "❄" },
+                { name: "E2E Testing", color: "bg-violet-400", letter: "E" },
+                { name: "S3", color: "bg-orange-400", letter: "S" },
+                { name: "Scylla", color: "bg-blue-400", letter: "S" },
+                {
+                  name: "BigQuery (denormalized typed struct)",
+                  color: "bg-rose-400",
+                  letter: "B",
+                  beta: true,
+                },
+                {
+                  name: "Google Cloud Storage (GCS)",
+                  color: "bg-amber-400",
+                  letter: "G",
+                  beta: true,
+                },
+                { name: "+ Request a new connector" },
+              ],
+            },
+          ].map((tile) => (
+            <div
+              key={tile.title}
+              aria-hidden
+              className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+              style={{
+                background:
+                  "linear-gradient(135deg, #1d4ed8 0%, #6E4FF6 45%, #ec4899 100%)",
+              }}
+            >
+              <div className="rounded-md bg-white p-1.5 text-[6px] text-neutral-700 shadow-md ring-1 ring-black/5">
+                {/* Step rail or destination header */}
+                {!tile.right ? (
+                  <div className="flex items-center justify-between border-b border-neutral-200 pb-1">
+                    <div className="flex items-center gap-0.5 font-semibold text-neutral-900">
+                      <AirbyteLogoMini />
+                      <span>New connection</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[5px] text-neutral-500">
+                      {tile.steps?.map((s) => (
+                        <span
+                          key={s.label}
+                          className={
+                            s.active
+                              ? "rounded bg-blue-100 px-0.5 font-medium text-blue-700"
+                              : ""
+                          }
+                        >
+                          {s.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between border-b border-neutral-200 pb-1">
+                    <div className="flex items-center gap-0.5 font-semibold text-neutral-900">
+                      <AirbyteLogoMini />
+                      <span>New destination</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Body */}
+                {!tile.right ? (
+                  <div className="mt-1.5 grid grid-cols-[44px_1fr] gap-1.5">
+                    <div className="space-y-0.5 text-[5px] text-neutral-500">
+                      <div className="rounded bg-blue-50 px-0.5 py-px font-medium text-blue-700">
+                        ⚡ Connections
+                      </div>
+                      <div className="px-0.5">⚡ Sources</div>
+                      <div className="px-0.5">⚡ Destinations</div>
+                      <div className="mt-1 px-0.5">⚙ Update</div>
+                      <div className="px-0.5">📚 Resources</div>
+                    </div>
+                    <div className="space-y-0.5">
+                      <div className="text-[6px] font-semibold text-neutral-900">
+                        Set up the source
+                      </div>
+                      {tile.fields?.map((f) => (
+                        <div key={f.label} className="space-y-px">
+                          <div className="text-[5px] text-neutral-500">
+                            {f.label}
+                          </div>
+                          <div className="rounded border border-neutral-200 px-0.5 py-px text-[5px] text-neutral-800">
+                            {f.value}
+                          </div>
+                        </div>
+                      ))}
+                      <div className="flex justify-end pt-1">
+                        <span className="rounded bg-blue-600 px-1 py-px text-[5px] font-semibold tracking-wide text-white uppercase">
+                          {tile.cta}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-1.5 space-y-0.5">
+                    <div className="text-[5px] text-neutral-500">
+                      Destination type
+                    </div>
+                    <div className="rounded border border-neutral-200 px-0.5 py-px text-[5px] text-neutral-500">
+                      Type to search for a connector
+                    </div>
+                    <div className="space-y-0.5 pt-0.5">
+                      {tile.destinations?.map((d) => (
+                        <div
+                          key={d.name}
+                          className="flex items-center gap-1 rounded px-0.5 py-px text-[5px] text-neutral-800 hover:bg-neutral-50"
+                        >
+                          {d.color && (
+                            <span
+                              className={`flex size-2 items-center justify-center rounded-sm ${d.color} text-[4px] font-semibold text-white`}
+                            >
+                              {d.letter}
+                            </span>
+                          )}
+                          <span className="flex-1 truncate">{d.name}</span>
+                          {d.beta && (
+                            <span className="rounded bg-amber-100 px-0.5 text-[4px] font-semibold tracking-wide text-amber-700 uppercase">
+                              Beta
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            With the Airbyte integration you can connect your Linear data into
+            any data warehouse, lakes, or databases in minutes. Create custom
+            analytics and dashboards for your company and update it on any
+            schedule through Airbyte.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Airbyte allows you to connect Linear as a source to link with a
+            destination such as Snowflake, MongoDB, BigQuery, and more. Once
+            connected, you can choose how often it syncs, which data streams to
+            pull from Linear, and easily remove, pause or set up new
+            destinations at any time.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Go to{" "}
+            <Link
+              href="/settings?section=api"
+              scroll={false}
+              className="text-blue-500 hover:underline"
+            >
+              settings
+            </Link>{" "}
+            to generate your Linear workspace API key to set up Airbyte and
+            follow the detailed steps in the{" "}
+            <a
+              href="https://docs.airbyte.com/integrations/sources/linear"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              documentation
+            </a>
+            .
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Retool — third-party low-code platform. Header + Built-by/Website rail with
+// Enable button, twin screenshot tiles on a violet card showing the
+// "Incidents" Retool app and a "Use Linear as a resource" config panel, then
+// Overview / How it works / Configure prose with bulleted examples and an
+// API/OAuth setup outline.
+// ---------------------------------------------------------------------------
+function RetoolIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#1f1f1f]">
+          <RetoolLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Retool</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Create, update, and analyze Linear issues in custom internal tools
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Retool
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://retool.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Retool website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                retool.com
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Retool integration (opens in new tab)"
+          >
+            <a
+              href="https://retool.com/integrations/linear"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Twin tiles — left: an "Incidents > INC-150" Retool app mock,
+            right: the "Use Linear as a resource in Retool" config panel.
+            Both sit on a violet panel like the production marketing
+            screenshots. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #6E59E0 0%, #5E4ED9 60%, #4A3CB7 100%)",
+            }}
+          >
+            <div className="text-center text-[8px] font-semibold text-white">
+              Create and update
+              <br />
+              Linear issues from
+              <br />
+              your Retool app
+            </div>
+            <div className="mt-2 rounded-md bg-[#0f1014] p-1.5 text-[5px] text-white/85 ring-1 ring-white/10">
+              <div className="flex items-center justify-between border-b border-white/10 pb-0.5">
+                <span className="font-semibold">Incidents › INC-150 ⛚</span>
+              </div>
+              <div className="mt-1 font-semibold text-white">
+                New incident 150—created from Retool
+              </div>
+              <div className="mt-1 space-y-0.5 text-white/80">
+                <div className="flex items-center gap-0.5">
+                  <span className="size-1 rounded-sm bg-sky-400" />
+                  <span>Google Doc</span>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  <span className="size-1 rounded-sm bg-emerald-400" />
+                  <span>PagerDuty incident created</span>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  <span className="size-1 rounded-sm bg-rose-400" />
+                  <span>New row added to incidents table in DB</span>
+                </div>
+                <div className="text-white/40">+ Sub-issues (4)</div>
+              </div>
+              <div className="mt-1.5 border-t border-white/10 pt-1">
+                <div className="font-semibold">Activity</div>
+                <div className="mt-0.5 flex items-start gap-0.5 text-white/70">
+                  <span className="size-1.5 rounded-full bg-amber-400" />
+                  <span>
+                    <span className="text-white/85">natemei</span> created the
+                    issue · less than a minute ago
+                  </span>
+                </div>
+                <div className="mt-0.5 flex items-start gap-0.5 text-white/70">
+                  <span className="size-1.5 rounded-full bg-amber-400" />
+                  <span>
+                    <span className="text-white/85">natemei</span> added label{" "}
+                    <span className="rounded bg-rose-500/30 px-0.5 text-rose-200">
+                      regression-metrics-v/x
+                    </span>{" "}
+                    · less than a minute ago
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#E8E5FB] p-3"
+          >
+            <div className="text-center text-[8px] font-semibold text-[#0b0b0f]">
+              Use Linear as a
+              <br />
+              resource in Retool
+            </div>
+            <div className="mt-2 rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow-sm ring-1 ring-black/5">
+              <div className="flex items-center justify-between border-b border-neutral-200 pb-0.5">
+                <span className="font-semibold text-neutral-900">Linear</span>
+                <span className="text-neutral-400">···</span>
+              </div>
+              <div className="mt-1 space-y-0.5">
+                <div className="text-neutral-500">* Name</div>
+                <div className="rounded border border-neutral-200 px-0.5 text-neutral-400">
+                  The name for this resource when creating queries in the Retool
+                  editor
+                </div>
+                <div className="text-neutral-400">GENERAL</div>
+                <div className="text-neutral-500">Base URL</div>
+                <div className="rounded border border-neutral-200 px-0.5 text-neutral-700">
+                  https://api.linear.app/graphql
+                </div>
+                <div className="text-neutral-400">
+                  (Use the absolute URL, e.g. https://example.com)
+                </div>
+                <div className="text-neutral-500">URL parameters</div>
+                <div className="text-blue-600 underline">+ Add new</div>
+                <div className="text-neutral-500">HEADERS</div>
+                <div className="grid grid-cols-2 gap-0.5">
+                  <div className="rounded border border-neutral-200 px-0.5 text-neutral-700">
+                    Authorization
+                  </div>
+                  <div className="rounded border border-neutral-200 px-0.5 text-neutral-700">
+                    Bearer OAUTH_TOKEN
+                  </div>
+                </div>
+                <div className="text-blue-600 underline">+ Add new</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Retool is the fast way to build custom internal tools. Stop jumping
+            between multiple SaaS apps to get your work done—build your full
+            workflow into a single app by combining other data sources and APIs
+            with Linear using Retool. For example, you can respond faster to
+            engineering incidents with a custom Retool app that adds a new row
+            in your incidents table within your database, kicks off a PagerDuty
+            incident, and creates a new Linear ticket for proper tracking.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Retool&rsquo;s integration puts the full power of{" "}
+            <a
+              href="https://developers.linear.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              Linear&rsquo;s API
+            </a>{" "}
+            at your fingertips—on your team&rsquo;s terms. Set up Linear as a
+            Retool resource connection with a single shared API key or use OAuth
+            to ensure every user inherits their Linear permissions.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            When building a Retool app, simply connect to Linear using the
+            GraphQL API. Then, customize the Retool app to accomplish any
+            workflow that needs to leverage Linear.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Examples of what you can do:
+          </p>
+          <ul className="text-muted-foreground mt-2 list-disc space-y-1.5 pl-5 text-sm leading-6">
+            <li>
+              Create Linear issues with context from other systems and details
+            </li>
+            <li>
+              Report on Linear issues over time with a Retool dashboard app
+            </li>
+            <li>
+              Update existing Linear issues alongside your customer support
+              tooling
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Follow the steps outlined in{" "}
+            <a
+              href="https://docs.retool.com/data-sources/quickstarts/api/linear"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              Retool&rsquo;s documentation
+            </a>{" "}
+            to configure a Linear resource in your Retool account.
+          </p>
+          <ul className="text-muted-foreground mt-3 list-disc space-y-1.5 pl-5 text-sm leading-6">
+            <li>
+              To use API key authentication go to{" "}
+              <span className="italic">
+                Linear &gt; Account Menu &gt; Settings &gt; API &gt; Personal
+                API Keys
+              </span>{" "}
+              and create a key for Retool.
+            </li>
+            <li>
+              To use OAuth authentication go to{" "}
+              <span className="italic">
+                Linear &gt; Account Menu &gt; Settings &gt; API &gt; Your
+                Applications
+              </span>{" "}
+              and create an OAuth2 application for Retool.
+            </li>
+          </ul>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Once the resource is created, any users with Retool permissions will
+            be able to query Linear.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Span — third-party developer-intelligence platform. Header + Built-by /
+// Website rail with Enable button, twin marketing tiles on a warm beige
+// background (left: API-key Connect dialog, right: a "where your time goes"
+// percentage breakdown), then Overview / How it works / Configure prose.
+// ---------------------------------------------------------------------------
+function SpanIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white">
+          <SpanLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Span</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            See how work translates into engineering impact
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Span
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://span.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Span website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                span.app
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Span integration (opens in new tab)"
+          >
+            <a
+              href="https://span.app/integrations/linear"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Twin marketing tiles on a warm beige background. Left: a tiny
+            "Connect" dialog showing Linear ↔ Span with an API key field.
+            Right: a percentage chart breakdown of where time really goes. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#F4EEE2] p-3"
+          >
+            <div className="text-center text-[8px] font-semibold text-[#0b0b0f]">
+              Connect Linear to Span&rsquo;s
+              <br />
+              developer intelligence platform
+            </div>
+            <div className="absolute right-3 bottom-3 left-3 rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow-sm ring-1 ring-black/5">
+              <div className="flex items-center justify-center gap-1">
+                <span className="grid size-3 place-items-center rounded-sm bg-[#5E5BFF] text-[5px] font-bold text-white">
+                  L
+                </span>
+                <span className="text-neutral-400">⇆</span>
+                <span className="grid size-3 place-items-center rounded-sm bg-[#0b0b0f] text-[5px] font-bold text-white">
+                  ∧
+                </span>
+              </div>
+              <div className="mt-1 flex items-center gap-1 rounded border border-neutral-200 bg-neutral-50 px-1 py-0.5">
+                <span className="grid size-2 place-items-center rounded-sm bg-[#5E5BFF] text-[4px] font-bold text-white">
+                  L
+                </span>
+                <span className="font-medium text-neutral-900">Linear</span>
+              </div>
+              <div className="mt-1 text-neutral-500">API Key</div>
+              <div className="mt-0.5 rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                ••••••••••••••••••••• ⓘ
+              </div>
+              <div className="mt-1 rounded bg-blue-600 py-0.5 text-center text-[5px] font-semibold tracking-wide text-white uppercase">
+                Connect
+              </div>
+            </div>
+          </div>
+
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#F4EEE2] p-3"
+          >
+            <div className="text-center text-[8px] font-semibold text-[#0b0b0f]">
+              See where your time
+              <br />
+              really goes…
+            </div>
+            <div className="mt-2 rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow-sm ring-1 ring-black/5">
+              <div className="flex items-center justify-between border-b border-neutral-200 pb-0.5">
+                <span className="font-semibold text-neutral-900">
+                  Maintenance
+                </span>
+              </div>
+              <div className="mt-1 grid grid-cols-[40px_1fr] gap-1">
+                <div className="space-y-0.5 text-neutral-500">
+                  <div className="rounded bg-neutral-100 px-0.5">
+                    Workstreams
+                  </div>
+                  <div className="rounded bg-neutral-50 px-0.5 font-medium text-neutral-900">
+                    Work Type
+                  </div>
+                  <div className="rounded bg-neutral-50 px-0.5">
+                    New features
+                  </div>
+                </div>
+                <div className="space-y-0.5">
+                  <div>
+                    <span className="text-[7px] font-bold text-neutral-900">
+                      32.3%
+                    </span>{" "}
+                    <span className="text-neutral-500">/of total work</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    {[
+                      { color: "bg-rose-700", name: "Performance", pct: "52%" },
+                      { color: "bg-rose-400", name: "Bug Fix", pct: "18%" },
+                      {
+                        color: "bg-amber-300",
+                        name: "Infrastructure",
+                        pct: "15%",
+                      },
+                    ].map((row) => (
+                      <div key={row.name} className="flex items-center gap-1">
+                        <span className={`size-1 rounded-sm ${row.color}`} />
+                        <span className="flex-1 truncate text-neutral-800">
+                          {row.name}
+                        </span>
+                        <span className="text-neutral-500">{row.pct}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            See how planned work translates into real engineering impact.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            The Span + Linear integration brings your project data into Span,
+            giving you a clear view of how planned work moves through
+            development. By connecting your Linear workspace, you can see how
+            issues, projects, and milestones translate into code activity and
+            delivery outcomes. This unified view helps teams spot bottlenecks,
+            track progress against plans, and measure real engineering impact.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The integration syncs project and issue data from Linear with
+            Span&rsquo;s developer intelligence platform. It allows you to see
+            how initiatives, projects, milestones, and issues move through your
+            development lifecycle and how they relate to engineering activity
+            and impact.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Once connected, you can:
+          </p>
+          <ul className="text-muted-foreground mt-2 list-disc space-y-1.5 pl-5 text-sm leading-6">
+            <li>
+              Track high-priority delivery. Verify that urgent or
+              customer-critical issues in Linear turn into pull requests and
+              merges within expected timeframes.
+            </li>
+            <li>
+              Compare plans to execution. Overlay Linear project milestones with
+              actual PR activity to spot delays, scope changes, or last-minute
+              delivery spikes.
+            </li>
+            <li>
+              Measure issue-to-code cycle time. See how long it takes work to
+              move from issue creation in Linear to code merged in production.
+            </li>
+            <li>
+              Quantify investment by initiative. Group Linear issues by roadmap
+              theme and see where engineering time and effort are really going.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Span admins set up the integration by adding a Linear API key in
+            Span&rsquo;s settings. Once authenticated, it verifies access to
+            your Linear organization and begins syncing five data streams:
+            initiatives, issues, projects, milestones, and users. The data is
+            made available alongside other sources such as GitHub and calendar
+            data for cross-platform analytics.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Jellyfish — third-party engineering insights platform (BUILT BY Jellyfish,
+// WEBSITE jellyfish.co, external Enable). Body card has two purple-gradient
+// tiles for the marketing visuals (PR cycle chart + Work in Flight table),
+// followed by Overview / How it works (with bullet list) / Configure prose.
+// ---------------------------------------------------------------------------
+function JellyfishIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#7C3AED]">
+          <JellyfishLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Jellyfish</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Developer productivity insights and AI impact signals in one
+            dashboard
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Jellyfish
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://jellyfish.co"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Jellyfish website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                jellyfish.co
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Jellyfish integration (opens in new tab)"
+          >
+            <a
+              href="https://jellyfish.co"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Marketing tiles — bright violet→yellow gradient with Jellyfish
+            dashboard cards floating on top. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Left tile — PR Cycle Time chart */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #d6f25d 0%, #a385f5 55%, #6c39e0 100%)",
+            }}
+          >
+            <div className="text-[7px] leading-tight font-semibold text-white">
+              Get visibility into key
+              <br />
+              engineering metrics by
+              <br />
+              combining Linear and
+              <br />
+              GitHub data
+            </div>
+            <div className="absolute right-2 bottom-2 left-2 rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow-sm ring-1 ring-black/5">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-neutral-900">
+                  PR Cycle Time (Median)
+                </span>
+                <span className="text-neutral-400">⋯</span>
+              </div>
+              <div className="mt-0.5 text-[5px] font-bold text-neutral-900">
+                0.78
+              </div>
+              <div className="relative mt-1 h-8 rounded bg-neutral-50">
+                {/* Sparkline-style line */}
+                <svg
+                  viewBox="0 0 100 32"
+                  className="absolute inset-0 h-full w-full"
+                  preserveAspectRatio="none"
+                >
+                  <polyline
+                    points="0,24 15,18 30,22 45,12 60,16 75,8 90,14 100,6"
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth="1"
+                  />
+                  <polyline
+                    points="0,28 15,26 30,24 45,22 60,20 75,18 90,16 100,14"
+                    fill="none"
+                    stroke="#f59e0b"
+                    strokeWidth="1"
+                  />
+                  <polyline
+                    points="0,20 15,22 30,18 45,20 60,14 75,16 90,10 100,8"
+                    fill="none"
+                    stroke="#ef4444"
+                    strokeWidth="1"
+                  />
+                </svg>
+              </div>
+              <div className="mt-1 flex items-center justify-between text-[4px] text-neutral-500">
+                <span>Q1 2025</span>
+                <span>Q2 2025</span>
+                <span>Q3 2025</span>
+                <span>Q4 2025</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right tile — Work in Flight project table */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #c8a8ff 0%, #8a4ff0 55%, #4f1fb8 100%)",
+            }}
+          >
+            <div className="text-[7px] leading-tight font-semibold text-white">
+              Track work in flight, identify bottlenecks, and expected
+              <br />
+              delivery dates for Projects, Milestones, and Initiatives
+            </div>
+            <div className="absolute right-2 bottom-2 left-2 rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow-sm ring-1 ring-black/5">
+              <div className="flex items-center gap-1 border-b border-neutral-200 pb-0.5">
+                <span className="font-semibold text-neutral-900">
+                  Work in Flight
+                </span>
+              </div>
+              <div className="mt-0.5 flex items-center gap-1 text-neutral-500">
+                <span className="rounded bg-neutral-100 px-0.5 font-medium text-neutral-900">
+                  In Progress
+                </span>
+                <span>Months</span>
+                <span>Quarters</span>
+                <span className="ml-auto rounded bg-neutral-100 px-0.5">
+                  Q1 2026
+                </span>
+              </div>
+              <div className="mt-1 text-neutral-500">Projects (13)</div>
+              <div className="mt-0.5 grid grid-cols-[1fr_24px_24px_24px] gap-1 border-b border-neutral-200 pb-0.5 text-[4px] text-neutral-500">
+                <span>Epic</span>
+                <span>Status</span>
+                <span>Progress</span>
+                <span>Lifetime effort</span>
+              </div>
+              {[
+                { name: "Strategic initiatives action items Eng…", pct: "20%" },
+                { name: "Aggregate sticky infrastructure", pct: "12%" },
+                { name: "Architect front-end systems", pct: "5.4%" },
+                { name: "Generate ubiquitous deliverables", pct: "6.2%" },
+              ].map((row, i) => (
+                <div
+                  key={row.name}
+                  className="mt-0.5 grid grid-cols-[1fr_24px_24px_24px] items-center gap-1 text-[4px]"
+                >
+                  <span className="truncate text-neutral-800">{row.name}</span>
+                  <span className="rounded bg-neutral-100 px-0.5 text-neutral-600">
+                    {i === 0 ? "1 wk" : i === 1 ? "2 wk" : "Done"}
+                  </span>
+                  <span className="rounded bg-emerald-100 px-0.5 text-emerald-700">
+                    {row.pct}
+                  </span>
+                  <span className="text-neutral-500">{row.pct}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Linear customers now have the ability to see their work alongside
+            key engineering productivity metrics directly in the Jellyfish
+            platform. Get a better view of how software development work is
+            allocated and whether teams are focused on priority projects, as
+            well as the ability to more easily identify bottlenecks, eliminate
+            friction and ship products faster.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The Linear-Jellyfish integration gives developers and engineering
+            leaders the tools they need to better plan and allocate work while
+            ensuring teams are aligned to key business priorities and
+            efficiently delivering products to market.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Key integration capabilities include:
+          </p>
+          <ul className="text-muted-foreground mt-2 list-disc space-y-1.5 pl-5 text-sm leading-6">
+            <li>
+              Detailed dashboards to surface trends and insights, giving team
+              leads the ability to take action and report performance to
+              executive stakeholders
+            </li>
+            <li>
+              Visibility into work allocation across teams and individuals to
+              spot bottlenecks and areas for improvement
+            </li>
+            <li>
+              Ability to visualize investment levels by project, enabling
+              leaders to understand whether teams are aligned to business
+              priorities
+            </li>
+            <li>
+              Industry-standard engineering productivity metrics like DORA, as
+              well as delivery forecasts to pinpoint bottlenecks and
+              course-correct as needed
+            </li>
+            <li>
+              AI-driven work categorization, providing even companies with
+              &ldquo;messy data&rdquo; access to automated accurate data
+              analysis and insights
+            </li>
+            <li>
+              Access to Jellyfish AI Impact, giving engineering leaders the data
+              and guidance to measure — AI progress, adapt quickly, and deliver
+              lasting business impact
+            </li>
+          </ul>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Connect your Linear workspace to Jellyfish to automatically sync
+            issue, project, and comment events{" "}
+            <a
+              href="https://jellyfish.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              here
+            </a>
+            . This integration uses webhooks to keep Jellyfish updated in real
+            time as your teams create, update, and complete work in Linear.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Coda by Packs4Coda — unofficial Coda Pack (BUILT BY Packs4Coda, WEBSITE
+// packs4coda.com, external Enable). Body card has two light tiles showing
+// the Coda action builder + Linear sync table picker, followed by Overview,
+// an italic disclaimer, How it works prose, and a Configure link to the
+// Packs4Coda doc.
+// ---------------------------------------------------------------------------
+function CodaIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#F46A54]">
+          <CodaLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">
+            Coda by Packs4Coda
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Analyze your team&apos;s performance, project lifecycles, issues and
+            more with the Linear Pack for Coda
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Packs4Coda
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://packs4coda.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Packs4Coda website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                packs4coda.com
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Coda Pack (opens in new tab)"
+          >
+            <a
+              href="https://coda.io/@leandro-zubrezki/linear-pack-start-here"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Marketing tiles — light cards on a white background showing the
+            Coda action builder (left) and the sync table picker (right). */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Left tile — Create issue action button form */}
+          <div
+            aria-hidden
+            className="relative flex aspect-[4/3] items-center justify-center rounded-lg bg-white p-3 ring-1 ring-black/5"
+          >
+            <div className="absolute top-3 right-3 left-3">
+              <div className="rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow ring-1 ring-black/10">
+                <div className="flex items-center gap-1 border-b border-neutral-200 pb-1">
+                  <span className="font-semibold text-neutral-900">
+                    Button -
+                  </span>
+                  <span className="ml-auto text-neutral-400">⊘</span>
+                </div>
+                <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                  Label
+                </div>
+                <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                  &ldquo;Submit this row to Linear&rdquo;
+                </div>
+                <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                  Action
+                </div>
+                <div className="rounded border border-neutral-200 px-1 py-0.5">
+                  <span className="text-[#F46A54]">⊞</span>{" "}
+                  <span className="text-neutral-800">Create issue</span>
+                </div>
+                <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                  Account
+                </div>
+                <div className="flex items-center gap-1 rounded border border-neutral-200 px-1 py-0.5 text-neutral-800">
+                  <span className="size-1.5 rounded-full bg-[#F46A54]" />
+                  Leandro Zubrezki
+                </div>
+                <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                  Team ID
+                </div>
+                <div className="flex items-center gap-1 rounded border border-neutral-200 px-1 py-0.5 text-neutral-800">
+                  Teams.B :: First() :: Team ID
+                </div>
+                <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                  Title
+                </div>
+                <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                  Title T
+                </div>
+                <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                  Result column (optional)
+                </div>
+                <div className="rounded border border-neutral-200 bg-neutral-50 px-1 py-0.5 text-neutral-500">
+                  Select column for results
+                </div>
+                <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                  Description (optional)
+                </div>
+                <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                  Description T
+                </div>
+              </div>
+            </div>
+            <div className="absolute right-3 bottom-2 left-3 text-center text-[7px] font-medium text-neutral-700">
+              Use actions to create issues,
+              <br />
+              projects and documents from Coda.
+            </div>
+          </div>
+
+          {/* Right tile — Coda sync table picker */}
+          <div
+            aria-hidden
+            className="relative flex aspect-[4/3] items-center justify-center rounded-lg bg-white p-3 ring-1 ring-black/5"
+          >
+            <div className="absolute right-3 bottom-2 left-3 text-center text-[7px] font-medium text-neutral-700">
+              Sync your Linear data
+              <br />
+              as tables in Coda.
+            </div>
+            <div className="absolute top-3 right-3 left-3">
+              <div className="rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow ring-1 ring-black/10">
+                <div className="flex items-center gap-1 border-b border-neutral-200 pb-0.5 text-neutral-500">
+                  <span className="font-semibold text-neutral-900">
+                    Which table do you want to sync from Linear?
+                  </span>
+                </div>
+                <div className="mt-0.5 text-[4px] leading-tight text-neutral-500">
+                  Connect to a table to add data tied to one of different
+                  topics. Learn more
+                </div>
+                <div className="mt-1 flex items-center gap-1 rounded bg-neutral-50 px-1 py-0.5">
+                  <span className="text-neutral-400">🔍</span>
+                  <span className="text-neutral-500">Search</span>
+                </div>
+                <div className="mt-0.5 flex items-center justify-between border-b border-neutral-200 pb-0.5 text-[4px] text-neutral-500 uppercase">
+                  <span>Connect to</span>
+                  <span>Views</span>
+                </div>
+                {[
+                  { name: "Projects", count: "0" },
+                  { name: "Milestones", count: "0" },
+                  { name: "Cycles", count: "0" },
+                  { name: "ProjectLinks", count: "0" },
+                  { name: "Issues", count: "0" },
+                  { name: "Users", count: "0" },
+                  { name: "Teams", count: "0" },
+                ].map((row, i) => (
+                  <div
+                    key={row.name}
+                    className={`flex items-center justify-between px-0.5 py-0.5 ${
+                      i === 4 ? "rounded bg-blue-50 text-blue-700" : ""
+                    }`}
+                  >
+                    <span className="flex items-center gap-1">
+                      <span className="size-1.5 rounded-sm bg-[#F46A54]" />
+                      {row.name}
+                    </span>
+                    <span className="text-neutral-400">{row.count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Analyze your team&apos;s performance, project lifecycles, issues and
+            more with the available sync tables, all your Linear data available
+            in Coda as tables. Create new issues in Linear from Coda, with
+            prefilled values and your own business logic. Pull all of your
+            Linear projects into a Coda doc. Then use it as part of your
+            meetings so each member is on the same page.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6 italic">
+            This is unofficial Linear integration for Coda from Packs4Coda
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The Linear Pack for Coda includes a set of tables, formulas and
+            actions to integrate Linear with Coda. You can view your issues,
+            projects, teams, milestones, cycles and more as Coda tables that are
+            kept in sync. You can then build reports, charts, and use Coda
+            formulas to create your own dashboard. Create, update and delete
+            your issues and projects. Add links and documents to projects, using
+            Coda as your research tool. Manage your inbox notifications and
+            build a personal dashboard.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Visit{" "}
+            <a
+              href="https://coda.io/@leandro-zubrezki/linear-pack-start-here"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              https://coda.io/@leandro-zubrezki/linear-pack-start-here
+            </a>{" "}
+            to get started with installing the Packs4Coda built Coda pack.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Cycle Report — third-party sprint reporting tool by Mindnow AG (BUILT BY
+// Mindnow AG, WEBSITE cycle.report, external Enable). Body card has two dark
+// marketing tiles (a Cycle Report dashboard with project progress chart, and
+// a Summary panel with two donut metrics), followed by Overview, How it works
+// (with the OAuth/webhook paragraph), and a Configure block with a Create-an-
+// account link.
+// ---------------------------------------------------------------------------
+function CycleReportIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#1a1230]">
+          <CycleReportLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Cycle Report</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Create reports of your cycles that your clients can review and sign
+            off on
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Mindnow AG
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://cycle.report"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Cycle Report website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                cycle.report
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Cycle Report (opens in new tab)"
+          >
+            <a
+              href="https://cycle.report"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Marketing tiles — dark gradient backdrop with floating Cycle
+            Report dashboards. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Left tile — sprint burnup chart with project progress */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #1a1230 0%, #2a1d4a 50%, #1a1230 100%)",
+            }}
+          >
+            <div className="text-center text-[8px] leading-tight font-semibold text-white">
+              Create reports to share sprint progress
+              <br />
+              with your clients
+            </div>
+            <div className="absolute right-2 bottom-2 left-2 rounded-md bg-[#0f0820] p-1.5 text-[5px] text-white/80 ring-1 ring-white/10">
+              <div className="flex items-center gap-1 border-b border-white/10 pb-0.5">
+                <span className="font-semibold text-white">
+                  cyclerep<span className="text-[#A78BFA]">o</span>rt
+                </span>
+                <span className="ml-auto text-white/40">⊕ Team</span>
+              </div>
+              <div className="mt-0.5 text-white/60">Sttgt / Debugging</div>
+              <div className="relative mt-1 h-10 rounded bg-[#1a1230]">
+                <svg
+                  viewBox="0 0 100 32"
+                  className="absolute inset-0 h-full w-full"
+                  preserveAspectRatio="none"
+                >
+                  <polyline
+                    points="0,28 20,24 40,18 60,14 80,10 100,6"
+                    fill="none"
+                    stroke="#A78BFA"
+                    strokeWidth="1.4"
+                  />
+                  <polyline
+                    points="0,28 100,4"
+                    fill="none"
+                    stroke="#fff"
+                    strokeWidth="0.5"
+                    strokeDasharray="2 2"
+                    opacity="0.5"
+                  />
+                  <circle cx="60" cy="14" r="1.5" fill="#A78BFA" />
+                </svg>
+                <div className="absolute top-1 right-1 flex flex-col gap-0.5 text-[3.5px] text-white/70">
+                  <span className="flex items-center gap-0.5">
+                    <span className="size-1 rounded-sm bg-[#A78BFA]" />
+                    Burnup
+                  </span>
+                  <span className="flex items-center gap-0.5">
+                    <span className="size-1 rounded-sm border border-white/40" />
+                    Ideal
+                  </span>
+                </div>
+              </div>
+              <div className="mt-1 text-white/60">Project progress</div>
+              <div className="mt-0.5 grid grid-cols-4 gap-0.5 text-[3.5px]">
+                {[
+                  { color: "bg-[#A78BFA]" },
+                  { color: "bg-emerald-400" },
+                  { color: "bg-amber-400" },
+                  { color: "bg-rose-400" },
+                ].map((c, i) => (
+                  <div key={i} className={`h-1 rounded-sm ${c.color}`} />
+                ))}
+              </div>
+              <div className="mt-1 flex items-center justify-between text-[3.5px] text-white/40">
+                <span>⊙ Setup</span>
+                <span>Admin Dashboard</span>
+                <span>⋯</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right tile — Summary panel with donut KPIs */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #1a1230 0%, #2a1d4a 50%, #1a1230 100%)",
+            }}
+          >
+            <div className="text-center text-[8px] leading-tight font-semibold text-white">
+              Offer your client full
+              <br />
+              transparency about
+              <br />
+              their project
+            </div>
+            <div className="absolute right-2 bottom-2 left-2 rounded-md bg-[#0f0820] p-1.5 text-[5px] text-white/80 ring-1 ring-white/10">
+              <div className="flex items-center gap-1 border-b border-white/10 pb-0.5">
+                <span className="font-semibold text-white">Summary</span>
+              </div>
+              <div className="mt-1 grid grid-cols-2 gap-1">
+                {[
+                  { value: "5/6", pct: "27%", label: "Days" },
+                  { value: "46/52", pct: "76%", label: "Points completed" },
+                ].map((kpi) => (
+                  <div
+                    key={kpi.label}
+                    className="flex items-center gap-1 rounded bg-[#1a1230] p-1"
+                  >
+                    <svg viewBox="0 0 32 32" className="size-6">
+                      <circle
+                        cx="16"
+                        cy="16"
+                        r="12"
+                        fill="none"
+                        stroke="#3a2a55"
+                        strokeWidth="3"
+                      />
+                      <circle
+                        cx="16"
+                        cy="16"
+                        r="12"
+                        fill="none"
+                        stroke="#A78BFA"
+                        strokeWidth="3"
+                        strokeDasharray={`${parseFloat(kpi.pct) * 0.75} 100`}
+                        strokeLinecap="round"
+                        transform="rotate(-90 16 16)"
+                      />
+                    </svg>
+                    <div>
+                      <div className="text-[5px] font-semibold text-white">
+                        {kpi.value}
+                      </div>
+                      <div className="text-[3.5px] text-white/60">
+                        {kpi.pct}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-1 text-white/60">Performance</div>
+              <div className="relative mt-0.5 h-6 rounded bg-[#1a1230]">
+                <svg
+                  viewBox="0 0 100 24"
+                  className="absolute inset-0 h-full w-full"
+                  preserveAspectRatio="none"
+                >
+                  <polyline
+                    points="0,18 20,16 40,14 60,12 80,8 100,4"
+                    fill="none"
+                    stroke="#A78BFA"
+                    strokeWidth="1.4"
+                  />
+                </svg>
+              </div>
+              <div className="mt-1 flex items-center justify-between text-[3.5px] text-white/50">
+                <span>Sprint 12</span>
+                <span>Status: ✓ On track</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Cycle Report allows you and your clients to work flexibly and stay
+            transparent in every step of the process. By fetching information
+            about your cycles from Linear into Cycle Report, you&apos;re able to
+            create reports for your clients that are easy accessible,
+            understandable and ready to sign.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Cycle Report is all about making manual processes simple and easy to
+            understand for everyone. Once connected with Linear, it synchronises
+            all relevant data, including information about teams, projects, and
+            sprints, with a database in your workspace. It eliminates the need
+            for manual reports and makes it easy for non-technical stakeholders
+            to understand agile processes.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            By collecting your clients information in the internal client
+            database the signing of reports gets fully automated. Simply send
+            them the report and let them sign it via SMS-confirmation. No need
+            to send your client manual updates, they will get notified if there
+            are changes to the agreed scope.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Cycle Report works as a web app and connects to Linear through the
+            official Linear API. Webhooks keep your data updated in real time
+            and OAuth 2.0 Authentication will guarantee a secure connection.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            <a
+              href="https://cycle.report"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              Create an account
+            </a>{" "}
+            and easily connect Cycle Report with your Linear workspace in a few
+            clicks. One tip: Via the help center, that is easily accessible on
+            the whole app in the bottom right corner of Cycle Report, you will
+            find helpful articles about the whole setup process.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Aikido Security — third-party AppSec platform (BUILT BY Aikido Security,
+// WEBSITE aikido.dev, external Enable). Body card has two indigo-gradient
+// tiles (left: an Aikido finding panel with Create task / Autofix / Snooze /
+// Ignore actions; right: an Automated Issue Creation form with severity +
+// connected team + per-day cap selectors), followed by Overview, How it
+// works (multi-paragraph), and Configure pointing at the Aikido docs.
+// ---------------------------------------------------------------------------
+function AikidoIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#5C5BFF]">
+          <AikidoLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">
+            Aikido Security
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Put your application security on autopilot
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Aikido Security
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://aikido.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Aikido Security website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                aikido.dev
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Aikido Security (opens in new tab)"
+          >
+            <a
+              href="https://aikido.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Marketing tiles — indigo-on-emerald gradient with a finding-actions
+            popover (left) and an Automated Issue Creation form (right). */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Left tile — finding actions menu */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #0a4a3f 0%, #1a2c6b 55%, #2c1a8a 100%)",
+            }}
+          >
+            <div className="text-[8px] leading-tight font-semibold text-white">
+              Put security on
+              <br />
+              autopilot with Aikido
+              <br />
+              and Linear
+            </div>
+            <div className="absolute right-2 bottom-2 w-[58%] rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow ring-1 ring-black/10">
+              <div className="border-b border-neutral-200 pb-0.5 text-[4px] font-semibold tracking-wide text-neutral-500 uppercase">
+                Actions
+              </div>
+              {[
+                {
+                  label: "Create task",
+                  icon: "✦",
+                  iconColor: "text-violet-500",
+                  active: true,
+                },
+                { label: "Autofix", icon: "⚡", iconColor: "text-amber-500" },
+                {
+                  label: "Snooze",
+                  icon: "⏱",
+                  iconColor: "text-neutral-500",
+                },
+                {
+                  label: "Ignore",
+                  icon: "⊘",
+                  iconColor: "text-neutral-400",
+                },
+              ].map((row) => (
+                <div
+                  key={row.label}
+                  className={`mt-0.5 flex items-center gap-1 rounded px-1 py-0.5 ${
+                    row.active ? "bg-violet-50" : ""
+                  }`}
+                >
+                  <span className={row.iconColor}>{row.icon}</span>
+                  <span
+                    className={
+                      row.active
+                        ? "font-medium text-neutral-900"
+                        : "text-neutral-700"
+                    }
+                  >
+                    {row.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right tile — Automated Issue Creation modal */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #1a2c6b 0%, #2c1a8a 60%, #4a1a8a 100%)",
+            }}
+          >
+            <div className="absolute top-2 left-2 rounded bg-emerald-500/20 px-1 py-0.5 text-[5px] font-semibold text-emerald-300 ring-1 ring-emerald-400/40">
+              Option 1
+            </div>
+            <div className="absolute top-6 right-2 left-2 rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow ring-1 ring-black/10">
+              <div className="text-[5px] font-semibold text-neutral-900">
+                Automated Issue Creation
+              </div>
+              <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                Severity Level
+              </div>
+              <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                Critical Issues Only ⌄
+              </div>
+              <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                Connected Linear Team
+              </div>
+              <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                Aikido Front-End ⌄
+              </div>
+              <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                Number Tasks Created per Day
+              </div>
+              <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                2 tasks per day ⌄
+              </div>
+              <div className="mt-1 flex items-center justify-end gap-1">
+                <span className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-600">
+                  Cancel
+                </span>
+                <span className="rounded bg-violet-600 px-1 py-0.5 text-white">
+                  Finish
+                </span>
+              </div>
+            </div>
+            <div className="absolute right-2 bottom-2 left-2 text-center text-[8px] leading-tight font-semibold text-white">
+              Automatically
+              <br />
+              create new issues in
+              <br />
+              Linear
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Aikido Security is an all-in-one application security platform that
+            gives you a full overview of all your security issues and shows you
+            which security issues matter.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Aikido Security helps you to secure your application by bringing
+            together nine different security scanners in one platform. With the
+            Aikido integration for Linear, you&apos;re able to easily follow up
+            on security work directly in Linear issues.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            You can either fully automate the creation of issues in Linear or
+            manually triage and select the issues in Aikido.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            You can easily follow along the progress in Linear in Aikido&apos;s
+            Feed. For example to whom the ticket is assigned, and what the
+            status is.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            To get started for free, create an Aikido Security account and
+            connect Linear with your workspace.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            More details can be found on the{" "}
+            <a
+              href="https://help.aikido.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              Aikido Security docs
+            </a>
+            .
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Cloudback — third-party Linear backup service (BUILT BY MYRTLELABS S.A.S.,
+// WEBSITE cloudback.it, external Enable). Body card has two light marketing
+// tiles (left: connect-account dashboard with provider list; right: backup
+// runs table), followed by a long Overview / How it works (multi-paragraph
+// describing data scope, storage destinations, retention/restore), and a
+// numbered Configure walkthrough.
+// ---------------------------------------------------------------------------
+function CloudbackIntegrationDetail() {
+  const providers = [
+    { name: "Connect GitHub", color: "bg-[#0b0b0f]", glyph: "GH" },
+    { name: "Connect Azure DevOps", color: "bg-[#0078D4]", glyph: "AZ" },
+    { name: "Connect Linear", color: "bg-[#5E5BFF]", glyph: "L" },
+    { name: "Connect GitLab", color: "bg-[#FC6D26]", glyph: "GL" },
+  ]
+  const backupRows = [
+    { date: "10 Apr 2026 07:26", size: "7 KB" },
+    { date: "01 Apr 2026 07:00", size: "7 KB" },
+    { date: "29 Mar 2026 07:12", size: "7 KB" },
+    { date: "30 Mar 2026 07:30", size: "7 KB" },
+    { date: "29 Mar 2026 07:08", size: "7 KB" },
+    { date: "28 Mar 2026 07:01", size: "7 KB" },
+    { date: "27 Mar 2026 19:01", size: "7 KB" },
+    { date: "27 Mar 2026 07:00", size: "7 KB" },
+    { date: "26 Mar 2026 06:44", size: "7 KB" },
+    { date: "25 Mar 2026 07:00", size: "7 KB" },
+    { date: "24 Mar 2026 06:58", size: "7 KB" },
+  ]
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white ring-1 ring-black/10">
+          <CloudbackLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Cloudback</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Automated daily backups of your Linear workspace with on-demand
+            restore
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                MYRTLELABS S.A.S.
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://cloudback.it"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Cloudback website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                cloudback.it
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Cloudback (opens in new tab)"
+          >
+            <a
+              href="https://app.cloudback.it"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Marketing tiles — light grey panels with Cloudback dashboard
+            mockups: Connect-account picker (left) and Backups table (right). */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Left tile — Connect account dashboard */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#f1f3f5] p-2 ring-1 ring-black/5"
+          >
+            <div className="flex h-full overflow-hidden rounded bg-white text-[5px] text-neutral-700 ring-1 ring-black/5">
+              {/* Sidebar */}
+              <div className="flex w-[34%] flex-col gap-0.5 border-r border-neutral-200 bg-neutral-50 p-1">
+                <div className="flex items-center gap-1 font-semibold text-neutral-900">
+                  <CloudbackLogo className="size-2" />
+                  Cloudback
+                </div>
+                <div className="mt-0.5 space-y-0.5 text-neutral-600">
+                  <div className="rounded bg-white px-0.5 text-neutral-900">
+                    ⊞ Dashboard
+                  </div>
+                  <div>◆ GitHub</div>
+                  <div>◇ Azure DevOps</div>
+                  <div>L Linear</div>
+                  <div>◇ GitLab</div>
+                  <div>+ Add Account</div>
+                  <div>⊟ Storages</div>
+                  <div>⏱ Schedules</div>
+                  <div>⊠ Subscription</div>
+                  <div>⚙ Account Settings</div>
+                  <div>🔔 Notification Settings</div>
+                </div>
+              </div>
+              {/* Content */}
+              <div className="flex flex-1 flex-col gap-1 p-1">
+                <div className="font-semibold text-neutral-900">
+                  Connect account
+                </div>
+                {providers.map((p) => (
+                  <div
+                    key={p.name}
+                    className="flex items-center gap-1 rounded border border-neutral-200 px-1 py-0.5"
+                  >
+                    <span
+                      className={`grid size-2.5 place-items-center rounded-sm ${p.color} text-[3.5px] font-bold text-white`}
+                    >
+                      {p.glyph}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="font-medium text-neutral-900">
+                        {p.name} ›
+                      </div>
+                      <div className="truncate text-[3.5px] text-neutral-500">
+                        Install the Cloudback app and grant repository
+                        permissions
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right tile — Backups runs table */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#f1f3f5] p-2 ring-1 ring-black/5"
+          >
+            <div className="flex h-full flex-col gap-0.5 overflow-hidden rounded bg-white p-1 text-[5px] text-neutral-700 ring-1 ring-black/5">
+              <div className="flex items-center gap-1 border-b border-neutral-200 pb-0.5">
+                <span className="grid size-2 place-items-center rounded-sm bg-[#5E5BFF] text-[3.5px] font-bold text-white">
+                  L
+                </span>
+                <span className="font-semibold text-neutral-900">
+                  myrtle-co
+                </span>
+                <span className="text-neutral-400">acme-co</span>
+                <span className="ml-auto flex items-center gap-1">
+                  <span className="rounded bg-emerald-500 px-1 py-0.5 text-[3.5px] font-semibold text-white">
+                    ◉ Backup now
+                  </span>
+                  <span className="rounded border border-neutral-200 px-1 py-0.5 text-[3.5px] font-medium text-neutral-700">
+                    ↺ Restore now
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-neutral-500">
+                <span className="rounded bg-neutral-100 px-0.5 font-medium text-neutral-900">
+                  Overview
+                </span>
+                <span>Backups</span>
+                <span>Restores</span>
+              </div>
+              <div className="grid grid-cols-[12px_1fr_36px_36px_36px_24px] gap-1 border-b border-neutral-200 pb-0.5 text-[3.5px] text-neutral-500">
+                <span></span>
+                <span>Status</span>
+                <span>Start time</span>
+                <span>Backup size</span>
+                <span>Deduplicated</span>
+                <span>Storage</span>
+              </div>
+              <div className="flex-1 space-y-0.5 overflow-hidden">
+                {backupRows.map((row) => (
+                  <div
+                    key={row.date}
+                    className="grid grid-cols-[12px_1fr_36px_36px_36px_24px] items-center gap-1 text-[3.5px]"
+                  >
+                    <span className="size-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-neutral-700">Succeeded</span>
+                    <span className="text-neutral-500">{row.date}</span>
+                    <span className="text-neutral-500">{row.size}</span>
+                    <span className="text-neutral-500">✓</span>
+                    <span className="text-neutral-500">⊞ ⤓</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Cloudback automatically backs up your Linear workspace on a
+            configurable schedule, capturing issues, projects, documents,
+            cycles, comments, labels, templates, initiatives, embedded files,
+            and more. Backups are stored as encrypted, password-protected
+            archives in your own cloud storage or built-in Cloudback storage.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            When you need to recover data, Cloudback can restore your workspace
+            to a different Linear workspace, making it useful for disaster
+            recovery and workspace migration.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Cloudback connects to your Linear workspace via OAuth and runs
+            scheduled backups automatically, with the option to customize the
+            schedule. Each backup captures a snapshot of your workspace data:
+            issues and sub-issues, comments, projects, project updates, project
+            milestones, cycles, documents, labels (issue and project), teams,
+            workflow states, attachments, initiatives, initiative updates,
+            custom views, templates (issue, project, and document), issue
+            relations, external users, project statuses, and
+            initiative-to-project links. Files and images hosted on Linear are
+            downloaded with authentication and stored directly in the archive.
+            The resulting backup is a structured set of JSON files organized by
+            entity type.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            You choose where backups are stored: your own AWS S3, Google Cloud
+            Storage, Azure Blob Storage, Alibaba Cloud, Wasabi, OneDrive
+            (Business or Personal), OpenStack Swift containers, or built-in
+            Cloudback regional storages. Backup schedules are fully configurable
+            with presets and support for custom cron expressions, and you can
+            trigger a manual backup at any time. Retention policies control how
+            long backups are kept, and deduplication reduces storage costs when
+            workspace data has not changed between runs. Archives can be
+            password-protected and encrypted. Cloudback also provides an audit
+            log for tracking all backup and restore activity, a Terraform
+            provider for infrastructure-as-code workflows, and an official Vanta
+            integration for compliance reporting.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Restoring from a backup recreates all entities in a target Linear
+            workspace that must be empty. Cloudback handles the complexity of
+            rebuilding your workspace — issues, projects, documents, and all
+            other data types are restored with their relationships and links
+            intact. Embedded files are re-uploaded to the destination workspace.
+            Backup status notifications can be delivered via Slack, Microsoft
+            Teams, or Discord. Cloudback also has official integrations with
+            GitHub, Azure DevOps, and GitLab, so teams can manage backups for
+            all their development platforms in one place.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <ol className="text-muted-foreground mt-2 list-decimal space-y-1.5 pl-5 text-sm leading-6">
+            <li>
+              Sign in or create an account at{" "}
+              <a
+                href="https://app.cloudback.it"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:underline"
+              >
+                https://app.cloudback.it
+              </a>
+              . An active Cloudback subscription is required (a free trial is
+              available).
+            </li>
+            <li>
+              In the dashboard sidebar, click{" "}
+              <code className="bg-muted rounded px-1 py-0.5 font-mono text-xs">
+                Add Account
+              </code>{" "}
+              and select{" "}
+              <code className="bg-muted rounded px-1 py-0.5 font-mono text-xs">
+                Linear
+              </code>{" "}
+              as the platform.
+            </li>
+            <li>
+              You will be redirected to Linear for OAuth authorization. You must
+              have admin or owner access to the workspace you want to back up.
+            </li>
+            <li>
+              After authorization, your workspace appears in the dashboard. Open
+              the workspace details page to configure your storage destination,
+              backup schedule, and retention policy.
+            </li>
+            <li>
+              Backups run automatically on your configured schedule. You can
+              also trigger a backup manually at any time from the workspace
+              details page.
+            </li>
+            <li>
+              To restore data, click{" "}
+              <code className="bg-muted rounded px-1 py-0.5 font-mono text-xs">
+                Restore
+              </code>{" "}
+              on any backup. A separate OAuth authorization with write
+              permissions is required, and the target workspace must be empty.
+            </li>
+          </ol>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Drata — third-party security/risk/compliance automation platform (BUILT BY
+// Drata, WEBSITE try.drata.com, external Enable). Body card has a single
+// full-width blue marketing tile showing the Drata Monitoring dashboard with
+// a Test details slide-out, followed by Overview / How it works / a numbered
+// Configure walkthrough plus a label-naming Note.
+// ---------------------------------------------------------------------------
+function DrataIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#0b1530]">
+          <DrataLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Drata</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Simplify risk and managing frameworks like SOC 2, ISO 27001, PCI and
+            more
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Drata
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://try.drata.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Drata website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                try.drata.com
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Drata (opens in new tab)"
+          >
+            <a
+              href="https://try.drata.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Single full-width marketing tile — Drata Monitoring dashboard with
+            Test details slide-out. */}
+        <div
+          aria-hidden
+          className="relative aspect-[16/9] overflow-hidden rounded-lg p-3"
+          style={{
+            background:
+              "linear-gradient(135deg, #1e3a8a 0%, #2962e5 60%, #3b82f6 100%)",
+          }}
+        >
+          <div className="absolute inset-3 grid grid-cols-[110px_1fr_180px] gap-2 overflow-hidden rounded-md bg-[#1a2c6b] p-2 text-[6px] text-white/80 ring-1 ring-white/10">
+            {/* Sidebar */}
+            <div className="flex flex-col gap-1 border-r border-white/10 pr-1.5">
+              <div className="flex items-center gap-1 text-[7px] font-bold tracking-wider text-white">
+                DRATA
+                <span className="ml-auto text-white/40">«</span>
+              </div>
+              <div className="flex items-center gap-1 rounded bg-white/10 px-1 py-0.5">
+                <span className="size-2 rounded-sm bg-white/30" />
+                <span className="font-medium text-white">Drata Ventures</span>
+                <span className="ml-auto">›</span>
+              </div>
+              <div className="text-[5px] tracking-wider text-white/50 uppercase">
+                Compliance
+              </div>
+              <div className="space-y-0.5 text-white/70">
+                <div className="flex items-center gap-1">
+                  <span>⊞</span>Controls
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>◇</span>Frameworks
+                </div>
+                <div className="flex items-center gap-1 rounded bg-white/15 px-1 py-0.5 text-white">
+                  <span>📡</span>Monitoring
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>📅</span>Event Tracking
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>📁</span>Evidence Library
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>🔍</span>Audit Hub
+                </div>
+              </div>
+              <div className="mt-1 text-[5px] tracking-wider text-white/50 uppercase">
+                Trust
+              </div>
+              <div className="flex items-center gap-1 text-white/70">
+                <span>⊠</span>Trust Center
+              </div>
+              <div className="mt-1 text-[5px] tracking-wider text-white/50 uppercase">
+                Risk
+              </div>
+              <div className="space-y-0.5 text-white/70">
+                <div className="flex items-center gap-1">
+                  <span>⊞</span>Risk Assessment
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>⊠</span>Risk Management
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>👥</span>Vendors
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>≡</span>Assets
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>✦</span>Connections
+                </div>
+              </div>
+            </div>
+
+            {/* Main content */}
+            <div className="flex flex-col gap-1.5 overflow-hidden">
+              <div className="flex items-center gap-1 text-[7px] font-semibold text-white">
+                Monitoring
+                <span className="ml-auto text-white/40">«</span>
+              </div>
+              <div className="flex items-center gap-1 border-b border-white/10 pb-0.5 text-white/60">
+                <span className="rounded bg-white/15 px-1 py-0.5 text-white">
+                  Production
+                </span>
+                <span className="rounded bg-white/5 px-1 py-0.5">
+                  Code{" "}
+                  <span className="rounded bg-emerald-400/30 px-0.5 text-[4px] text-emerald-200">
+                    Beta
+                  </span>
+                </span>
+                <span className="rounded bg-white/5 px-1 py-0.5">
+                  Pipeline{" "}
+                  <span className="rounded bg-emerald-400/30 px-0.5 text-[4px] text-emerald-200">
+                    Beta
+                  </span>
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <div className="flex items-center gap-1.5 rounded bg-white/5 p-1">
+                  <span className="text-[10px] font-bold text-white">39%</span>
+                  <span className="text-[5px] text-white/60">
+                    Of Tests Passed
+                  </span>
+                  <span className="ml-auto rounded bg-emerald-400/30 px-1 text-[5px] text-emerald-200">
+                    %
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 rounded bg-white/5 p-1">
+                  <span className="text-[10px] font-bold text-white">69</span>
+                  <span className="text-[5px] text-white/60">Failed</span>
+                  <span className="ml-auto rounded bg-rose-400/30 px-1 text-[5px] text-rose-200">
+                    !
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-white/60">
+                <span className="rounded bg-white/15 px-1 text-white">
+                  All Tests
+                </span>
+                <span>Published</span>
+                <span>Drafts</span>
+                <span className="ml-auto rounded bg-white/5 px-1">🔍 Sea…</span>
+              </div>
+              <div className="flex items-center gap-1 border-b border-white/10 pb-0.5 text-white/60">
+                <span className="font-medium text-white">Test Result</span>
+                <span className="ml-auto truncate">Security Issues are P…</span>
+              </div>
+              <div className="space-y-0.5 text-white/70">
+                <div className="flex items-center gap-1">
+                  <span className="text-rose-400">⊘</span>Failed
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-emerald-400">✓</span>Passed
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-amber-400">⚠</span>Error
+                </div>
+              </div>
+              <div className="font-medium text-white">Category</div>
+              <div className="space-y-0.5 text-white/70">
+                <div>📋 Policy</div>
+                <div>👤 In Drata</div>
+                <div>💻 Device</div>
+              </div>
+            </div>
+
+            {/* Right-side Test details panel */}
+            <div className="flex flex-col gap-1 overflow-hidden rounded bg-white p-1.5 text-[5px] text-neutral-700 shadow-lg">
+              <div className="flex items-center gap-1 border-b border-neutral-200 pb-0.5">
+                <span className="font-semibold text-neutral-900">
+                  Test details
+                </span>
+                <span className="ml-auto text-neutral-400">⤢</span>
+              </div>
+              <div className="text-[4px] text-neutral-500 uppercase">
+                Test name
+              </div>
+              <div className="text-neutral-800">
+                Security Issues are Prioritized
+              </div>
+              <div className="text-[4px] text-neutral-500 uppercase">
+                Test description
+              </div>
+              <div className="text-neutral-700">
+                Drata inspects Drata Ventures&apos;s task tracking system to
+                determine if security issues…{" "}
+                <span className="text-blue-600 underline">See more</span>
+              </div>
+              <div className="text-[4px] text-neutral-500 uppercase">
+                Test status
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="flex-1 rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                  Enabled ⌄
+                </span>
+                <span className="rounded bg-blue-600 px-1 py-0.5 text-white">
+                  ⚡ Test Now
+                </span>
+              </div>
+              <div className="mt-0.5 border-t border-neutral-200 pt-0.5 text-[4px] font-semibold text-neutral-500 uppercase">
+                Last test result
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="rounded bg-emerald-100 px-1 py-0.5 text-emerald-700">
+                  ✓ Passed
+                </span>
+                <span className="text-neutral-500">
+                  Last Tested: 5 minutes ago
+                </span>
+              </div>
+              <div className="text-neutral-700">
+                Inspected Drata Ventures&apos;s task tracking system and
+                confirmed that security issues are being tagged and prioritized
+                accordingly.
+              </div>
+              <div className="rounded border border-blue-300 px-1 py-0.5 text-center text-blue-600">
+                Learn More
+              </div>
+              <div className="border-b-2 border-neutral-900 pb-0.5 font-medium text-neutral-900">
+                Included
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="size-1.5 rounded-sm border border-neutral-300" />
+                <span className="text-neutral-500">Select All</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="size-1.5 rounded-sm border border-neutral-300" />
+                <span className="size-1.5 rounded-full bg-[#5E5BFF]" />
+                <span className="text-neutral-700">Linear</span>
+                <span className="ml-auto text-neutral-400">⊕</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Integrate Linear with Drata&rsquo;s security, risk, and compliance
+            automation platform to ensure you are getting and staying compliant
+            while tackling your day-to-day work.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The integration inspects your company task tracking system to
+            determine if security issues are being tagged and prioritized
+            accordingly. This ensures your company tracks, assigns, and
+            prioritizes security deficiencies according to their severity.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <ol className="text-muted-foreground mt-2 list-decimal space-y-1 pl-5 text-sm leading-6">
+            <li>
+              Select <em>Connections</em> on the lower left corner of Drata
+            </li>
+            <li>
+              In the search bar type <em>Linear</em>
+            </li>
+            <li>
+              Press <em>Connect</em>
+            </li>
+            <li>The slide-out panel will provide step-by-step instructions</li>
+          </ol>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Note: If you do not use &ldquo;Security&rdquo;as the label within
+            Linear to categorize tickets as security issues, be sure to update
+            the &apos;Security Label&apos; within the panel.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Fencer — third-party security findings → Linear bridge (BUILT BY Fencer,
+// WEBSITE fencer.dev, external Enable). Body card has two emerald→cyan
+// gradient marketing tiles (Create issue form + Link existing issue picker),
+// followed by Overview, a long multi-paragraph How it works covering scope,
+// bidirectional sync, severity mapping, and a multi-paragraph Configure with
+// OAuth + disconnect details.
+// ---------------------------------------------------------------------------
+function FencerIntegrationDetail() {
+  const linkRows = [
+    { id: "ENG-224", title: "Audit improvements from te…" },
+    { id: "ENG-98", title: "Update internal infrastructure…" },
+    { id: "ENG-24", title: "Endpoint security updates for…" },
+  ]
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#15c651]">
+          <FencerLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Fencer</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Create and link issues directly from Fencer
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Fencer
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://fencer.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Fencer website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                fencer.dev
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Fencer (opens in new tab)"
+          >
+            <a
+              href="https://fencer.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Marketing tiles — emerald-to-cyan gradient with light Linear Issue
+            cards floating in the centre. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Left tile — Create Linear Issue form */}
+          <div
+            aria-hidden
+            className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #d6ff4f 0%, #4be36a 50%, #4ed1ff 100%)",
+            }}
+          >
+            <div className="w-[78%] rounded-md bg-white p-2 text-[5px] text-neutral-700 shadow ring-1 ring-black/10">
+              <div className="font-semibold text-neutral-900">Linear Issue</div>
+              <div className="mt-0.5 flex items-center gap-1 border-b border-neutral-200 pb-0.5">
+                <span className="border-b border-neutral-900 pb-0.5 font-medium text-neutral-900">
+                  Create
+                </span>
+                <span className="text-neutral-400">|</span>
+                <span className="text-neutral-500">Link</span>
+              </div>
+              <div className="mt-0.5 grid grid-cols-[36px_1fr] gap-x-1 gap-y-0.5">
+                <span className="text-neutral-500">Title</span>
+                <span className="rounded border border-neutral-200 px-1 py-0.5">
+                  Safari 26.1 is out of date
+                </span>
+                <span className="text-neutral-500">Description</span>
+                <div className="rounded border border-neutral-200 px-1 py-0.5 leading-tight text-neutral-600">
+                  **Fencer Vulnerability**: [VULN-19376]
+                  (https://app.fencer.dev/fencer/vulnerabilities/19376)
+                  <br />
+                  **Description:**
+                  <br />
+                  Safari is out of date.
+                  <br />0 vulnerabilities were found due to this outdated
+                  version.
+                  <br />
+                  Severity breakdown: 1 critical, 2 high, 4 medium, 7 low
+                  <br />
+                  **Severity**: Critical
+                </div>
+                <span className="text-neutral-500">Team</span>
+                <span className="rounded border border-neutral-200 px-1 py-0.5">
+                  Engineering ▾
+                </span>
+                <span className="text-neutral-500">Assignee</span>
+                <span className="rounded border border-neutral-200 px-1 py-0.5">
+                  None ▾
+                </span>
+                <span className="text-neutral-500">Label</span>
+                <span className="rounded border border-neutral-200 px-1 py-0.5">
+                  Security ▾
+                </span>
+                <span className="text-neutral-500">Project</span>
+                <span className="rounded border border-neutral-200 px-1 py-0.5">
+                  Security Posture ▾
+                </span>
+                <span className="text-neutral-500">Status</span>
+                <span className="rounded border border-neutral-200 px-1 py-0.5">
+                  To Do ▾
+                </span>
+                <span className="text-neutral-500">Priority</span>
+                <span className="rounded border border-neutral-200 px-1 py-0.5">
+                  Urgent ▾
+                </span>
+              </div>
+              <div className="mt-1 flex items-center justify-end gap-1">
+                <span className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-600">
+                  Cancel
+                </span>
+                <span className="rounded bg-emerald-500 px-1 py-0.5 font-medium text-white">
+                  Create Issue
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right tile — Link existing Linear issue */}
+          <div
+            aria-hidden
+            className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #d6ff4f 0%, #4be36a 50%, #4ed1ff 100%)",
+            }}
+          >
+            <div className="w-[72%] rounded-md bg-white p-2 text-[5px] text-neutral-700 shadow ring-1 ring-black/10">
+              <div className="font-semibold text-neutral-900">Linear Issue</div>
+              <div className="mt-0.5 flex items-center gap-1 border-b border-neutral-200 pb-0.5">
+                <span className="text-neutral-500">Create</span>
+                <span className="text-neutral-400">|</span>
+                <span className="border-b border-neutral-900 pb-0.5 font-medium text-neutral-900">
+                  Link
+                </span>
+              </div>
+              <div className="mt-1 text-neutral-500">Linear Issue</div>
+              <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                Select a Linear issue ▾
+              </div>
+              <div className="mt-1 flex items-center gap-1 rounded border border-neutral-200 bg-neutral-50 px-1 py-0.5">
+                <span className="text-neutral-400">🔍</span>
+                <span className="text-neutral-500">Welcome to Linear</span>
+              </div>
+              <div className="mt-0.5 space-y-0.5">
+                {linkRows.map((row) => (
+                  <div
+                    key={row.id}
+                    className="flex items-center gap-1 rounded px-1 py-0.5 hover:bg-neutral-50"
+                  >
+                    <span className="font-mono text-neutral-500">
+                      {row.id}:
+                    </span>
+                    <span className="truncate text-neutral-800">
+                      {row.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-neutral-500">⊘ Clear search</span>
+                <span className="flex items-center gap-1">
+                  <span className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-600">
+                    Cancel
+                  </span>
+                  <span className="rounded bg-emerald-500 px-1 py-0.5 font-medium text-white">
+                    Link Issue
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Fencer&apos;s Linear integration enables security teams to create
+            and track Linear issues directly from security findings, including
+            vulnerabilities, detections, and exposed secrets. When issues are
+            resolved or canceled in Linear, linked findings are automatically
+            updated in Fencer, keeping security workflows in sync without manual
+            status tracking.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Fencer integrates with Linear to streamline security remediation
+            workflows. Security engineers can create Linear issues directly from
+            vulnerabilities discovered in code scans, cloud infrastructure
+            assessments, and SIEM detections. When creating an issue, Fencer
+            automatically populates the description with relevant context
+            including severity, affected assets, remediation guidance, and links
+            to industry standards like CWE, OWASP, and CVE references. Teams can
+            also link existing Linear issues to findings or perform bulk
+            operations to create multiple issues at once.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            The integration maintains bidirectional synchronization through
+            webhooks. When a linked Linear issue transitions to a
+            &ldquo;Done&rdquo; state, Fencer automatically marks the associated
+            vulnerability as ready for verification or the detection as a
+            resolved true positive. Similarly, when an issue is canceled, the
+            finding is marked as ignored or a false positive. This ensures
+            security status stays current without requiring manual updates in
+            both systems.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Issue creation supports full customization including team
+            assignment, labels, projects, workflow states, and priority levels.
+            Fencer automatically maps security severity (Critical, High, Medium,
+            Low) to Linear&apos;s priority system. Each created issue includes
+            an attachment linking back to the original finding in Fencer, making
+            it easy for developers to access full vulnerability details and
+            remediation steps.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            To connect Fencer to Linear, navigate to your Fencer&rsquo;s
+            integration settings and select Linear. You must be an organization
+            admin in Fencer and have permission to install OAuth applications in
+            your Linear workspace.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Click &ldquo;Connect to Linear&rdquo; to begin the OAuth
+            authorization flow. You will be redirected to Linear where you can
+            review the requested permissions (read and write access to create
+            issues, manage labels, and assign team members) and select which
+            workspace to connect. After authorizing, you will be returned to
+            Fencer where the connection is automatically configured.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Once connected, you can create Linear issues from any vulnerability,
+            detection, or secret detail page, or use bulk actions to create
+            issues for multiple findings at once. To disconnect, return to the
+            integration settings page and click &ldquo;Disconnect.&rdquo;
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Kawach AI — third-party GRC compliance bot by Kreeti Technologies (BUILT
+// BY Kreeti Technologies, WEBSITE kawach.ai, external Enable). Body card has
+// two coloured marketing tiles (cyan + magenta) showcasing the dark Linear
+// "Workflow areas" config + the Access Control checkbox grid, followed by
+// Overview / multi-paragraph How it works / Configure with link to the
+// Kawach docs.
+// ---------------------------------------------------------------------------
+function KawachIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#1f1f23]">
+          <KawachLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Kawach AI</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Keep your workspace compliant with org policies using Kawach.AI
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Kreeti Technologies
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://kawach.ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Kawach AI website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                kawach.ai
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Kawach AI (opens in new tab)"
+          >
+            <a
+              href="https://kawach.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Marketing tiles — flat cyan + magenta panels with a dark Linear
+            settings dialog floating in the centre. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Left tile — Workflow areas dialog on cyan */}
+          <div
+            aria-hidden
+            className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg bg-[#3ec7e7] p-3"
+          >
+            <div className="absolute top-3 left-3 max-w-[60%] text-[8px] leading-tight font-semibold text-white">
+              Integrate and automate
+              <br />
+              evidence collection for
+              <br />
+              Compliance audits.
+            </div>
+            <div className="absolute right-3 bottom-3 w-[58%] rounded-md bg-[#1a1a1f] p-1.5 text-[5px] text-white/80 ring-1 ring-white/10">
+              <div className="flex items-center gap-1 border-b border-white/10 pb-0.5">
+                <span className="font-semibold text-white">Linear</span>
+                <span className="rounded bg-emerald-500/30 px-1 text-emerald-200">
+                  Connected
+                </span>
+              </div>
+              <div className="mt-1 text-[4px] tracking-wider text-white/40 uppercase">
+                Details
+              </div>
+              <div className="grid grid-cols-[36px_1fr] gap-x-1 gap-y-0.5 text-white/70">
+                <span>Workspace</span>
+                <span className="truncate text-white">
+                  76571dd1-457f-4c19-a76d-9bf3f87236ed Linear
+                </span>
+                <span>Members</span>
+                <span className="text-white">
+                  https://api.linear.app/membe…
+                </span>
+                <span>Frequency</span>
+                <span className="text-white">Quarterly: high ▾</span>
+                <span>Last Sync</span>
+                <span className="text-white">Jan 14, 2026</span>
+              </div>
+              <div className="mt-1 flex items-center justify-end">
+                <span className="rounded bg-violet-500 px-1 py-0.5 text-white">
+                  ✕ Disconnect
+                </span>
+              </div>
+              <div className="mt-1 font-medium text-white">Workflow Areas</div>
+              <div className="mt-0.5 grid grid-cols-[1fr_auto] items-center gap-1">
+                <span>Access Control</span>
+                <span className="rounded bg-emerald-500/40 px-1 text-emerald-200">
+                  Connected
+                </span>
+              </div>
+              <div className="mt-1 font-medium text-white">
+                Security Categorization
+              </div>
+              <div className="mt-0.5 space-y-0.5 text-white/60">
+                <div className="flex items-center justify-between">
+                  <span>Confidentiality</span>
+                  <span>Not defined</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Integrity</span>
+                  <span>Not defined</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Availability</span>
+                  <span>Not defined</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right tile — Access Control grid on magenta */}
+          <div
+            aria-hidden
+            className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg bg-[#e91d62] p-3"
+          >
+            <div className="absolute top-3 right-3 w-[40%] text-[8px] leading-tight font-semibold text-white">
+              Ensure compliance with
+              <br />
+              organization&apos;s Access
+              <br />
+              Control policies
+            </div>
+            <div className="absolute bottom-3 left-3 w-[58%] rounded-md bg-[#1a1a1f] p-1.5 text-[5px] text-white/80 ring-1 ring-white/10">
+              <div className="flex items-center gap-1 border-b border-white/10 pb-0.5">
+                <span className="font-semibold text-white">Access Control</span>
+                <span className="ml-auto text-white/40">⊕ ✕</span>
+              </div>
+              <div className="mt-1 text-[3.5px] text-white/50">
+                Configure user-level access categorisation across your Linear
+                workspace and ensure access is in line with org policies.
+              </div>
+              <div className="mt-0.5 grid grid-cols-[1fr_repeat(4,16px)] gap-x-1 border-b border-white/10 pb-0.5 text-[3.5px] text-white/40">
+                <span>User</span>
+                <span>Member</span>
+                <span>Read-only</span>
+                <span>Workflow</span>
+                <span>Review</span>
+              </div>
+              <div className="mt-0.5 space-y-0.5 text-[3.5px]">
+                {[
+                  ["Iris", true, false, true, false],
+                  ["Aria", true, false, true, true],
+                  ["Marcus", true, true, false, false],
+                  ["Joel", true, false, true, true],
+                ].map((row) => (
+                  <div
+                    key={row[0] as string}
+                    className="grid grid-cols-[1fr_repeat(4,16px)] items-center gap-x-1"
+                  >
+                    <span className="text-white">{row[0]}</span>
+                    {row.slice(1).map((on, i) => (
+                      <span
+                        key={i}
+                        className={`grid size-2 place-items-center rounded-sm ${
+                          on
+                            ? "bg-emerald-500 text-[3.5px] font-bold text-white"
+                            : "bg-white/10"
+                        }`}
+                      >
+                        {on ? "✓" : ""}
+                      </span>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-1 flex items-center justify-between text-[3.5px] text-white/60">
+                <span>4 of 4 reviewed</span>
+                <span className="rounded bg-violet-500 px-1 text-white">
+                  Run review
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The Kawach.AI integration continuously monitors the Linear workspace
+            to ensure that only entitled users have access to the workspace as
+            per the organization&apos;s access policies.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Kawach.AI is a GRC platform that continuously monitors the
+            compliance with various controls and policies of the organization
+            and flags any non-compliance. This can then later be also presented
+            as an evidence during reviews and audits.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            The integration of Kawach with Linear currently monitors the access
+            of organizational users to Linear workspace, and ensures that only
+            entitled users have access. If any user is no longer associated with
+            the organization or his role has changed such that it warrants
+            deactivation of the Linear account, it is flagged to the
+            organization admin.
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            This compliance record is logged and can be periodically reviewed
+            and audited.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The user will need to be a Kawach admin to be able to integrate
+            their Linear workspace with Kawach. More details can be found{" "}
+            <a
+              href="https://kawach.ai/docs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              here
+            </a>
+            .
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Orca Security — third-party CNAPP/AppSec platform (BUILT BY Orca Security,
+// WEBSITE orca.security, external Enable). Body card has two dark blue light-
+// streak marketing tiles (alert status mapping table + alert template field
+// mapping), followed by Overview, a long multi-paragraph How it works with
+// inline numbered admin actions, and a numbered Configure with docs link.
+// ---------------------------------------------------------------------------
+function OrcaSecurityIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white ring-1 ring-black/10">
+          <OrcaSecurityLogo className="size-10" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">
+            Orca Security
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Streamline security fixes by sharing relevant context with the right
+            people
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Orca Security
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://orca.security"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Orca Security website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                orca.security
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Orca Security (opens in new tab)"
+          >
+            <a
+              href="https://orca.security"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Marketing tiles — dark blue gradient with diagonal light streaks
+            and a light Orca status-mapping panel floating to the right. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Left tile — Orca alert status update / Linear-issue mapping */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #061a4a 0%, #0a3a8a 50%, #1455c8 100%)",
+            }}
+          >
+            {/* Diagonal light streaks */}
+            <span className="pointer-events-none absolute -top-8 -left-4 h-40 w-2 rotate-12 bg-white/20 blur-sm" />
+            <span className="pointer-events-none absolute top-2 left-10 h-44 w-2 rotate-12 bg-white/15 blur-sm" />
+            <span className="pointer-events-none absolute top-0 left-24 h-48 w-2 rotate-12 bg-white/10 blur-sm" />
+
+            <div className="absolute top-3 left-3 w-[42%] text-[7px] leading-tight font-semibold text-white">
+              Maintain consistency
+              <br />
+              across systems with this
+              <br />
+              bi-directional integration
+            </div>
+            <div className="absolute right-3 bottom-3 w-[55%] rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow ring-1 ring-black/10">
+              <div className="font-semibold text-neutral-900">
+                Orca alert status update
+              </div>
+              <div className="mt-0.5 text-[4px] text-neutral-500">
+                Select the Linear issue status to match the Orca alert status
+                change.
+              </div>
+              <div className="mt-1 font-medium text-neutral-900">
+                Orca alert to Linear issue
+              </div>
+              <div className="mt-0.5 grid grid-cols-[44px_18px_1fr] items-center gap-x-1 gap-y-0.5 text-[4px]">
+                {[
+                  ["Open", "→", "Todo"],
+                  ["Closed", "→", "Cancelled"],
+                  ["Snoozed", "→", "custom backlog st…"],
+                  ["Dismissed", "→", "custom backlog st…"],
+                  ["In Progress", "→", "In Progress"],
+                ].map((row) => (
+                  <React.Fragment key={row[0]}>
+                    <span className="text-neutral-700">{row[0]}</span>
+                    <span className="text-neutral-400">{row[1]}</span>
+                    <span className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                      {row[2]} ▾
+                    </span>
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="mt-1 font-medium text-neutral-900">
+                Linear issue status update
+              </div>
+              <div className="mt-0.5 text-[4px] text-neutral-500">
+                Select the Orca alert status to match the Linear issue status
+                change.
+              </div>
+              <div className="mt-0.5 font-medium text-neutral-900">
+                Linear issue to Orca alert
+              </div>
+              <div className="mt-0.5 grid grid-cols-[44px_18px_1fr] items-center gap-x-1 gap-y-0.5 text-[4px]">
+                {[
+                  ["In Progress", "→", "In Progress"],
+                  ["Backlog", "→", "Open"],
+                  ["Done", "→", "Closed"],
+                  ["custom backlog s…", "→", "Snoozed"],
+                  ["Todo", "→", "Open"],
+                  ["Cancelled", "→", "Closed"],
+                ].map((row) => (
+                  <React.Fragment key={`b-${row[0]}`}>
+                    <span className="truncate text-neutral-700">{row[0]}</span>
+                    <span className="text-neutral-400">{row[1]}</span>
+                    <span className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                      {row[2]} ▾
+                    </span>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right tile — Linear issue field template mapping */}
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #061a4a 0%, #0a3a8a 50%, #1455c8 100%)",
+            }}
+          >
+            <span className="pointer-events-none absolute -top-8 -left-4 h-40 w-2 rotate-12 bg-white/20 blur-sm" />
+            <span className="pointer-events-none absolute top-2 left-10 h-44 w-2 rotate-12 bg-white/15 blur-sm" />
+            <span className="pointer-events-none absolute top-0 left-24 h-48 w-2 rotate-12 bg-white/10 blur-sm" />
+
+            <div className="absolute top-3 left-3 w-[40%] text-[7px] leading-tight font-semibold text-white">
+              Create templates to pass
+              <br />
+              Orca alert details into
+              <br />
+              Linear issue fields
+            </div>
+            <div className="absolute right-3 bottom-3 w-[58%] rounded-md bg-white p-1.5 text-[5px] text-neutral-700 shadow ring-1 ring-black/10">
+              <div className="grid grid-cols-2 gap-1 border-b border-neutral-200 pb-0.5 text-[4px] font-semibold tracking-wide text-neutral-500 uppercase">
+                <span>Orca fields</span>
+                <span>Linear fields</span>
+              </div>
+              <div className="mt-0.5 grid grid-cols-2 gap-x-2 gap-y-0.5 text-[4px]">
+                {[
+                  ["Asset Name", "Title"],
+                  ["Asset Vendor ID", ""],
+                  ["Cloud Vendor", ""],
+                  ["Container Name", ""],
+                  ["Container ID", ""],
+                  ["Cluster Name", ""],
+                  ["Cluster Type", ""],
+                  ["Image Name", ""],
+                  ["Asset State", "Status"],
+                  ["Score", "Priority"],
+                  ["Description", "Description"],
+                  ["Recommendation", ""],
+                  ["Compliance", ""],
+                  ["Categories", "Labels"],
+                ].map((row, i) => (
+                  <React.Fragment key={`f-${i}`}>
+                    <span className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                      {row[0]}
+                    </span>
+                    {row[1] ? (
+                      <span className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+                        {row[1]}
+                      </span>
+                    ) : (
+                      <span className="rounded border border-dashed border-neutral-200 px-1 py-0.5 text-neutral-400">
+                        —
+                      </span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The bi-directional integration between Linear and Orca enables
+            stronger collaboration between security and cross-functional product
+            teams to fix risky cloud security and compliance gaps.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Command your cloud with Orca Security to identify, prioritize, and
+            remediate risks. Orca unifies security across your organization by
+            combining critical pre-deployment capabilities (AppSec) and runtime
+            security (CNAPP).
+          </p>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            With Linear as your primary operating tool to streamline product
+            development, Orca Security delivers relevant details about alerts to
+            help teams prioritize security fixes in the same place they manage
+            their workstream. Within the Orca Platform, admins can:
+          </p>
+          <ol className="text-muted-foreground mt-2 list-decimal space-y-1 pl-5 text-sm leading-6">
+            <li>
+              Set up templates to organize the data they want to share in Linear
+              issues,
+            </li>
+            <li>
+              Set up automation to create Linear issues for a specific group of
+              alerts,
+            </li>
+            <li>
+              Allow end-users to manually create Linear issues from the Orca
+              Platform UI using the templates from the first step.
+            </li>
+          </ol>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            The bi-directional sync ensures Orca alerts are linked with Linear
+            issues so that statuses are updated automatically when changes are
+            made from either platform. This reduces the manual overhead of
+            validating the current step of remediation and closing the loop when
+            Orca alerts are fully remediated, while maintaining the history as
+            your environment changes.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            To set up this integration, two things are required:
+          </p>
+          <ol className="text-muted-foreground mt-2 list-decimal space-y-1 pl-5 text-sm leading-6">
+            <li>Authorize Orca&rsquo;s access to Linear</li>
+            <li>
+              Create a template in the Orca Platform to map to the Linear
+              project, fields, and more.
+            </li>
+          </ol>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            More details can be found in the{" "}
+            <a
+              href="https://docs.orca.security"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline"
+            >
+              docs
+            </a>{" "}
+            portal in your Orca Security account.
+          </p>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// Mini Airbyte mark used inside the Airbyte hero mockups (small enough that
+// the full LoomLogo-style sweep would render as soup at this size).
+function AirbyteLogoMini() {
+  return (
+    <span
+      aria-hidden
+      className="grid size-2 place-items-center rounded-sm bg-[#6E4FF6] text-[5px] font-bold text-white"
+    >
+      A
+    </span>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// SecureSlate (BUILT BY SecureSlate, WEBSITE getsecureslate.com, external
+// Enable). Body card has a single emerald-gradient marketing tile with an
+// "Add Task" form mockup, followed by Overview / How it works and a numbered
+// Configure walkthrough.
+// ---------------------------------------------------------------------------
+function SecureSlateIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#0a1d17]">
+          <SecureSlateLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">SecureSlate</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Create and link SecureSlate security tickets to Linear
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                SecureSlate
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://getsecureslate.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="SecureSlate website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                getsecureslate.com
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable SecureSlate (opens in new tab)"
+          >
+            <a
+              href="https://getsecureslate.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Marketing tile — emerald wash with "Add Task" form mockup. */}
+        <div
+          aria-hidden
+          className="relative aspect-[16/9] overflow-hidden rounded-lg p-5"
+          style={{
+            background:
+              "linear-gradient(135deg, #064e3b 0%, #047857 55%, #10b981 100%)",
+          }}
+        >
+          <div className="max-w-[55%] text-[13px] leading-tight font-semibold text-white">
+            Create and assign tickets for your{" "}
+            <span className="text-emerald-200">security issues</span> to ensure
+            compliance
+          </div>
+          <div className="absolute right-3 bottom-3 w-[42%] rounded-md bg-white p-2 text-[6px] text-neutral-700 shadow ring-1 ring-black/10">
+            <div className="flex items-center justify-between border-b border-neutral-200 pb-1">
+              <span className="font-semibold text-neutral-900">Add Task</span>
+              <span className="text-neutral-400">×</span>
+            </div>
+            <div className="mt-1 text-[5px] text-neutral-500 uppercase">
+              Task
+            </div>
+            <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-400">
+              Enter task name
+            </div>
+            <div className="mt-1 text-[5px] text-neutral-500 uppercase">
+              Priority
+            </div>
+            <div className="rounded border border-neutral-200 px-1 py-0.5">
+              <span className="rounded bg-rose-100 px-1 text-rose-600">
+                High
+              </span>
+            </div>
+            <div className="mt-1 text-[5px] text-neutral-500 uppercase">
+              Assign
+            </div>
+            <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-400">
+              Select owner ⌄
+            </div>
+            <div className="mt-1 text-[5px] text-neutral-500 uppercase">
+              Due Date
+            </div>
+            <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-700">
+              1 January, 2024
+            </div>
+            <div className="mt-1 text-[5px] text-neutral-500 uppercase">
+              Delivery
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-neutral-700">Send email</span>
+              <span className="h-1.5 w-3 rounded-full bg-emerald-500" />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-neutral-700">Create issue on Linear</span>
+              <span className="h-1.5 w-3 rounded-full bg-emerald-500" />
+            </div>
+            <div className="mt-1 flex items-center justify-end gap-1">
+              <span className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-600">
+                Cancel
+              </span>
+              <span className="rounded bg-emerald-500 px-1 py-0.5 text-white">
+                Add Task
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            The SecureSlate integration for Linear will allow you to create and
+            push SecureSlate tasks to your Linear project.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            After connecting the integration, the option to select a Linear team
+            will appear each time you create a task. Once you select your Linear
+            team, you can link your SecureSlate tasks to Linear. These tickets
+            can then be managed directly from your Linear account, allowing you
+            to prioritize and set deadlines efficiently.
+          </p>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            You&apos;ll need access to a SecureSlate admin account to complete
+            the integration process.
+          </p>
+          <ol className="text-muted-foreground mt-3 list-decimal space-y-1.5 pl-5 text-sm leading-6">
+            <li>Go to Integrations page and search for Linear</li>
+            <li>Click on connect</li>
+            <li>A side bar will appear, click on connect again</li>
+            <li>
+              You&apos;ll be redirected to Linear and you&apos;ll need to login
+              if you haven&apos;t already
+            </li>
+            <li>
+              Allow SecureSlate permission to access your Linear workspace
+            </li>
+          </ol>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Vanta (BUILT BY Vanta, WEBSITE vanta.com, external Enable). Body card has
+// two violet marketing tiles (Create Linear issue form + Tasks/items-to-
+// remediate dashboard), followed by Overview, How it works (numbered) and a
+// numbered Configure walkthrough.
+// ---------------------------------------------------------------------------
+function VantaIntegrationDetail() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
+      <BackToIntegrationsLink />
+
+      <header className="flex items-start gap-4">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-[#1a1a1a]">
+          <VantaLogo className="size-9" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl leading-tight font-semibold">Vanta</h1>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            Automate compliance. Simplify security. Demonstrate trust.
+          </p>
+        </div>
+      </header>
+
+      <div className="bg-card flex flex-col gap-6 rounded-lg border p-5">
+        {/* Built by / Website / Enable rail */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex gap-8">
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Built by
+              </div>
+              <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={Mail01Icon} className="size-3.5" />
+                Vanta
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-[10px] font-medium tracking-wider uppercase">
+                Website
+              </div>
+              <a
+                href="https://vanta.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Vanta website (opens in new tab)"
+                className="hover:text-foreground mt-1 flex items-center gap-1.5 text-sm font-medium"
+              >
+                <HugeiconsIcon icon={GlobeIcon} className="size-3.5" />
+                vanta.com
+              </a>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            asChild
+            aria-label="Enable Vanta (opens in new tab)"
+          >
+            <a
+              href="https://vanta.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enable
+              <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3.5" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Marketing tiles — violet tiles with Create-Issue form + Tasks
+            dashboard mockups. */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #2e1065 0%, #4c1d95 55%, #6d28d9 100%)",
+            }}
+          >
+            <div className="absolute inset-3 rounded-md bg-white p-2 text-[5px] text-neutral-700 shadow ring-1 ring-black/10">
+              <div className="border-b border-neutral-200 pb-0.5 font-semibold text-neutral-900">
+                Create Linear Issue
+              </div>
+              <div className="mt-0.5 text-[4px] text-neutral-500">
+                1 Linear issue will be created for selected item.
+              </div>
+              <div className="mt-0.5 text-[4px] text-neutral-500">
+                · Selected item (1)
+              </div>
+              <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                Team
+              </div>
+              <div className="rounded border border-neutral-200 px-1 py-0.5">
+                Expectations
+              </div>
+              <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                Assignee
+              </div>
+              <div className="rounded border border-neutral-200 px-1 py-0.5">
+                Unassigned
+              </div>
+              <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                State
+              </div>
+              <div className="rounded border border-neutral-200 px-1 py-0.5">
+                Unassigned
+              </div>
+              <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                Priority
+              </div>
+              <div className="rounded border border-neutral-200 px-1 py-0.5">
+                Unassigned
+              </div>
+              <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                Label(s)
+              </div>
+              <div className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-400">
+                Select labels
+              </div>
+              <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                Name
+              </div>
+              <div className="rounded border border-neutral-200 px-1 py-0.5 text-[4px] text-neutral-700">
+                [Vanta] Remediate &apos;Employees agree to Incident Response
+                Plan with GDPR Addendum and Breach Notification Procedures&apos;
+                for [name(s)]
+              </div>
+              <div className="mt-1 text-[4px] text-neutral-500 uppercase">
+                Description
+              </div>
+              <div className="mt-1 flex items-center justify-end gap-1">
+                <span className="rounded border border-neutral-200 px-1 py-0.5 text-neutral-600">
+                  Cancel
+                </span>
+                <span className="rounded bg-violet-600 px-1 py-0.5 text-white">
+                  Create
+                </span>
+              </div>
+            </div>
+          </div>
+          <div
+            aria-hidden
+            className="relative aspect-[4/3] overflow-hidden rounded-lg p-3"
+            style={{
+              background:
+                "linear-gradient(135deg, #2e1065 0%, #4c1d95 55%, #6d28d9 100%)",
+            }}
+          >
+            <div className="absolute inset-3 rounded-md bg-white p-2 text-[5px] text-neutral-700 shadow ring-1 ring-black/10">
+              <div className="flex items-center gap-1 border-b border-neutral-200 pb-0.5">
+                <span className="font-semibold text-neutral-900">Tasks</span>
+                <span className="ml-auto text-[4px] text-neutral-400">
+                  Choose Marketing
+                </span>
+              </div>
+              <div className="mt-0.5 flex items-center gap-1 text-[4px] text-neutral-500">
+                <span className="rounded bg-neutral-100 px-1">Shortcuts</span>
+                <span className="rounded bg-neutral-100 px-1">LinearV2</span>
+                <span className="rounded bg-neutral-100 px-1">JIRA</span>
+                <span className="rounded bg-neutral-100 px-1">Workspace</span>
+                <span className="rounded bg-neutral-100 px-1">Linkedin</span>
+              </div>
+              <div className="mt-0.5 flex items-center gap-1 border-b border-neutral-200 pb-0.5">
+                <span className="text-[4px] font-semibold text-neutral-900">
+                  Items to remediate
+                </span>
+                <span className="ml-auto rounded bg-violet-600 px-1 py-0.5 text-[4px] text-white">
+                  Create issue
+                </span>
+              </div>
+              <div className="mt-0.5 flex items-center gap-1 text-[4px] text-neutral-500">
+                <span className="size-1 rounded-sm bg-neutral-300" />
+                <span className="font-medium text-neutral-700">
+                  Vendor Test
+                </span>
+                <span className="ml-auto truncate">[Vanta] task@vanta.com</span>
+                <span>August 21, 2023</span>
+                <span className="rounded bg-rose-100 px-1 text-rose-600">
+                  Due
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overview */}
+        <section>
+          <h2 className="text-sm font-semibold">Overview</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            By integrating Linear, admins can create tickets from within Vanta
+            to ensure issues are tracked through remediation.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section>
+          <h2 className="text-sm font-semibold">How it works</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Managing your security posture while scaling a business is
+            complicated. The integration between Vanta and Linear allows joint
+            customers to create and manage security-relevant projects without
+            worrying about compliance.
+          </p>
+          <ol className="text-muted-foreground mt-3 list-decimal space-y-1.5 pl-5 text-sm leading-6">
+            <li>
+              Open up compliance-related tickets in your Vanta profile to track
+              failing tests through remediation, ensure critical issues get
+              resolved, and pull in security-related tasks that are already
+              being tracked in Linear.
+            </li>
+            <li>
+              Confirm the correct team members have access through the real-time
+              user list in Vanta.
+            </li>
+            <li>
+              Streamline the vendor procurement process by utilizing
+              Vanta&apos;s vendor risk management tool.
+            </li>
+          </ol>
+        </section>
+
+        {/* Configure */}
+        <section>
+          <h2 className="text-sm font-semibold">Configure</h2>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Once you log into Vanta (must be an admin to make integrations):
+          </p>
+          <ol className="text-muted-foreground mt-3 list-decimal space-y-1.5 pl-5 text-sm leading-6">
+            <li>From the left-hand navigation panel, select Integrations</li>
+            <li>Open the Available tab</li>
+            <li>Choose Task Management</li>
+            <li>
+              Select Connect on Linear and follow the instruction prompts to
+              complete the connection
+            </li>
+          </ol>
+        </section>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Generic stub used for non-GitHub integrations. Mirrors the previous page
 // content so other slugs continue to render without regression.
 // ---------------------------------------------------------------------------
@@ -10119,14 +18410,7 @@ function GenericIntegrationDetail({ slug }: { slug: string }) {
 
   return (
     <div className="flex max-w-2xl flex-col gap-6 p-6">
-      <Link
-        href="/settings?section=integrations"
-        scroll={false}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
-        Back to integrations
-      </Link>
+      <BackToIntegrationsLink label="Back to integrations" />
 
       <div>
         <h1 className="text-2xl font-semibold">{name}</h1>

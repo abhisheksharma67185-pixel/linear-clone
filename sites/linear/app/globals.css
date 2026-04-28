@@ -122,6 +122,10 @@
   }
   html {
     @apply font-sans;
+    /* Preferences › Font size — set on documentElement by the
+       PreferencesSection. Driving rem this way scales everything
+       built on Tailwind's text-* utilities at once. */
+    font-size: calc(16px * var(--font-size-scale, 1));
   }
 }
 
