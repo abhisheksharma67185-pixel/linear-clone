@@ -147,10 +147,7 @@ export function toggleFavoriteTeam(
   return { ...prefs, favoriteTeamIds: next }
 }
 
-export function isTeamHidden(
-  prefs: TeamPreferences,
-  teamId: string
-): boolean {
+export function isTeamHidden(prefs: TeamPreferences, teamId: string): boolean {
   return prefs.hiddenTeamIds.includes(teamId)
 }
 
@@ -198,9 +195,7 @@ function cloneDefaults(): TeamPreferences {
 
 function normalizeStringArray(raw: unknown): string[] {
   if (!Array.isArray(raw)) return []
-  return raw.filter(
-    (s): s is string => typeof s === "string" && s.length > 0
-  )
+  return raw.filter((s): s is string => typeof s === "string" && s.length > 0)
 }
 
 function normalizeSubscribeEvents(

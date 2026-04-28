@@ -5,8 +5,8 @@ import {
 } from "@/lib/document-template-mocks"
 
 export async function GET() {
-  const sorted = [...documentTemplates].sort(
-    (a, b) => a.createdAt.localeCompare(b.createdAt)
+  const sorted = [...documentTemplates].sort((a, b) =>
+    a.createdAt.localeCompare(b.createdAt)
   )
   return NextResponse.json(sorted)
 }

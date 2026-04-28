@@ -84,3 +84,9 @@ export {
 
 // Curriculum
 export { getCurriculum, getStageForTask } from "./tasks/curriculum"
+
+// SimEngine — per-instance container for episode/adapter/predicates/config/tasks.
+// The free-function exports above proxy to `defaultEngine` (Phase 1 of Option B
+// in docs/ARCHITECTURE-PROPOSAL.md). Tests and future per-request handlers can
+// instantiate `new SimEngine()` for an isolated state container.
+export { SimEngine, defaultEngine } from "./sim-engine"

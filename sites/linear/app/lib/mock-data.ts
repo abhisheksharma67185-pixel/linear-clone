@@ -1950,7 +1950,8 @@ const abhishekOnboardingIssues: Issue[] = [
     id: "iss-181",
     identifier: "ABH-1",
     title: "Get familiar with Linear",
-    description: "Take a quick tour of the keyboard shortcuts and the issue model.",
+    description:
+      "Take a quick tour of the keyboard shortcuts and the issue model.",
     status: "todo",
     priority: "none",
     assigneeId: null,
@@ -2004,7 +2005,8 @@ const abhishekOnboardingIssues: Issue[] = [
     id: "iss-184",
     identifier: "ABH-4",
     title: "Import your data",
-    description: "Bring issues over from your previous tracker via the import flow.",
+    description:
+      "Bring issues over from your previous tracker via the import flow.",
     status: "todo",
     priority: "none",
     assigneeId: null,

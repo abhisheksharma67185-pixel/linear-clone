@@ -29,7 +29,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,7 +64,6 @@ import {
   NotionLogo,
   ExternalLinkGlyph,
 } from "@/components/provider-icons"
-import { AskLinear } from "@/components/ask-linear"
 import { TeamSettingsHub } from "@/components/team-settings-hub"
 import { CustomizeSidebarDialog } from "@/components/customize-sidebar-dialog"
 import { compareNullSmallest } from "@/lib/members-sort"
@@ -80,7 +83,6 @@ import {
   Chart01Icon,
   UserMultiple02Icon,
   Plug01Icon,
-  Activity03Icon,
   HelpCircleIcon,
   SmileIcon,
   Building03Icon,
@@ -90,7 +92,6 @@ import {
   AppStoreIcon,
   CreditCardAcceptIcon,
   BookUploadIcon,
-  Satellite01Icon,
   PlusSignIcon,
   ArrowRight01Icon,
   Search01Icon,
@@ -379,7 +380,10 @@ function SettingsPageInner() {
               aria-label="Create a team"
               className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors"
             >
-              <HugeiconsIcon icon={PlusSignIcon} className="size-3.5 shrink-0" />
+              <HugeiconsIcon
+                icon={PlusSignIcon}
+                className="size-3.5 shrink-0"
+              />
               <span>Create a team</span>
             </Link>
           </div>
@@ -397,17 +401,51 @@ function SettingsPageInner() {
 }
 
 const HELP_MENU_ITEMS = [
-  { label: "Documentation", icon: BookUploadIcon, shortcut: null, href: "https://linear.app/docs" },
-  { label: "Changelog", icon: ActivitySparkIcon, shortcut: null, href: "https://linear.app/changelog" },
-  { label: "Community", icon: Group01Icon, shortcut: null, href: "https://linear.app/community" },
-  { label: "Contact us", icon: CustomerSupportIcon, shortcut: null, href: "https://linear.app/support" },
-  { label: "Keyboard shortcuts", icon: SourceCodeIcon, shortcut: "?", href: null },
+  {
+    label: "Documentation",
+    icon: BookUploadIcon,
+    shortcut: null,
+    href: "https://linear.app/docs",
+  },
+  {
+    label: "Changelog",
+    icon: ActivitySparkIcon,
+    shortcut: null,
+    href: "https://linear.app/changelog",
+  },
+  {
+    label: "Community",
+    icon: Group01Icon,
+    shortcut: null,
+    href: "https://linear.app/community",
+  },
+  {
+    label: "Contact us",
+    icon: CustomerSupportIcon,
+    shortcut: null,
+    href: "https://linear.app/support",
+  },
+  {
+    label: "Keyboard shortcuts",
+    icon: SourceCodeIcon,
+    shortcut: "?",
+    href: null,
+  },
 ] as const
 
 const WHATS_NEW_ITEMS = [
-  { label: "Linear Agent MCP support", href: "https://linear.app/changelog/linear-agent-mcp" },
-  { label: "Project update templates", href: "https://linear.app/changelog/project-update-templates" },
-  { label: "Improved inbox filters", href: "https://linear.app/changelog/inbox-filters" },
+  {
+    label: "Linear Agent MCP support",
+    href: "https://linear.app/changelog/linear-agent-mcp",
+  },
+  {
+    label: "Project update templates",
+    href: "https://linear.app/changelog/project-update-templates",
+  },
+  {
+    label: "Improved inbox filters",
+    href: "https://linear.app/changelog/inbox-filters",
+  },
 ] as const
 
 function SettingsSidebarFooter() {
@@ -425,7 +463,9 @@ function SettingsSidebarFooter() {
           width: "28px",
           height: "28px",
           borderRadius: "50%",
-          background: open ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+          background: open
+            ? "rgba(255,255,255,0.08)"
+            : "rgba(255,255,255,0.04)",
           border: "1px solid rgba(255,255,255,0.08)",
           display: "flex",
           alignItems: "center",
@@ -436,12 +476,10 @@ function SettingsSidebarFooter() {
           transition: "background 0.15s",
         }}
         onMouseEnter={(e) => {
-          if (!open)
-            e.currentTarget.style.background = "rgba(255,255,255,0.08)"
+          if (!open) e.currentTarget.style.background = "rgba(255,255,255,0.08)"
         }}
         onMouseLeave={(e) => {
-          if (!open)
-            e.currentTarget.style.background = "rgba(255,255,255,0.04)"
+          if (!open) e.currentTarget.style.background = "rgba(255,255,255,0.04)"
         }}
       >
         <span
@@ -520,7 +558,12 @@ function SettingsSidebarFooter() {
 function HelpMenuItem({
   item,
 }: {
-  item: { label: string; icon: IconSvgElement; shortcut: string | null; href: string | null }
+  item: {
+    label: string
+    icon: IconSvgElement
+    shortcut: string | null
+    href: string | null
+  }
 }) {
   const [hovered, setHovered] = useState(false)
   const Tag = item.href ? "a" : "button"
@@ -548,13 +591,27 @@ function HelpMenuItem({
     >
       <HugeiconsIcon
         icon={item.icon}
-        style={{ width: "16px", height: "16px", color: "rgba(255,255,255,0.55)", flexShrink: 0 }}
+        style={{
+          width: "16px",
+          height: "16px",
+          color: "rgba(255,255,255,0.55)",
+          flexShrink: 0,
+        }}
       />
-      <span style={{ flex: 1, fontSize: "14px", color: "rgba(255,255,255,0.9)", textAlign: "left" }}>
+      <span
+        style={{
+          flex: 1,
+          fontSize: "14px",
+          color: "rgba(255,255,255,0.9)",
+          textAlign: "left",
+        }}
+      >
         {item.label}
       </span>
       {item.shortcut && (
-        <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>{item.shortcut}</span>
+        <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>
+          {item.shortcut}
+        </span>
       )}
     </Tag>
   )
@@ -594,7 +651,11 @@ function WhatsNewItem({ item }: { item: { label: string; href: string } }) {
           zIndex: 1,
         }}
       />
-      <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)", flex: 1 }}>{item.label}</span>
+      <span
+        style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)", flex: 1 }}
+      >
+        {item.label}
+      </span>
     </a>
   )
 }
@@ -905,7 +966,9 @@ function CodingToolsDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const [enabled, setEnabled] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(CODING_TOOLS.map((tool) => [tool.key, tool.key === "github"]))
+    Object.fromEntries(
+      CODING_TOOLS.map((tool) => [tool.key, tool.key === "github"])
+    )
   )
 
   return (
@@ -1107,9 +1170,10 @@ function ChangeEmailDialog({
 }) {
   const [newEmail, setNewEmail] = useState("")
 
-  useEffect(() => {
-    if (!open) setNewEmail("")
-  }, [open])
+  const handleOpenChange = (next: boolean) => {
+    if (!next) setNewEmail("")
+    onOpenChange(next)
+  }
 
   const isValid =
     newEmail.trim().length > 0 &&
@@ -1117,7 +1181,7 @@ function ChangeEmailDialog({
     newEmail.trim().toLowerCase() !== currentEmail.toLowerCase()
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Change email</DialogTitle>
@@ -1129,8 +1193,8 @@ function ChangeEmailDialog({
             change will apply across all workspaces that you are a member of.
           </p>
           <p>
-            Please check if the new email address is tied to an existing
-            account before proceeding with the change.
+            Please check if the new email address is tied to an existing account
+            before proceeding with the change.
           </p>
         </div>
         <div className="flex flex-col gap-2 py-1">
@@ -1148,13 +1212,10 @@ function ChangeEmailDialog({
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            disabled={!isValid}
-            onClick={() => onOpenChange(false)}
-          >
+          <Button disabled={!isValid} onClick={() => handleOpenChange(false)}>
             Check for existing account
           </Button>
         </DialogFooter>
@@ -1169,14 +1230,16 @@ const NOTIFICATION_CHANNELS = [
     label: "Desktop",
     status: "Disabled",
     enabled: false,
-    subheading: "Applies across all your desktop devices with notifications enabled",
+    subheading:
+      "Applies across all your desktop devices with notifications enabled",
   },
   {
     key: "mobile",
     label: "Mobile",
     status: "Enabled for all notifications",
     enabled: true,
-    subheading: "Applies across all your mobile devices with notifications enabled",
+    subheading:
+      "Applies across all your mobile devices with notifications enabled",
   },
   {
     key: "email",
@@ -1194,8 +1257,7 @@ const NOTIFICATION_CHANNELS = [
   },
 ] as const
 
-type NotificationChannelKey =
-  (typeof NOTIFICATION_CHANNELS)[number]["key"]
+type NotificationChannelKey = (typeof NOTIFICATION_CHANNELS)[number]["key"]
 
 const NOTIFICATION_CATEGORIES = [
   {
@@ -1238,7 +1300,8 @@ const NOTIFICATION_CATEGORIES = [
   {
     key: "updates",
     label: "Updates",
-    description: "New project & initiative updates and reminders to post an update",
+    description:
+      "New project & initiative updates and reminders to post an update",
   },
   {
     key: "reminders",
@@ -1264,6 +1327,7 @@ function useChannelToggles(channel: NotificationChannelKey) {
       const raw = window.localStorage.getItem(storageKey)
       if (raw) {
         const parsed = JSON.parse(raw) as Record<string, boolean>
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- load on mount
         setToggles((prev) => ({ ...prev, ...parsed }))
       }
     } catch {}
@@ -1449,7 +1513,7 @@ function NotificationChannelDetail({
             href="https://linear.app/download"
             target="_blank"
             rel="noreferrer noopener"
-            className="text-foreground hover:opacity-70 inline-flex items-center gap-1 text-xs font-medium whitespace-nowrap"
+            className="text-foreground inline-flex items-center gap-1 text-xs font-medium whitespace-nowrap hover:opacity-70"
           >
             Get Linear Desktop
             <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" />
@@ -1464,7 +1528,7 @@ function NotificationChannelDetail({
           </span>
           <button
             type="button"
-            className="text-foreground hover:opacity-70 inline-flex items-center gap-1 text-xs font-medium whitespace-nowrap"
+            className="text-foreground inline-flex items-center gap-1 text-xs font-medium whitespace-nowrap hover:opacity-70"
           >
             Connect Slack
             <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" />
@@ -1724,11 +1788,7 @@ function SecuritySection() {
         </p>
         <div className="divide-border divide-y rounded-lg border">
           {sessions.map((s) => (
-            <SessionRow
-              key={s.id}
-              session={s}
-              onLogout={handleLogoutSession}
-            />
+            <SessionRow key={s.id} session={s} onLogout={handleLogoutSession} />
           ))}
           {sessions.length === 0 && (
             <div className="text-muted-foreground px-4 py-3 text-sm">
@@ -1882,11 +1942,14 @@ function SecuritySection() {
       </section>
 
       <NewApiKeyDialog
+        // Remount on open transition so local form state resets fresh.
+        key={String(newApiKeyOpen)}
         open={newApiKeyOpen}
         onOpenChange={setNewApiKeyOpen}
         onCreate={handleCreateApiKey}
       />
       <RevealApiKeyDialog
+        key={revealedKey?.id ?? "closed"}
         apiKey={revealedKey}
         onClose={() => setRevealedKey(null)}
       />
@@ -1965,14 +2028,6 @@ function NewApiKeyDialog({
   )
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
-    if (!open) {
-      setName("")
-      setExpiration("90")
-      setSubmitting(false)
-    }
-  }, [open])
-
   const submit = async () => {
     if (!name.trim() || submitting) return
     setSubmitting(true)
@@ -2015,10 +2070,7 @@ function NewApiKeyDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label
-              htmlFor="new-api-key-expiry"
-              className="text-xs font-medium"
-            >
+            <Label htmlFor="new-api-key-expiry" className="text-xs font-medium">
               Expiration
             </Label>
             <Select
@@ -2059,11 +2111,9 @@ function RevealApiKeyDialog({
   apiKey: SecurityApiKey | null
   onClose: () => void
 }) {
+  // Parent passes a key tied to the apiKey id, so `copied` resets fresh
+  // whenever a new token is revealed (and on close).
   const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    if (!apiKey) setCopied(false)
-  }, [apiKey])
 
   const copy = async () => {
     if (!apiKey?.token) return
@@ -2186,9 +2236,7 @@ const PROVIDERS: Provider[] = [
     id: "notion",
     name: "Notion",
     description: "Preview issues, projects, and views within Notion",
-    iconNode: (
-      <NotionLogo className="text-foreground size-4" />
-    ),
+    iconNode: <NotionLogo className="text-foreground size-4" />,
     iconBg: "bg-[#F6F5F4] dark:bg-neutral-700",
     connectType: "oauth",
     connectUrl: OAUTH_URLS.notion,
@@ -2771,7 +2819,9 @@ function AgentPersonalizationSection() {
                           className={`text-xs ${server.status === "connected" ? "text-emerald-500" : "text-destructive"}`}
                           role="status"
                         >
-                          {server.status === "connected" ? "Connected" : "Error"}
+                          {server.status === "connected"
+                            ? "Connected"
+                            : "Error"}
                         </span>
                         <span className="text-muted-foreground truncate text-xs">
                           · {server.url}
@@ -2809,6 +2859,7 @@ function AgentPersonalizationSection() {
         </section>
 
         <NewSkillDialog
+          key={String(createSkillOpen)}
           open={createSkillOpen}
           onOpenChange={setCreateSkillOpen}
           onCreate={handleCreateSkill}
@@ -2819,6 +2870,7 @@ function AgentPersonalizationSection() {
           onConfirm={confirmDeleteSkill}
         />
         <AddMcpServerDialog
+          key={String(addServerOpen)}
           open={addServerOpen}
           onOpenChange={setAddServerOpen}
           onAdd={handleAddServer}
@@ -2972,21 +3024,13 @@ function NewSkillDialog({
     autoSelectRules: string
   }) => Promise<void>
 }) {
+  // Parent passes a key tied to `open` so this component remounts on each
+  // open transition; local form state is therefore always fresh.
   const [name, setName] = useState("")
   const [slash, setSlash] = useState("")
   const [template, setTemplate] = useState("")
   const [rules, setRules] = useState("")
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (!open) {
-      setName("")
-      setSlash("")
-      setTemplate("")
-      setRules("")
-      setSubmitting(false)
-    }
-  }, [open])
 
   const submit = async () => {
     if (!name.trim() || !slash.trim() || submitting) return
@@ -3136,19 +3180,12 @@ function AddMcpServerDialog({
     authToken: string
   }) => Promise<void>
 }) {
+  // Parent passes a key tied to `open` so this component remounts on each
+  // open transition; local form state is therefore always fresh.
   const [name, setName] = useState("")
   const [url, setUrl] = useState("")
   const [authToken, setAuthToken] = useState("")
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (!open) {
-      setName("")
-      setUrl("")
-      setAuthToken("")
-      setSubmitting(false)
-    }
-  }, [open])
 
   const submit = async () => {
     if (!name.trim() || !url.trim() || submitting) return
@@ -3286,8 +3323,7 @@ const FISCAL_MONTHS = [
 
 // Mirror of lib/workspace-mocks' SLUG_PATTERN so the client can give inline
 // feedback without a round-trip.
-const WORKSPACE_SLUG_PATTERN =
-  /^[a-z0-9](?:[a-z0-9-]{0,30}[a-z0-9])?$/
+const WORKSPACE_SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,30}[a-z0-9])?$/
 
 type WorkspaceSaveStatus = "idle" | "saving" | "saved" | "error"
 
@@ -3315,7 +3351,6 @@ function WorkspaceSection() {
   const [slugDraft, setSlugDraft] = useState("")
   const [nameStatus, setNameStatus] = useState<WorkspaceSaveStatus>("idle")
   const [slugStatus, setSlugStatus] = useState<WorkspaceSaveStatus>("idle")
-  const [slugError, setSlugError] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -3368,30 +3403,27 @@ function WorkspaceSection() {
     try {
       await patch({ name: next })
       setNameStatus("saved")
-      window.setTimeout(() => setNameStatus((s) => (s === "saved" ? "idle" : s)), 1500)
+      window.setTimeout(
+        () => setNameStatus((s) => (s === "saved" ? "idle" : s)),
+        1500
+      )
     } catch (err) {
       setNameStatus("error")
       toast.error(err instanceof Error ? err.message : "Save failed")
     }
   }
 
-  // Validate while typing so the user sees errors before blurring.
-  useEffect(() => {
+  // Validate while typing so the user sees errors before blurring. Pure
+  // derived state — no effect needed.
+  const slugError = ((): string | null => {
     const trimmed = slugDraft.trim()
-    if (trimmed === workspace.slug) {
-      setSlugError(null)
-      return
+    if (trimmed === workspace.slug) return null
+    if (trimmed.length === 0) return "URL is required"
+    if (!WORKSPACE_SLUG_PATTERN.test(trimmed.toLowerCase())) {
+      return "URL can only contain lowercase letters, numbers, and hyphens"
     }
-    if (trimmed.length === 0) {
-      setSlugError("URL is required")
-    } else if (!WORKSPACE_SLUG_PATTERN.test(trimmed.toLowerCase())) {
-      setSlugError(
-        "URL can only contain lowercase letters, numbers, and hyphens"
-      )
-    } else {
-      setSlugError(null)
-    }
-  }, [slugDraft, workspace.slug])
+    return null
+  })()
 
   const onSlugBlur = async () => {
     const next = slugDraft.trim().toLowerCase()
@@ -3402,7 +3434,10 @@ function WorkspaceSection() {
       await patch({ slug: next })
       setSlugDraft(next)
       setSlugStatus("saved")
-      window.setTimeout(() => setSlugStatus((s) => (s === "saved" ? "idle" : s)), 1500)
+      window.setTimeout(
+        () => setSlugStatus((s) => (s === "saved" ? "idle" : s)),
+        1500
+      )
     } catch (err) {
       setSlugStatus("error")
       toast.error(err instanceof Error ? err.message : "Save failed")
@@ -3529,7 +3564,9 @@ function WorkspaceSection() {
                   onBlur={onSlugBlur}
                   disabled={loading}
                   aria-invalid={!!slugError}
-                  aria-describedby={slugError ? "workspace-url-error" : undefined}
+                  aria-describedby={
+                    slugError ? "workspace-url-error" : undefined
+                  }
                   className="w-36 bg-transparent px-2.5 py-1.5 text-sm outline-none"
                 />
               </div>
@@ -3641,6 +3678,7 @@ function WorkspaceSection() {
       </div>
 
       <DeleteWorkspaceDialog
+        key={String(deleteOpen)}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         workspaceName={workspace.name}
@@ -3685,23 +3723,14 @@ function DeleteWorkspaceDialog({
   onOpenChange: (v: boolean) => void
   workspaceName: string
 }) {
+  // Parent passes a key tied to `open` so this component remounts on each
+  // open transition; local form state is therefore always fresh.
   const [code, setCode] = useState("")
   const [acknowledged, setAcknowledged] = useState(false)
   const [codeSent, setCodeSent] = useState(false)
   const [devCode, setDevCode] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (!open) {
-      setCode("")
-      setAcknowledged(false)
-      setCodeSent(false)
-      setDevCode(null)
-      setSending(false)
-      setSubmitting(false)
-    }
-  }, [open])
 
   const onSendCode = async () => {
     setSending(true)
@@ -3849,15 +3878,6 @@ type MembersSortKey =
   | "lastSeenAt"
 type MembersSortDir = "asc" | "desc"
 
-const STATUS_FILTER_OPTIONS: { key: MemberStatus | "all"; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "active", label: "Active" },
-  { key: "invited", label: "Invited" },
-  { key: "suspended", label: "Suspended" },
-  { key: "application", label: "Application" },
-  { key: "guest" as unknown as MemberStatus, label: "Guests" },
-]
-
 /**
  * Segmented tabs (Members / Invited / Suspended / Applications) shown
  * above the table. The "Members" tab includes both active humans AND
@@ -3931,13 +3951,6 @@ function compareMemberStatus(
   return a.name.localeCompare(b.name) * direction
 }
 
-const STATUS_GROUPS: { key: MemberStatus; label: string }[] = [
-  { key: "active", label: "Active" },
-  { key: "invited", label: "Invited" },
-  { key: "suspended", label: "Suspended" },
-  { key: "application", label: "Application" },
-]
-
 const MEMBERS_SORTABLE_COLUMNS: {
   key: MembersSortKey
   label: string
@@ -3956,9 +3969,10 @@ const ROLE_LABEL: Record<MemberRole, string> = {
   guest: "Guest",
 }
 
-function parseMembersSort(
-  raw: string | null
-): { key: MembersSortKey; dir: MembersSortDir } {
+function parseMembersSort(raw: string | null): {
+  key: MembersSortKey
+  dir: MembersSortDir
+} {
   if (!raw) return { key: "name", dir: "asc" }
   const [k, d] = raw.split("-")
   const key = (MEMBERS_SORTABLE_COLUMNS.find((c) => c.key === k)?.key ??
@@ -3967,9 +3981,10 @@ function parseMembersSort(
   return { key, dir }
 }
 
-function formatMemberLastSeen(
-  lastSeenAt: string | null
-): { label: string; online: boolean } {
+function formatMemberLastSeen(lastSeenAt: string | null): {
+  label: string
+  online: boolean
+} {
   if (!lastSeenAt) return { label: "Never", online: false }
   const d = new Date(lastSeenAt)
   const diffMs = Date.now() - d.getTime()
@@ -4080,23 +4095,6 @@ function MembersSection() {
       )
     })
   }, [summaries, debouncedFilter, tab, tabMatches])
-
-  const tabCounts = useMemo(() => {
-    const counts: Record<MembersTabKey, number> = {
-      all: 0,
-      members: 0,
-      applications: 0,
-      invited: 0,
-      suspended: 0,
-      left: 0,
-    }
-    for (const m of summaries) {
-      for (const key of Object.keys(counts) as MembersTabKey[]) {
-        if (tabMatches[key](m)) counts[key]++
-      }
-    }
-    return counts
-  }, [summaries, tabMatches])
 
   const sorted = useMemo(() => {
     const direction = sort.dir === "asc" ? 1 : -1
@@ -4363,7 +4361,9 @@ function MembersSection() {
                     <span>{c.label}</span>
                     {active && (
                       <HugeiconsIcon
-                        icon={sort.dir === "asc" ? ArrowUp01Icon : ArrowDown01Icon}
+                        icon={
+                          sort.dir === "asc" ? ArrowUp01Icon : ArrowDown01Icon
+                        }
                         className="size-3"
                       />
                     )}
@@ -4426,6 +4426,7 @@ function MembersSection() {
         />
 
         <MemberActionConfirmDialog
+          key={confirm ? `${confirm.member.id}-${confirm.action}` : "closed"}
           confirm={confirm}
           onCancel={() => setConfirm(null)}
           onConfirm={async () => {
@@ -4493,7 +4494,11 @@ function MemberRow({
             aria-hidden="true"
             className="bg-muted/40 flex size-7 shrink-0 items-center justify-center rounded-full border"
           >
-            <svg viewBox="0 0 16 16" className="text-muted-foreground size-4" fill="none">
+            <svg
+              viewBox="0 0 16 16"
+              className="text-muted-foreground size-4"
+              fill="none"
+            >
               <circle
                 cx="8"
                 cy="8"
@@ -4517,7 +4522,7 @@ function MemberRow({
         )}
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">{member.name}</div>
-          <div className="text-muted-foreground truncate text-xs font-mono">
+          <div className="text-muted-foreground truncate font-mono text-xs">
             @{member.username}
           </div>
         </div>
@@ -4698,7 +4703,7 @@ function MemberStatusBadge({ status }: { status: MemberStatus }) {
   const label = status.charAt(0).toUpperCase() + status.slice(1)
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-[10px] font-medium leading-none ${classes[status]}`}
+      className={`rounded-full px-2 py-0.5 text-[10px] leading-none font-medium ${classes[status]}`}
     >
       {label}
     </span>
@@ -4718,7 +4723,7 @@ function MemberRoleBadge({
 }) {
   if (disabled) {
     return (
-      <span className="bg-muted/60 text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-medium leading-none">
+      <span className="bg-muted/60 text-muted-foreground rounded-full px-2 py-0.5 text-[10px] leading-none font-medium">
         {label}
       </span>
     )
@@ -4734,7 +4739,7 @@ function MemberRoleBadge({
               e.preventDefault()
               e.stopPropagation()
             }}
-            className="bg-muted/60 hover:bg-accent focus-visible:ring-ring rounded-full px-2 py-0.5 text-[10px] font-medium leading-none transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            className="bg-muted/60 hover:bg-accent focus-visible:ring-ring rounded-full px-2 py-0.5 text-[10px] leading-none font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             {label}
           </button>
@@ -4781,12 +4786,10 @@ function InviteMembersDialog({
   const [role, setRole] = useState<MemberRole>("member")
   const [roleOpen, setRoleOpen] = useState(false)
   // Team multi-select state. Stored as a Set for O(1) toggle.
-  const [teams, setTeams] = useState<{ id: string; name: string; key: string }[]>(
-    []
-  )
-  const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(
-    new Set()
-  )
+  const [teams, setTeams] = useState<
+    { id: string; name: string; key: string }[]
+  >([])
+  const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(new Set())
   const [teamsOpen, setTeamsOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -4831,15 +4834,17 @@ function InviteMembersDialog({
       /* eslint-enable react-hooks/set-state-in-effect */
       return
     }
-    const parts = emails.split(/[\s,;\n]+/).map((p) => p.trim()).filter(Boolean)
+    const parts = emails
+      .split(/[\s,;\n]+/)
+      .map((p) => p.trim())
+      .filter(Boolean)
     const bad = parts.filter((p) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p))
-    /* eslint-disable react-hooks/set-state-in-effect */
+
     setError(
       bad.length
         ? `Invalid email${bad.length === 1 ? "" : "s"}: ${bad.join(", ")}`
         : null
     )
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [emails])
 
   const toggleTeam = (id: string) =>
@@ -4850,8 +4855,7 @@ function InviteMembersDialog({
       return next
     })
 
-  const canSubmit =
-    !submitting && emails.trim().length > 0 && !error
+  const canSubmit = !submitting && emails.trim().length > 0 && !error
 
   const inviteLink =
     typeof window !== "undefined"
@@ -4919,8 +4923,8 @@ function InviteMembersDialog({
             Invite to your workspace
           </DialogTitle>
           <DialogDescription>
-            Invitees join as {ROLE_LABEL[role]} by default. You can change
-            their role any time.
+            Invitees join as {ROLE_LABEL[role]} by default. You can change their
+            role any time.
           </DialogDescription>
         </DialogHeader>
 
@@ -5110,19 +5114,16 @@ function MemberActionConfirmDialog({
   onCancel,
   onConfirm,
 }: {
-  confirm:
-    | {
-        member: MemberSummary
-        action: "suspend" | "unsuspend" | "remove"
-      }
-    | null
+  confirm: {
+    member: MemberSummary
+    action: "suspend" | "unsuspend" | "remove"
+  } | null
   onCancel: () => void
   onConfirm: () => void | Promise<void>
 }) {
+  // Parent passes a key tied to the confirm target so this component
+  // remounts (and `submitting` resets) whenever a new confirmation appears.
   const [submitting, setSubmitting] = useState(false)
-  useEffect(() => {
-    if (confirm) setSubmitting(false)
-  }, [confirm])
 
   if (!confirm) {
     return (
@@ -5171,7 +5172,7 @@ function MemberActionConfirmDialog({
             disabled={submitting}
             className={
               action === "remove"
-                ? "bg-destructive text-white hover:bg-destructive/90"
+                ? "bg-destructive hover:bg-destructive/90 text-white"
                 : undefined
             }
           >
@@ -5217,15 +5218,19 @@ const TEAM_SORTABLE_COLUMNS: {
   { key: "createdAt", label: "Created", className: "justify-self-start" },
 ]
 
-const STATUS_FILTERS: { key: "active" | "retired" | "recently-deleted"; label: string }[] = [
+const STATUS_FILTERS: {
+  key: "active" | "retired" | "recently-deleted"
+  label: string
+}[] = [
   { key: "active", label: "Active" },
   { key: "retired", label: "Retired" },
   { key: "recently-deleted", label: "Recently deleted" },
 ]
 
-function parseSortParam(
-  raw: string | null
-): { key: TeamsSortKey; dir: TeamsSortDir } {
+function parseSortParam(raw: string | null): {
+  key: TeamsSortKey
+  dir: TeamsSortDir
+} {
   if (!raw) return { key: "name", dir: "asc" }
   const [k, d] = raw.split("-")
   const key = (TEAM_SORTABLE_COLUMNS.find((c) => c.key === k)?.key ??
@@ -5242,9 +5247,9 @@ function TeamsAdminSection() {
   const [summaries, setSummaries] = useState<TeamSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("")
-  const [status, setStatus] = useState<"active" | "retired" | "recently-deleted">(
-    "active"
-  )
+  const [status, setStatus] = useState<
+    "active" | "retired" | "recently-deleted"
+  >("active")
   const [statusOpen, setStatusOpen] = useState(false)
   const [contextMenu, setContextMenu] = useState<{
     team: TeamSummary
@@ -5473,7 +5478,9 @@ function TeamsAdminSection() {
                   <span>{c.label}</span>
                   {active && (
                     <HugeiconsIcon
-                      icon={sort.dir === "asc" ? ArrowUp01Icon : ArrowDown01Icon}
+                      icon={
+                        sort.dir === "asc" ? ArrowUp01Icon : ArrowDown01Icon
+                      }
                       className="size-3"
                     />
                   )}
@@ -5590,6 +5597,7 @@ function TeamsAdminSection() {
       )}
 
       <TeamActionConfirmDialog
+        key={confirm ? `${confirm.team.id}-${confirm.action}` : "closed"}
         confirm={confirm}
         onCancel={() => setConfirm(null)}
         onConfirm={async () => {
@@ -5680,11 +5688,9 @@ function TeamActionConfirmDialog({
   onCancel: () => void
   onConfirm: () => void | Promise<void>
 }) {
+  // Parent passes a key tied to the confirm target so this component
+  // remounts (and `submitting` resets) whenever a new confirmation appears.
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (confirm) setSubmitting(false)
-  }, [confirm])
 
   if (!confirm) {
     return (
@@ -5732,7 +5738,7 @@ function TeamActionConfirmDialog({
             disabled={submitting}
             className={
               action === "delete"
-                ? "bg-destructive text-white hover:bg-destructive/90"
+                ? "bg-destructive hover:bg-destructive/90 text-white"
                 : undefined
             }
           >
@@ -5757,6 +5763,7 @@ function usePersistedState<T>(
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(key)
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- load on mount
       if (raw !== null) setValue(JSON.parse(raw) as T)
     } catch {}
     setHydrated(true)
@@ -5794,7 +5801,10 @@ function AdminSecuritySection() {
     "security:googleAuth",
     true
   )
-  const [emailAuth, setEmailAuth] = usePersistedState("security:emailAuth", true)
+  const [emailAuth, setEmailAuth] = usePersistedState(
+    "security:emailAuth",
+    true
+  )
   const [apiKeyPerm, setApiKeyPerm] = usePersistedState(
     "security:apiKeyPerm",
     "all-members"
@@ -5803,7 +5813,10 @@ function AdminSecuritySection() {
     "security:agentGuidancePerm",
     "only-admins"
   )
-  const [improveAi, setImproveAi] = usePersistedState("security:improveAi", false)
+  const [improveAi, setImproveAi] = usePersistedState(
+    "security:improveAi",
+    false
+  )
   const [agentWebSearch, setAgentWebSearch] = usePersistedState(
     "security:agentWebSearch",
     false
@@ -5892,10 +5905,7 @@ function AdminSecuritySection() {
                         aria-label={`Remove ${d}`}
                         className="hover:bg-background focus-visible:ring-ring flex size-4 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none"
                       >
-                        <HugeiconsIcon
-                          icon={Cancel01Icon}
-                          className="size-3"
-                        />
+                        <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
                       </button>
                     </li>
                   ))}
@@ -6282,17 +6292,21 @@ function AddDomainPopover({
   existing: string[]
   onAdd: (domain: string) => void
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpenRaw] = useState(false)
   const [value, setValue] = useState("")
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (!open) {
+  const setOpen = useCallback((next: boolean) => {
+    setOpenRaw(next)
+    if (!next) {
       setValue("")
       setError(null)
-      return
     }
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
     // Autofocus when the popover opens.
     const t = window.setTimeout(() => inputRef.current?.focus(), 10)
     return () => window.clearTimeout(t)
@@ -6310,8 +6324,7 @@ function AddDomainPopover({
       setError("Enter a plain domain, without https:// or paths")
       return
     }
-    const DOMAIN_RE =
-      /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/
+    const DOMAIN_RE = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/
     if (!DOMAIN_RE.test(trimmed)) {
       setError("Enter a valid domain like example.com")
       return
@@ -6471,9 +6484,9 @@ function ApiSection() {
   )
   const [oauthApps, setOauthApps] = useState<OAuthApp[]>([])
   const [webhooks, setWebhooks] = useState<Webhook[]>([])
-  const [teams, setTeams] = useState<{ id: string; name: string; key: string }[]>(
-    []
-  )
+  const [teams, setTeams] = useState<
+    { id: string; name: string; key: string }[]
+  >([])
   const [oauthOpen, setOauthOpen] = useState(false)
   const [oauthEdit, setOauthEdit] = useState<OAuthApp | null>(null)
   const [webhookOpen, setWebhookOpen] = useState(false)
@@ -6562,8 +6575,8 @@ function ApiSection() {
               onClick={() => setOauthOpen(true)}
               className="focus-visible:ring-ring flex items-center gap-1 rounded-sm text-sm font-medium hover:opacity-70 focus-visible:ring-2 focus-visible:outline-none"
             >
-              <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" /> New OAuth
-              application
+              <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" /> New
+              OAuth application
             </button>
           </div>
           {oauthApps.length > 0 && (
@@ -6698,23 +6711,24 @@ function ApiSection() {
       </div>
 
       <OAuthAppDialog
+        key={`create-${oauthOpen}`}
         mode="create"
         open={oauthOpen}
         onOpenChange={setOauthOpen}
         onSaved={(app) => setOauthApps((prev) => [app, ...prev])}
       />
       <OAuthAppDialog
+        key={`edit-${oauthEdit?.id ?? "closed"}`}
         mode="edit"
         app={oauthEdit}
         open={!!oauthEdit}
         onOpenChange={(v) => !v && setOauthEdit(null)}
         onSaved={(app) =>
-          setOauthApps((prev) =>
-            prev.map((a) => (a.id === app.id ? app : a))
-          )
+          setOauthApps((prev) => prev.map((a) => (a.id === app.id ? app : a)))
         }
       />
       <WebhookDialog
+        key={`create-${webhookOpen}`}
         mode="create"
         open={webhookOpen}
         onOpenChange={setWebhookOpen}
@@ -6722,6 +6736,7 @@ function ApiSection() {
         onSaved={(w) => setWebhooks((prev) => [w, ...prev])}
       />
       <WebhookDialog
+        key={`edit-${webhookEdit?.id ?? "closed"}`}
         mode="edit"
         webhook={webhookEdit}
         open={!!webhookEdit}
@@ -6847,7 +6862,7 @@ function OAuthAppRow({
               Copy this value now — it won&apos;t be shown again.
             </DialogDescription>
           </DialogHeader>
-          <code className="bg-muted/40 block break-all rounded-md border p-2 font-mono text-xs">
+          <code className="bg-muted/40 block rounded-md border p-2 font-mono text-xs break-all">
             {rotatedSecret}
           </code>
           <DialogFooter>
@@ -6871,7 +6886,7 @@ function OAuthAppRow({
             </Button>
             <Button
               onClick={onConfirmDelete}
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90 text-white"
             >
               Delete
             </Button>
@@ -6983,7 +6998,7 @@ function WebhookRow({
               Copy this value now — it won&apos;t be shown again.
             </DialogDescription>
           </DialogHeader>
-          <code className="bg-muted/40 block break-all rounded-md border p-2 font-mono text-xs">
+          <code className="bg-muted/40 block rounded-md border p-2 font-mono text-xs break-all">
             {rotatedSecret}
           </code>
           <DialogFooter>
@@ -6997,8 +7012,8 @@ function WebhookRow({
           <DialogHeader>
             <DialogTitle>Delete webhook?</DialogTitle>
             <DialogDescription>
-              <span className="font-mono text-xs">{webhook.url}</span> will
-              stop receiving events.
+              <span className="font-mono text-xs">{webhook.url}</span> will stop
+              receiving events.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -7007,7 +7022,7 @@ function WebhookRow({
             </Button>
             <Button
               onClick={onConfirmDelete}
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90 text-white"
             >
               Delete
             </Button>
@@ -7044,36 +7059,24 @@ function OAuthAppDialog({
   onSaved: (app: OAuthApp) => void
   app?: OAuthApp | null
 }) {
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [redirectUris, setRedirectUris] = useState("")
-  const [scopes, setScopes] = useState<Set<string>>(new Set(["read"]))
-  const [iconDataUrl, setIconDataUrl] = useState<string | null>(null)
+  // Seed state from `app` once on mount (supports both create and edit
+  // modes). Parent passes a key tied to the editing target so this dialog
+  // remounts whenever the target changes.
+  const isEdit = mode === "edit" && !!app
+  const [name, setName] = useState(isEdit ? app.name : "")
+  const [description, setDescription] = useState(isEdit ? app.description : "")
+  const [redirectUris, setRedirectUris] = useState(
+    isEdit ? app.redirectUris.join("\n") : ""
+  )
+  const [scopes, setScopes] = useState<Set<string>>(
+    new Set(isEdit && app.scopes.length > 0 ? app.scopes : ["read"])
+  )
+  const [iconDataUrl, setIconDataUrl] = useState<string | null>(
+    isEdit ? app.iconDataUrl : null
+  )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const iconRef = useRef<HTMLInputElement>(null)
-
-  // Seed state when the dialog opens (supports both create and edit modes).
-  useEffect(() => {
-    if (!open) {
-      setSubmitting(false)
-      setError(null)
-      return
-    }
-    if (mode === "edit" && app) {
-      setName(app.name)
-      setDescription(app.description)
-      setRedirectUris(app.redirectUris.join("\n"))
-      setScopes(new Set(app.scopes.length > 0 ? app.scopes : ["read"]))
-      setIconDataUrl(app.iconDataUrl)
-    } else {
-      setName("")
-      setDescription("")
-      setRedirectUris("")
-      setScopes(new Set(["read"]))
-      setIconDataUrl(null)
-    }
-  }, [open, mode, app])
 
   const onIcon = (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -7087,9 +7090,7 @@ function OAuthAppDialog({
 
   const redirectValidation = validateRedirectUrisText(redirectUris)
   const canSubmit =
-    !submitting &&
-    name.trim().length > 0 &&
-    redirectValidation.ok
+    !submitting && name.trim().length > 0 && redirectValidation.ok
 
   const toggleScope = (s: string) => {
     setScopes((prev) => {
@@ -7106,9 +7107,7 @@ function OAuthAppDialog({
     setError(null)
     try {
       const url =
-        mode === "create"
-          ? "/api/oauth-apps"
-          : `/api/oauth-apps/${app!.id}`
+        mode === "create" ? "/api/oauth-apps" : `/api/oauth-apps/${app!.id}`
       const body =
         mode === "create"
           ? {
@@ -7152,11 +7151,13 @@ function OAuthAppDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {mode === "create" ? "New OAuth application" : "Edit OAuth application"}
+            {mode === "create"
+              ? "New OAuth application"
+              : "Edit OAuth application"}
           </DialogTitle>
           <DialogDescription>
-            Register an OAuth 2.0 client that can act on behalf of users in
-            your workspace.
+            Register an OAuth 2.0 client that can act on behalf of users in your
+            workspace.
           </DialogDescription>
         </DialogHeader>
 
@@ -7250,7 +7251,10 @@ function OAuthAppDialog({
                 {redirectValidation.bad.join(", ")}
               </p>
             ) : (
-              <p id="oauth-redirects-help" className="text-muted-foreground text-xs">
+              <p
+                id="oauth-redirects-help"
+                className="text-muted-foreground text-xs"
+              >
                 One per line. http(s) only.
               </p>
             )}
@@ -7330,33 +7334,19 @@ function WebhookDialog({
   onSaved: (w: Webhook) => void
   webhook?: Webhook | null
 }) {
-  const [url, setUrl] = useState("")
+  // Seed state from `webhook` once on mount. Parent passes a key tied to
+  // the editing target so this dialog remounts whenever the target changes.
+  const isEdit = mode === "edit" && !!webhook
+  const [url, setUrl] = useState(isEdit ? webhook.url : "")
   const [resources, setResources] = useState<Set<string>>(
-    new Set(["issues", "comments"])
+    new Set(isEdit ? webhook.resources : ["issues", "comments"])
   )
-  const [teamId, setTeamId] = useState<string>("all")
-  const [secret, setSecret] = useState("")
+  const [teamId, setTeamId] = useState<string>(
+    isEdit ? (webhook.teamId ?? "all") : "all"
+  )
+  const [secret, setSecret] = useState(isEdit ? webhook.secret : "")
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!open) {
-      setSubmitting(false)
-      setError(null)
-      return
-    }
-    if (mode === "edit" && webhook) {
-      setUrl(webhook.url)
-      setResources(new Set(webhook.resources))
-      setTeamId(webhook.teamId ?? "all")
-      setSecret(webhook.secret)
-    } else {
-      setUrl("")
-      setResources(new Set(["issues", "comments"]))
-      setTeamId("all")
-      setSecret("")
-    }
-  }, [open, mode, webhook])
 
   const toggleResource = (value: string) => {
     setResources((prev) => {
@@ -7617,8 +7607,7 @@ const BILLING_FEATURES: BillingFeature[] = [
   { label: "Restrict new user invitations" },
   {
     label: "Restrict agent invocation to …",
-    fullText:
-      "Restrict agent invocation to specific teams, members, or tiers.",
+    fullText: "Restrict agent invocation to specific teams, members, or tiers.",
   },
 ]
 
@@ -7771,10 +7760,11 @@ const IMPORT_SOURCES: {
 type IncludePrivateTeams = "none" | "all"
 
 function ExportCard() {
-  const [privateTeams, setPrivateTeams] = usePersistedState<IncludePrivateTeams>(
-    "import-export:includePrivateTeams",
-    "none"
-  )
+  const [privateTeams, setPrivateTeams] =
+    usePersistedState<IncludePrivateTeams>(
+      "import-export:includePrivateTeams",
+      "none"
+    )
   const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -7835,7 +7825,10 @@ function ExportCard() {
           </button>
         </div>
         <div className="flex items-center justify-between px-4 py-3">
-          <label htmlFor="include-private-teams" className="text-sm font-medium">
+          <label
+            htmlFor="include-private-teams"
+            className="text-sm font-medium"
+          >
             Include private teams
           </label>
           <Select
@@ -7849,7 +7842,9 @@ function ExportCard() {
               aria-label="Include private teams in export"
               className="h-8 w-28 text-xs"
             >
-              <SelectValue>{privateTeams === "all" ? "All" : "None"}</SelectValue>
+              <SelectValue>
+                {privateTeams === "all" ? "All" : "None"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">None</SelectItem>
@@ -7951,11 +7946,9 @@ function ImportExportSection() {
               href={`/settings/import-export/migration-assistant?service=${key}`}
               scroll={false}
               aria-label={`Import from ${name}`}
-              className="hover:bg-white/5 focus-visible:bg-white/5 focus-visible:ring-ring group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              className="focus-visible:ring-ring group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:outline-none"
             >
-              <div
-                className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-semibold"
-              >
+              <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-semibold">
                 {abbr}
               </div>
               <span className="flex-1 text-sm font-medium">{name}</span>
@@ -8042,12 +8035,15 @@ function IssueLabelsSection() {
   const [scope, setScope] = useState<LabelScope>("workspace")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [draft, setDraft] = useState<
-    { color: string; name: string; description: string } | null
-  >(null)
-  const [groupDraft, setGroupDraft] = useState<
-    { color: string; name: string } | null
-  >(null)
+  const [draft, setDraft] = useState<{
+    color: string
+    name: string
+    description: string
+  } | null>(null)
+  const [groupDraft, setGroupDraft] = useState<{
+    color: string
+    name: string
+  } | null>(null)
   const [editing, setEditing] = useState<EditTarget>(null)
   const [editingValue, setEditingValue] = useState("")
 
@@ -8178,9 +8174,7 @@ function IssueLabelsSection() {
     setLabels((list) => list.filter((l) => !ids.includes(l.id)))
     setSelected(new Set())
     await Promise.all(
-      ids.map((id) =>
-        fetch(`/api/data/labels/${id}`, { method: "DELETE" })
-      )
+      ids.map((id) => fetch(`/api/data/labels/${id}`, { method: "DELETE" }))
     ).catch(() => {
       setLabels(prev)
       toast.error("Failed to delete labels")
@@ -8272,27 +8266,27 @@ function IssueLabelsSection() {
             }
           />
           <DropdownMenuContent align="start" sideOffset={4}>
-            {(["workspace", "workspace-and-teams", "archived"] as LabelScope[]).map(
-              (key) => (
-                <DropdownMenuItem
-                  key={key}
-                  onClick={() => {
-                    setScope(key)
-                    setSelected(new Set())
-                  }}
-                  className="justify-between"
-                >
-                  {SCOPE_LABELS[key]}
-                  {scope === key && (
-                    <HugeiconsIcon
-                      icon={CheckmarkCircle02Icon}
-                      strokeWidth={2}
-                      className="size-3.5"
-                    />
-                  )}
-                </DropdownMenuItem>
-              )
-            )}
+            {(
+              ["workspace", "workspace-and-teams", "archived"] as LabelScope[]
+            ).map((key) => (
+              <DropdownMenuItem
+                key={key}
+                onClick={() => {
+                  setScope(key)
+                  setSelected(new Set())
+                }}
+                className="justify-between"
+              >
+                {SCOPE_LABELS[key]}
+                {scope === key && (
+                  <HugeiconsIcon
+                    icon={CheckmarkCircle02Icon}
+                    strokeWidth={2}
+                    className="size-3.5"
+                  />
+                )}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -8328,11 +8322,8 @@ function IssueLabelsSection() {
         <div>
           <button
             type="button"
-            onClick={() =>
-              setSortDir((d) => (d === "asc" ? "desc" : "asc"))
-            }
+            onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
             aria-label={`Sort by name ${sortDir === "asc" ? "descending" : "ascending"}`}
-            aria-sort={sortDir === "asc" ? "ascending" : "descending"}
             className="hover:text-foreground focus-visible:ring-primary/50 focus-visible:ring-offset-background flex items-center gap-1 rounded-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
           >
             Name
@@ -8394,10 +8385,7 @@ function IssueLabelsSection() {
 
       {/* Group rows (non-selectable headers) */}
       {groups.map((g) => (
-        <div
-          key={g.id}
-          className={`${gridCols} border-b px-2 py-2.5 text-sm`}
-        >
+        <div key={g.id} className={`${gridCols} border-b px-2 py-2.5 text-sm`}>
           <div />
           <span
             className="mt-[3px] size-2.5 shrink-0 rounded-full"
@@ -8596,7 +8584,7 @@ function IssueLabelsSection() {
         <div
           role="region"
           aria-label="Bulk actions"
-          className="bg-popover/90 supports-backdrop-filter:backdrop-blur-xs ring-border/70 fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-lg px-3 py-2 shadow-lg ring-1"
+          className="bg-popover/90 ring-border/70 fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-lg px-3 py-2 shadow-lg ring-1 supports-backdrop-filter:backdrop-blur-xs"
         >
           <span className="text-muted-foreground text-xs">
             {selected.size} selected
@@ -8791,9 +8779,8 @@ function IssueTemplatesSection() {
   const router = useRouter()
   const [templates, setTemplates] = useState<IssueTemplateSummary[]>([])
   const [pickerOpen, setPickerOpen] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState<IssueTemplateSummary | null>(
-    null
-  )
+  const [confirmDelete, setConfirmDelete] =
+    useState<IssueTemplateSummary | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -8929,6 +8916,7 @@ function IssueTemplatesSection() {
       )}
 
       <TemplateTypeDialog
+        key={String(pickerOpen)}
         open={pickerOpen}
         onOpenChange={setPickerOpen}
         onPick={pickType}
@@ -8962,7 +8950,7 @@ function TemplateRow({
     <li className="group/tpl hover:bg-accent/20 relative flex items-center gap-3 px-4 py-3">
       {/* Drag handle (decorative; DnD reorder is not persisted). */}
       <span
-        className="text-muted-foreground/50 select-none text-xs"
+        className="text-muted-foreground/50 text-xs select-none"
         aria-hidden="true"
       >
         ⋮⋮
@@ -9071,15 +9059,11 @@ function TemplateTypeDialog({
   onOpenChange: (v: boolean) => void
   onPick: (type: "standard" | "custom-form") => void
 }) {
-  const [focused, setFocused] = useState<"standard" | "custom-form">(
-    "standard"
-  )
+  // Parent passes a key tied to `open` so this dialog remounts each time it
+  // opens; `focused` therefore starts at "standard" without an effect.
+  const [focused, setFocused] = useState<"standard" | "custom-form">("standard")
   const standardRef = useRef<HTMLButtonElement>(null)
   const customRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    if (open) setFocused("standard")
-  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -9164,22 +9148,22 @@ function TemplateTypeDialog({
           >
             <div className="bg-muted/30 mt-3 flex flex-col gap-2 rounded-md border p-3">
               <div className="flex flex-col gap-1">
-                <div className="text-[10px] font-medium uppercase text-muted-foreground">
+                <div className="text-muted-foreground text-[10px] font-medium uppercase">
                   Repro steps
                 </div>
                 <div className="bg-background h-5 rounded border" />
               </div>
               <div className="flex flex-col gap-1">
-                <div className="text-[10px] font-medium uppercase text-muted-foreground">
+                <div className="text-muted-foreground text-[10px] font-medium uppercase">
                   Platform
                 </div>
                 <div className="bg-background flex h-5 items-center justify-between rounded border px-2">
-                  <span className="text-[10px] text-muted-foreground/70">
+                  <span className="text-muted-foreground/70 text-[10px]">
                     Select…
                   </span>
                   <HugeiconsIcon
                     icon={ArrowDown01Icon}
-                    className="size-2.5 text-muted-foreground"
+                    className="text-muted-foreground size-2.5"
                   />
                 </div>
               </div>
@@ -9200,7 +9184,10 @@ const TemplateTypeCard = forwardRef<
     onSelect: () => void
     children: React.ReactNode
   }
->(function TemplateTypeCard({ title, subtitle, selected, onSelect, children }, ref) {
+>(function TemplateTypeCard(
+  { title, subtitle, selected, onSelect, children },
+  ref
+) {
   return (
     <button
       ref={ref}
@@ -9210,7 +9197,9 @@ const TemplateTypeCard = forwardRef<
       aria-label={`${title}. ${subtitle}`}
       onClick={onSelect}
       className={`bg-card focus-visible:ring-primary/50 focus-visible:ring-offset-background flex flex-col items-start gap-1 rounded-lg border p-4 text-left transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
-        selected ? "border-primary ring-primary/30 ring-2" : "hover:bg-accent/20"
+        selected
+          ? "border-primary ring-primary/30 ring-2"
+          : "hover:bg-accent/20"
       }`}
     >
       <span className="text-sm font-semibold">{title}</span>
@@ -9236,7 +9225,9 @@ function ConfirmDeleteTemplateDialog({
           <DialogTitle>Delete template?</DialogTitle>
           <DialogDescription>
             The template{" "}
-            <span className="text-foreground font-medium">{template?.name}</span>{" "}
+            <span className="text-foreground font-medium">
+              {template?.name}
+            </span>{" "}
             will be permanently removed. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
@@ -9667,11 +9658,17 @@ function SLAsSection() {
         </section>
 
         <StartTrialDialog
+          key={`sla-${trialOpen}`}
           open={trialOpen}
           onOpenChange={setTrialOpen}
           onStarted={onTrialStarted}
         />
         <SlaPolicyDialog
+          // Remount when the editing target changes so local form state is
+          // always seeded fresh from the new policy (or cleared on close).
+          key={
+            editingPolicy === "new" ? "new" : (editingPolicy?.id ?? "closed")
+          }
           mode={editingPolicy === "new" ? "new" : "edit"}
           policy={
             editingPolicy && editingPolicy !== "new" ? editingPolicy : null
@@ -9681,6 +9678,9 @@ function SLAsSection() {
           onSaved={upsertPolicy}
         />
         <AutomationRuleDialog
+          // Remount when the editing target changes so local form state is
+          // always seeded fresh from the new rule (or cleared on close).
+          key={editingRule === "new" ? "new" : (editingRule?.id ?? "closed")}
           mode={editingRule === "new" ? "new" : "edit"}
           rule={editingRule && editingRule !== "new" ? editingRule : null}
           policies={policies}
@@ -9747,7 +9747,9 @@ function summarizeConditions(c: AutomationRule["conditions"]): string {
   if (c.priority) parts.push(`Priority: ${c.priority}`)
   if (c.assigneeId) parts.push(`Assignee: ${c.assigneeId}`)
   if (c.labelIds.length > 0)
-    parts.push(`${c.labelIds.length} label${c.labelIds.length === 1 ? "" : "s"}`)
+    parts.push(
+      `${c.labelIds.length} label${c.labelIds.length === 1 ? "" : "s"}`
+    )
   return parts.length === 0 ? "Any issue" : parts.join(" · ")
 }
 
@@ -9760,11 +9762,9 @@ function StartTrialDialog({
   onOpenChange: (v: boolean) => void
   onStarted: (next: PlanState) => void
 }) {
+  // Parent passes a key tied to `open` so this dialog remounts each time it
+  // opens; `submitting` therefore starts false without an effect.
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (!open) setSubmitting(false)
-  }, [open])
 
   const onStart = async () => {
     setSubmitting(true)
@@ -9825,29 +9825,20 @@ function SlaPolicyDialog({
   onOpenChange: (v: boolean) => void
   onSaved: (p: SlaPolicy, created: boolean) => void
 }) {
-  const [name, setName] = useState("")
-  const [durationValue, setDurationValue] = useState("4")
-  const [durationUnit, setDurationUnit] = useState<SlaDurationUnit>("hours")
-  const [pauseConditions, setPauseConditions] = useState("")
-  const [breachNotify, setBreachNotify] = useState("")
+  // Seed initial values from `policy` once on mount. Parent passes a key
+  // tied to the editing target so this dialog remounts on each change.
+  const [name, setName] = useState(policy?.name ?? "")
+  const [durationValue, setDurationValue] = useState(
+    policy ? String(policy.durationValue) : "4"
+  )
+  const [durationUnit, setDurationUnit] = useState<SlaDurationUnit>(
+    policy?.durationUnit ?? "hours"
+  )
+  const [pauseConditions, setPauseConditions] = useState(
+    policy?.pauseConditions ?? ""
+  )
+  const [breachNotify, setBreachNotify] = useState(policy?.breachNotify ?? "")
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (open && policy) {
-      setName(policy.name)
-      setDurationValue(String(policy.durationValue))
-      setDurationUnit(policy.durationUnit)
-      setPauseConditions(policy.pauseConditions)
-      setBreachNotify(policy.breachNotify)
-    } else if (open) {
-      setName("")
-      setDurationValue("4")
-      setDurationUnit("hours")
-      setPauseConditions("")
-      setBreachNotify("")
-    }
-    setSubmitting(false)
-  }, [open, policy])
 
   const submit = async () => {
     if (!name.trim() || submitting) return
@@ -9861,7 +9852,9 @@ function SlaPolicyDialog({
     }
     try {
       const url =
-        mode === "new" ? "/api/slas/policies" : `/api/slas/policies/${policy!.id}`
+        mode === "new"
+          ? "/api/slas/policies"
+          : `/api/slas/policies/${policy!.id}`
       const method = mode === "new" ? "POST" : "PATCH"
       const res = await fetch(url, {
         method,
@@ -9933,9 +9926,7 @@ function SlaPolicyDialog({
               </Label>
               <Select
                 value={durationUnit}
-                onValueChange={(v) =>
-                  setDurationUnit(v as SlaDurationUnit)
-                }
+                onValueChange={(v) => setDurationUnit(v as SlaDurationUnit)}
               >
                 <SelectTrigger
                   id="sla-policy-duration-unit"
@@ -9953,10 +9944,7 @@ function SlaPolicyDialog({
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label
-              htmlFor="sla-policy-pause"
-              className="text-xs font-medium"
-            >
+            <Label htmlFor="sla-policy-pause" className="text-xs font-medium">
               Pause conditions
             </Label>
             <Input
@@ -9968,10 +9956,7 @@ function SlaPolicyDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label
-              htmlFor="sla-policy-breach"
-              className="text-xs font-medium"
-            >
+            <Label htmlFor="sla-policy-breach" className="text-xs font-medium">
               Breach notifications
             </Label>
             <Input
@@ -10011,29 +9996,22 @@ function AutomationRuleDialog({
   onOpenChange: (v: boolean) => void
   onSaved: (r: AutomationRule, created: boolean) => void
 }) {
-  const [name, setName] = useState("")
-  const [trigger, setTrigger] = useState<AutomationTrigger>("issue-created")
-  const [priority, setPriority] = useState<string>("")
-  const [action, setAction] = useState<AutomationAction>("add-sla")
-  const [slaPolicyId, setSlaPolicyId] = useState<string>("")
+  // Seed initial values from `rule` when remounted (parent passes a `key`
+  // tied to `editingRule` so this state is always fresh on open).
+  const [name, setName] = useState(rule?.name ?? "")
+  const [trigger, setTrigger] = useState<AutomationTrigger>(
+    rule?.trigger ?? "issue-created"
+  )
+  const [priority, setPriority] = useState<string>(
+    rule?.conditions.priority ?? ""
+  )
+  const [action, setAction] = useState<AutomationAction>(
+    rule?.action ?? "add-sla"
+  )
+  const [slaPolicyId, setSlaPolicyId] = useState<string>(
+    rule?.slaPolicyId ?? ""
+  )
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (open && rule) {
-      setName(rule.name)
-      setTrigger(rule.trigger)
-      setPriority(rule.conditions.priority ?? "")
-      setAction(rule.action)
-      setSlaPolicyId(rule.slaPolicyId ?? "")
-    } else if (open) {
-      setName("")
-      setTrigger("issue-created")
-      setPriority("")
-      setAction("add-sla")
-      setSlaPolicyId("")
-    }
-    setSubmitting(false)
-  }, [open, rule])
 
   const submit = async () => {
     if (!name.trim() || submitting) return
@@ -10118,17 +10096,12 @@ function AutomationRuleDialog({
                 <SelectItem value="issue-updated">
                   When issue is updated
                 </SelectItem>
-                <SelectItem value="label-added">
-                  When label is added
-                </SelectItem>
+                <SelectItem value="label-added">When label is added</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label
-              htmlFor="sla-rule-priority"
-              className="text-xs font-medium"
-            >
+            <Label htmlFor="sla-rule-priority" className="text-xs font-medium">
               Priority condition{" "}
               <span className="text-muted-foreground font-normal">
                 (optional)
@@ -10136,9 +10109,7 @@ function AutomationRuleDialog({
             </Label>
             <Select
               value={priority || "__any"}
-              onValueChange={(v) =>
-                setPriority(!v || v === "__any" ? "" : v)
-              }
+              onValueChange={(v) => setPriority(!v || v === "__any" ? "" : v)}
             >
               <SelectTrigger id="sla-rule-priority" className="h-9 text-sm">
                 <SelectValue />
@@ -10651,9 +10622,7 @@ function ProjectUpdatesSection() {
           {editing ? (
             <Select
               value={draft}
-              onValueChange={(v) =>
-                setDraft((v as UpdateSchedule) ?? "none")
-              }
+              onValueChange={(v) => setDraft((v as UpdateSchedule) ?? "none")}
             >
               <SelectTrigger
                 aria-label="Update schedule"
@@ -10734,24 +10703,52 @@ function ProjectUpdatesSection() {
 function LinearTriangleIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" className={className} aria-hidden="true">
-      <path d="M5.5 4.8a.5.5 0 0 1 .77-.42l9 5.2a.5.5 0 0 1 0 .86l-9 5.2a.5.5 0 0 1-.77-.43V4.8Z" fill="currentColor" />
+      <path
+        d="M5.5 4.8a.5.5 0 0 1 .77-.42l9 5.2a.5.5 0 0 1 0 .86l-9 5.2a.5.5 0 0 1-.77-.43V4.8Z"
+        fill="currentColor"
+      />
     </svg>
   )
 }
 function ClockIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" className={className} aria-hidden="true">
-      <circle cx="10" cy="10" r="7.2" fill="none" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M10 6v4.2L13 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+      <circle
+        cx="10"
+        cy="10"
+        r="7.2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
+      <path
+        d="M10 6v4.2L13 12"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        fill="none"
+      />
     </svg>
   )
 }
 function CrosshairIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 20 20" className={className} aria-hidden="true">
-      <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.4" />
+      <circle
+        cx="10"
+        cy="10"
+        r="6.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
       <circle cx="10" cy="10" r="2" fill="currentColor" />
-      <path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path
+        d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
@@ -10778,7 +10775,12 @@ function DocumentLinesIcon({ className }: { className?: string }) {
         strokeWidth="1.4"
         strokeLinejoin="round"
       />
-      <path d="M7 9h6M7 11.5h6M7 14h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path
+        d="M7 9h6M7 11.5h6M7 14h4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
@@ -10962,9 +10964,7 @@ function AIAgentsListView() {
             type="button"
             aria-label="Configure guidance for installed agents"
             onClick={() =>
-              toast.info(
-                "Installed agents guidance detail page — coming soon"
-              )
+              toast.info("Installed agents guidance detail page — coming soon")
             }
             className="bg-card border-border/80 hover:bg-accent/30 focus-visible:ring-primary/50 focus-visible:ring-offset-background flex items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
           >
@@ -11067,8 +11067,8 @@ function LinearAgentDetailView() {
           <div>
             <div className="text-sm font-medium">Enable web search</div>
             <div className="text-muted-foreground text-xs">
-              Allow Linear Agent to search the public web for current information
-              and cite sources
+              Allow Linear Agent to search the public web for current
+              information and cite sources
             </div>
           </div>
           <Switch
@@ -11742,11 +11742,7 @@ function CustomerRequestsSection() {
     setEditing(null)
   }
 
-  const setColor = (
-    kind: "status" | "tier",
-    id: string,
-    color: string
-  ) => {
+  const setColor = (kind: "status" | "tier", id: string, color: string) => {
     const updater = (list: CustomerRequestItem[]) =>
       list.map((x) => (x.id === id ? { ...x, color } : x))
     if (kind === "status") setStatuses(updater)
@@ -11790,8 +11786,7 @@ function CustomerRequestsSection() {
   }
 
   const removeDomain = (kind: "excluded" | "generic", id: string) => {
-    if (kind === "excluded")
-      setExcluded((p) => p.filter((x) => x.id !== id))
+    if (kind === "excluded") setExcluded((p) => p.filter((x) => x.id !== id))
     else setGeneric((p) => p.filter((x) => x.id !== id))
   }
 
@@ -11917,9 +11912,7 @@ function CustomerRequestsSection() {
               <button
                 type="button"
                 aria-label="Add customer status"
-                onClick={() =>
-                  setStatusDraft({ name: "", color: "#22c55e" })
-                }
+                onClick={() => setStatusDraft({ name: "", color: "#22c55e" })}
                 className="text-muted-foreground hover:text-foreground focus-visible:ring-primary/50 focus-visible:ring-offset-background rounded focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" />
@@ -11943,9 +11936,7 @@ function CustomerRequestsSection() {
                 key={s.id}
                 item={s}
                 isLast={i === statuses.length - 1}
-                editing={
-                  editing?.kind === "status" && editing.id === s.id
-                }
+                editing={editing?.kind === "status" && editing.id === s.id}
                 editingValue={editingValue}
                 onStartEdit={() => {
                   setEditing({ kind: "status", id: s.id })
@@ -11979,9 +11970,7 @@ function CustomerRequestsSection() {
               <button
                 type="button"
                 aria-label="Add customer tier"
-                onClick={() =>
-                  setTierDraft({ name: "", color: "#6366f1" })
-                }
+                onClick={() => setTierDraft({ name: "", color: "#6366f1" })}
                 className="text-muted-foreground hover:text-foreground focus-visible:ring-primary/50 focus-visible:ring-offset-background rounded focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" />
@@ -12142,9 +12131,8 @@ function CustomerRequestsSection() {
             Generic domains and emails
           </h2>
           <p className="text-muted-foreground mb-3 text-xs">
-            Domains and emails that are not associated with a specific
-            customer. Common providers like Gmail, Outlook, etc. are already
-            included.{" "}
+            Domains and emails that are not associated with a specific customer.
+            Common providers like Gmail, Outlook, etc. are already included.{" "}
             <a
               href="https://linear.app/docs/generic-domains"
               target="_blank"
@@ -12260,7 +12248,7 @@ function ItemRow({
     >
       <span
         aria-hidden="true"
-        className="text-muted-foreground/50 cursor-grab select-none text-xs opacity-0 transition-opacity group-hover/item:opacity-100"
+        className="text-muted-foreground/50 cursor-grab text-xs opacity-0 transition-opacity select-none group-hover/item:opacity-100"
       >
         ⋮⋮
       </span>
@@ -12521,7 +12509,7 @@ function DomainListCard({
             </div>
           )}
           {draft !== null && (
-            <div className="bg-accent/10 border-t flex items-center gap-3 px-4 py-2.5">
+            <div className="bg-accent/10 flex items-center gap-3 border-t px-4 py-2.5">
               <input
                 autoFocus
                 value={draft}
@@ -12693,8 +12681,8 @@ function AsksSection() {
               </h2>
               <p className="text-muted-foreground mt-1.5 text-sm">
                 Collect structured requests from customers and teammates via
-                Slack or email. Triage, assign, and link them directly to
-                issues — without leaving Linear.
+                Slack or email. Triage, assign, and link them directly to issues
+                — without leaving Linear.
               </p>
               <div className="mt-5 flex items-center gap-3">
                 <Button
@@ -12742,6 +12730,7 @@ function AsksSection() {
         </div>
 
         <StartTrialDialog
+          key={`billing-${trialOpen}`}
           open={trialOpen}
           onOpenChange={setTrialOpen}
           onStarted={onTrialStarted}
@@ -12758,9 +12747,7 @@ function AsksFeatureCard({
   feature: AsksFeature
   gated: boolean
 }) {
-  const body = (
-    <div className="text-sm font-medium">{feature.title}</div>
-  )
+  const body = <div className="text-sm font-medium">{feature.title}</div>
   const desc = (
     <div className="text-muted-foreground mt-1 text-xs">{feature.desc}</div>
   )
@@ -12916,7 +12903,9 @@ function EmojisSection() {
     )
   }
 
-  const permissionReason = !isAdmin ? "Only admins can manage custom emojis." : null
+  const permissionReason = !isAdmin
+    ? "Only admins can manage custom emojis."
+    : null
   const hasQuery = debouncedQuery.trim().length > 0
 
   return (
@@ -12951,9 +12940,7 @@ function EmojisSection() {
             No emojis match &ldquo;{debouncedQuery}&rdquo;
           </div>
         ) : emojis.length === 0 ? (
-          <EmojiEmptyState
-            uploadButton={uploadButton(permissionReason)}
-          />
+          <EmojiEmptyState uploadButton={uploadButton(permissionReason)} />
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3">
             {filtered.map((e) => (
@@ -12979,6 +12966,7 @@ function EmojisSection() {
         />
 
         <EmojiRenameDialog
+          key={renameTarget?.id ?? "closed"}
           emoji={renameTarget}
           existingShortcodes={
             new Set(
@@ -12995,6 +12983,7 @@ function EmojisSection() {
         />
 
         <EmojiDeleteDialog
+          key={deleteTarget?.id ?? "closed"}
           emoji={deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onDeleted={async () => {
@@ -13021,11 +13010,7 @@ function EmojiGridSkeleton() {
   )
 }
 
-function EmojiEmptyState({
-  uploadButton,
-}: {
-  uploadButton: React.ReactNode
-}) {
+function EmojiEmptyState({ uploadButton }: { uploadButton: React.ReactNode }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-24 text-center">
       <div
@@ -13137,7 +13122,7 @@ function EmojiTile({
         {uploader?.name ?? "Unknown"} · {createdLabel}
       </div>
       {canManage && (
-        <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+        <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
           <button
             type="button"
             onClick={onRename}
@@ -13198,8 +13183,8 @@ function EmojiUploadDialog({
   const [dragActive, setDragActive] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
       setShortcode("")
       setFile(null)
       setDataUrl(null)
@@ -13207,7 +13192,8 @@ function EmojiUploadDialog({
       setSubmitting(false)
       setDragActive(false)
     }
-  }, [open])
+    onOpenChange(next)
+  }
 
   const acceptFile = async (f: File) => {
     const err = validateEmojiFile(f)
@@ -13231,7 +13217,8 @@ function EmojiUploadDialog({
 
   const shortcodeTrimmed = shortcode.trim().toLowerCase()
   const shortcodeFormatError =
-    shortcodeTrimmed.length > 0 && !EMOJI_SHORTCODE_PATTERN.test(shortcodeTrimmed)
+    shortcodeTrimmed.length > 0 &&
+    !EMOJI_SHORTCODE_PATTERN.test(shortcodeTrimmed)
       ? "Use 2–32 lowercase letters, numbers, or underscores"
       : null
   const shortcodeDupeError =
@@ -13267,7 +13254,7 @@ function EmojiUploadDialog({
         throw new Error(body.error || "Upload failed")
       }
       toast.success(`Uploaded :${shortcodeTrimmed}:`)
-      onOpenChange(false)
+      handleOpenChange(false)
       await onUploaded()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed")
@@ -13276,7 +13263,7 @@ function EmojiUploadDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Upload emoji</DialogTitle>
@@ -13411,7 +13398,7 @@ function EmojiUploadDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
           <Button onClick={onSubmit} disabled={!canSubmit}>
@@ -13434,15 +13421,10 @@ function EmojiRenameDialog({
   onClose: () => void
   onSaved: () => Promise<void> | void
 }) {
-  const [shortcode, setShortcode] = useState("")
+  // Seed from `emoji` once on mount; parent passes a key tied to the emoji
+  // id so the dialog remounts (and reseeds) when a different row is selected.
+  const [shortcode, setShortcode] = useState(emoji?.shortcode ?? "")
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (emoji) {
-      setShortcode(emoji.shortcode)
-      setSubmitting(false)
-    }
-  }, [emoji])
 
   const trimmed = shortcode.trim().toLowerCase()
   const formatError =
@@ -13527,11 +13509,9 @@ function EmojiDeleteDialog({
   onClose: () => void
   onDeleted: () => Promise<void> | void
 }) {
+  // Parent passes a key tied to the emoji id, so this dialog remounts (and
+  // `submitting` resets) whenever a different row is targeted.
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (emoji) setSubmitting(false)
-  }, [emoji])
 
   const onConfirm = async () => {
     if (!emoji) return
@@ -14319,7 +14299,7 @@ function IntegrationCard({
       </div>
       {connected && (
         <span
-          className="bg-emerald-500/15 text-emerald-500 absolute top-2.5 right-2.5 flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none"
+          className="absolute top-2.5 right-2.5 flex items-center gap-1 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] leading-none font-medium text-emerald-500"
           aria-label="Connected"
         >
           <span className="size-1.5 rounded-full bg-emerald-500" />
@@ -14481,7 +14461,10 @@ function IntegrationsSection() {
   const tabFilteredSections = useMemo(() => {
     if (activeTab === "all") return allSections
     return allSections
-      .map((s) => ({ ...s, items: s.items.filter((i) => matchesTab(i, activeTab)) }))
+      .map((s) => ({
+        ...s,
+        items: s.items.filter((i) => matchesTab(i, activeTab)),
+      }))
       .filter((s) => s.items.length > 0)
   }, [allSections, activeTab])
 
@@ -14493,8 +14476,7 @@ function IntegrationsSection() {
         ...s,
         items: s.items.filter(
           (i) =>
-            i.name.toLowerCase().includes(q) ||
-            i.desc.toLowerCase().includes(q)
+            i.name.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q)
         ),
       }))
       .filter((s) => s.items.length > 0)
@@ -14639,9 +14621,7 @@ function IntegrationsSection() {
                   }}
                   role="tab"
                   type="button"
-                  aria-selected={
-                    !!MORE_TABS.find((t) => t.key === activeTab)
-                  }
+                  aria-selected={!!MORE_TABS.find((t) => t.key === activeTab)}
                   aria-haspopup="menu"
                   aria-expanded={morePopoverOpen}
                   tabIndex={
@@ -14654,16 +14634,11 @@ function IntegrationsSection() {
                       : "text-muted-foreground hover:text-foreground border-transparent"
                   }`}
                 >
-                  {MORE_TABS.find((t) => t.key === activeTab)?.label ??
-                    "More…"}
+                  {MORE_TABS.find((t) => t.key === activeTab)?.label ?? "More…"}
                 </button>
               }
             />
-            <PopoverContent
-              align="start"
-              className="w-48 p-1"
-              role="menu"
-            >
+            <PopoverContent align="start" className="w-48 p-1" role="menu">
               {MORE_TABS.map((t) => (
                 <button
                   key={t.key}

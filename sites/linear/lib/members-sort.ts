@@ -50,12 +50,7 @@ export function compareNullSmallest<T extends string | number | null>(
  */
 export function compareByMembersColumn<
   M extends Record<MembersSortKey, unknown>,
->(
-  a: M,
-  b: M,
-  key: MembersSortKey,
-  direction: MembersSortDirection
-): number {
+>(a: M, b: M, key: MembersSortKey, direction: MembersSortDirection): number {
   return compareNullSmallest(
     a[key] as string | number | null,
     b[key] as string | number | null,

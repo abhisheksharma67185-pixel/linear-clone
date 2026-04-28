@@ -43,10 +43,7 @@ import {
   BotIcon,
   PanelRightIcon,
 } from "@hugeicons/core-free-icons"
-import {
-  FilterPopover,
-  type FilterOption,
-} from "@/components/filter-popover"
+import { FilterPopover, type FilterOption } from "@/components/filter-popover"
 import {
   Popover,
   PopoverContent,
@@ -386,11 +383,7 @@ export default function TeamIssuesPage() {
       if (event.metaKey || event.ctrlKey || event.altKey) return
       const target = event.target as HTMLElement | null
       const tag = target?.tagName.toLowerCase()
-      if (
-        tag === "input" ||
-        tag === "textarea" ||
-        target?.isContentEditable
-      ) {
+      if (tag === "input" || tag === "textarea" || target?.isContentEditable) {
         return
       }
       if (document.querySelector('[data-state="open"][role="dialog"]')) return
@@ -417,7 +410,9 @@ export default function TeamIssuesPage() {
           <h1 className="text-sm font-medium">Issues</h1>
           <button
             type="button"
-            aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+            aria-label={
+              favorited ? "Remove from favorites" : "Add to favorites"
+            }
             aria-pressed={favorited}
             onClick={() =>
               toggleFavorite({
@@ -868,8 +863,7 @@ function BoardView({
     () => new Set()
   )
   const visible = BOARD_COLUMN_ORDER.filter(
-    (s) =>
-      !manuallyHidden.has(s) && (showEmptyColumns || grouped[s].length > 0)
+    (s) => !manuallyHidden.has(s) && (showEmptyColumns || grouped[s].length > 0)
   )
   const hidden = BOARD_COLUMN_ORDER.filter(
     (s) =>
@@ -1047,11 +1041,7 @@ function BoardColumn({
 
       <div className="flex flex-col gap-2">
         {items.map((item) => (
-          <BoardCard
-            key={item.id}
-            item={item}
-            memberById={memberById}
-          />
+          <BoardCard key={item.id} item={item} memberById={memberById} />
         ))}
         <button
           type="button"
@@ -1137,9 +1127,7 @@ function IssuesRightPanel({
   issues: Issue[]
   memberById: Map<string, Member>
   tab: "assignees" | "labels" | "priority" | "projects"
-  onTabChange: (
-    t: "assignees" | "labels" | "priority" | "projects"
-  ) => void
+  onTabChange: (t: "assignees" | "labels" | "priority" | "projects") => void
 }) {
   const assigneeRows = useMemo(() => {
     const counts = new Map<string | null, number>()

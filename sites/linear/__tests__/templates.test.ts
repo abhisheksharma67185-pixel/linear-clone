@@ -5,6 +5,7 @@ import {
   deleteTemplate,
   duplicateTemplate,
   templates,
+  type TemplateDefaults,
   updateTemplate,
 } from "../lib/templates-mocks"
 
@@ -200,7 +201,11 @@ describe("templates store: edit (update)", () => {
       },
     })
     if (!r.success) throw new Error("seed failed")
-    const u = updateTemplate(r.data.id, { defaults: { priority: "low" } as any })
+    const u = updateTemplate(r.data.id, {
+      defaults: {
+        priority: "low",
+      } as Partial<TemplateDefaults> as TemplateDefaults,
+    })
     expect(u.success).toBe(true)
     if (u.success) {
       expect(u.data.defaults.priority).toBe("low")

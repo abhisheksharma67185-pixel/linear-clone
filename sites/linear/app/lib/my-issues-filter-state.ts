@@ -60,13 +60,7 @@ export const FILTER_GROUPS: { items: FilterKind[] }[] = [
   },
   { items: ["project", "projectProperties", "initiative"] },
   {
-    items: [
-      "subscribers",
-      "autoClosed",
-      "content",
-      "links",
-      "template",
-    ],
+    items: ["subscribers", "autoClosed", "content", "links", "template"],
   },
 ]
 
@@ -113,10 +107,7 @@ export function countActiveFilters(filters: FilterState): number {
   }, 0)
 }
 
-export function applyFilters(
-  issues: Issue[],
-  filters: FilterState
-): Issue[] {
+export function applyFilters(issues: Issue[], filters: FilterState): Issue[] {
   return issues.filter((issue) => {
     for (const kind of Object.keys(filters) as FilterKind[]) {
       const values = filters[kind]

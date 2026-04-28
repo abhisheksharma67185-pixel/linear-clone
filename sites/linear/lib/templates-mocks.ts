@@ -17,7 +17,14 @@ export type TemplateDefaults = {
 
 export type CustomFormField = {
   id: string
-  kind: "text" | "textarea" | "select" | "multi-select" | "number" | "date" | "toggle"
+  kind:
+    | "text"
+    | "textarea"
+    | "select"
+    | "multi-select"
+    | "number"
+    | "date"
+    | "toggle"
   label: string
   placeholder: string
   required: boolean

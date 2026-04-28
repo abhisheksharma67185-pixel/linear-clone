@@ -34,10 +34,7 @@ import {
   VerticalAdjustmentsIcon,
 } from "@/components/circular-icon-toolbar"
 import { IconPickerPopover } from "@/components/icon-picker-popover"
-import {
-  STATUS_TO_TYPE,
-  type IssueStatus,
-} from "@/lib/issue-status-types"
+import { STATUS_TO_TYPE, type IssueStatus } from "@/lib/issue-status-types"
 
 const STATUS_ORDER: readonly IssueStatus[] = [
   "in_progress",
@@ -122,9 +119,7 @@ export default function NewViewPage() {
           <span className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-pink-500/70 text-pink-500">
             <HugeiconsIcon icon={UserIcon} className="size-2.5" />
           </span>
-          <span className="text-foreground font-medium">
-            Abhishek
-          </span>
+          <span className="text-foreground font-medium">Abhishek</span>
           <HugeiconsIcon
             icon={ArrowRight01Icon}
             className="size-3"

@@ -4,8 +4,7 @@
 // Matches xyz.com, foo.bar.co.uk, example.dev — lower-cased, no scheme/path.
 // Each label is 1-63 chars, letters/digits/hyphens, no leading/trailing hyphen.
 // TLD must be alphabetic and at least 2 chars.
-const DOMAIN_PATTERN =
-  /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/
+const DOMAIN_PATTERN = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/
 
 export type DomainValidation =
   | { success: true; data: string }
@@ -21,7 +20,10 @@ export function validateDomain(raw: unknown): DomainValidation {
   }
   // Reject anything that looks like a URL or has a path/port.
   if (/[\s\/]|:[0-9]+$/.test(s) || s.includes("://")) {
-    return { success: false, error: "Enter a plain domain, without https:// or paths" }
+    return {
+      success: false,
+      error: "Enter a plain domain, without https:// or paths",
+    }
   }
   if (!DOMAIN_PATTERN.test(s)) {
     return { success: false, error: "Enter a valid domain like example.com" }

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import {
   Popover,
   PopoverContent,
@@ -200,15 +200,16 @@ export function FilterPopover({
     }
   }, [])
 
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next)
+    if (!next) {
       setAiMode(false)
       setAiQuery("")
       setSearch("")
       setSubmenuSearchState({ key: null, q: "" })
       setHoveredKey(null)
     }
-  }, [open])
+  }
 
   const filtered = options.filter((o) =>
     o.label.toLowerCase().includes(search.toLowerCase())
@@ -228,23 +229,27 @@ export function FilterPopover({
     (hovered.kind === "search" || hovered.submenu !== undefined)
   )
 
-  useEffect(() => {
+  // Position the side panel via DOM mutation rather than React state — the
+  // measurement is a one-shot layout sync, not data the rest of the tree
+  // needs to read. This keeps `react-hooks/set-state-in-effect` quiet.
+  useLayoutEffect(() => {
+    const sideEl = sidePanelRef.current
+    if (!sideEl) return
     if (!hoveredKey) {
-      setSideOffset(0)
+      sideEl.style.marginTop = "0px"
       return
     }
     const rowEl = rowRefs.current.get(hoveredKey)
     const mainEl = mainPanelRef.current
-    const sideEl = sidePanelRef.current
     if (!rowEl || !mainEl) return
     const rowOffset = Math.max(
       0,
       rowEl.getBoundingClientRect().top - mainEl.getBoundingClientRect().top
     )
-    const sideH = sideEl?.offsetHeight ?? 0
+    const sideH = sideEl.offsetHeight
     const mainH = mainEl.offsetHeight
     const maxOffset = Math.max(0, mainH - sideH)
-    setSideOffset(Math.min(rowOffset, maxOffset))
+    sideEl.style.marginTop = `${Math.min(rowOffset, maxOffset)}px`
   }, [hoveredKey])
 
   const toggleChild = (key: string) => {
@@ -257,7 +262,7 @@ export function FilterPopover({
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       {triggerRender ? (
         <PopoverTrigger render={triggerRender} />
       ) : (

@@ -48,22 +48,19 @@ describe("project statuses: seed", () => {
 })
 
 describe("project statuses: creation in each category", () => {
-  it.each(STATUS_CATEGORIES)(
-    "creates a status in category %s",
-    (category) => {
-      const r = createStatus({
-        name: `New ${category}`,
-        description: "desc",
-        color: "#000",
-        category,
-      })
-      expect(r.success).toBe(true)
-      if (r.success) {
-        expect(r.data.category).toBe(category)
-        expect(r.data.name).toBe(`New ${category}`)
-      }
+  it.each(STATUS_CATEGORIES)("creates a status in category %s", (category) => {
+    const r = createStatus({
+      name: `New ${category}`,
+      description: "desc",
+      color: "#000",
+      category,
+    })
+    expect(r.success).toBe(true)
+    if (r.success) {
+      expect(r.data.category).toBe(category)
+      expect(r.data.name).toBe(`New ${category}`)
     }
-  )
+  })
 
   it("rejects create without a name", () => {
     const r = createStatus({ name: "  ", category: "in-progress" })

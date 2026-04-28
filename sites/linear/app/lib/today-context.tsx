@@ -20,12 +20,7 @@
  * its "today" stable until the user navigates or refreshes.
  */
 
-import {
-  createContext,
-  useContext,
-  useMemo,
-  type ReactNode,
-} from "react"
+import { createContext, useContext, useMemo, type ReactNode } from "react"
 
 const TodayContext = createContext<Date | null>(null)
 
@@ -68,8 +63,6 @@ export function useToday(): Date {
  * Centralised so a future locale change is one edit.
  */
 export function formatTodayPill(date: Date): string {
-  const month = date
-    .toLocaleString("en-US", { month: "short" })
-    .toUpperCase()
+  const month = date.toLocaleString("en-US", { month: "short" }).toUpperCase()
   return `${month} ${date.getDate()}`
 }

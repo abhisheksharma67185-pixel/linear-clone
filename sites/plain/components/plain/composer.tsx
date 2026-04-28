@@ -31,17 +31,30 @@ export type ComposerSendAction = "reply" | "reply-snooze" | "reply-done"
 
 export function Composer({
   onSend,
+  pending = false,
 }: {
   onSend?: (body: string, action: ComposerSendAction) => void
+  pending?: boolean
 }) {
   const [value, setValue] = React.useState("")
   const [primaryAction, setPrimaryAction] =
     React.useState<ComposerSendAction>("reply")
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null)
+
+  // Track the last pending state we observed so we only clear/refocus once
+  // when a send completes (transitions from pending → idle).
+  const prevPendingRef = React.useRef(pending)
+  React.useEffect(() => {
+    if (prevPendingRef.current && !pending) {
+      setValue("")
+      textareaRef.current?.focus()
+    }
+    prevPendingRef.current = pending
+  }, [pending])
 
   const send = (action: ComposerSendAction) => {
-    if (!value.trim()) return
+    if (!value.trim() || pending) return
     onSend?.(value.trim(), action)
-    setValue("")
     setPrimaryAction(action)
   }
 
@@ -52,13 +65,17 @@ export function Composer({
         ? "Reply and snooze"
         : "Reply and done"
 
+  const sendDisabled = !value.trim() || pending
+
   return (
     <div className="border-t border-border/50 bg-card/30 p-3">
       <Textarea
+        ref={textareaRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Reply to the customer…"
         rows={3}
+        disabled={pending}
         className="min-h-20 resize-none border-border/60 bg-background/60 text-sm focus-visible:border-foreground/30"
         onKeyDown={(e) => {
           if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
@@ -117,10 +134,10 @@ export function Composer({
             variant="ghost"
             size="sm"
             onClick={() => send(primaryAction)}
-            disabled={!value.trim()}
+            disabled={sendDisabled}
             className="h-8 rounded-none border-0 bg-transparent px-3 text-xs font-medium text-foreground hover:bg-muted/70"
           >
-            {primaryLabel}
+            {pending ? "Sending…" : primaryLabel}
             <Kbd className="ml-2">⌘ ⏎</Kbd>
           </Button>
           <DropdownMenu>
@@ -130,6 +147,7 @@ export function Composer({
                   variant="ghost"
                   size="icon-sm"
                   aria-label="More send options"
+                  disabled={pending}
                   className="h-8 w-7 rounded-none border-l border-border/60 bg-transparent hover:bg-muted/70"
                 >
                   <IconChevronDown className="size-3" />

@@ -1,7 +1,10 @@
 // ---------------------------------------------------------------------------
-// Generic environment configuration — universal params for all sites
-// Site-specific config is handled by each site's own config module
+// Generic environment configuration — universal params for all sites.
+// Site-specific config is handled by each site's own config module.
+// All runtime functions proxy to the process-wide `defaultEngine` instance.
 // ---------------------------------------------------------------------------
+
+import { defaultEngine } from "./sim-engine"
 
 export interface UniversalConfig {
   latency: number
@@ -11,27 +14,16 @@ export interface UniversalConfig {
   locale: string
 }
 
-const DEFAULT_UNIVERSAL: UniversalConfig = {
-  latency: 0,
-  hideAriaLabels: false,
-  errorRate: 0,
-  dateOverride: null,
-  locale: "en-US",
-}
-
-let _universalConfig: UniversalConfig = { ...DEFAULT_UNIVERSAL }
-
 export function getUniversalConfig(): UniversalConfig {
-  return { ..._universalConfig }
+  return defaultEngine.getUniversalConfig()
 }
 
 export function applyUniversalConfig(
   overrides: Partial<UniversalConfig>
 ): UniversalConfig {
-  _universalConfig = { ..._universalConfig, ...overrides }
-  return _universalConfig
+  return defaultEngine.applyUniversalConfig(overrides)
 }
 
 export function resetUniversalConfig(): void {
-  _universalConfig = { ...DEFAULT_UNIVERSAL }
+  defaultEngine.resetUniversalConfig()
 }

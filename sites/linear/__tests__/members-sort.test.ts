@@ -80,13 +80,7 @@ describe("compareNullSmallest", () => {
     // the comparator is non-deterministic (e.g. a == null returning
     // different signs depending on order), `Array.sort` produces
     // different results across runs.
-    const input = [
-      "zebra",
-      null,
-      "apple",
-      null,
-      "mango",
-    ] as (string | null)[]
+    const input = ["zebra", null, "apple", null, "mango"] as (string | null)[]
     const sortedAsc1 = [...input].sort((a, b) => compareNullSmallest(a, b, 1))
     const sortedAsc2 = [...input].sort((a, b) => compareNullSmallest(a, b, 1))
     expect(sortedAsc1).toEqual(sortedAsc2)

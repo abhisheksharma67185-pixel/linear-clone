@@ -36,8 +36,9 @@ export default function ProfilePage({
       .then((list: MemberSummary[]) => {
         if (cancelled) return
         setMember(
-          list.find((m) => m.username.toLowerCase() === username.toLowerCase()) ??
-            null
+          list.find(
+            (m) => m.username.toLowerCase() === username.toLowerCase()
+          ) ?? null
         )
       })
       .catch(() => {})
@@ -85,7 +86,7 @@ export default function ProfilePage({
             </div>
             <div>
               <h1 className="text-2xl font-semibold">{member.name}</h1>
-              <p className="text-muted-foreground text-sm font-mono">
+              <p className="text-muted-foreground font-mono text-sm">
                 @{member.username}
               </p>
             </div>

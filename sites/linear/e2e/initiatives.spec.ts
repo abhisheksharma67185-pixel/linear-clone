@@ -51,14 +51,14 @@ test.describe("Initiatives page", () => {
       // zero.
       const panel = page.locator(`[data-tab-content="${tab}"]`)
       const rowCount = await panel
-        .locator("[data-initiative-row], .grid.grid-cols-\\[1fr_160px_160px_120px_160px_120px\\]")
+        .locator(
+          "[data-initiative-row], .grid.grid-cols-\\[1fr_160px_160px_120px_160px_120px\\]"
+        )
         .count()
       // The header grid uses the same class — so subtract 1 if rows > 0.
       // Easier path: assert via empty banner when count is 0.
       if (badgeCount === 0) {
-        await expect(
-          panel.getByTestId("initiatives-empty-label")
-        ).toBeVisible()
+        await expect(panel.getByTestId("initiatives-empty-label")).toBeVisible()
       } else {
         // header row + N data rows; we accept >= badgeCount because
         // the header div participates in the same grid template.
@@ -75,9 +75,7 @@ test.describe("Initiatives page", () => {
     page,
   }) => {
     const before = Date.now()
-    await page
-      .getByRole("tab", { name: /^Planned\s*\d+$/ })
-      .click()
+    await page.getByRole("tab", { name: /^Planned\s*\d+$/ }).click()
     await expect(page).toHaveURL(/[?&]tab=planned\b/, { timeout: 100 })
     await expect(
       page.locator('[data-tab-content="planned"][data-state="active"]')
@@ -114,7 +112,10 @@ test.describe("Initiatives page", () => {
 
     // Open Display Options to surface anything that might still be
     // mounted behind it.
-    await page.getByRole("button", { name: /Display Options|View options/i }).first().click()
+    await page
+      .getByRole("button", { name: /Display Options|View options/i })
+      .first()
+      .click()
     // After opening Display Options, there must STILL be zero new
     // initiative inputs in the DOM. This is the regression check.
     await expect(page.getByTestId("new-initiative-input")).toHaveCount(0)

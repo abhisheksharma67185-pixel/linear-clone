@@ -163,8 +163,7 @@ export function DocumentTemplateEditor(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canSave, name, iconName, body])
 
-  const glyph =
-    ICON_PRESETS.find((p) => p.name === iconName)?.glyph ?? "📄"
+  const glyph = ICON_PRESETS.find((p) => p.name === iconName)?.glyph ?? "📄"
 
   if (loading) {
     return (
@@ -185,7 +184,9 @@ export function DocumentTemplateEditor(props: Props) {
       </Link>
 
       <h1 className="mt-3 text-xl font-semibold">
-        {props.mode === "new" ? "New document template" : "Edit document template"}
+        {props.mode === "new"
+          ? "New document template"
+          : "Edit document template"}
       </h1>
 
       <hr className="border-border/80 mt-4 border-t" aria-hidden="true" />
@@ -257,11 +258,7 @@ export function DocumentTemplateEditor(props: Props) {
           style={{ backgroundColor: LINEAR_BRAND_BLUE }}
           className="text-white hover:opacity-90 disabled:opacity-60"
         >
-          {submitting
-            ? "Saving…"
-            : props.mode === "new"
-              ? "Create"
-              : "Save"}
+          {submitting ? "Saving…" : props.mode === "new" ? "Create" : "Save"}
         </Button>
       </div>
       <div className="text-muted-foreground mt-2 text-right text-[11px]">

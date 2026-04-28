@@ -100,8 +100,9 @@ export function ProjectTemplateEditor(props: Props) {
     issuesSeed: 0,
   })
   const [milestones, setMilestones] = useState<Milestone[]>([])
-  const [visibility, setVisibility] =
-    useState<"private" | "workspace">("workspace")
+  const [visibility, setVisibility] = useState<"private" | "workspace">(
+    "workspace"
+  )
   const [scope, setScope] = useState<"workspace" | "team">("workspace")
   const [submitting, setSubmitting] = useState(false)
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
@@ -224,10 +225,17 @@ export function ProjectTemplateEditor(props: Props) {
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cancelConfirmOpen, canSave, name, summary, projectName, description, milestones])
+  }, [
+    cancelConfirmOpen,
+    canSave,
+    name,
+    summary,
+    projectName,
+    description,
+    milestones,
+  ])
 
-  const iconGlyph =
-    ICON_PRESETS.find((p) => p.name === iconName)?.glyph ?? "🧊"
+  const iconGlyph = ICON_PRESETS.find((p) => p.name === iconName)?.glyph ?? "🧊"
 
   if (loading) {
     return (
@@ -249,7 +257,9 @@ export function ProjectTemplateEditor(props: Props) {
 
       <div>
         <h1 className="text-xl font-semibold">
-          {props.mode === "new" ? "New project template" : "Edit project template"}
+          {props.mode === "new"
+            ? "New project template"
+            : "Edit project template"}
         </h1>
       </div>
 
@@ -337,7 +347,9 @@ export function ProjectTemplateEditor(props: Props) {
               value: p.value,
               label: p.label,
             }))}
-            onChange={(v) => setAttrs((a) => ({ ...a, priority: v as Priority }))}
+            onChange={(v) =>
+              setAttrs((a) => ({ ...a, priority: v as Priority }))
+            }
             ariaLabel="Default priority"
           />
           <AttrSelect
@@ -352,7 +364,9 @@ export function ProjectTemplateEditor(props: Props) {
             }
             ariaLabel="Default lead"
           />
-          <AttrChip label={`Members${attrs.memberIds.length ? ` (${attrs.memberIds.length})` : ""}`} />
+          <AttrChip
+            label={`Members${attrs.memberIds.length ? ` (${attrs.memberIds.length})` : ""}`}
+          />
           <AttrSelect
             label="Team"
             value={attrs.teamId ?? ""}
@@ -365,7 +379,9 @@ export function ProjectTemplateEditor(props: Props) {
             }
             ariaLabel="Default team"
           />
-          <AttrChip label={`Labels${attrs.labelIds.length ? ` (${attrs.labelIds.length})` : ""}`} />
+          <AttrChip
+            label={`Labels${attrs.labelIds.length ? ` (${attrs.labelIds.length})` : ""}`}
+          />
           <AttrChip label="Dependencies" />
           <AttrChip label="Issues" />
         </div>
@@ -418,7 +434,7 @@ export function ProjectTemplateEditor(props: Props) {
             <ul role="list" className="flex flex-col gap-1.5">
               {milestones.map((ms, idx) => (
                 <li key={ms.id} className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-xs w-5 tabular-nums">
+                  <span className="text-muted-foreground w-5 text-xs tabular-nums">
                     {idx + 1}.
                   </span>
                   <Input
@@ -461,17 +477,12 @@ export function ProjectTemplateEditor(props: Props) {
       {/* Footer actions */}
       <div className="flex flex-wrap items-center gap-3 border-t pt-4">
         <div className="flex flex-col gap-1">
-          <Label
-            htmlFor="pt-visibility"
-            className="text-xs font-medium"
-          >
+          <Label htmlFor="pt-visibility" className="text-xs font-medium">
             Visibility
           </Label>
           <Select
             value={visibility}
-            onValueChange={(v) =>
-              setVisibility(v as "private" | "workspace")
-            }
+            onValueChange={(v) => setVisibility(v as "private" | "workspace")}
           >
             <SelectTrigger id="pt-visibility" className="h-8 w-36 text-xs">
               <SelectValue />
@@ -516,11 +527,7 @@ export function ProjectTemplateEditor(props: Props) {
                 : "Save project template"
             }
           >
-            {submitting
-              ? "Saving…"
-              : props.mode === "new"
-                ? "Create"
-                : "Save"}
+            {submitting ? "Saving…" : props.mode === "new" ? "Create" : "Save"}
           </Button>
         </div>
       </div>

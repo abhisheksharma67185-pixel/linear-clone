@@ -36,7 +36,7 @@ export default function TeamSettingsPage({
 
   if (loading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">Loading team…</div>
+      <div className="text-muted-foreground p-6 text-sm">Loading team…</div>
     )
   }
 

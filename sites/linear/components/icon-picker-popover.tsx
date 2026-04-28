@@ -1708,10 +1708,6 @@ export function IconPickerPopover({
 
   const color = PICKER_COLORS.find((c) => c.id === colorId) ?? PICKER_COLORS[1]
 
-  const filtered = search
-    ? PICKER_ICONS.filter((e) => e.name.includes(search.toLowerCase()))
-    : PICKER_ICONS
-
   function handleSelect(icon: IconType) {
     setSelectedIcon(icon)
     setSelectedEmoji(null)

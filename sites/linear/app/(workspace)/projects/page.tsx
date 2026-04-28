@@ -49,11 +49,11 @@ import {
   CalendarCheckIn01Icon,
   CalendarCheckOut01Icon,
 } from "@hugeicons/core-free-icons"
-import { StatusIcon as IssueStatusIcon, PriorityIcon } from "@/components/status-icons"
 import {
-  FilterPopover,
-  type FilterOption,
-} from "@/components/filter-popover"
+  StatusIcon as IssueStatusIcon,
+  PriorityIcon,
+} from "@/components/status-icons"
+import { FilterPopover, type FilterOption } from "@/components/filter-popover"
 import {
   FilterSortIcon,
   VerticalAdjustmentsIcon,
@@ -1316,8 +1316,7 @@ function TimelineView({
           >
             {ticks.map((t, i) => {
               const hideTickLabel =
-                !t.isToday &&
-                Math.abs(t.x - todayX) < TODAY_PILL_HALF_WIDTH
+                !t.isToday && Math.abs(t.x - todayX) < TODAY_PILL_HALF_WIDTH
               if (hideTickLabel) return null
               return (
                 <div
@@ -1374,7 +1373,7 @@ function TimelineView({
             {unscheduled.length > 0 && (
               <div
                 data-testid="timeline-unscheduled-lane-label"
-                className="bg-muted/30 border-border/40 text-muted-foreground sticky top-0 z-10 flex h-7 items-center gap-2 border-b px-3 text-[11px] font-medium uppercase tracking-wide"
+                className="bg-muted/30 border-border/40 text-muted-foreground sticky top-0 z-10 flex h-7 items-center gap-2 border-b px-3 text-[11px] font-medium tracking-wide uppercase"
               >
                 <span>Unscheduled</span>
                 <span className="bg-muted text-muted-foreground inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums">
@@ -2938,7 +2937,9 @@ const STATIC_FILTER_OPTIONS: FilterOption[] = [
       },
       {
         label: "Start date",
-        icon: <HugeiconsIcon icon={CalendarCheckIn01Icon} className="size-3.5" />,
+        icon: (
+          <HugeiconsIcon icon={CalendarCheckIn01Icon} className="size-3.5" />
+        ),
       },
       {
         label: "Target date",
@@ -2946,11 +2947,15 @@ const STATIC_FILTER_OPTIONS: FilterOption[] = [
       },
       {
         label: "Completed date",
-        icon: <HugeiconsIcon icon={CalendarCheckOut01Icon} className="size-3.5" />,
+        icon: (
+          <HugeiconsIcon icon={CalendarCheckOut01Icon} className="size-3.5" />
+        ),
       },
       {
         label: "Latest update date",
-        icon: <HugeiconsIcon icon={PulseRectangle01Icon} className="size-3.5" />,
+        icon: (
+          <HugeiconsIcon icon={PulseRectangle01Icon} className="size-3.5" />
+        ),
       },
     ],
   },
@@ -3059,7 +3064,6 @@ function ProjectFilterPopover({
   )
 }
 
-
 function AdvancedFilterBar({
   projects,
   onClose,
@@ -3071,7 +3075,7 @@ function AdvancedFilterBar({
     <div className="border-b px-4 py-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
-          <div className="bg-muted text-muted-foreground inline-flex items-center gap-1.5 rounded-md py-1 pl-2 pr-1 text-xs">
+          <div className="bg-muted text-muted-foreground inline-flex items-center gap-1.5 rounded-md py-1 pr-1 pl-2 text-xs">
             <span>Advanced filter</span>
             <button
               type="button"

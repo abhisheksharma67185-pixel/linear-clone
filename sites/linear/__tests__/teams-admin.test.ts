@@ -133,9 +133,9 @@ describe("filterTeamSummaries", () => {
       filterTeamSummaries(summaries, "PLATFORM", "all").map((t) => t.name)
     ).toEqual(["Platform"])
     // Key match (uppercase in data, lowercase in query).
-    expect(filterTeamSummaries(summaries, "fe", "all").map((t) => t.key)).toEqual(
-      ["FE"]
-    )
+    expect(
+      filterTeamSummaries(summaries, "fe", "all").map((t) => t.key)
+    ).toEqual(["FE"])
     // Description match.
     expect(
       filterTeamSummaries(summaries, "engineering", "all").map((t) => t.name)
@@ -149,7 +149,11 @@ describe("filterTeamSummaries", () => {
       issuesByTeamId: {},
       currentUserId: "usr-1",
     })
-    expect(filterTeamSummaries(all, "", "active").map((t) => t.id)).toEqual(["t-2"])
-    expect(filterTeamSummaries(all, "", "retired").map((t) => t.id)).toEqual(["t-1"])
+    expect(filterTeamSummaries(all, "", "active").map((t) => t.id)).toEqual([
+      "t-2",
+    ])
+    expect(filterTeamSummaries(all, "", "retired").map((t) => t.id)).toEqual([
+      "t-1",
+    ])
   })
 })

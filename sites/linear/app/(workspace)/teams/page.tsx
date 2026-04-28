@@ -77,10 +77,7 @@ export default function TeamsPage() {
   const [activeDisplayProps, setActiveDisplayProps] = useState<
     Set<DisplayPropertyKey>
   >(
-    () =>
-      new Set(
-        DISPLAY_PROPERTIES.filter((p) => p.default).map((p) => p.key)
-      )
+    () => new Set(DISPLAY_PROPERTIES.filter((p) => p.default).map((p) => p.key))
   )
   const toggleDisplayProp = (key: DisplayPropertyKey) =>
     setActiveDisplayProps((prev) => {
@@ -160,7 +157,10 @@ export default function TeamsPage() {
           <h1 className="text-2xl font-semibold">Teams</h1>
           <p className="text-muted-foreground text-sm">
             All teams in your organization.{" "}
-            <span className="text-muted-foreground/70" data-testid="teams-count">
+            <span
+              className="text-muted-foreground/70"
+              data-testid="teams-count"
+            >
               {loading ? "…" : `${visibleTeams.length} of ${teams.length}`}
             </span>
           </p>
@@ -211,7 +211,7 @@ export default function TeamsPage() {
             >
               {/* Ordering */}
               <div className="mb-3 flex flex-col gap-2">
-                <div className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wide">
+                <div className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
                   Ordering
                 </div>
                 <div className="flex flex-col gap-0.5">
@@ -241,7 +241,7 @@ export default function TeamsPage() {
 
               {/* Display properties */}
               <div className="border-border border-t pt-3">
-                <div className="text-muted-foreground mb-2 text-[11px] font-semibold uppercase tracking-wide">
+                <div className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-wide uppercase">
                   Display properties
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -291,9 +291,7 @@ export default function TeamsPage() {
             className="text-muted-foreground text-sm"
             data-testid="teams-empty"
           >
-            {filter.trim()
-              ? "No teams match your filter."
-              : "No teams found."}
+            {filter.trim() ? "No teams match your filter." : "No teams found."}
           </p>
         ) : (
           <div
@@ -494,10 +492,7 @@ function TeamCard({
 
           <div className="flex items-center gap-2">
             {showActive && (
-              <ActiveIssuesIndicator
-                team={team}
-                activeCount={activeCount}
-              />
+              <ActiveIssuesIndicator team={team} activeCount={activeCount} />
             )}
 
             {/* Inline action buttons. Each has its own hover background
@@ -512,7 +507,7 @@ function TeamCard({
                       href="/settings?section=members"
                       data-testid="teams-card-members"
                       aria-label={`Members of ${team.name}`}
-                      className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-6 items-center justify-center rounded opacity-70 transition-opacity hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
+                      className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-6 items-center justify-center rounded opacity-70 transition-opacity group-hover:opacity-100 hover:opacity-100 focus-visible:opacity-100"
                     />
                   }
                 >
@@ -530,7 +525,7 @@ function TeamCard({
                       href={`/projects/${team.key.toLowerCase()}/board`}
                       data-testid="teams-card-projects"
                       aria-label={`Projects board for ${team.name}`}
-                      className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-6 items-center justify-center rounded opacity-70 transition-opacity hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
+                      className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-6 items-center justify-center rounded opacity-70 transition-opacity group-hover:opacity-100 hover:opacity-100 focus-visible:opacity-100"
                     />
                   }
                 >
@@ -597,7 +592,7 @@ function TeamMoreDropdown({ team }: { team: Team }) {
                   type="button"
                   data-testid="teams-card-more"
                   aria-label="Team actions"
-                  className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-6 items-center justify-center rounded opacity-70 transition-opacity hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 data-[popup-open]:opacity-100"
+                  className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-6 items-center justify-center rounded opacity-70 transition-opacity group-hover:opacity-100 hover:opacity-100 focus-visible:opacity-100 data-[popup-open]:opacity-100"
                 />
               }
             />
@@ -650,9 +645,8 @@ function MemberStack({
   // indication of who the "+N" hidden members were.
   const tooltipText = (
     <div className="max-w-xs">
-      <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">
-        {allMembers.length}{" "}
-        {allMembers.length === 1 ? "member" : "members"}
+      <p className="mb-1 text-[11px] font-semibold tracking-wide uppercase opacity-70">
+        {allMembers.length} {allMembers.length === 1 ? "member" : "members"}
       </p>
       <ul className="flex flex-col gap-0.5">
         {allMembers.map((m) => (

@@ -79,6 +79,7 @@ export function TeamSettingsHub({ team }: { team: TeamRef }) {
   }, [team.id])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load on mount
     void load()
   }, [load])
 
@@ -123,7 +124,7 @@ export function TeamSettingsHub({ team }: { team: TeamRef }) {
                   href={`/settings/teams/${teamIdSegment}/${section.id}`}
                   scroll={false}
                   aria-label={`Open ${section.label} settings`}
-                  className="bg-card hover:bg-white/5 focus-visible:bg-white/5 focus-visible:ring-ring group flex items-center gap-3 px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  className="bg-card focus-visible:ring-ring group flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <HugeiconsIcon
                     icon={SECTION_ICONS[section.id]}
@@ -226,6 +227,7 @@ export function TeamSettingsHub({ team }: { team: TeamRef }) {
       </section>
 
       <TeamDangerDialog
+        key={danger ?? "closed"}
         action={danger}
         team={team}
         onClose={() => setDanger(null)}
@@ -246,13 +248,6 @@ function TeamDangerDialog({
   const [confirmText, setConfirmText] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
-    if (action === null) {
-      setConfirmText("")
-      setSubmitting(false)
-    }
-  }, [action])
-
   if (!action) {
     return (
       <Dialog open={false} onOpenChange={onClose}>
@@ -264,7 +259,8 @@ function TeamDangerDialog({
   const config = TEAM_DANGER_ACTIONS.find((a) => a.id === action)!
   const requiresTyping = action === "delete"
   const canConfirm =
-    !submitting && (!requiresTyping || validateTeamNameMatch(confirmText, team.name))
+    !submitting &&
+    (!requiresTyping || validateTeamNameMatch(confirmText, team.name))
 
   const onConfirm = async () => {
     if (!canConfirm) return
@@ -337,7 +333,7 @@ function TeamDangerDialog({
             disabled={!canConfirm}
             className={
               action === "delete"
-                ? "bg-destructive text-white hover:bg-destructive/90"
+                ? "bg-destructive hover:bg-destructive/90 text-white"
                 : undefined
             }
           >

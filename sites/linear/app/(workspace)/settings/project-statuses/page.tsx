@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -98,7 +98,12 @@ type Status = {
   updatedAt: string
 }
 
-type Draft = { category: StatusCategory; name: string; description: string; color: string }
+type Draft = {
+  category: StatusCategory
+  name: string
+  description: string
+  color: string
+}
 
 type EditTarget = { id: string; field: "name" | "description" } | null
 
@@ -335,7 +340,7 @@ export default function ProjectStatusesPage() {
                   {/* Drag handle (decorative — DnD reorder out of scope). */}
                   <span
                     aria-hidden="true"
-                    className="text-muted-foreground/50 cursor-grab select-none text-xs opacity-0 transition-opacity group-hover/row:opacity-100"
+                    className="text-muted-foreground/50 cursor-grab text-xs opacity-0 transition-opacity select-none group-hover/row:opacity-100"
                   >
                     ⋮⋮
                   </span>
@@ -364,7 +369,7 @@ export default function ProjectStatusesPage() {
                           setEditing({ id: s.id, field: "name" })
                           setEditingValue(s.name)
                         }}
-                        className="text-sm font-medium cursor-text"
+                        className="cursor-text text-sm font-medium"
                       >
                         {s.name}
                       </div>
@@ -551,7 +556,7 @@ function DraftRow({
     >
       <span
         aria-hidden="true"
-        className="text-muted-foreground/50 select-none text-xs"
+        className="text-muted-foreground/50 text-xs select-none"
       >
         ⋮⋮
       </span>
@@ -575,9 +580,7 @@ function DraftRow({
         />
         <input
           value={draft.description}
-          onChange={(e) =>
-            setDraft({ ...draft, description: e.target.value })
-          }
+          onChange={(e) => setDraft({ ...draft, description: e.target.value })}
           onKeyDown={(e) => {
             if (e.key === "Enter") onSave()
             if (e.key === "Escape") onCancel()

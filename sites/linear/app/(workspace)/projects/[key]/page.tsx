@@ -77,11 +77,7 @@ export default function ProjectDetailPage() {
       if (event.metaKey || event.ctrlKey || event.altKey) return
       const target = event.target as HTMLElement | null
       const tag = target?.tagName.toLowerCase()
-      if (
-        tag === "input" ||
-        tag === "textarea" ||
-        target?.isContentEditable
-      ) {
+      if (tag === "input" || tag === "textarea" || target?.isContentEditable) {
         return
       }
       if (document.querySelector('[data-state="open"][role="dialog"]')) return
@@ -230,7 +226,9 @@ export default function ProjectDetailPage() {
               variant="ghost"
               size="icon"
               data-testid="project-panel-toggle"
-              aria-label={panelOpen ? "Close properties panel" : "Open properties panel"}
+              aria-label={
+                panelOpen ? "Close properties panel" : "Open properties panel"
+              }
               aria-pressed={panelOpen}
               onClick={() => setPanelOpen((v) => !v)}
               className="size-7"

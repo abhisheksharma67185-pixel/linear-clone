@@ -59,8 +59,7 @@ export function createdQuery(currentUserId: string): MyIssuesQuery {
 export function subscribedQuery(currentUserId: string): MyIssuesQuery {
   return {
     predicate: (i) =>
-      Array.isArray(i.subscriberIds) &&
-      i.subscriberIds.includes(currentUserId),
+      Array.isArray(i.subscriberIds) && i.subscriberIds.includes(currentUserId),
     where: `subscribers CONTAINS ${currentUserId}`,
   }
 }

@@ -257,10 +257,8 @@ describe("formatLastSeen", () => {
 
   it("reports Yesterday, days, then absolute date", () => {
     expect(
-      formatLastSeen(
-        new Date(now.getTime() - 26 * 3600_000).toISOString(),
-        now
-      ).label
+      formatLastSeen(new Date(now.getTime() - 26 * 3600_000).toISOString(), now)
+        .label
     ).toBe("Yesterday")
     expect(
       formatLastSeen(

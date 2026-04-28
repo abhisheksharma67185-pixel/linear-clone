@@ -39,9 +39,9 @@ test.describe("Display Options chips affect rendered columns", () => {
     // Close the popover; the description should now be removed from
     // every card.
     await page.keyboard.press("Escape")
-    await expect(
-      page.getByTestId("teams-display-options-popover")
-    ).toHaveCount(0)
+    await expect(page.getByTestId("teams-display-options-popover")).toHaveCount(
+      0
+    )
     await expect(description).toHaveCount(0)
 
     // Toggle it back on; description re-appears.

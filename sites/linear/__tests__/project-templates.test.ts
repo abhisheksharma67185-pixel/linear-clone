@@ -5,6 +5,7 @@ import {
   deleteProjectTemplate,
   duplicateProjectTemplate,
   projectTemplates,
+  type ProjectTemplateAttributes,
   updateProjectTemplate,
 } from "../lib/project-template-mocks"
 
@@ -52,7 +53,9 @@ describe("project templates: editor → list persistence", () => {
     const created = createProjectTemplate({
       name: "Weekly goals",
       summary: "Team weekly goals",
-      attributes: { priority: "high" } as any,
+      attributes: {
+        priority: "high",
+      } as Partial<ProjectTemplateAttributes> as ProjectTemplateAttributes,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
@@ -112,7 +115,9 @@ describe("project templates: edit", () => {
     if (!c.success) throw new Error("setup")
     const u = updateProjectTemplate(c.data.id, {
       name: "Renamed",
-      attributes: { priority: "urgent" } as any,
+      attributes: {
+        priority: "urgent",
+      } as Partial<ProjectTemplateAttributes> as ProjectTemplateAttributes,
     })
     expect(u.success).toBe(true)
     if (u.success) {
@@ -150,13 +155,16 @@ describe("project templates: e2e-style flow", () => {
     const c = createProjectTemplate({
       name: "Bug bash",
       summary: "Weekly bug triage",
-      attributes: { priority: "high" } as any,
+      attributes: {
+        priority: "high",
+      } as Partial<ProjectTemplateAttributes> as ProjectTemplateAttributes,
     })
     expect(c.success).toBe(true)
     if (!c.success) return
 
-    expect(updateProjectTemplate(c.data.id, { name: "Bug bash v2" }).success)
-      .toBe(true)
+    expect(
+      updateProjectTemplate(c.data.id, { name: "Bug bash v2" }).success
+    ).toBe(true)
     expect(duplicateProjectTemplate(c.data.id).success).toBe(true)
     expect(projectTemplates.length).toBe(2)
 

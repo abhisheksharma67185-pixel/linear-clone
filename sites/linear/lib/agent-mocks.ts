@@ -56,7 +56,9 @@ export function createSkill(input: {
 
 export function updateSkill(
   id: string,
-  patch: Partial<Pick<Skill, "name" | "slashCommand" | "promptTemplate" | "autoSelectRules">>
+  patch: Partial<
+    Pick<Skill, "name" | "slashCommand" | "promptTemplate" | "autoSelectRules">
+  >
 ): Skill | null {
   const skill = skills.find((s) => s.id === id)
   if (!skill) return null

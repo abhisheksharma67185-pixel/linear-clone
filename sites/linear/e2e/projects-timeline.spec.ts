@@ -37,9 +37,7 @@ test.describe("Projects timeline", () => {
    * disappear when zoom changed because the row state was coupled to
    * the timeline rendering state.
    */
-  test("project rows persist across all four zoom modes", async ({
-    page,
-  }) => {
+  test("project rows persist across all four zoom modes", async ({ page }) => {
     const allRowsLocator = page.locator(
       '[data-testid="timeline-scheduled-row"], [data-testid="timeline-unscheduled-row"]'
     )

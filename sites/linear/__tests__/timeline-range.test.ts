@@ -36,10 +36,7 @@ import {
   type TimelineZoom,
 } from "../app/lib/timeline-range"
 
-function project(
-  id: string,
-  overrides: Partial<Project> = {}
-): Project {
+function project(id: string, overrides: Partial<Project> = {}): Project {
   // Use `in` checks for date-like fields so explicit `null` overrides
   // are respected (we need null `createdAt` to test dateless projects).
   const base = {
@@ -87,18 +84,15 @@ describe("bucketProjects", () => {
     ])
     expect(buckets.unscheduled.map((p) => p.id)).toEqual(["dateless"])
     // Every input ends up in exactly one bucket.
-    expect(
-      buckets.scheduled.length + buckets.unscheduled.length
-    ).toBe(fixtures.length)
+    expect(buckets.scheduled.length + buckets.unscheduled.length).toBe(
+      fixtures.length
+    )
   })
 
   it("isScheduled is consistent with bucketProjects", () => {
     const projects: Project[] = [
       project("a", { createdAt: "2026-01-01", targetDate: "2026-02-01" }),
-      project(
-        "b",
-        { createdAt: null as unknown as string, targetDate: null }
-      ),
+      project("b", { createdAt: null as unknown as string, targetDate: null }),
     ]
     const { scheduled, unscheduled } = bucketProjects(projects)
     expect(scheduled.every(isScheduled)).toBe(true)
@@ -128,15 +122,13 @@ describe("bucketProjects", () => {
 
 describe("pxPerDayForZoom", () => {
   it("each zoom mode produces a distinct pixel density", () => {
-    const values = (
-      ["Year", "Quarter", "Month", "Week"] as TimelineZoom[]
-    ).map(pxPerDayForZoom)
+    const values = (["Year", "Quarter", "Month", "Week"] as TimelineZoom[]).map(
+      pxPerDayForZoom
+    )
     expect(new Set(values).size).toBe(4)
     // Sanity: tighter zoom = larger px/day.
     expect(pxPerDayForZoom("Week")).toBeGreaterThan(pxPerDayForZoom("Month"))
-    expect(pxPerDayForZoom("Month")).toBeGreaterThan(
-      pxPerDayForZoom("Quarter")
-    )
+    expect(pxPerDayForZoom("Month")).toBeGreaterThan(pxPerDayForZoom("Quarter"))
     expect(pxPerDayForZoom("Quarter")).toBeGreaterThan(pxPerDayForZoom("Year"))
   })
 })

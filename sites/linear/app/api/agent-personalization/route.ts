@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server"
-import {
-  agentState,
-  setGuidance,
-  GUIDANCE_MAX_CHARS,
-} from "@/lib/agent-mocks"
+import { agentState, setGuidance, GUIDANCE_MAX_CHARS } from "@/lib/agent-mocks"
 
 export async function GET() {
   return NextResponse.json({ guidance: agentState.guidance })
