@@ -804,6 +804,51 @@ const FONT_SIZE_SCALE: Record<string, number> = {
   larger: 1.125,
 }
 
+// Base UI's Select.Value renders the raw `value` unless given a render fn —
+// these maps drive the trigger label so users see "My issues" not "my-issues".
+const HOME_VIEW_LABELS: Record<string, string> = {
+  "linear-agent": "Linear Agent",
+  inbox: "Inbox",
+  "my-issues": "My issues",
+  "all-issues": "All issues",
+  "active-issues": "Active issues",
+  "current-cycle": "Current cycle",
+  projects: "Projects",
+  initiatives: "Initiatives",
+}
+
+const DISPLAY_NAMES_LABELS: Record<string, string> = {
+  fullname: "Full name",
+  username: "Username",
+}
+
+const FIRST_DAY_LABELS: Record<string, string> = {
+  sunday: "Sunday",
+  monday: "Monday",
+  tuesday: "Tuesday",
+  wednesday: "Wednesday",
+  thursday: "Thursday",
+  friday: "Friday",
+  saturday: "Saturday",
+}
+
+const SEND_COMMENT_LABELS: Record<string, string> = {
+  enter: "Enter",
+  "cmd-enter": "⌘+Enter",
+}
+
+const FONT_SIZE_LABELS: Record<string, string> = {
+  smaller: "Smaller",
+  small: "Small",
+  default: "Default",
+  large: "Large",
+  larger: "Larger",
+}
+
+const INTERFACE_THEME_LABELS: Record<string, string> = Object.fromEntries(
+  THEME_OPTIONS.map((opt) => [opt.value, opt.label])
+)
+
 function PreferencesSection() {
   const router = useRouter()
   const [homeView, setHomeView] = usePersistedState(
@@ -857,7 +902,9 @@ function PreferencesSection() {
         >
           <Select value={homeView} onValueChange={onSelectChange(setHomeView)}>
             <SelectTrigger className="h-8 w-44 text-xs">
-              <SelectValue />
+              <SelectValue>
+                {(v) => HOME_VIEW_LABELS[v as string] ?? v}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="linear-agent">Linear Agent</SelectItem>
@@ -881,7 +928,9 @@ function PreferencesSection() {
             onValueChange={onSelectChange(setDisplayNames)}
           >
             <SelectTrigger className="h-8 w-44 text-xs">
-              <SelectValue />
+              <SelectValue>
+                {(v) => DISPLAY_NAMES_LABELS[v as string] ?? v}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="fullname">Full name</SelectItem>
@@ -896,7 +945,9 @@ function PreferencesSection() {
         >
           <Select value={firstDay} onValueChange={onSelectChange(setFirstDay)}>
             <SelectTrigger className="h-8 w-44 text-xs">
-              <SelectValue />
+              <SelectValue>
+                {(v) => FIRST_DAY_LABELS[v as string] ?? v}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="sunday">Sunday</SelectItem>
@@ -923,7 +974,9 @@ function PreferencesSection() {
         >
           <Select value={sendOn} onValueChange={onSelectChange(setSendOn)}>
             <SelectTrigger className="h-8 w-44 text-xs">
-              <SelectValue />
+              <SelectValue>
+                {(v) => SEND_COMMENT_LABELS[v as string] ?? v}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="enter">Enter</SelectItem>
@@ -955,7 +1008,9 @@ function PreferencesSection() {
         >
           <Select value={fontSize} onValueChange={onSelectChange(setFontSize)}>
             <SelectTrigger className="h-8 w-44 text-xs">
-              <SelectValue />
+              <SelectValue>
+                {(v) => FONT_SIZE_LABELS[v as string] ?? v}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="smaller">Smaller</SelectItem>
@@ -983,7 +1038,9 @@ function PreferencesSection() {
         >
           <Select value={theme} onValueChange={onSelectChange(setTheme)}>
             <SelectTrigger className="h-8 w-44 text-xs">
-              <SelectValue />
+              <SelectValue>
+                {(v) => INTERFACE_THEME_LABELS[v as string] ?? v}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {THEME_OPTIONS.map((opt) => (
