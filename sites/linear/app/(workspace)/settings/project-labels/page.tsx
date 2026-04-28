@@ -93,6 +93,12 @@ function ProjectLabelsInner() {
       .catch(() => {})
   }, [])
 
+  // `metadata` export doesn't apply to client components — set the tab title
+  // directly so refreshing this URL shows "Labels" instead of the URL path.
+  useEffect(() => {
+    document.title = "Labels"
+  }, [])
+
   const setParam = useCallback(
     (patch: { scope?: ProjectLabelScope; q?: string }) => {
       const next = new URLSearchParams(searchParams.toString())

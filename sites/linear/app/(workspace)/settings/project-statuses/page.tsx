@@ -128,6 +128,12 @@ export default function ProjectStatusesPage() {
   const [confirmDelete, setConfirmDelete] = useState<Status | null>(null)
   const [liveMessage, setLiveMessage] = useState("")
 
+  // Client component — set the tab title via document.title since
+  // Next's `metadata` export only works in server components.
+  useEffect(() => {
+    document.title = "Statuses"
+  }, [])
+
   useEffect(() => {
     let cancelled = false
     fetch("/api/project-statuses")
