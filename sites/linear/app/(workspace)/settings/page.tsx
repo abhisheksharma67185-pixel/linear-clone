@@ -5648,11 +5648,7 @@ function TeamsAdminSection() {
     return summaries.filter((t) => {
       if (t.status !== status) return false
       if (!q) return true
-      return (
-        t.name.toLowerCase().includes(q) ||
-        t.key.toLowerCase().includes(q) ||
-        t.description.toLowerCase().includes(q)
-      )
+      return t.name.toLowerCase().includes(q)
     })
   }, [summaries, filter, status])
 
@@ -5718,7 +5714,7 @@ function TeamsAdminSection() {
           <input
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter by name, key, or description"
+            placeholder="Filter by name…"
             aria-label="Filter teams"
             className="placeholder:text-muted-foreground/60 focus:ring-ring h-8 w-full rounded-md border bg-transparent pr-8 pl-8 text-sm outline-none focus:ring-2"
           />
