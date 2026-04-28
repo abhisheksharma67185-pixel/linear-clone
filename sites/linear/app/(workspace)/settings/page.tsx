@@ -1039,7 +1039,21 @@ function PreferencesSection() {
           <Select value={theme} onValueChange={onSelectChange(setTheme)}>
             <SelectTrigger className="h-8 w-44 text-xs">
               <SelectValue>
-                {(v) => INTERFACE_THEME_LABELS[v as string] ?? v}
+                {(v) => {
+                  const opt = THEME_OPTIONS.find((o) => o.value === v)
+                  if (!opt) return v
+                  return (
+                    <>
+                      <span
+                        aria-hidden
+                        className={`inline-flex h-4 w-5 shrink-0 items-center justify-center rounded text-[9px] font-medium ${opt.swatchClass}`}
+                      >
+                        Aa
+                      </span>
+                      <span>{opt.label}</span>
+                    </>
+                  )
+                }}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
