@@ -65,12 +65,6 @@ export const DEFAULT_SIDEBAR_LAYOUT: readonly SidebarItem[] = [
     visibility: "badged",
   },
   {
-    key: "initiatives",
-    label: "Initiatives",
-    section: "workspace",
-    visibility: "always",
-  },
-  {
     key: "projects",
     label: "Projects",
     section: "workspace",
@@ -83,16 +77,22 @@ export const DEFAULT_SIDEBAR_LAYOUT: readonly SidebarItem[] = [
     visibility: "always",
   },
   {
-    key: "teams",
-    label: "Teams",
-    section: "workspace",
-    visibility: "always",
-  },
-  {
     key: "members",
     label: "Members",
     section: "workspace",
-    visibility: "always",
+    visibility: "never",
+  },
+  {
+    key: "initiatives",
+    label: "Initiatives",
+    section: "workspace",
+    visibility: "never",
+  },
+  {
+    key: "teams",
+    label: "Teams",
+    section: "workspace",
+    visibility: "never",
   },
 ] as const
 

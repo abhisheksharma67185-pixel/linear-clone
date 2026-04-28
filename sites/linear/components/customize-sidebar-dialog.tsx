@@ -36,12 +36,10 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -214,24 +212,9 @@ export function CustomizeSidebarDialog({
           className="flex flex-col gap-4 py-1"
           data-testid="customize-sidebar-body"
         >
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            {SECTION_ORDER.map((section) => (
-              <Section
-                key={section}
-                section={section}
-                items={itemsBySection[section]}
-                onChangeVisibility={(key, visibility) =>
-                  commit(setItemVisibility(config, key, visibility))
-                }
-              />
-            ))}
-          </DndContext>
-
-          {/* Default badge style — segmented + helper caption */}
+          {/* Default badge style — segmented + helper caption.
+              Lives at the top of the dialog (above the per-row lists)
+              to match Linear's layout. */}
           <div
             className="flex flex-col gap-1.5"
             data-testid="badge-style-section"
@@ -273,30 +256,38 @@ export function CustomizeSidebarDialog({
               small unread indicator without the number.
             </p>
           </div>
-        </div>
 
-        <DialogFooter className="flex flex-row-reverse items-center gap-2 sm:flex-row-reverse sm:justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => onOpenChange(false)}
-              data-testid="customize-sidebar-done"
-            >
-              Done
-            </Button>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            data-testid="customize-sidebar-reset"
-            onClick={handleReset}
-            className="text-muted-foreground hover:text-foreground text-xs"
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            Reset to default
-          </Button>
-        </DialogFooter>
+            {SECTION_ORDER.map((section) => (
+              <Section
+                key={section}
+                section={section}
+                items={itemsBySection[section]}
+                onChangeVisibility={(key, visibility) =>
+                  commit(setItemVisibility(config, key, visibility))
+                }
+              />
+            ))}
+          </DndContext>
+
+          {/* Reset surfaced as a subtle inline link — Linear has only the
+              X close on this dialog and autosaves on every change, but
+              we keep Reset accessible so users can revert customizations. */}
+          <div className="flex justify-end pt-1">
+            <button
+              type="button"
+              data-testid="customize-sidebar-reset"
+              onClick={handleReset}
+              className="text-muted-foreground hover:text-foreground text-xs underline-offset-2 hover:underline"
+            >
+              Reset to default
+            </button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   )
