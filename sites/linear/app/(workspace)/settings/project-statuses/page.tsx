@@ -33,6 +33,8 @@ import {
   Copy01Icon,
   Delete01Icon,
 } from "@hugeicons/core-free-icons"
+import type { Issue } from "@/app/lib/mock-data"
+import { StatusIcon } from "@/components/status-icons"
 
 type StatusCategory =
   | "backlog"
@@ -55,6 +57,17 @@ const CATEGORY_LABEL: Record<StatusCategory, string> = {
   "in-progress": "In Progress",
   completed: "Completed",
   canceled: "Canceled",
+}
+
+// Map project status category to the issue StatusIcon shape language so we
+// reuse the same iconography (dashed circle / outline / pie / check / X)
+// instead of rendering a plain colored swatch.
+const CATEGORY_ICON_SHAPE: Record<StatusCategory, Issue["status"]> = {
+  backlog: "backlog",
+  planned: "todo",
+  "in-progress": "in_progress",
+  completed: "done",
+  canceled: "cancelled",
 }
 
 const CATEGORY_DEFAULT_COLOR: Record<StatusCategory, string> = {
@@ -348,6 +361,7 @@ export default function ProjectStatusesPage() {
                     color={s.color}
                     onChange={(c) => applyUpdate(s.id, { color: c })}
                     ariaLabel={`Change color of ${s.name}`}
+                    shape={CATEGORY_ICON_SHAPE[s.category]}
                   />
                   <div className="min-w-0 flex-1">
                     {isEditingName ? (
@@ -564,6 +578,7 @@ function DraftRow({
         color={draft.color}
         onChange={(c) => setDraft({ ...draft, color: c })}
         ariaLabel="Pick status color"
+        shape={CATEGORY_ICON_SHAPE[draft.category]}
       />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <input
@@ -618,10 +633,13 @@ function ColorPicker({
   color,
   onChange,
   ariaLabel,
+  shape,
 }: {
   color: string
   onChange: (c: string) => void
   ariaLabel: string
+  /** When provided, render the matching Linear status icon instead of a plain swatch. */
+  shape?: Issue["status"]
 }) {
   const [open, setOpen] = useState(false)
   return (
@@ -633,11 +651,15 @@ function ColorPicker({
             aria-label={ariaLabel}
             className="focus-visible:ring-primary/50 focus-visible:ring-offset-background flex size-5 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
           >
-            <span
-              className="size-3.5 rounded-full"
-              style={{ backgroundColor: color }}
-              aria-hidden="true"
-            />
+            {shape ? (
+              <StatusIcon status={shape} color={color} className="size-4" />
+            ) : (
+              <span
+                className="size-3.5 rounded-full"
+                style={{ backgroundColor: color }}
+                aria-hidden="true"
+              />
+            )}
           </button>
         }
       />

@@ -5,44 +5,70 @@ type Priority = Issue["priority"]
 
 export function StatusIcon({
   status,
+  color,
   className = "size-3.5",
 }: {
   status: Status
+  /** Override the default category color (project statuses pass user-chosen swatches here). */
+  color?: string
   className?: string
 }) {
   if (status === "backlog") {
+    const stroke = color ?? "currentColor"
+    const opacity = color ? 1 : 0.6
     return (
-      <span
-        className={`border-muted-foreground/60 rounded-full border border-dashed ${className}`}
-      />
+      <svg viewBox="0 0 16 16" className={className} aria-hidden="true">
+        <circle
+          cx="8"
+          cy="8"
+          r="6.5"
+          fill="none"
+          stroke={stroke}
+          strokeOpacity={opacity}
+          strokeWidth="1.5"
+          strokeDasharray="2 2"
+        />
+      </svg>
     )
   }
   if (status === "todo") {
+    const stroke = color ?? "currentColor"
+    const opacity = color ? 1 : 0.7
     return (
-      <span
-        className={`border-muted-foreground/70 rounded-full border ${className}`}
-      />
+      <svg viewBox="0 0 16 16" className={className} aria-hidden="true">
+        <circle
+          cx="8"
+          cy="8"
+          r="6.5"
+          fill="none"
+          stroke={stroke}
+          strokeOpacity={opacity}
+          strokeWidth="1.5"
+        />
+      </svg>
     )
   }
   if (status === "in_progress") {
+    const fill = color ?? "#eab308"
     return (
-      <svg viewBox="0 0 16 16" className={className}>
+      <svg viewBox="0 0 16 16" className={className} aria-hidden="true">
         <circle
           cx="8"
           cy="8"
           r="7"
           fill="none"
-          stroke="#eab308"
+          stroke={fill}
           strokeWidth="1.5"
         />
-        <path d="M8 8 L8 2 A6 6 0 0 1 13.2 11 Z" fill="#eab308" />
+        <path d="M8 8 L8 2 A6 6 0 0 1 13.2 11 Z" fill={fill} />
       </svg>
     )
   }
   if (status === "done") {
+    const fill = color ?? "#6366f1"
     return (
-      <svg viewBox="0 0 16 16" className={className}>
-        <circle cx="8" cy="8" r="7" fill="#6366f1" />
+      <svg viewBox="0 0 16 16" className={className} aria-hidden="true">
+        <circle cx="8" cy="8" r="7" fill={fill} />
         <path
           d="M5 8 L7 10 L11 6"
           stroke="white"
@@ -54,9 +80,10 @@ export function StatusIcon({
       </svg>
     )
   }
+  const fill = color ?? "#9ca3af"
   return (
-    <svg viewBox="0 0 16 16" className={className}>
-      <circle cx="8" cy="8" r="7" fill="#9ca3af" />
+    <svg viewBox="0 0 16 16" className={className} aria-hidden="true">
+      <circle cx="8" cy="8" r="7" fill={fill} />
       <path
         d="M5 5 L11 11 M11 5 L5 11"
         stroke="white"
