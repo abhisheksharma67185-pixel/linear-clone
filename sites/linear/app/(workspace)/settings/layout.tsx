@@ -111,6 +111,9 @@ const PATHNAME_TO_SECTION: Record<string, string> = {
   "/settings/project-labels": "project-labels",
   "/settings/project-templates": "project-templates",
   "/settings/project-statuses": "statuses",
+  // `/settings/new-team` is the create-team flow; Linear highlights the
+  // existing "Teams" admin row to make the relationship obvious.
+  "/settings/new-team": "teams",
 }
 
 function sectionHref(key: string): string {
@@ -158,10 +161,18 @@ function SettingsShell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const navScrollRef = useRef<HTMLElement>(null)
 
+  // Resolve the active sidebar section. We only fall back to "preferences"
+  // when the user is on `/settings` itself — for path-routed sub-pages
+  // (project-statuses, new-team, team hub, …) we resolve via the explicit
+  // map and pattern below so unknown paths don't incorrectly highlight
+  // Preferences.
   const section =
     PATHNAME_TO_SECTION[pathname] ??
-    searchParams.get("section") ??
-    "preferences"
+    (TEAM_HUB_PATTERN.test(pathname)
+      ? "teams"
+      : pathname === "/settings"
+        ? (searchParams.get("section") ?? "preferences")
+        : "")
 
   useEffect(() => {
     if (navScrollRef.current) navScrollRef.current.scrollTop = 0
