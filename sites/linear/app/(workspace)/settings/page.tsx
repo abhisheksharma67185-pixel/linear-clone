@@ -13059,7 +13059,7 @@ function EmojisSection() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Filter emojis…"
+              placeholder="Filter by name…"
               aria-label="Filter emojis by name"
               className="h-8 pl-8 text-xs"
             />
