@@ -8567,7 +8567,14 @@ function IssueLabelsSection() {
     toast.success(`Group "${group.name}" created`)
   }
 
-  const gridCols = "grid grid-cols-[32px_16px_1fr_2fr_64px_120px_96px_32px]"
+  // Linear's issue-labels table is 6 columns: select / color dot / name
+  // (with description as a smaller secondary line below) / Last applied /
+  // Created / row-actions menu. Description and Issues columns were
+  // dropped to match Linear.
+  const gridCols = "grid grid-cols-[32px_16px_1fr_120px_96px_32px]"
+  const allVisibleSelected =
+    visibleLabels.length > 0 && visibleLabels.every((l) => selected.has(l.id))
+  const someVisibleSelected = visibleLabels.some((l) => selected.has(l.id))
 
   return (
     <div className="flex max-w-4xl flex-col p-6">
@@ -8653,7 +8660,20 @@ function IssueLabelsSection() {
       <div
         className={`${gridCols} text-muted-foreground border-b px-2 pb-2 text-xs font-medium`}
       >
-        <div />
+        <div className="flex items-center">
+          <Checkbox
+            checked={allVisibleSelected}
+            indeterminate={!allVisibleSelected && someVisibleSelected}
+            onCheckedChange={(v) => {
+              if (v) setSelected(new Set(visibleLabels.map((l) => l.id)))
+              else setSelected(new Set())
+            }}
+            aria-label={
+              allVisibleSelected ? "Deselect all labels" : "Select all labels"
+            }
+            className="size-3.5"
+          />
+        </div>
         <div />
         <div>
           <button
@@ -8669,8 +8689,6 @@ function IssueLabelsSection() {
             />
           </button>
         </div>
-        <div>Description</div>
-        <div>Issues</div>
         <div>Last applied</div>
         <div>Created</div>
         <div />
@@ -8698,7 +8716,7 @@ function IssueLabelsSection() {
             onChange={(c) => setGroupDraft((g) => (g ? { ...g, color: c } : g))}
             ariaLabel="Group color"
           />
-          <div className="col-span-6 pr-2">
+          <div className="col-span-4 pr-2">
             <input
               autoFocus
               value={groupDraft.name}
@@ -8728,7 +8746,7 @@ function IssueLabelsSection() {
             style={{ backgroundColor: g.color }}
             aria-hidden="true"
           />
-          <div className="text-foreground col-span-6 text-sm font-medium">
+          <div className="text-foreground col-span-4 text-sm font-medium">
             {g.name}
             <span className="text-muted-foreground ml-2 text-xs font-normal">
               group
@@ -8771,7 +8789,7 @@ function IssueLabelsSection() {
               onChange={(c) => applyUpdate(label.id, { color: c })}
               ariaLabel={`Change color of ${label.name}`}
             />
-            <div className="pr-2">
+            <div className="flex min-w-0 flex-col pr-2">
               {isEditingName ? (
                 <input
                   autoFocus
@@ -8793,13 +8811,14 @@ function IssueLabelsSection() {
                     setEditingValue(label.name)
                   }}
                   aria-label={`Edit name for ${label.name}`}
-                  className="hover:bg-accent/30 focus-visible:ring-primary/50 focus-visible:ring-offset-background -ml-1 w-full truncate rounded px-1 text-left text-sm font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="hover:bg-accent/30 focus-visible:ring-primary/50 focus-visible:ring-offset-background -ml-1 w-fit max-w-full truncate rounded px-1 text-left text-sm font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   {label.name}
                 </button>
               )}
-            </div>
-            <div className="pr-2">
+              {/* Description rendered as inline secondary text under the
+                  name to preserve the field after dropping the dedicated
+                  Description column. */}
               {isEditingDesc ? (
                 <input
                   autoFocus
@@ -8812,7 +8831,7 @@ function IssueLabelsSection() {
                   onBlur={() => commitDescriptionEdit(label.id)}
                   aria-label={`Edit description for ${label.name}`}
                   placeholder="Add label description…"
-                  className="placeholder:text-muted-foreground/60 focus-visible:ring-primary/50 focus-visible:ring-offset-background w-full bg-transparent text-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                  className="placeholder:text-muted-foreground/60 focus-visible:ring-primary/50 focus-visible:ring-offset-background w-full bg-transparent text-xs outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                 />
               ) : (
                 <button
@@ -8822,9 +8841,9 @@ function IssueLabelsSection() {
                     setEditingValue(label.description ?? "")
                   }}
                   aria-label={`Edit description for ${label.name}`}
-                  className={`hover:bg-accent/30 focus-visible:ring-primary/50 focus-visible:ring-offset-background -ml-1 w-full truncate rounded px-1 text-left text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
+                  className={`hover:bg-accent/30 focus-visible:ring-primary/50 focus-visible:ring-offset-background -ml-1 w-fit max-w-full truncate rounded px-1 text-left text-xs focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
                     label.description
-                      ? "text-foreground"
+                      ? "text-muted-foreground"
                       : "text-muted-foreground/60"
                   }`}
                 >
@@ -8832,8 +8851,6 @@ function IssueLabelsSection() {
                 </button>
               )}
             </div>
-            <div className="text-muted-foreground text-xs">—</div>
-            <div className="text-muted-foreground text-xs">—</div>
             <div className="text-muted-foreground text-xs">
               {label.createdAt
                 ? new Date(label.createdAt as string).toLocaleDateString()
@@ -9009,7 +9026,9 @@ function NewLabelDraftRow({
         onChange={(c) => setDraft((d) => (d ? { ...d, color: c } : d))}
         ariaLabel="Pick label color"
       />
-      <div className="pr-2">
+      {/* Name + description stack in a single column to match the row
+          layout after dropping the standalone Description column. */}
+      <div className="flex flex-col pr-2">
         <input
           autoFocus
           value={draft.name}
@@ -9026,8 +9045,6 @@ function NewLabelDraftRow({
           aria-label="Label name"
           className="placeholder:text-muted-foreground/60 focus-visible:ring-primary/50 focus-visible:ring-offset-background w-full bg-transparent text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         />
-      </div>
-      <div className="col-span-4 pr-2">
         <input
           value={draft.description}
           onChange={(e) =>
@@ -9041,9 +9058,11 @@ function NewLabelDraftRow({
           }}
           placeholder="Add label description…"
           aria-label="Label description"
-          className="placeholder:text-muted-foreground/60 focus-visible:ring-primary/50 focus-visible:ring-offset-background w-full bg-transparent text-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="placeholder:text-muted-foreground/60 focus-visible:ring-primary/50 focus-visible:ring-offset-background w-full bg-transparent text-xs outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         />
       </div>
+      <div />
+      <div />
       <div />
     </div>
   )
