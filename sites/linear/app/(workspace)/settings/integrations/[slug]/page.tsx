@@ -6721,13 +6721,13 @@ function VSCodeIntegrationDetail() {
               <div className="ml-2 font-mono text-white/40">
                 <span className="text-emerald-300">&quot;linear&quot;</span>,{" "}
                 <span className="text-white/30">
-                  // Linear VS Code authentication provider ID
+                  {"// Linear VS Code authentication provider ID"}
                 </span>
               </div>
               <div className="ml-2 font-mono text-white/40">
                 [<span className="text-emerald-300">&quot;read&quot;</span>],{" "}
                 <span className="text-white/30">
-                  // OAuth scopes we&apos;re requesting
+                  {"// OAuth scopes we're requesting"}
                 </span>
               </div>
               <div className="ml-2 font-mono text-white/40">

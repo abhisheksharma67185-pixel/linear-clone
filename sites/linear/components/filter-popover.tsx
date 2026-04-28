@@ -151,7 +151,7 @@ export function FilterPopover({
     q: string
   }>({ key: null, q: "" })
   const [hoveredKey, setHoveredKey] = useState<string | null>(null)
-  const [sideOffset, setSideOffset] = useState(0)
+  const [sideOffset, _setSideOffset] = useState(0)
   const [internalActive, setInternalActive] = useState<FilterSelection>(
     () => new Set()
   )
@@ -589,6 +589,7 @@ export function FilterPopover({
                           )}
                           <button
                             ref={(el) => {
+                              // eslint-disable-next-line react-hooks/refs
                               if (el) rowRefs.current.set(opt.label, el)
                               else rowRefs.current.delete(opt.label)
                             }}
