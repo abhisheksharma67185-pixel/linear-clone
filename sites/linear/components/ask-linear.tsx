@@ -142,11 +142,12 @@ export function AskLinear({
           render={
             <button
               type="button"
-              className="bg-background text-muted-foreground hover:bg-accent hover:text-foreground fixed right-4 bottom-4 z-40 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm transition-colors"
+              className="bg-background text-muted-foreground hover:bg-accent hover:text-foreground fixed right-4 bottom-4 z-40 flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs shadow-sm transition-colors"
               aria-label="Ask Linear"
             />
           }
         >
+          <AskLinearGlyph className="size-3.5 text-violet-400" />
           <span>Ask Linear</span>
           <HugeiconsIcon icon={HistoryIcon} className="size-3.5" />
         </SheetTrigger>
@@ -245,6 +246,25 @@ export function AskLinear({
         </div>
       </SheetContent>
     </Sheet>
+  )
+}
+
+/**
+ * Compact "Ask" sigil — a right-pointing triangle/cursor that prefixes
+ * the floating Ask Linear pill, matching the inline glyph Linear uses on
+ * its real workspace footer. Drawn inline (rather than picked from
+ * Hugeicons) so its proportions stay tight at 14px.
+ */
+function AskLinearGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M3.5 2.4a.7.7 0 0 1 1.06-.6l9 5.6a.7.7 0 0 1 0 1.2l-9 5.6a.7.7 0 0 1-1.06-.6V2.4Z" />
+    </svg>
   )
 }
 

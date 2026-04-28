@@ -56,6 +56,14 @@ import {
   ArrowDown01Icon,
   CheckmarkCircle02Icon,
   Menu02Icon,
+  InboxIcon,
+  CheckListIcon,
+  Note01Icon,
+  Satellite01Icon,
+  CubeIcon,
+  Contact02Icon,
+  UserMultiple02Icon,
+  Layers01Icon,
 } from "@hugeicons/core-free-icons"
 import {
   DEFAULT_CUSTOMIZATION,
@@ -76,6 +84,21 @@ const VISIBILITY_LABELS: Record<SidebarVisibility, string> = {
   badged: "Show when badged",
   never: "Don't show",
 }
+
+// Per-item glyphs surfaced next to each row's label so the modal
+// matches the iconography users see in the actual sidebar — makes
+// "Inbox" / "My Issues" etc. instantly recognisable, not just text.
+const ITEM_ICONS: Record<string, Parameters<typeof HugeiconsIcon>[0]["icon"]> =
+  {
+    inbox: InboxIcon,
+    "my-issues": CheckListIcon,
+    drafts: Note01Icon,
+    initiatives: Satellite01Icon,
+    projects: CubeIcon,
+    views: Layers01Icon,
+    teams: Contact02Icon,
+    members: UserMultiple02Icon,
+  }
 
 const SECTION_LABELS: Record<SidebarSection, string> = {
   personal: "Personal",
@@ -164,8 +187,7 @@ export function CustomizeSidebarDialog({
       const moved = { ...items[fromIndex], section: targetSection }
       items.splice(fromIndex, 1)
       // After splice, the toIndex shifts if fromIndex < toIndex.
-      const adjustedTo =
-        fromIndex < toIndex ? toIndex - 1 : toIndex
+      const adjustedTo = fromIndex < toIndex ? toIndex - 1 : toIndex
       items.splice(adjustedTo, 0, moved)
       const next = { ...prev, items }
       saveSidebarCustomization(next)
@@ -179,13 +201,12 @@ export function CustomizeSidebarDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Customize sidebar</DialogTitle>
           <DialogDescription>
-            Choose which items appear in your sidebar, drag to reorder
-            within and across sections, and pick how badges are
-            displayed.
+            Choose which items appear in your sidebar, drag to reorder within
+            and across sections, and pick how badges are displayed.
           </DialogDescription>
         </DialogHeader>
 
@@ -246,8 +267,8 @@ export function CustomizeSidebarDialog({
               data-testid="badge-style-helper"
               className="text-muted-foreground text-xs"
             >
-              <span className="text-foreground font-medium">Count</span>{" "}
-              shows the exact number (e.g. <span className="font-mono">3</span>).{" "}
+              <span className="text-foreground font-medium">Count</span> shows
+              the exact number (e.g. <span className="font-mono">3</span>).{" "}
               <span className="text-foreground font-medium">Dot</span> shows a
               small unread indicator without the number.
             </p>
@@ -315,9 +336,7 @@ function Section({
               <ItemRow
                 key={item.key}
                 item={item}
-                onChangeVisibility={(v) =>
-                  onChangeVisibility(item.key, v)
-                }
+                onChangeVisibility={(v) => onChangeVisibility(item.key, v)}
               />
             ))
           )}
@@ -335,8 +354,14 @@ function ItemRow({
   onChangeVisibility: (v: SidebarVisibility) => void
 }) {
   const sortable = useSortable({ id: item.key })
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    sortable
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = sortable
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -371,11 +396,17 @@ function ItemRow({
         >
           <HugeiconsIcon icon={Menu02Icon} className="size-3.5" />
         </button>
+        {ITEM_ICONS[item.key] && (
+          <HugeiconsIcon
+            icon={ITEM_ICONS[item.key]}
+            className={`size-3.5 shrink-0 ${
+              isLocked ? "text-muted-foreground" : "text-foreground"
+            }`}
+          />
+        )}
         <span
           className={`text-sm ${
-            isLocked
-              ? "text-muted-foreground"
-              : "text-foreground"
+            isLocked ? "text-muted-foreground" : "text-foreground"
           }`}
         >
           {item.label}

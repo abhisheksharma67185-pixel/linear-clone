@@ -2,6 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { CURRENT_USER_ID } from "@/app/lib/current-user"
+import {
+  members as initialMembers,
+  teams as initialTeams,
+  projects as initialProjects,
+  labels as initialLabels,
+  cycles as initialCycles,
+} from "@/app/lib/mock-data"
 import type {
   Member,
   Project,
@@ -27,7 +34,6 @@ import {
   MoreHorizontalIcon,
   Hexagon01Icon,
   Tag01Icon,
-  Attachment01Icon,
   UserIcon,
   Calendar01Icon,
   Refresh01Icon,
@@ -78,11 +84,16 @@ export function CreateIssueDialog({
   /** Per-context override for the Status dropdown's initial value. */
   defaultStatus?: Status
 }) {
-  const [teams, setTeams] = useState<Team[]>([])
-  const [members, setMembers] = useState<Member[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
-  const [labels, setLabels] = useState<IssueLabel[]>([])
-  const [cycles, setCycles] = useState<Cycle[]>([])
+  // Seed read-only rosters from the static mock-data import so the dialog
+  // renders correctly on first paint (team key, current-user assignee). The
+  // /api/data/* fetch below refreshes these in case they've been mutated by
+  // another route — but never with empty arrays, so we never flash a
+  // placeholder "ABH" team key or empty "Assignee" pill.
+  const [teams, setTeams] = useState<Team[]>(initialTeams)
+  const [members, setMembers] = useState<Member[]>(initialMembers)
+  const [projects, setProjects] = useState<Project[]>(initialProjects)
+  const [labels, setLabels] = useState<IssueLabel[]>(initialLabels)
+  const [cycles, setCycles] = useState<Cycle[]>(initialCycles)
   const [loaded, setLoaded] = useState(false)
 
   // The initial Assignee is the per-context override if provided
@@ -95,7 +106,9 @@ export function CreateIssueDialog({
 
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [teamId, setTeamId] = useState<string>(defaultTeamId ?? "")
+  const [teamId, setTeamId] = useState<string>(
+    defaultTeamId ?? initialTeams[0]?.id ?? ""
+  )
   const [status, setStatus] = useState<Status>(defaultStatus ?? "backlog")
   const [priority, setPriority] = useState<Priority>("none")
   const [assigneeId, setAssigneeId] = useState<string | null>(initialAssignee)
@@ -256,7 +269,7 @@ export function CreateIssueDialog({
               <HugeiconsIcon icon={UserIcon} className="size-2.5" />
             </span>
             <span className="text-foreground font-medium">
-              {team ? team.key : "ABH"}
+              {team?.key ?? initialTeams[0]?.key ?? ""}
             </span>
             <HugeiconsIcon icon={ArrowRight01Icon} className="size-3" />
             <span>New issue</span>
@@ -598,9 +611,9 @@ export function CreateIssueDialog({
             variant="ghost"
             size="icon"
             className="text-muted-foreground size-7"
-            aria-label="Attach file"
+            aria-label="Add link"
           >
-            <HugeiconsIcon icon={Attachment01Icon} className="size-4" />
+            <HugeiconsIcon icon={Link01Icon} className="size-4" />
           </Button>
           <div className="flex items-center gap-3">
             <label className="text-muted-foreground flex items-center gap-2 text-xs">
@@ -761,4 +774,3 @@ function Avatar({ src, name }: { src: string; name: string }) {
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={src} alt={name} className="size-4 rounded-full" />
 }
-

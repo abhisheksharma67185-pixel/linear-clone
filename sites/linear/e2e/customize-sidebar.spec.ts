@@ -43,8 +43,18 @@ async function clearCustomization(page: Page) {
 async function gotoAndOpenCustomize(page: Page) {
   await page.goto("/teams")
   await expect(page.getByRole("heading", { name: /^Teams$/ })).toBeVisible()
+  await openCustomize(page)
+}
+
+/**
+ * Reopen the modal WITHOUT navigating, so persistence assertions can
+ * survive between close/reopen — the suite's `beforeEach` adds an init
+ * script that wipes localStorage on every navigation.
+ */
+async function openCustomize(page: Page) {
   // Open the sidebar's "More" menu, then click "Customize sidebar".
-  await page.getByRole("link", { name: /^More$/ }).click()
+  // SidebarMenuButton renders as <button>, so target by button role.
+  await page.getByRole("button", { name: /^More$/ }).click()
   await page.getByRole("menuitem", { name: /Customize sidebar/i }).click()
   await expect(
     page.getByRole("dialog", { name: /Customize sidebar/i })
@@ -69,9 +79,7 @@ test.describe("Customize sidebar modal", () => {
       await expect(trigger, `trigger for ${item}`).toBeVisible()
       await trigger.click()
       for (const option of VISIBILITY_OPTIONS) {
-        const opt = page.getByTestId(
-          `customize-row-option-${item}-${option}`
-        )
+        const opt = page.getByTestId(`customize-row-option-${item}-${option}`)
         await expect(
           opt,
           `option ${option} for ${item} must be present`
@@ -105,9 +113,7 @@ test.describe("Customize sidebar modal", () => {
     // Capture initial order from the rendered rows.
     const initialOrder = await page
       .locator('[data-testid^="customize-row-"][data-testid$="-handle"]')
-      .evaluateAll((els) =>
-        els.map((e) => e.getAttribute("data-testid"))
-      )
+      .evaluateAll((els) => els.map((e) => e.getAttribute("data-testid")))
 
     // Programmatically write a reordered config to localStorage and
     // dispatch the same change event the modal would fire.
@@ -118,14 +124,54 @@ test.describe("Customize sidebar modal", () => {
         ? JSON.parse(raw)
         : {
             items: [
-              { key: "inbox", label: "Inbox", section: "personal", visibility: "always" },
-              { key: "my-issues", label: "My Issues", section: "personal", visibility: "always" },
-              { key: "drafts", label: "Drafts", section: "personal", visibility: "badged" },
-              { key: "initiatives", label: "Initiatives", section: "workspace", visibility: "always" },
-              { key: "projects", label: "Projects", section: "workspace", visibility: "always" },
-              { key: "views", label: "Views", section: "workspace", visibility: "always" },
-              { key: "teams", label: "Teams", section: "workspace", visibility: "always" },
-              { key: "members", label: "Members", section: "workspace", visibility: "always" },
+              {
+                key: "inbox",
+                label: "Inbox",
+                section: "personal",
+                visibility: "always",
+              },
+              {
+                key: "my-issues",
+                label: "My Issues",
+                section: "personal",
+                visibility: "always",
+              },
+              {
+                key: "drafts",
+                label: "Drafts",
+                section: "personal",
+                visibility: "badged",
+              },
+              {
+                key: "initiatives",
+                label: "Initiatives",
+                section: "workspace",
+                visibility: "always",
+              },
+              {
+                key: "projects",
+                label: "Projects",
+                section: "workspace",
+                visibility: "always",
+              },
+              {
+                key: "views",
+                label: "Views",
+                section: "workspace",
+                visibility: "always",
+              },
+              {
+                key: "teams",
+                label: "Teams",
+                section: "workspace",
+                visibility: "always",
+              },
+              {
+                key: "members",
+                label: "Members",
+                section: "workspace",
+                visibility: "always",
+              },
             ],
             badgeStyle: "count",
           }
@@ -141,19 +187,19 @@ test.describe("Customize sidebar modal", () => {
       window.localStorage.setItem(KEY, JSON.stringify(config))
     })
 
-    // Close + reopen the modal.
+    // Close + reopen the modal — must NOT navigate, otherwise the
+    // suite's beforeEach init script wipes the localStorage write
+    // we made above.
     await page.keyboard.press("Escape")
     await expect(
       page.getByRole("dialog", { name: /Customize sidebar/i })
     ).toHaveCount(0, { timeout: 1000 })
-    await gotoAndOpenCustomize(page)
+    await openCustomize(page)
 
     // The new order must be reflected in the rendered rows.
     const reopenedOrder = await page
       .locator('[data-testid^="customize-row-handle-"]')
-      .evaluateAll((els) =>
-        els.map((e) => e.getAttribute("data-testid"))
-      )
+      .evaluateAll((els) => els.map((e) => e.getAttribute("data-testid")))
     // The personal section's handles should now be in reverse order
     // relative to the initial.
     expect(reopenedOrder).not.toEqual(initialOrder)
@@ -203,7 +249,7 @@ test.describe("Customize sidebar modal", () => {
 
     // Open via the sidebar More menu so we know which element opened
     // the modal — that's where focus must return on close.
-    await page.getByRole("link", { name: /^More$/ }).click()
+    await page.getByRole("button", { name: /^More$/ }).click()
     const triggerItem = page.getByRole("menuitem", {
       name: /Customize sidebar/i,
     })
@@ -253,16 +299,19 @@ test.describe("Customize sidebar modal", () => {
     await page.getByTestId("customize-row-trigger-inbox").click()
     await page.getByTestId("customize-row-option-inbox-never").click()
     // Confirm sidebar reflects it.
-    await expect(
-      page.locator('[data-sidebar-item="inbox"]')
-    ).toHaveAttribute("data-collapsed", "true")
+    await expect(page.locator('[data-sidebar-item="inbox"]')).toHaveAttribute(
+      "data-collapsed",
+      "true"
+    )
 
     // Click Reset.
     await page.getByTestId("customize-sidebar-reset").click()
 
     // Inbox should be visible again.
-    await expect(
-      page.locator('[data-sidebar-item="inbox"]')
-    ).toHaveAttribute("data-collapsed", "false", { timeout: 1000 })
+    await expect(page.locator('[data-sidebar-item="inbox"]')).toHaveAttribute(
+      "data-collapsed",
+      "false",
+      { timeout: 1000 }
+    )
   })
 })

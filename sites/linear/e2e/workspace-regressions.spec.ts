@@ -127,9 +127,9 @@ test.describe("Workspace regressions", () => {
 
     // Dialog must fully unmount — no leftover input, chips, or Create button.
     await expect(content).toBeHidden()
-    await expect(
-      page.locator('[data-slot="dialog-overlay"]')
-    ).toHaveCount(0, { timeout: 1000 })
+    await expect(page.locator('[data-slot="dialog-overlay"]')).toHaveCount(0, {
+      timeout: 1000,
+    })
   })
 
   /**
@@ -162,9 +162,11 @@ test.describe("Workspace regressions", () => {
   test("Search opens with the 'All' tab active", async ({ page }) => {
     await page.getByRole("button", { name: /^Search$/ }).click()
 
-    // The search dialog renders four tabs: All / Issues / Projects /
+    // The search route renders four tabs: All / Issues / Projects /
     // Documents. "All" must be the visually + semantically active one.
-    const allTab = page.getByRole("button", { name: /^All$/ }).first()
+    // Tabs use role="tab" (per the search page implementation), so
+    // target by tab role rather than the legacy "button" role.
+    const allTab = page.getByRole("tab", { name: /^All$/ }).first()
     await expect(allTab).toBeVisible()
 
     // Active tabs in this UI carry a data-state="active" or rely on a
@@ -177,12 +179,14 @@ test.describe("Workspace regressions", () => {
       return (
         ds === "active" ||
         aria === "true" ||
-        /\b(bg-(accent|secondary|muted)|text-foreground|font-medium)\b/.test(cls)
+        /\b(bg-(accent|secondary|muted)|text-foreground|font-medium)\b/.test(
+          cls
+        )
       )
     })
     expect(allIsActive).toBe(true)
 
-    const documentsTab = page.getByRole("button", { name: /^Documents$/ }).first()
+    const documentsTab = page.getByRole("tab", { name: /^Documents$/ }).first()
     const documentsIsActive = await documentsTab.evaluate((el) => {
       const ds = el.getAttribute("data-state")
       const aria = el.getAttribute("aria-selected")

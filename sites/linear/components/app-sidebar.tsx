@@ -39,7 +39,7 @@ import {
   InboxIcon,
   CheckListIcon,
   Layers01Icon,
-  FilterIcon,
+  CubeIcon,
   MoreHorizontalIcon,
   PencilEdit01Icon,
   PencilEdit02Icon,
@@ -173,7 +173,10 @@ export function AppSidebar() {
     )
   }
   const isItemRendered = (key: string): boolean =>
-    shouldRenderSidebarItem(visibilityFor(key), (ITEM_BADGE_COUNTS[key] ?? 0) > 0)
+    shouldRenderSidebarItem(
+      visibilityFor(key),
+      (ITEM_BADGE_COUNTS[key] ?? 0) > 0
+    )
 
   return (
     <>
@@ -222,9 +225,7 @@ export function AppSidebar() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger
-                    data-testid="workspace-menu-switch"
-                  >
+                  <DropdownMenuSubTrigger data-testid="workspace-menu-switch">
                     <span>Switch workspace</span>
                     <DropdownMenuShortcut className="me-1">
                       O then W
@@ -291,7 +292,7 @@ export function AppSidebar() {
             <button
               type="button"
               aria-label="Search"
-              onClick={() => setSearchOpen(true)}
+              onClick={() => router.push("/search")}
               className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground flex size-7 shrink-0 items-center justify-center rounded-md"
             >
               <HugeiconsIcon icon={Search01Icon} className="size-4" />
@@ -353,7 +354,7 @@ export function AppSidebar() {
                       isActive={isActive("/projects")}
                       render={<Link href="/projects" />}
                     >
-                      <HugeiconsIcon icon={Layers01Icon} />
+                      <HugeiconsIcon icon={CubeIcon} />
                       <span>Projects</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -366,7 +367,7 @@ export function AppSidebar() {
                       isActive={isActive("/views")}
                       render={<Link href="/views" />}
                     >
-                      <HugeiconsIcon icon={FilterIcon} />
+                      <ViewsIcon />
                       <span>Views</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -488,325 +489,322 @@ export function AppSidebar() {
                       const leaveDisabledReason =
                         "You're the only admin — you can't leave this team"
                       return (
-                      <Collapsible
-                        key={team.id}
-                        defaultOpen
-                        className="group/team"
-                      >
-                        <SidebarMenuItem
-                          data-team-id={team.id}
-                          data-collapsed={teamHidden}
-                          className="sidebar-item-animated"
+                        <Collapsible
+                          key={team.id}
+                          defaultOpen
+                          className="group/team"
                         >
-                          <SidebarMenuButton render={<CollapsibleTrigger />}>
-                            <span className="flex size-3.5 shrink-0 items-center justify-center rounded-sm border border-pink-500/70 text-pink-500">
-                              <HugeiconsIcon
-                                icon={UserIcon}
-                                className="size-2.5"
-                              />
-                            </span>
-                            <span className="truncate">{team.name}</span>
-                            {teamFavorited && (
-                              <HugeiconsIcon
-                                icon={StarIcon}
-                                className="size-3 text-amber-400"
-                                aria-label="Favorited"
-                              />
-                            )}
-                            <TriangleCaret className="transition-transform group-data-[closed]/team:-rotate-90" />
-                          </SidebarMenuButton>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <SidebarMenuAction
-                                  showOnHover
-                                  aria-label={`${team.name} options`}
-                                  data-testid={`team-menu-trigger-${team.id}`}
-                                  // stopPropagation prevents the
-                                  // CollapsibleTrigger above from
-                                  // toggling open/closed when the
-                                  // user clicks the "..." button.
-                                  // Base UI's Menu uses pointer-down
-                                  // semantics that already win the
-                                  // race against an outside-click
-                                  // listener — this stop is purely
-                                  // for the Collapsible parent.
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                  }}
-                                />
-                              }
-                            >
-                              <HugeiconsIcon
-                                icon={MoreHorizontalIcon}
-                                className="size-3.5"
-                              />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              side="bottom"
-                              align="start"
-                              sideOffset={4}
-                              data-testid={`team-menu-${team.id}`}
-                              className="w-64"
-                            >
-                              <DropdownMenuItem
-                                className="gap-2"
-                                render={<Link href="/settings" />}
-                                data-testid="team-menu-settings"
-                              >
+                          <SidebarMenuItem
+                            data-team-id={team.id}
+                            data-collapsed={teamHidden}
+                            className="sidebar-item-animated"
+                          >
+                            <SidebarMenuButton render={<CollapsibleTrigger />}>
+                              <span className="flex size-3.5 shrink-0 items-center justify-center rounded-sm border border-pink-500/70 text-pink-500">
                                 <HugeiconsIcon
-                                  icon={Settings02Icon}
-                                  className="size-4 opacity-70"
+                                  icon={UserIcon}
+                                  className="size-2.5"
                                 />
-                                <span>Team settings</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="gap-2">
-                                <HugeiconsIcon
-                                  icon={CopyLinkIcon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>Copy link</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="gap-2">
-                                <HugeiconsIcon
-                                  icon={Archive01Icon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>Open archive</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="gap-2"
-                                data-testid="team-menu-new-issue"
-                                onClick={() => setCreateOpen(true)}
-                              >
-                                <HugeiconsIcon
-                                  icon={PencilEdit01Icon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>New issue</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="gap-2"
-                                data-testid="team-menu-favorite"
-                                onClick={() => {
-                                  saveTeamPreferences(
-                                    toggleFavoriteTeam(teamPrefs, team.id)
-                                  )
-                                }}
-                              >
+                              </span>
+                              <span className="truncate">{team.name}</span>
+                              {teamFavorited && (
                                 <HugeiconsIcon
                                   icon={StarIcon}
-                                  className={`size-4 ${
-                                    teamFavorited
-                                      ? "text-amber-400"
-                                      : "opacity-70"
-                                  }`}
+                                  className="size-3 text-amber-400"
+                                  aria-label="Favorited"
                                 />
-                                <span>
-                                  {teamFavorited
-                                    ? "Remove from favorites"
-                                    : "Add to favorites"}
-                                </span>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuSub>
-                                <DropdownMenuSubTrigger
-                                  className="gap-2"
-                                  data-testid="team-menu-subscribe"
-                                >
-                                  <HugeiconsIcon
-                                    icon={Notification01Icon}
-                                    className="size-4 opacity-70"
-                                  />
-                                  <span>Subscribe</span>
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent
-                                  className="w-56"
-                                  data-testid="team-menu-subscribe-submenu"
-                                >
-                                  {ALL_SUBSCRIBE_EVENTS.map((event) => {
-                                    const checked = isSubscribed(
-                                      teamPrefs,
-                                      team.id,
-                                      event
-                                    )
-                                    return (
-                                      <DropdownMenuItem
-                                        key={event}
-                                        data-testid={`team-menu-subscribe-${event}`}
-                                        // Manual checkbox semantics:
-                                        // we render a check on the
-                                        // right when subscribed and
-                                        // toggle on click. Multi-
-                                        // select stays open via
-                                        // event.preventDefault.
-                                        onClick={(e) => {
-                                          e.preventDefault()
-                                          saveTeamPreferences(
-                                            toggleSubscribeEvent(
-                                              teamPrefs,
-                                              team.id,
-                                              event as TeamSubscribeEvent
-                                            )
-                                          )
-                                        }}
-                                        className="flex items-center justify-between gap-2"
-                                      >
-                                        <span>
-                                          {SUBSCRIBE_EVENT_LABELS[event]}
-                                        </span>
-                                        {checked && (
-                                          <HugeiconsIcon
-                                            icon={Tick02Icon}
-                                            className="size-3.5 shrink-0"
-                                            aria-label="Subscribed"
-                                          />
-                                        )}
-                                      </DropdownMenuItem>
-                                    )
-                                  })}
-                                </DropdownMenuSubContent>
-                              </DropdownMenuSub>
-                              <DropdownMenuItem
-                                className="gap-2"
+                              )}
+                              <TriangleCaret className="transition-transform group-data-[closed]/team:-rotate-90" />
+                            </SidebarMenuButton>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
                                 render={
-                                  <Link href="/settings?section=integrations" />
+                                  <SidebarMenuAction
+                                    showOnHover
+                                    aria-label={`${team.name} options`}
+                                    data-testid={`team-menu-trigger-${team.id}`}
+                                    // stopPropagation prevents the
+                                    // CollapsibleTrigger above from
+                                    // toggling open/closed when the
+                                    // user clicks the "..." button.
+                                    // Base UI's Menu uses pointer-down
+                                    // semantics that already win the
+                                    // race against an outside-click
+                                    // listener — this stop is purely
+                                    // for the Collapsible parent.
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                    }}
+                                  />
                                 }
-                                data-testid="team-menu-slack"
                               >
                                 <HugeiconsIcon
-                                  icon={SlackIcon}
-                                  className="size-4 opacity-70"
+                                  icon={MoreHorizontalIcon}
+                                  className="size-3.5"
                                 />
-                                <span className="flex-1">
-                                  Configure Slack notifications...
-                                </span>
-                                {/* External-link arrow — matches
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                side="bottom"
+                                align="start"
+                                sideOffset={4}
+                                data-testid={`team-menu-${team.id}`}
+                                className="w-64"
+                              >
+                                <DropdownMenuItem
+                                  className="gap-2"
+                                  render={<Link href="/settings" />}
+                                  data-testid="team-menu-settings"
+                                >
+                                  <HugeiconsIcon
+                                    icon={Settings02Icon}
+                                    className="size-4 opacity-70"
+                                  />
+                                  <span>Team settings</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="gap-2">
+                                  <HugeiconsIcon
+                                    icon={CopyLinkIcon}
+                                    className="size-4 opacity-70"
+                                  />
+                                  <span>Copy link</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="gap-2">
+                                  <HugeiconsIcon
+                                    icon={Archive01Icon}
+                                    className="size-4 opacity-70"
+                                  />
+                                  <span>Open archive</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="gap-2"
+                                  data-testid="team-menu-new-issue"
+                                  onClick={() => setCreateOpen(true)}
+                                >
+                                  <HugeiconsIcon
+                                    icon={PencilEdit01Icon}
+                                    className="size-4 opacity-70"
+                                  />
+                                  <span>New issue</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="gap-2"
+                                  data-testid="team-menu-favorite"
+                                  onClick={() => {
+                                    saveTeamPreferences(
+                                      toggleFavoriteTeam(teamPrefs, team.id)
+                                    )
+                                  }}
+                                >
+                                  <HugeiconsIcon
+                                    icon={StarIcon}
+                                    className={`size-4 ${
+                                      teamFavorited
+                                        ? "text-amber-400"
+                                        : "opacity-70"
+                                    }`}
+                                  />
+                                  <span>
+                                    {teamFavorited
+                                      ? "Remove from favorites"
+                                      : "Add to favorites"}
+                                  </span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuSub>
+                                  <DropdownMenuSubTrigger
+                                    className="gap-2"
+                                    data-testid="team-menu-subscribe"
+                                  >
+                                    <HugeiconsIcon
+                                      icon={Notification01Icon}
+                                      className="size-4 opacity-70"
+                                    />
+                                    <span>Subscribe</span>
+                                  </DropdownMenuSubTrigger>
+                                  <DropdownMenuSubContent
+                                    className="w-56"
+                                    data-testid="team-menu-subscribe-submenu"
+                                  >
+                                    {ALL_SUBSCRIBE_EVENTS.map((event) => {
+                                      const checked = isSubscribed(
+                                        teamPrefs,
+                                        team.id,
+                                        event
+                                      )
+                                      return (
+                                        <DropdownMenuItem
+                                          key={event}
+                                          data-testid={`team-menu-subscribe-${event}`}
+                                          // Manual checkbox semantics:
+                                          // we render a check on the
+                                          // right when subscribed and
+                                          // toggle on click. Multi-
+                                          // select stays open via
+                                          // event.preventDefault.
+                                          onClick={(e) => {
+                                            e.preventDefault()
+                                            saveTeamPreferences(
+                                              toggleSubscribeEvent(
+                                                teamPrefs,
+                                                team.id,
+                                                event as TeamSubscribeEvent
+                                              )
+                                            )
+                                          }}
+                                          className="flex items-center justify-between gap-2"
+                                        >
+                                          <span>
+                                            {SUBSCRIBE_EVENT_LABELS[event]}
+                                          </span>
+                                          {checked && (
+                                            <HugeiconsIcon
+                                              icon={Tick02Icon}
+                                              className="size-3.5 shrink-0"
+                                              aria-label="Subscribed"
+                                            />
+                                          )}
+                                        </DropdownMenuItem>
+                                      )
+                                    })}
+                                  </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                                <DropdownMenuItem
+                                  className="gap-2"
+                                  render={
+                                    <Link href="/settings?section=integrations" />
+                                  }
+                                  data-testid="team-menu-slack"
+                                >
+                                  <HugeiconsIcon
+                                    icon={SlackIcon}
+                                    className="size-4 opacity-70"
+                                  />
+                                  <span className="flex-1">
+                                    Configure Slack notifications...
+                                  </span>
+                                  {/* External-link arrow — matches
                                     Linear's convention of marking
                                     items that leave the current
                                     view (here: navigates to
                                     integrations settings). */}
-                                <HugeiconsIcon
-                                  icon={ArrowUpRight01Icon}
-                                  className="text-muted-foreground size-3 shrink-0 opacity-70"
-                                  aria-hidden="true"
-                                />
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="gap-2"
-                                data-testid="team-menu-invite"
-                                onClick={() => setInviteOpen(true)}
-                              >
-                                <HugeiconsIcon
-                                  icon={UserMultiple02Icon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>Invite members...</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="gap-2"
-                                data-testid="team-menu-hide"
-                                onClick={() => {
-                                  saveTeamPreferences(
-                                    setTeamHidden(teamPrefs, team.id, true)
-                                  )
-                                }}
-                              >
-                                <HugeiconsIcon
-                                  icon={ViewOffSlashIcon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>Hide team from sidebar</span>
-                              </DropdownMenuItem>
-                              {/* "Leave team..." carries an
+                                  <HugeiconsIcon
+                                    icon={ArrowUpRight01Icon}
+                                    className="text-muted-foreground size-3 shrink-0 opacity-70"
+                                    aria-hidden="true"
+                                  />
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="gap-2"
+                                  data-testid="team-menu-invite"
+                                  onClick={() => setInviteOpen(true)}
+                                >
+                                  <HugeiconsIcon
+                                    icon={UserMultiple02Icon}
+                                    className="size-4 opacity-70"
+                                  />
+                                  <span>Invite members...</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="gap-2"
+                                  data-testid="team-menu-hide"
+                                  onClick={() => {
+                                    saveTeamPreferences(
+                                      setTeamHidden(teamPrefs, team.id, true)
+                                    )
+                                  }}
+                                >
+                                  <HugeiconsIcon
+                                    icon={ViewOffSlashIcon}
+                                    className="size-4 opacity-70"
+                                  />
+                                  <span>Hide team from sidebar</span>
+                                </DropdownMenuItem>
+                                {/* "Leave team..." carries an
                                   explanatory tooltip when disabled
                                   — Tooltip wraps the menu item via
                                   TooltipTrigger render so the
                                   trigger's role/keyboard semantics
                                   are preserved. 500ms delay matches
                                   Linear's other long-form tooltips. */}
-                              <TooltipProvider delay={500}>
-                                <Tooltip>
-                                  <TooltipTrigger
-                                    render={
-                                      <DropdownMenuItem
-                                        className="text-muted-foreground/60 gap-2"
-                                        disabled={leaveDisabled}
-                                        data-testid="team-menu-leave"
-                                        // Even though the item is
-                                        // aria-disabled, we keep it
-                                        // focusable so screen
-                                        // readers announce the
-                                        // tooltip — Base UI's Menu
-                                        // doesn't strip focus from
-                                        // disabled items.
-                                      >
-                                        <HugeiconsIcon
-                                          icon={Logout01Icon}
-                                          className="size-4 opacity-70"
-                                        />
-                                        <span>Leave team...</span>
-                                      </DropdownMenuItem>
-                                    }
-                                  />
-                                  {leaveDisabled && (
-                                    <TooltipContent
-                                      side="right"
-                                      data-testid="team-menu-leave-tooltip"
-                                    >
-                                      {leaveDisabledReason}
-                                    </TooltipContent>
-                                  )}
-                                </Tooltip>
-                              </TooltipProvider>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <CollapsibleContent>
-                            <SidebarMenuSub>
-                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton
-                                  render={
-                                    <Link
-                                      href={`/teams/${team.key.toLowerCase()}/issues`}
+                                <TooltipProvider delay={500}>
+                                  <Tooltip>
+                                    <TooltipTrigger
+                                      render={
+                                        <DropdownMenuItem
+                                          className="text-muted-foreground/60 gap-2"
+                                          disabled={leaveDisabled}
+                                          data-testid="team-menu-leave"
+                                          // Even though the item is
+                                          // aria-disabled, we keep it
+                                          // focusable so screen
+                                          // readers announce the
+                                          // tooltip — Base UI's Menu
+                                          // doesn't strip focus from
+                                          // disabled items.
+                                        >
+                                          <HugeiconsIcon
+                                            icon={Logout01Icon}
+                                            className="size-4 opacity-70"
+                                          />
+                                          <span>Leave team...</span>
+                                        </DropdownMenuItem>
+                                      }
                                     />
-                                  }
-                                >
-                                  <HugeiconsIcon
-                                    icon={TaskEdit01Icon}
-                                    className="size-3.5"
-                                  />
-                                  <span>Issues</span>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton
-                                  render={<Link href="/projects" />}
-                                >
-                                  <HugeiconsIcon
-                                    icon={Layers01Icon}
-                                    className="size-3.5"
-                                  />
-                                  <span>Projects</span>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton
-                                  render={<Link href="/views" />}
-                                >
-                                  <HugeiconsIcon
-                                    icon={FilterIcon}
-                                    className="size-3.5"
-                                  />
-                                  <span>Views</span>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            </SidebarMenuSub>
-                          </CollapsibleContent>
-                        </SidebarMenuItem>
-                      </Collapsible>
-                    )
+                                    {leaveDisabled && (
+                                      <TooltipContent
+                                        side="right"
+                                        data-testid="team-menu-leave-tooltip"
+                                      >
+                                        {leaveDisabledReason}
+                                      </TooltipContent>
+                                    )}
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            <CollapsibleContent>
+                              <SidebarMenuSub>
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    render={
+                                      <Link
+                                        href={`/teams/${team.key.toLowerCase()}/issues`}
+                                      />
+                                    }
+                                  >
+                                    <HugeiconsIcon
+                                      icon={TaskEdit01Icon}
+                                      className="size-3.5"
+                                    />
+                                    <span>Issues</span>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    render={<Link href="/projects" />}
+                                  >
+                                    <HugeiconsIcon
+                                      icon={CubeIcon}
+                                      className="size-3.5"
+                                    />
+                                    <span>Projects</span>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    render={<Link href="/views" />}
+                                  >
+                                    <ViewsIcon className="size-3.5" />
+                                    <span>Views</span>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              </SidebarMenuSub>
+                            </CollapsibleContent>
+                          </SidebarMenuItem>
+                        </Collapsible>
+                      )
                     }
                   )}
                 </SidebarMenu>
@@ -836,7 +834,9 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton
-                        render={<Link href="/settings?section=integrations&provider=github" />}
+                        render={
+                          <Link href="/settings?section=integrations&provider=github" />
+                        }
                       >
                         <HugeiconsIcon icon={Github01Icon} />
                         <span>Connect GitHub</span>
@@ -910,5 +910,42 @@ function TriangleCaret({ className }: { className?: string }) {
 function FavoriteIconGlyph({ icon }: { icon: FavoriteIcon }) {
   return (
     <HugeiconsIcon icon={icon === "issues" ? TaskEdit01Icon : Layers01Icon} />
+  )
+}
+
+/**
+ * Sidebar "Views" glyph — Linear's stacked-layers mark (top rhombus
+ * representing the front layer, plus a curved bottom path suggesting a
+ * second layer behind it). We inline the SVG instead of pulling a
+ * Hugeicons match because the brand icon doesn't have a 1:1 free-set
+ * equivalent.
+ *
+ * Uses `currentColor` so it inherits the sidebar's text color states
+ * (default / hover / active) the same way HugeiconsIcon does.
+ */
+function ViewsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      role="img"
+      focusable="false"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M6.93213 2.21398C7.66484 1.90793 8.49512 1.93032 9.21389 2.28028L14.28 4.74739C15.2242 5.20709 15.2441 6.55895 14.3138 7.04673L9.2874 9.6826C8.48012 10.1058 7.51988 10.1058 6.7126 9.6826L1.68618 7.04673C0.75589 6.55895 0.775786 5.20709 1.71995 4.74739L6.78611 2.28028L6.93213 2.21398ZM8.55132 3.67054C8.24643 3.52213 7.89768 3.50303 7.58179 3.61428L7.44868 3.67054L2.83947 5.91363L7.41491 8.31243C7.7819 8.50486 8.2181 8.50486 8.58509 8.31243L13.1595 5.91363L8.55132 3.67054Z"
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M13.9045 10.0768C14.272 9.90435 14.7242 10.0333 14.9153 10.365C15.1063 10.6966 14.9634 11.1047 14.5959 11.2772L9.49912 13.6693C8.55934 14.1102 7.44077 14.1102 6.50099 13.6693L1.40417 11.2772L1.33776 11.2428C1.01976 11.0547 0.905685 10.676 1.08483 10.365C1.26402 10.054 1.67295 9.92085 2.02626 10.0477L2.0956 10.0768L7.19241 12.468L7.38675 12.5464C7.84801 12.7022 8.36492 12.6757 8.80769 12.468L13.9045 10.0768Z"
+      />
+    </svg>
   )
 }

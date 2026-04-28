@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { Suspense, useEffect, useRef } from "react"
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
@@ -42,7 +42,11 @@ const NAV: NavGroup[] = [
     items: [
       { key: "preferences", label: "Preferences", icon: Settings02Icon },
       { key: "profile", label: "Profile", icon: UserIcon },
-      { key: "notifications", label: "Notifications", icon: Notification01Icon },
+      {
+        key: "notifications",
+        label: "Notifications",
+        icon: Notification01Icon,
+      },
       { key: "security", label: "Security & access", icon: SecurityLockIcon },
       { key: "connected", label: "Connected accounts", icon: Link01Icon },
       { key: "agents", label: "Agent personalization", icon: AiBrain01Icon },
@@ -138,7 +142,14 @@ export default function SettingsLayout({
 }) {
   const pathname = usePathname()
   if (!shouldWrap(pathname)) return <>{children}</>
-  return <SettingsShell>{children}</SettingsShell>
+  // SettingsShell calls useSearchParams; wrap in Suspense so static
+  // pre-rendering of Settings sub-pages (e.g. /settings/new-team)
+  // doesn't bail out per Next 16's CSR-bailout rule.
+  return (
+    <Suspense fallback={<div className="flex h-full" />}>
+      <SettingsShell>{children}</SettingsShell>
+    </Suspense>
+  )
 }
 
 function SettingsShell({ children }: { children: React.ReactNode }) {
