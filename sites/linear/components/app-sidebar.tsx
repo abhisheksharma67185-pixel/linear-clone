@@ -72,6 +72,7 @@ import { InvitePeopleDialog } from "@/components/invite-people-dialog"
 import { DownloadAppDialog } from "@/components/download-app-dialog"
 import { SearchDialog } from "@/components/search-dialog"
 import { CustomizeSidebarDialog } from "@/components/customize-sidebar-dialog"
+import { HelpPopover } from "@/components/help-popover"
 import {
   Tooltip,
   TooltipContent,
@@ -851,13 +852,17 @@ export function AppSidebar() {
 
         <SidebarFooter>
           <div className="flex items-center px-1">
-            <button
-              type="button"
-              aria-label="Help"
-              className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground flex size-7 items-center justify-center rounded-md"
-            >
-              <HugeiconsIcon icon={HelpCircleIcon} className="size-4" />
-            </button>
+            <HelpPopover
+              trigger={
+                <button
+                  type="button"
+                  aria-label="Help"
+                  className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground flex size-7 items-center justify-center rounded-md"
+                >
+                  <HugeiconsIcon icon={HelpCircleIcon} className="size-4" />
+                </button>
+              }
+            />
           </div>
         </SidebarFooter>
       </Sidebar>

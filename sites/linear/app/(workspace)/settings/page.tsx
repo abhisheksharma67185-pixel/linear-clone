@@ -74,6 +74,7 @@ import {
 } from "@/components/provider-icons"
 import { TeamSettingsHub } from "@/components/team-settings-hub"
 import { CustomizeSidebarDialog } from "@/components/customize-sidebar-dialog"
+import { HelpPopover } from "@/components/help-popover"
 import { compareNullSmallest } from "@/lib/members-sort"
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
 import {
@@ -411,263 +412,45 @@ function SettingsPageInner() {
   )
 }
 
-const HELP_MENU_ITEMS = [
-  {
-    label: "Documentation",
-    icon: BookUploadIcon,
-    shortcut: null,
-    href: "https://linear.app/docs",
-  },
-  {
-    label: "Changelog",
-    icon: ActivitySparkIcon,
-    shortcut: null,
-    href: "https://linear.app/changelog",
-  },
-  {
-    label: "Community",
-    icon: Group01Icon,
-    shortcut: null,
-    href: "https://linear.app/community",
-  },
-  {
-    label: "Contact us",
-    icon: CustomerSupportIcon,
-    shortcut: null,
-    href: "https://linear.app/support",
-  },
-  {
-    label: "Keyboard shortcuts",
-    icon: SourceCodeIcon,
-    shortcut: "?",
-    href: null,
-  },
-] as const
-
-const WHATS_NEW_ITEMS = [
-  {
-    label: "Linear Agent MCP support",
-    href: "https://linear.app/changelog/linear-agent-mcp",
-  },
-  {
-    label: "Project update templates",
-    href: "https://linear.app/changelog/project-update-templates",
-  },
-  {
-    label: "Improved inbox filters",
-    href: "https://linear.app/changelog/inbox-filters",
-  },
-] as const
-
 function SettingsSidebarFooter() {
-  const [open, setOpen] = useState(false)
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        type="button"
-        aria-label="Help"
-        style={{
-          position: "fixed",
-          bottom: "12px",
-          left: "12px",
-          width: "28px",
-          height: "28px",
-          borderRadius: "50%",
-          background: open
-            ? "rgba(255,255,255,0.08)"
-            : "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          zIndex: 50,
-          flexShrink: 0,
-          transition: "background 0.15s",
-        }}
-        onMouseEnter={(e) => {
-          if (!open) e.currentTarget.style.background = "rgba(255,255,255,0.08)"
-        }}
-        onMouseLeave={(e) => {
-          if (!open) e.currentTarget.style.background = "rgba(255,255,255,0.04)"
-        }}
-      >
-        <span
+    <HelpPopover
+      trigger={
+        <button
+          type="button"
+          aria-label="Help"
           style={{
-            color: "rgba(255,255,255,0.55)",
-            fontSize: "12px",
-            fontWeight: 500,
-            lineHeight: 1,
-            display: "block",
-            transform: "translateX(0.5px)",
-            transition: "color 0.15s",
+            position: "fixed",
+            bottom: "12px",
+            left: "12px",
+            width: "28px",
+            height: "28px",
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            zIndex: 50,
+            flexShrink: 0,
           }}
         >
-          ?
-        </span>
-      </PopoverTrigger>
-
-      <PopoverContent
-        side="top"
-        align="start"
-        sideOffset={8}
-        className="p-0"
-        style={{
-          width: "260px",
-          borderRadius: "12px",
-          padding: "6px",
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "#1c1c1c",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-          zIndex: 9999,
-        }}
-      >
-        {/* Menu items */}
-        {HELP_MENU_ITEMS.map((item) => (
-          <HelpMenuItem key={item.label} item={item} />
-        ))}
-
-        {/* What's new section */}
-        <div
-          style={{
-            marginTop: "12px",
-            marginBottom: "4px",
-            padding: "0 8px",
-            fontSize: "11px",
-            fontWeight: 600,
-            color: "rgba(255,255,255,0.45)",
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-          }}
-        >
-          What&apos;s new
-        </div>
-
-        <div style={{ position: "relative", padding: "0 8px 2px" }}>
-          {/* Vertical dotted connector — sits behind bullets */}
-          <div
-            aria-hidden="true"
+          <span
             style={{
-              position: "absolute",
-              left: "10px",
-              top: "3px",
-              bottom: "3px",
-              width: "1px",
-              borderLeft: "1px dotted rgba(255,255,255,0.18)",
+              color: "rgba(255,255,255,0.55)",
+              fontSize: "12px",
+              fontWeight: 500,
+              lineHeight: 1,
+              display: "block",
+              transform: "translateX(0.5px)",
             }}
-          />
-          {WHATS_NEW_ITEMS.map((item) => (
-            <WhatsNewItem key={item.label} item={item} />
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  )
-}
-
-function HelpMenuItem({
-  item,
-}: {
-  item: {
-    label: string
-    icon: IconSvgElement
-    shortcut: string | null
-    href: string | null
-  }
-}) {
-  const [hovered, setHovered] = useState(false)
-  const Tag = item.href ? "a" : "button"
-  return (
-    <Tag
-      {...(item.href
-        ? { href: item.href, target: "_blank", rel: "noopener noreferrer" }
-        : { type: "button" as const })}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        height: "32px",
-        padding: "0 8px",
-        borderRadius: "6px",
-        cursor: "pointer",
-        textDecoration: "none",
-        background: hovered ? "rgba(255,255,255,0.06)" : "transparent",
-        width: "100%",
-        border: "none",
-        transition: "background 0.1s",
-      }}
-    >
-      <HugeiconsIcon
-        icon={item.icon}
-        style={{
-          width: "16px",
-          height: "16px",
-          color: "rgba(255,255,255,0.55)",
-          flexShrink: 0,
-        }}
-      />
-      <span
-        style={{
-          flex: 1,
-          fontSize: "14px",
-          color: "rgba(255,255,255,0.9)",
-          textAlign: "left",
-        }}
-      >
-        {item.label}
-      </span>
-      {item.shortcut && (
-        <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>
-          {item.shortcut}
-        </span>
-      )}
-    </Tag>
-  )
-}
-
-function WhatsNewItem({ item }: { item: { label: string; href: string } }) {
-  const [hovered, setHovered] = useState(false)
-  return (
-    <a
-      href={item.href}
-      target="_blank"
-      rel="noopener noreferrer"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        height: "28px",
-        borderRadius: "6px",
-        cursor: "pointer",
-        textDecoration: "none",
-        background: hovered ? "rgba(255,255,255,0.06)" : "transparent",
-        position: "relative",
-        transition: "background 0.1s",
-      }}
-    >
-      {/* Bullet — rendered above dotted line via zIndex */}
-      <div
-        style={{
-          width: "6px",
-          height: "6px",
-          borderRadius: "50%",
-          background: "rgba(255,255,255,0.35)",
-          flexShrink: 0,
-          position: "relative",
-          zIndex: 1,
-        }}
-      />
-      <span
-        style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)", flex: 1 }}
-      >
-        {item.label}
-      </span>
-    </a>
+          >
+            ?
+          </span>
+        </button>
+      }
+    />
   )
 }
 
