@@ -628,10 +628,6 @@ const FONT_SIZE_LABELS: Record<string, string> = {
   larger: "Larger",
 }
 
-const INTERFACE_THEME_LABELS: Record<string, string> = Object.fromEntries(
-  THEME_OPTIONS.map((opt) => [opt.value, opt.label])
-)
-
 function PreferencesSection() {
   const router = useRouter()
   const [homeView, setHomeView] = usePersistedState(

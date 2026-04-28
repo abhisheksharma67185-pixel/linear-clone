@@ -102,7 +102,7 @@ let _labels: Label[] = deepClone(initialLabels)
 // Project labels are scoped to projects (not issues) and start empty so the
 // settings page renders the "No labels yet" empty state until the user
 // creates one. Issue labels remain in `_labels`.
-let _projectLabels: Label[] = []
+const _projectLabels: Label[] = []
 let _views: View[] = deepClone(initialViews)
 
 // Auto-increment counters per team key. Start above spec-defined ranges so
