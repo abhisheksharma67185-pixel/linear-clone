@@ -48,8 +48,16 @@ const NAV: NavGroup[] = [
         icon: Notification01Icon,
       },
       { key: "security", label: "Security & access", icon: SecurityLockIcon },
-      { key: "connected", label: "Connected accounts", icon: Link01Icon },
-      { key: "agents", label: "Agent personalization", icon: AiBrain01Icon },
+      {
+        key: "connected-accounts",
+        label: "Connected accounts",
+        icon: Link01Icon,
+      },
+      {
+        key: "agent-personalization",
+        label: "Agent personalization",
+        icon: AiBrain01Icon,
+      },
     ],
   },
   {

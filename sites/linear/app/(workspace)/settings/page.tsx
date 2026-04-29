@@ -169,8 +169,16 @@ const NAV: NavGroup[] = [
         icon: Notification01Icon,
       },
       { key: "security", label: "Security & access", icon: SecurityLockIcon },
-      { key: "connected", label: "Connected accounts", icon: Link01Icon },
-      { key: "agents", label: "Agent personalization", icon: AiBrain01Icon },
+      {
+        key: "connected-accounts",
+        label: "Connected accounts",
+        icon: Link01Icon,
+      },
+      {
+        key: "agent-personalization",
+        label: "Agent personalization",
+        icon: AiBrain01Icon,
+      },
     ],
   },
   {
@@ -252,8 +260,20 @@ function sectionDisplayLabel(key: SectionKey): string {
 function SettingsPageInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const section = searchParams.get("section") ?? "preferences"
+  const rawSection = searchParams.get("section") ?? "preferences"
+  // Linear's sidebar splits Templates into Issues→Templates and
+  // Projects→Templates; there's no bare "Templates" surface. Resolve
+  // `?section=templates` to issue-templates immediately (so the sidebar
+  // highlights correctly and no "coming soon" stub flashes), and also
+  // rewrite the URL so refreshing lands on the resolved slug.
+  const section = rawSection === "templates" ? "issue-templates" : rawSection
   const navScrollRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (rawSection === "templates") {
+      router.replace("/settings?section=issue-templates", { scroll: false })
+    }
+  }, [rawSection, router])
 
   const [teams, setTeams] = useState<
     { id: string; name: string; key: string }[]
@@ -494,8 +514,9 @@ function SectionContent({
   if (section === "profile") return <ProfileSection />
   if (section === "notifications") return <NotificationsSection />
   if (section === "security") return <SecuritySection />
-  if (section === "connected") return <ConnectedAccountsSection />
-  if (section === "agents") return <AgentPersonalizationSection />
+  if (section === "connected-accounts") return <ConnectedAccountsSection />
+  if (section === "agent-personalization")
+    return <AgentPersonalizationSection />
   if (section === "create-team") return <CreateTeamPage teams={teams} />
   if (section.startsWith("team-hub-")) {
     const teamKey = section.replace("team-hub-", "")
@@ -11274,7 +11295,7 @@ function LinearAgentDetailView() {
               </div>
             </div>
             <Link
-              href="/settings?section=agents"
+              href="/settings?section=agent-personalization"
               aria-label="Manage allowed MCP servers"
               className="text-foreground focus-visible:ring-primary/50 focus-visible:ring-offset-background inline-flex items-center gap-0.5 rounded text-sm font-medium hover:opacity-70 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
             >
