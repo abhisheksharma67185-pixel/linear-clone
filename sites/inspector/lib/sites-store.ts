@@ -126,9 +126,23 @@ export const useSitesStore = create<SitesState>()(
     }),
     {
       name: "thetabench-inspector:sites",
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ sites: state.sites, history: state.history }),
+      // v1 → v2: defaults grew from 4 → 6 (added zendesk, plain) and prod URLs
+      // moved to env vars. Re-seed the default ids with current URLs while
+      // preserving any user-added custom sites.
+      migrate: (persisted, version) => {
+        const state = (persisted as Partial<SitesState>) ?? {}
+        if (version < 2) {
+          const defaultIds = new Set(DEFAULT_SITES.map((s) => s.id))
+          const userAdded = (state.sites ?? []).filter(
+            (s) => !defaultIds.has(s.id)
+          )
+          return { ...state, sites: [...DEFAULT_SITES, ...userAdded] }
+        }
+        return state
+      },
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true)
       },
