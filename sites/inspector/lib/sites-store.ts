@@ -5,10 +5,11 @@ import { persist, createJSONStorage } from "zustand/middleware"
 import type { SiteConnection, SiteId, EpisodeHistoryEntry } from "./types"
 
 // ---------------------------------------------------------------------------
-// Default seed list — local-dev ports (shopify-admin @ 3000, linear @ 3001,
-// jira @ 3002, slack @ 3003, zendesk @ 3004, plain @ 3005). Inspector itself
-// runs on 3010. NEXT_PUBLIC_SITE_URL_<ID> overrides per-site for deployed
-// builds (set on Vercel so prod points at the corresponding theta-* URLs).
+// Default seed list — six conventional sites on their conventional ports
+// (shopify-admin @ 3000, linear @ 3001, jira @ 3002, slack @ 3003,
+// zendesk @ 3004, plain @ 3005). Inspector itself runs on 3010.
+// NEXT_PUBLIC_SITE_URL_<ID> overrides per-site for deployed builds (set on
+// Vercel so prod points at the corresponding theta-* URLs).
 // ---------------------------------------------------------------------------
 
 // Each NEXT_PUBLIC_* must be a static string literal — Next.js only inlines

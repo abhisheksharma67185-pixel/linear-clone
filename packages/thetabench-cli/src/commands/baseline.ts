@@ -184,10 +184,12 @@ export function registerBaselineCommand(program: Command): void {
       "all"
     )
     .option(
-      "--output <file.json>",
-      "Where to write the result JSON",
+      "-o, --output <file.json>",
+      "Where to write the result JSON (alias: --out)",
       "baseline-results.json"
     )
+    // Friendly alias — many users type `--out` first.
+    .option("--out <file.json>", "Alias for --output")
     .option(
       "--max-steps <n>",
       "Per-task step budget before forcing finish",
@@ -305,10 +307,12 @@ export function registerBaselineCommand(program: Command): void {
           `\n  ${c.bold("Summary")}: ${passed}/${results.length} passed — avg score ${avgScore.toFixed(3)}\n`
         )
 
-        // Write JSON
+        // Write JSON. --out is a friendly alias for --output.
         const outPath = pathResolve(
           process.cwd(),
-          opts.output ?? "baseline-results.json"
+          (opts.out as string | undefined) ??
+            opts.output ??
+            "baseline-results.json"
         )
         writeFileSync(
           outPath,
