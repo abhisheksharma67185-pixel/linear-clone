@@ -1875,6 +1875,10 @@ function SecuritySection() {
   const [newApiKeyOpen, setNewApiKeyOpen] = useState(false)
   const [revealedKey, setRevealedKey] = useState<SecurityApiKey | null>(null)
   const [registering, setRegistering] = useState(false)
+  // `loading` gates the empty-state copy in each section so we don't
+  // briefly flash "No active sessions" / "No passkeys registered" /
+  // "No API keys created" before the parallel fetches resolve.
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
@@ -1891,6 +1895,8 @@ function SecuritySection() {
         setApiKeys(k)
       } catch {
         /* ignore — keep empty state */
+      } finally {
+        if (!cancelled) setLoading(false)
       }
     }
     load()
@@ -2010,13 +2016,26 @@ function SecuritySection() {
           Devices logged into your account
         </p>
         <div className="divide-border divide-y rounded-lg border">
-          {sessions.map((s) => (
-            <SessionRow key={s.id} session={s} onLogout={handleLogoutSession} />
-          ))}
-          {sessions.length === 0 && (
-            <div className="text-muted-foreground px-4 py-3 text-sm">
-              No active sessions
+          {loading ? (
+            <div className="flex flex-col gap-1 p-3">
+              <Skeleton className="h-9 w-full rounded-md" />
+              <Skeleton className="h-9 w-full rounded-md" />
             </div>
+          ) : (
+            <>
+              {sessions.map((s) => (
+                <SessionRow
+                  key={s.id}
+                  session={s}
+                  onLogout={handleLogoutSession}
+                />
+              ))}
+              {sessions.length === 0 && (
+                <div className="text-muted-foreground px-4 py-3 text-sm">
+                  No active sessions
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
@@ -2028,7 +2047,11 @@ function SecuritySection() {
           Passkeys are a secure way to sign in to your Linear account
         </p>
         <div className="rounded-lg border">
-          {passkeys.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col gap-1 p-3">
+              <Skeleton className="h-9 w-full rounded-md" />
+            </div>
+          ) : passkeys.length === 0 ? (
             <div className="flex items-center justify-between px-4 py-3">
               <span className="text-muted-foreground text-sm">
                 No passkeys registered
@@ -2092,7 +2115,11 @@ function SecuritySection() {
           Use Linear&apos;s GraphQL API to build your own integrations
         </p>
         <div className="rounded-lg border">
-          {apiKeys.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col gap-1 p-3">
+              <Skeleton className="h-9 w-full rounded-md" />
+            </div>
+          ) : apiKeys.length === 0 ? (
             <div className="flex items-center justify-between px-4 py-3">
               <span className="text-muted-foreground text-sm">
                 No API keys created
