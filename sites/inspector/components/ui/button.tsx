@@ -60,24 +60,32 @@ function Button({
   render,
   ...props
 }: ButtonOwnProps) {
-  const finalRender =
-    render ??
-    (asChild && React.isValidElement(children)
-      ? (children as React.ReactElement)
-      : undefined)
-
-  // When asChild is set, the child element becomes the rendered host (no
-  // extra inner children passed in).
-  const finalChildren = asChild ? undefined : children
+  // asChild = "style this child like a button without wrapping it in
+  // Base UI's <Button>." Preserves the child's native semantics — a Link
+  // stays a link (role="link"), not role="button". Base UI's Button assumes
+  // a native <button> and warns + adds button semantics if it sees an <a>.
+  if (asChild && React.isValidElement(children)) {
+    const child = children as React.ReactElement<{
+      className?: string
+    }>
+    return React.cloneElement(child, {
+      "data-slot": "button",
+      className: cn(
+        buttonVariants({ variant, size, className }),
+        child.props.className
+      ),
+      ...props,
+    } as React.HTMLAttributes<HTMLElement>)
+  }
 
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
-      render={finalRender}
+      render={render}
       {...props}
     >
-      {finalChildren}
+      {children}
     </ButtonPrimitive>
   )
 }
