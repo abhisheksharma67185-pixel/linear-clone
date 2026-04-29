@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type Dispatch,
   type SetStateAction,
 } from "react"
@@ -6018,34 +6019,76 @@ function TeamActionConfirmDialog({
   )
 }
 
-// localStorage-backed state that survives refresh. Server-side render returns
-// the initial value; the real stored value is hydrated on the first client
-// effect so SSR output stays deterministic.
+// localStorage-backed state that survives refresh.
+//
+// Backed by `useSyncExternalStore` so React handles the SSR↔client
+// boundary correctly: the server snapshot returns `initial` (matching
+// the SSR HTML), the client snapshot reads localStorage. React detects
+// the mismatch and triggers a re-render with the client value
+// immediately after hydration — the user sees the stored value on the
+// first paint after JS loads, not after a separate useEffect tick.
 function usePersistedState<T>(
   key: string,
   initial: T
 ): [T, Dispatch<SetStateAction<T>>] {
-  const [value, setValue] = useState<T>(initial)
-  const [hydrated, setHydrated] = useState(false)
+  const subscribe = useCallback(
+    (callback: () => void) => {
+      const onStorage = (e: StorageEvent) => {
+        if (e.key === key || e.key === null) callback()
+      }
+      const onLocal = (e: Event) => {
+        if ((e as CustomEvent).detail === key) callback()
+      }
+      window.addEventListener("storage", onStorage)
+      window.addEventListener(LOCAL_STORAGE_LOCAL_EVENT, onLocal)
+      return () => {
+        window.removeEventListener("storage", onStorage)
+        window.removeEventListener(LOCAL_STORAGE_LOCAL_EVENT, onLocal)
+      }
+    },
+    [key]
+  )
 
-  useEffect(() => {
+  const getSnapshot = useCallback(() => {
     try {
-      const raw = window.localStorage.getItem(key)
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- load on mount
-      if (raw !== null) setValue(JSON.parse(raw) as T)
-    } catch {}
-    setHydrated(true)
+      return window.localStorage.getItem(key)
+    } catch {
+      return null
+    }
   }, [key])
 
-  useEffect(() => {
-    if (!hydrated) return
+  const getServerSnapshot = useCallback(() => null, [])
+
+  const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  const value: T = useMemo(() => {
+    if (raw === null) return initial
     try {
-      window.localStorage.setItem(key, JSON.stringify(value))
-    } catch {}
-  }, [key, value, hydrated])
+      return JSON.parse(raw) as T
+    } catch {
+      return initial
+    }
+  }, [raw, initial])
+
+  const setValue: Dispatch<SetStateAction<T>> = useCallback(
+    (next) => {
+      const nextValue =
+        typeof next === "function" ? (next as (prev: T) => T)(value) : next
+      try {
+        window.localStorage.setItem(key, JSON.stringify(nextValue))
+      } catch {}
+      // Notify same-tab subscribers (the native `storage` event only
+      // fires across tabs, not within the same window).
+      window.dispatchEvent(
+        new CustomEvent(LOCAL_STORAGE_LOCAL_EVENT, { detail: key })
+      )
+    },
+    [key, value]
+  )
 
   return [value, setValue]
 }
+
+const LOCAL_STORAGE_LOCAL_EVENT = "linear:persisted-state"
 
 const PERMISSION_OPTIONS = [
   { value: "all-members", label: "All members" },
