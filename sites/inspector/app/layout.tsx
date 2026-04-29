@@ -49,12 +49,12 @@ export default function RootLayout({
     >
       <body className="min-h-svh bg-background text-foreground">
         <Providers>
-          <div className="flex min-h-svh flex-col md:flex-row">
-            <Sidebar />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <MobileNav />
-              <main className="min-w-0 flex-1">{children}</main>
-            </div>
+          {/* Sidebar is position:fixed (md+); reserve the gutter with
+              md:pl-56 so the main column doesn't slide under it. */}
+          <Sidebar />
+          <div className="flex min-h-svh flex-col md:pl-56">
+            <MobileNav />
+            <main className="min-w-0 flex-1">{children}</main>
           </div>
         </Providers>
       </body>

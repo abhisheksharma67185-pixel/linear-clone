@@ -180,8 +180,13 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function Sidebar() {
+  // `position: fixed` (not sticky) so the brand + nav stay anchored to the
+  // viewport regardless of body scroll. The sticky-inside-flex-row pattern
+  // we used previously broke once page content exceeded one viewport: the
+  // sidebar scrolled out together with the page header. Width matches the
+  // `md:pl-56` reservation in the layout's main column.
   return (
-    <aside className="sticky top-0 hidden h-svh w-56 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
+    <aside className="fixed inset-y-0 left-0 z-20 hidden h-svh w-56 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
       <SidebarBody />
     </aside>
   )
