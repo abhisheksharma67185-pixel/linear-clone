@@ -14956,8 +14956,8 @@ function IntegrationsSection() {
         {/* Featured Slack card — always shown, even during search. */}
         <div className="via-card to-card overflow-hidden rounded-xl border bg-gradient-to-r from-[#4A154B]/30">
           <div className="flex items-start gap-5 p-5">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[#4A154B] text-sm font-bold text-white">
-              SL
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-white">
+              <SlackLogo className="size-7" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
