@@ -212,49 +212,19 @@ export function CustomizeSidebarDialog({
           className="flex flex-col gap-4 py-1"
           data-testid="customize-sidebar-body"
         >
-          {/* Default badge style — segmented + helper caption.
-              Lives at the top of the dialog (above the per-row lists)
-              to match Linear's layout. */}
+          {/* Default badge style — single dropdown trigger that mirrors
+              the per-row visibility dropdowns: row label on the left,
+              "<value> ▾" on the right. (Previously this was a segmented
+              Count|Dot toggle, which didn't match Linear's UI.) */}
           <div
-            className="flex flex-col gap-1.5"
+            className="flex items-center justify-between"
             data-testid="badge-style-section"
           >
             <span className="text-sm font-medium">Default badge style</span>
-            <div
-              role="radiogroup"
-              aria-label="Default badge style"
-              className="bg-muted/30 inline-flex w-fit items-center rounded-md border p-0.5 text-xs"
-            >
-              {BADGE_STYLE_OPTIONS.map((opt) => {
-                const active = config.badgeStyle === opt.value
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    data-testid={`badge-style-${opt.value}`}
-                    onClick={() => commit(setBadgeStyle(config, opt.value))}
-                    className={`inline-flex h-6 items-center rounded-sm px-2.5 text-xs font-medium transition-colors ${
-                      active
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                )
-              })}
-            </div>
-            <p
-              data-testid="badge-style-helper"
-              className="text-muted-foreground text-xs"
-            >
-              <span className="text-foreground font-medium">Count</span> shows
-              the exact number (e.g. <span className="font-mono">3</span>).{" "}
-              <span className="text-foreground font-medium">Dot</span> shows a
-              small unread indicator without the number.
-            </p>
+            <BadgeStyleDropdown
+              value={config.badgeStyle}
+              onChange={(v) => commit(setBadgeStyle(config, v))}
+            />
           </div>
 
           <DndContext
@@ -449,5 +419,58 @@ function ItemRow({
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
+  )
+}
+
+function BadgeStyleDropdown({
+  value,
+  onChange,
+}: {
+  value: BadgeStyle
+  onChange: (next: BadgeStyle) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const currentLabel =
+    BADGE_STYLE_OPTIONS.find((o) => o.value === value)?.label ?? value
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            data-testid="badge-style-trigger"
+            aria-label={`Default badge style: ${currentLabel}`}
+            className="hover:bg-accent/50 focus-visible:ring-ring inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs focus-visible:ring-2 focus-visible:outline-none"
+          >
+            <span>{currentLabel}</span>
+            <HugeiconsIcon
+              icon={ArrowDown01Icon}
+              className="text-muted-foreground size-3"
+            />
+          </button>
+        }
+      />
+      <DropdownMenuContent align="end" className="w-44">
+        {BADGE_STYLE_OPTIONS.map((opt) => (
+          <DropdownMenuItem
+            key={opt.value}
+            data-testid={`badge-style-option-${opt.value}`}
+            onClick={() => {
+              onChange(opt.value)
+              setOpen(false)
+            }}
+            className="flex items-center justify-between text-xs"
+          >
+            <span>{opt.label}</span>
+            {value === opt.value && (
+              <HugeiconsIcon
+                icon={CheckmarkCircle02Icon}
+                className="size-3.5"
+              />
+            )}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

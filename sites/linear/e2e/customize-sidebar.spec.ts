@@ -280,14 +280,24 @@ test.describe("Customize sidebar modal", () => {
   })
 
   /**
-   * Bonus: helper caption explaining Count vs Dot is rendered.
+   * Default badge style is exposed as a single dropdown trigger that
+   * shows the current value (Count or Dot) and matches the styling of
+   * the per-row visibility dropdowns. Linear's UI is a dropdown — not
+   * a segmented Count|Dot toggle — and there's no helper caption.
    */
-  test("badge style helper caption explains Count vs Dot", async ({ page }) => {
+  test("badge style is a single dropdown showing the current value", async ({
+    page,
+  }) => {
     await gotoAndOpenCustomize(page)
-    const helper = page.getByTestId("badge-style-helper")
-    await expect(helper).toBeVisible()
-    await expect(helper).toContainText(/Count/)
-    await expect(helper).toContainText(/Dot/)
+    const trigger = page.getByTestId("badge-style-trigger")
+    await expect(trigger).toBeVisible()
+    await expect(trigger).toContainText(/Count|Dot/)
+
+    await trigger.click()
+    const dotOption = page.getByTestId("badge-style-option-dot")
+    await expect(dotOption).toBeVisible()
+    await dotOption.click()
+    await expect(trigger).toContainText("Dot")
   })
 
   /**
