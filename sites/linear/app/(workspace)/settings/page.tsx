@@ -71,6 +71,11 @@ import {
   FactoryLogo,
   OpenAILogo,
   VSCodeLogo,
+  AsanaLogo,
+  ShortcutLogo,
+  JiraLogo,
+  LinearLogo,
+  TrelloLogo,
 } from "@/components/provider-icons"
 import { TeamSettingsHub } from "@/components/team-settings-hub"
 import { CustomizeSidebarDialog } from "@/components/customize-sidebar-dialog"
@@ -7858,47 +7863,29 @@ const CLI_IMPORT_URL =
 const IMPORT_SOURCES: {
   key: string
   name: string
-  abbr: string
-  // Tile background — Linear shows service-tinted letter monograms here so
-  // each row reads like a brand chip instead of a generic muted square.
+  // Each source renders its official brand mark inline. Marks that include
+  // their own background (Shortcut, Linear, Trello) render on a transparent
+  // tile; marks drawn in currentColor (GitHub, Jira) sit on a brand-tinted
+  // tile; Asana's coral dots render on a neutral white tile.
+  Logo: (props: { className?: string }) => React.ReactElement
   tileClass: string
 }[] = [
-  {
-    key: "asana",
-    name: "Asana",
-    abbr: "AS",
-    tileClass: "bg-[#f06a6a] text-white",
-  },
-  {
-    key: "shortcut",
-    name: "Shortcut",
-    abbr: "SC",
-    tileClass: "bg-[#7e57c2] text-white",
-  },
+  { key: "asana", name: "Asana", Logo: AsanaLogo, tileClass: "bg-white" },
+  { key: "shortcut", name: "Shortcut", Logo: ShortcutLogo, tileClass: "" },
   {
     key: "github",
     name: "GitHub",
-    abbr: "GH",
+    Logo: GitHubLogo,
     tileClass: "bg-[#24292e] text-white",
   },
   {
     key: "jira",
     name: "Jira",
-    abbr: "JR",
+    Logo: JiraLogo,
     tileClass: "bg-[#2684ff] text-white",
   },
-  {
-    key: "linear",
-    name: "Linear",
-    abbr: "LN",
-    tileClass: "bg-[#5e6ad2] text-white",
-  },
-  {
-    key: "trello",
-    name: "Trello",
-    abbr: "TR",
-    tileClass: "bg-[#0079bf] text-white",
-  },
+  { key: "linear", name: "Linear", Logo: LinearLogo, tileClass: "" },
+  { key: "trello", name: "Trello", Logo: TrelloLogo, tileClass: "" },
 ]
 
 type IncludePrivateTeams = "none" | "all"
@@ -8084,7 +8071,7 @@ function ImportExportSection() {
           </a>
         </p>
         <div className="divide-border divide-y overflow-hidden rounded-lg border">
-          {IMPORT_SOURCES.map(({ key, name, abbr, tileClass }) => (
+          {IMPORT_SOURCES.map(({ key, name, Logo, tileClass }) => (
             <Link
               key={key}
               href={`/settings/import-export/migration-assistant?service=${key}`}
@@ -8093,9 +8080,9 @@ function ImportExportSection() {
               className="focus-visible:ring-ring group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:outline-none"
             >
               <div
-                className={`flex size-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-semibold ${tileClass}`}
+                className={`flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg ${tileClass}`}
               >
-                {abbr}
+                <Logo className="size-6" />
               </div>
               <span className="flex-1 text-sm font-medium">{name}</span>
               <HugeiconsIcon

@@ -1296,6 +1296,61 @@ export function VantaLogo({ className }: IconProps) {
   )
 }
 
+// Asana — three coral dots arranged in a triangle, the brand's recognised mark.
+export function AsanaLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <circle cx="16" cy="20.5" r="5.5" fill="#f06a6a" />
+      <circle cx="9.5" cy="11" r="5.5" fill="#f06a6a" />
+      <circle cx="22.5" cy="11" r="5.5" fill="#f06a6a" />
+    </svg>
+  )
+}
+
+// Shortcut — purple square tile with a stylised white "S" stroke.
+export function ShortcutLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect width="32" height="32" rx="6" fill="#7e57c2" />
+      <path
+        d="M22 11c-1.6-1.7-3.7-2.5-5.8-2.5-3 0-5.7 2-6.4 4.7-.5 2 .4 3.7 2.4 4.4l4.4 1.6c1.4.5 2 1.4 1.7 2.6-.3 1.4-1.7 2.2-3.4 2.2-1.6 0-3.1-.8-4-2.3"
+        stroke="#fff"
+        strokeWidth="2"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </svg>
+  )
+}
+
+// Linear — the workspace's own mark: a tilted stack of horizontal strokes
+// resembling an "L" tilted to suggest forward motion. Used both in nav
+// chrome and as the import-source tile when migrating from another Linear
+// workspace.
+export function LinearLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect width="32" height="32" rx="6" fill="#5e6ad2" />
+      <path
+        fill="#fff"
+        d="M7 17.5 14.5 25c-3.7-.7-6.6-3.7-7.5-7.5Zm0-3 10.5 10.5c-1 .3-2 .5-3 .5L7 17.5c0-1 .2-2 .5-3Zm.5-2 12 12c-.7.4-1.4.7-2.2.9L6.6 13.7c.2-.8.5-1.5.9-2.2Zm1.5-2 11.5 11.5c-.5.5-1.1 1-1.7 1.4L7.6 11.7c.4-.6.9-1.2 1.4-1.7ZM11 8.5l12.5 12.5c-.4.6-.8 1.2-1.3 1.7L9.3 9.8c.5-.5 1.1-.9 1.7-1.3Zm3-1.3 11.8 11.8c-.2.7-.5 1.4-.9 2L11.2 8.1c.6-.4 1.3-.7 2-.9Zm3.5-.2c4.5.7 8.1 4.3 8.7 8.7L17.5 7Z"
+      />
+    </svg>
+  )
+}
+
+// Trello — Atlassian blue tile with two card columns (the canonical board
+// mark). Caller supplies the `className` for sizing.
+export function TrelloLogo({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+      <rect width="32" height="32" rx="6" fill="#0079bf" />
+      <rect x="6" y="7" width="8.5" height="14" rx="1.4" fill="#fff" />
+      <rect x="17.5" y="7" width="8.5" height="9" rx="1.4" fill="#fff" />
+    </svg>
+  )
+}
+
 export function ExternalLinkGlyph({ className }: IconProps) {
   return (
     <svg viewBox="0 0 14 14" className={className} aria-hidden="true">
