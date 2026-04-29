@@ -1211,8 +1211,18 @@ function CodingToolsSection() {
 }
 
 function ProfileSection() {
-  const [name, setName] = useState("Theta Computer")
-  const [username, setUsername] = useState("theta.computer01")
+  // Profile name + username persist locally so refreshing /settings
+  // doesn't lose what the user typed. Linear writes these to its
+  // backend; the clone has no profile API, so localStorage is the
+  // pragmatic equivalent.
+  const [name, setName] = usePersistedState(
+    "linear:profile:name",
+    "Theta Computer"
+  )
+  const [username, setUsername] = usePersistedState(
+    "linear:profile:username",
+    "theta.computer01"
+  )
   const email = "theta.computer01@gmail.com"
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [changeEmailOpen, setChangeEmailOpen] = useState(false)
@@ -11449,7 +11459,10 @@ const INITIATIVE_SCHEDULE_LABEL: Record<InitiativeSchedule, string> = {
 const LINEAR_BRAND_BLUE = "#5E6AD2"
 
 function InitiativesSection() {
-  const [enabled, setEnabled] = useState(false)
+  const [enabled, setEnabled] = usePersistedState(
+    "linear:initiatives:enabled",
+    false
+  )
   const [schedule, setSchedule] = useState<InitiativeSchedule>("none")
   const [draft, setDraft] = useState<InitiativeSchedule>("none")
   const [editing, setEditing] = useState(false)
@@ -11798,9 +11811,15 @@ const PULSE_SCHEDULE_LABELS: Record<string, string> = {
 }
 
 function PulseSection() {
-  const [enabled, setEnabled] = useState(false)
-  const [wsSchedule, setWsSchedule] = useState("daily")
-  const [mySchedule, setMySchedule] = useState("never")
+  const [enabled, setEnabled] = usePersistedState("linear:pulse:enabled", false)
+  const [wsSchedule, setWsSchedule] = usePersistedState(
+    "linear:pulse:wsSchedule",
+    "daily"
+  )
+  const [mySchedule, setMySchedule] = usePersistedState(
+    "linear:pulse:mySchedule",
+    "never"
+  )
 
   return (
     <div className="flex max-w-2xl flex-col gap-6 p-6">
@@ -11920,7 +11939,10 @@ const EXTERNAL_PROVIDERS: { value: ExternalProvider; label: string }[] = [
 
 function CustomerRequestsSection() {
   const router = useRouter()
-  const [enabled, setEnabled] = useState(false)
+  const [enabled, setEnabled] = usePersistedState(
+    "linear:customerRequests:enabled",
+    false
+  )
   const [manualEdits, setManualEdits] = useState(false)
   const [revenueFormat, setRevenueFormat] = useState("annual")
   const [currency, setCurrency] = useState("usd")
