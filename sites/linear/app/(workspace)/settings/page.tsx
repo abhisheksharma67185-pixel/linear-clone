@@ -668,20 +668,45 @@ function PreferencesSection() {
   )
   const [displayNames, setDisplayNames] = useState("fullname")
   const [firstDay, setFirstDay] = useState("monday")
-  const [textEmoticons, setTextEmoticons] = useState(true)
+  // Toggles on this page must round-trip through localStorage — Linear
+  // persists these across reloads. The dropdowns above (homeView,
+  // fontSize) already use usePersistedState; bringing the toggles in
+  // line keeps the persistence contract consistent.
+  const [textEmoticons, setTextEmoticons] = usePersistedState(
+    "linear:pref:textEmoticons",
+    true
+  )
   const [sendOn, setSendOn] = useState("enter")
   const [fontSize, setFontSize] = usePersistedState(
     "linear:font-size",
     "default"
   )
-  const [pointerCursors, setPointerCursors] = useState(false)
-  const [theme, setTheme] = useState("system")
-  const [desktopApp, setDesktopApp] = useState(false)
-  const [autoAssign, setAutoAssign] = useState(false)
+  const [pointerCursors, setPointerCursors] = usePersistedState(
+    "linear:pref:pointerCursors",
+    false
+  )
+  const [theme, setTheme] = usePersistedState("linear:theme", "system")
+  const [desktopApp, setDesktopApp] = usePersistedState(
+    "linear:pref:desktopApp",
+    false
+  )
+  const [autoAssign, setAutoAssign] = usePersistedState(
+    "linear:pref:autoAssign",
+    false
+  )
   const [gitFormat, setGitFormat] = useState("title")
-  const [gitBranchMove, setGitBranchMove] = useState(false)
-  const [codingToolMove, setCodingToolMove] = useState(false)
-  const [startedAssign, setStartedAssign] = useState(false)
+  const [gitBranchMove, setGitBranchMove] = usePersistedState(
+    "linear:pref:gitBranchMove",
+    false
+  )
+  const [codingToolMove, setCodingToolMove] = usePersistedState(
+    "linear:pref:codingToolMove",
+    false
+  )
+  const [startedAssign, setStartedAssign] = usePersistedState(
+    "linear:pref:startedAssign",
+    false
+  )
   const [customizeOpen, setCustomizeOpen] = useState(false)
 
   // Wire the Font size dropdown into the root font-size scale CSS variable so
@@ -1507,12 +1532,28 @@ function NotificationsSection() {
 
 function NotificationsListView() {
   const router = useRouter()
-  const [showSidebar, setShowSidebar] = useState(true)
-  const [newsletter, setNewsletter] = useState(false)
-  const [marketing, setMarketing] = useState(true)
-  const [inviteAccepted, setInviteAccepted] = useState(true)
-  const [privacyUpdates, setPrivacyUpdates] = useState(true)
-  const [dpa, setDpa] = useState(false)
+  // Per-toggle persistence so flipping any of these survives reload.
+  const [showSidebar, setShowSidebar] = usePersistedState(
+    "linear:notif:showSidebar",
+    true
+  )
+  const [newsletter, setNewsletter] = usePersistedState(
+    "linear:notif:newsletter",
+    false
+  )
+  const [marketing, setMarketing] = usePersistedState(
+    "linear:notif:marketing",
+    true
+  )
+  const [inviteAccepted, setInviteAccepted] = usePersistedState(
+    "linear:notif:inviteAccepted",
+    true
+  )
+  const [privacyUpdates, setPrivacyUpdates] = usePersistedState(
+    "linear:notif:privacyUpdates",
+    true
+  )
+  const [dpa, setDpa] = usePersistedState("linear:notif:dpa", false)
 
   const openChannel = (key: NotificationChannelKey) => {
     router.push(`/settings?section=notifications&channel=${key}`, {
