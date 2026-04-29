@@ -72,6 +72,19 @@ export const fetchTasks = (baseUrl: string, filters: TaskListFilters = {}) =>
     filters as Record<string, string | number | undefined>
   )
 
+// /api/sim/tasks/[id] returns the FULL task definition (evalChecks,
+// retrievalRubric, rewardProfile, setup, etc.). Sites accept either shape:
+// `{ task: TaskDefinition }` or just `TaskDefinition`.
+export type FullTaskResponse =
+  | { task: Record<string, unknown> }
+  | Record<string, unknown>
+
+export const fetchTaskById = (baseUrl: string, taskId: string) =>
+  getJson<FullTaskResponse>(
+    baseUrl,
+    `api/sim/tasks/${encodeURIComponent(taskId)}`
+  )
+
 // ---------------------------------------------------------------------------
 // /api/sim/config (POST) — start episode
 // ---------------------------------------------------------------------------
