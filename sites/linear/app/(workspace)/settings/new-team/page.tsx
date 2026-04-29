@@ -56,12 +56,6 @@ export default function NewTeamPage() {
       .catch(() => {})
   }, [])
 
-  // Client component — set the tab title here since Next `metadata` is
-  // server-only.
-  useEffect(() => {
-    document.title = "New team"
-  }, [])
-
   const handleNameChange = (v: string) => {
     setName(v)
     if (!identifierTouched) {

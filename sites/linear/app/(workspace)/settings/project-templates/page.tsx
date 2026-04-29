@@ -59,12 +59,6 @@ export default function ProjectTemplatesPage() {
     null
   )
 
-  // Client component — set the tab title manually (Next `metadata` export
-  // is server-component only).
-  useEffect(() => {
-    document.title = "Project templates"
-  }, [])
-
   useEffect(() => {
     let cancelled = false
     fetch("/api/project-templates")
