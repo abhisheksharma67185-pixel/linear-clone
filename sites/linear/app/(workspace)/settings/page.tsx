@@ -4195,7 +4195,9 @@ function MembersSection() {
     if (loading || defaultTabAppliedRef.current) return
     defaultTabAppliedRef.current = true
     if (summaries.some((m) => m.isInvite)) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setTab("invited")
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [loading, summaries])
 
