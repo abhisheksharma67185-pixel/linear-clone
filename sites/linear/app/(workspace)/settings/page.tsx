@@ -13,6 +13,7 @@ import {
 } from "react"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
+import { useTheme } from "next-themes"
 import type { Label as LabelType, Member } from "@/app/lib/mock-data"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -611,6 +612,22 @@ const THEME_OPTIONS: Array<{
   },
 ]
 
+// Maps each Linear-style theme picker value to the underlying
+// next-themes class ("light"/"dark"/"system"). Custom variants don't
+// have their own CSS yet — they collapse to their nearest base. Kept
+// here in addition to the provider's copy so the picker handler
+// doesn't have to import from the provider module (avoids a circular
+// import between the settings page and the workspace-wide provider).
+const LINEAR_THEME_TO_NEXT_THEME: Record<string, string> = {
+  system: "system",
+  light: "light",
+  "pure-light": "light",
+  dark: "dark",
+  "magic-blue": "dark",
+  "classic-dark": "dark",
+  custom: "dark",
+}
+
 const FONT_SIZE_SCALE: Record<string, number> = {
   smaller: 0.875,
   small: 0.9375,
@@ -686,6 +703,14 @@ function PreferencesSection() {
     false
   )
   const [theme, setTheme] = usePersistedState("linear:theme", "system")
+  // Mirror picker selection into next-themes so the page actually
+  // recolors. The provider's LinearThemeSync handles initial-load
+  // application; this effect handles in-session changes.
+  const { setTheme: setAppliedTheme } = useTheme()
+  useEffect(() => {
+    const next = LINEAR_THEME_TO_NEXT_THEME[theme]
+    if (next) setAppliedTheme(next)
+  }, [theme, setAppliedTheme])
   const [desktopApp, setDesktopApp] = usePersistedState(
     "linear:pref:desktopApp",
     false
