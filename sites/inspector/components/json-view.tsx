@@ -1,16 +1,23 @@
+/**
+ * <JsonView>
+ *
+ * PURPOSE  Self-contained collapsible JSON viewer with syntax-coloured
+ *          primitives, depth-aware default collapse, and a copy-to-
+ *          clipboard button. Used by the snapshot diff page and the
+ *          task detail "Raw definition" block.
+ * USAGE    `<JsonView data={obj} defaultCollapsedDepth={3} />`. Set
+ *          `copyable={false}` to hide the copy button.
+ * WHY-NOT-LIB  We deliberately avoid `react-json-view-lite` so we keep
+ *          full control over Tailwind theme tokens (proper dark-mode
+ *          support) and don't add a runtime dep for one component.
+ */
+
 "use client"
 
 import * as React from "react"
 import { IconChevronRight, IconCopy, IconCheck } from "@tabler/icons-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-
-// ---------------------------------------------------------------------------
-// A self-contained collapsible JSON viewer. We don't depend on
-// react-json-view-lite because (a) it's a pure runtime dep we'd add to the
-// lockfile for one component, and (b) we want full control over Tailwind
-// theme tokens for proper dark-mode support.
-// ---------------------------------------------------------------------------
 
 interface NodeProps {
   name?: string

@@ -1,12 +1,27 @@
+/**
+ * Site proxy route (`/api/proxy/[site]/[...path]`)
+ *
+ * PURPOSE  Catch-all reverse proxy that lets the browser hit any
+ *          configured site without CORS pain. Maps:
+ *            /api/proxy/<siteId>/<...path>?...
+ *              →  <siteBaseUrl>/<...path>?...
+ *          Forwards all HTTP methods, query strings, and bodies.
+ * USAGE    Every client-side fetch in the inspector goes through this
+ *          (`lib/proxy-url.ts` builds the URL, `lib/api-client.ts`
+ *          sends the request). The base URL for each site is resolved
+ *          server-side by `lib/site-resolver.ts`:
+ *            1. `x-inspector-site-url` request header (set by the
+ *               browser when the user customized the URL in
+ *               localStorage), OR
+ *            2. `DEFAULT_PROXY_MAP` (env-driven via
+ *               NEXT_PUBLIC_SITE_URL_<ID>, with localhost fallback).
+ * SECURITY Path is a wildcard segment so any sub-path on the upstream
+ *          site is reachable. The site list is operator-trusted; do not
+ *          expose this proxy to untrusted callers.
+ */
+
 import { NextRequest, NextResponse } from "next/server"
 import { resolveSiteBaseUrl } from "@/lib/site-resolver"
-
-// ---------------------------------------------------------------------------
-// Catch-all proxy: /api/proxy/<siteId>/<...path>  →  <siteBaseUrl>/<...path>
-// Supports all HTTP methods + arbitrary query strings. The client can pass
-// x-inspector-site-url on a per-request basis to override the default URL
-// map (needed because the real sites list lives in browser localStorage).
-// ---------------------------------------------------------------------------
 
 export const dynamic = "force-dynamic"
 

@@ -1,3 +1,17 @@
+/**
+ * Snapshots index (`/snapshots`)
+ *
+ * PURPOSE  List the episodes you've started from this browser tab so
+ *          you can jump into a snapshot diff for any of them.
+ * USAGE    Click "Diff" on any row → `/snapshots/<siteId>/<episodeId>`,
+ *          which renders the engine's initial state vs. its current
+ *          state side-by-side via `computeDiff` from @thetabench/core.
+ * DATA     useSitesStore.history (per-tab localStorage). Only the
+ *          *currently-active* episode on a site has live snapshot data;
+ *          older entries link to a diff page that may show "No episode
+ *          active".
+ */
+
 "use client"
 
 import * as React from "react"

@@ -1,3 +1,18 @@
+/**
+ * Episodes index (`/episodes`)
+ *
+ * PURPOSE  Two-section list of ThetaBench episodes:
+ *          1. **Live episodes** — polls `/api/sim/episode` on every
+ *             configured site every 5s. Surfaces episodes started from
+ *             the CLI / API / another tab, not just this browser.
+ *          2. **Browser-recorded episodes** — episodes started from this
+ *             tab's inspector UI (persisted in localStorage via the
+ *             sites-store).
+ * USAGE    Click any row → `/episodes/<siteId>/<episodeId>` for the
+ *          live runner (Observation / Step / History / Result tabs).
+ * DATA     `/api/sim/episode` (server) + `useSitesStore.history` (local).
+ */
+
 "use client"
 
 import Link from "next/link"

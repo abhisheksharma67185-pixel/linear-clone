@@ -1,3 +1,15 @@
+/**
+ * Root layout
+ *
+ * PURPOSE  Wraps every inspector route with: HTML shell, Inter + Geist Mono
+ *          fonts, the React Query / theme / toaster providers, and the
+ *          desktop sidebar + mobile nav.
+ * USAGE    Next.js App Router calls this for every page; you don't render
+ *          it directly. To add an app-wide provider, wrap `<Providers>` in
+ *          components/providers.tsx — not here.
+ * STRUCTURE  <Sidebar> (md+ only) | <MobileNav> + <main> children
+ */
+
 import type { Metadata } from "next"
 import { Geist_Mono, Inter } from "next/font/google"
 

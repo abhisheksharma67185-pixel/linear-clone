@@ -1,3 +1,17 @@
+/**
+ * <StatusDot>
+ *
+ * PURPOSE  Tiny coloured pill used everywhere the UI needs a one-glance
+ *          health indicator (site cards, sites table, episode list).
+ *          Maps a `StatusKind` to the right Tailwind colour + soft halo
+ *          ring, with built-in `loading` (animate-pulse) and `unknown`
+ *          (muted) variants.
+ * USAGE    `<StatusDot status="ok" />` or with a label
+ *          `<StatusDot status={status} label="Healthy" />`.
+ * A11Y     Wrapped in `role="status"` with an `aria-label` (defaults
+ *          to the status text) so screen readers announce it.
+ */
+
 import * as React from "react"
 import { cn } from "@/lib/utils"
 

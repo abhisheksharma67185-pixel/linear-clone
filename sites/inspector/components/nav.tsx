@@ -1,3 +1,18 @@
+/**
+ * Inspector navigation
+ *
+ * PURPOSE  Renders the sticky desktop sidebar (`<Sidebar>`, md+) and
+ *          the mobile top bar with a Sheet drawer (`<MobileNav>`,
+ *          below md). Both share the same nav-item list and active-
+ *          path matching logic so menus stay in sync.
+ * USAGE    Mounted once by `app/layout.tsx`. To add a new top-level
+ *          route, append to NAV_ITEMS — `match` decides which routes
+ *          highlight the link (use `path.startsWith("/foo")` for
+ *          parents that should match their children too).
+ * EXTRAS   Includes the `<ThemeToggle>` (light / dark, hotkey "d"
+ *          via theme-provider) and a "source" link in the footer.
+ */
+
 "use client"
 
 import * as React from "react"

@@ -1,3 +1,19 @@
+/**
+ * Task detail (`/tasks/[site]/[id]`)
+ *
+ * PURPOSE  Full task definition for one task on one site: title, goal,
+ *          retrieval rubric (question / ground truth / variations), eval
+ *          checks, reward profile, max steps, tags, and the raw JSON
+ *          straight from the engine.
+ * USAGE    Reached from a row click on /tasks, from a "Browse tasks"
+ *          button on the Overview, or by direct link. The "Start episode"
+ *          button at the top routes to /episodes/new with the task
+ *          pre-selected.
+ * DATA     /api/sim/tasks/{id} (full TaskDefinition, with evalChecks
+ *          which the list endpoint trims off). Falls back to scanning
+ *          /api/sim/tasks for sites without the per-id route.
+ */
+
 "use client"
 
 import * as React from "react"

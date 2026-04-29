@@ -1,3 +1,20 @@
+/**
+ * Tasks page (`/tasks`)
+ *
+ * PURPOSE  Cross-site task browser. Pulls /api/sim/tasks from every
+ *          configured site in parallel (one query per site via
+ *          `useQueries`) and merges them into a single filterable,
+ *          paginated table (50 rows / page).
+ * USAGE    Filter via the URL — e.g. `/tasks?site=linear&domain=issues
+ *          &difficulty=hard&type=action&stage=7&q=cycle`. The URL is the
+ *          source of truth so links are shareable; the search field is
+ *          debounced (250 ms) before writing back to it.
+ * DRILL-IN Click a row → `/tasks/<siteId>/<taskId>` for the full task
+ *          definition, eval checks, retrieval rubric, raw JSON.
+ * EDGE     Sites that error out are surfaced in a destructive Alert at
+ *          the bottom; tasks from reachable sites still render.
+ */
+
 "use client"
 
 import * as React from "react"
