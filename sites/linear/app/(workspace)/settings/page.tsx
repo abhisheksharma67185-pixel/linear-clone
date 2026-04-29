@@ -2652,17 +2652,23 @@ function ConnectAction({ provider }: { provider: Provider }) {
   const label = `${provider.connectLabel} ${provider.name} account`
 
   if (provider.connectType === "oauth") {
+    // The clone has no real OAuth handshake — clicking the underlying
+    // demo OAuth URL just shows a third-party error page, which feels
+    // like a silent no-op to the user. Surface the same toast the
+    // Integrations Featured card shows so the action is acknowledged
+    // and the user knows where to look next.
     return (
-      <a
-        href={provider.connectUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+      <button
+        type="button"
+        onClick={() =>
+          toast.info(`${provider.name} OAuth connect flow coming soon`)
+        }
         aria-label={label}
         className={className}
       >
         {provider.connectLabel}
         <ExternalLinkGlyph className="ml-1 size-3.5" />
-      </a>
+      </button>
     )
   }
 
