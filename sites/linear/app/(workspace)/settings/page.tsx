@@ -11698,6 +11698,12 @@ function DocumentsSection() {
   )
 }
 
+const PULSE_SCHEDULE_LABELS: Record<string, string> = {
+  daily: "Daily",
+  weekly: "Weekly",
+  never: "Never",
+}
+
 function PulseSection() {
   const [enabled, setEnabled] = useState(false)
   const [wsSchedule, setWsSchedule] = useState("daily")
@@ -11744,7 +11750,9 @@ function PulseSection() {
               onValueChange={onSelectChange(setWsSchedule)}
             >
               <SelectTrigger className="h-8 w-28 text-xs">
-                <SelectValue />
+                <SelectValue>
+                  {(v) => PULSE_SCHEDULE_LABELS[v as string] ?? v}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="daily">Daily</SelectItem>
@@ -11765,7 +11773,9 @@ function PulseSection() {
               onValueChange={onSelectChange(setMySchedule)}
             >
               <SelectTrigger className="h-8 w-28 text-xs">
-                <SelectValue />
+                <SelectValue>
+                  {(v) => PULSE_SCHEDULE_LABELS[v as string] ?? v}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="daily">Daily</SelectItem>
