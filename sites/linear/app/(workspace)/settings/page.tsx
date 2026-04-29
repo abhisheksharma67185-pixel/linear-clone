@@ -260,7 +260,13 @@ function sectionDisplayLabel(key: SectionKey): string {
 function SettingsPageInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const rawSection = searchParams.get("section") ?? "preferences"
+  // Treat absent OR empty `?section=` as Preferences. Don't read any
+  // last-visited fallback from storage — Linear's contract is that a
+  // bare `/settings` URL always lands on Preferences regardless of
+  // prior navigation.
+  const sectionParam = searchParams.get("section")
+  const rawSection =
+    sectionParam && sectionParam.length > 0 ? sectionParam : "preferences"
   // Linear's sidebar splits Templates into Issues→Templates and
   // Projects→Templates; there's no bare "Templates" surface. Resolve
   // `?section=templates` to issue-templates immediately (so the sidebar
