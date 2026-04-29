@@ -5,16 +5,44 @@ import { persist, createJSONStorage } from "zustand/middleware"
 import type { SiteConnection, SiteId, EpisodeHistoryEntry } from "./types"
 
 // ---------------------------------------------------------------------------
-// Default seed list — matches the port convention in each site's README.
-// (shopify-admin @ 3000, linear @ 3001, jira @ 3002, slack @ 3003.)
-// Inspector itself runs on 3010.
+// Default seed list — local-dev ports (shopify-admin @ 3000, linear @ 3001,
+// jira @ 3002, slack @ 3003, zendesk @ 3004, plain @ 3005). Inspector itself
+// runs on 3010. NEXT_PUBLIC_SITE_URL_<ID> overrides per-site for deployed
+// builds (set on Vercel so prod points at the corresponding theta-* URLs).
 // ---------------------------------------------------------------------------
 
+function siteUrl(id: string, fallback: string): string {
+  const key = `NEXT_PUBLIC_SITE_URL_${id.toUpperCase().replace(/-/g, "_")}`
+  return process.env[key] ?? fallback
+}
+
 export const DEFAULT_SITES: SiteConnection[] = [
-  { id: "shopify-admin", name: "Shopify Admin", url: "http://localhost:3000" },
-  { id: "linear", name: "Linear", url: "http://localhost:3001" },
-  { id: "jira", name: "Jira", url: "http://localhost:3002" },
-  { id: "slack", name: "Slack", url: "http://localhost:3003" },
+  {
+    id: "shopify-admin",
+    name: "Shopify Admin",
+    url: siteUrl("shopify-admin", "http://localhost:3000"),
+  },
+  {
+    id: "linear",
+    name: "Linear",
+    url: siteUrl("linear", "http://localhost:3001"),
+  },
+  { id: "jira", name: "Jira", url: siteUrl("jira", "http://localhost:3002") },
+  {
+    id: "slack",
+    name: "Slack",
+    url: siteUrl("slack", "http://localhost:3003"),
+  },
+  {
+    id: "zendesk",
+    name: "Zendesk",
+    url: siteUrl("zendesk", "http://localhost:3004"),
+  },
+  {
+    id: "plain",
+    name: "Plain",
+    url: siteUrl("plain", "http://localhost:3005"),
+  },
 ]
 
 interface SitesState {

@@ -7,12 +7,18 @@ import { headers } from "next/headers"
 // it matters (x-inspector-site-url). Otherwise we fall back to a default map.
 // ---------------------------------------------------------------------------
 
+function siteUrl(id: string, fallback: string): string {
+  const key = `NEXT_PUBLIC_SITE_URL_${id.toUpperCase().replace(/-/g, "_")}`
+  return process.env[key] ?? fallback
+}
+
 export const DEFAULT_PROXY_MAP: Record<string, string> = {
-  "shopify-admin": "http://localhost:3000",
-  linear: "http://localhost:3001",
-  jira: "http://localhost:3002",
-  slack: "http://localhost:3003",
-  zendesk: "http://localhost:3004",
+  "shopify-admin": siteUrl("shopify-admin", "http://localhost:3000"),
+  linear: siteUrl("linear", "http://localhost:3001"),
+  jira: siteUrl("jira", "http://localhost:3002"),
+  slack: siteUrl("slack", "http://localhost:3003"),
+  zendesk: siteUrl("zendesk", "http://localhost:3004"),
+  plain: siteUrl("plain", "http://localhost:3005"),
 }
 
 export async function resolveSiteBaseUrl(
