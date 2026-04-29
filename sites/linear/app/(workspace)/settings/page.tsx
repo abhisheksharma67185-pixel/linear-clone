@@ -4185,6 +4185,20 @@ function MembersSection() {
     }
   }, [])
 
+  // After the first load, mirror Linear's behavior: if any pending
+  // invites are in the workspace, open with the "Pending invites"
+  // chip selected; otherwise stay on "All". The ref guard makes this
+  // a one-shot — once the user clicks any chip we never override
+  // their choice on a subsequent re-fetch.
+  const defaultTabAppliedRef = useRef(false)
+  useEffect(() => {
+    if (loading || defaultTabAppliedRef.current) return
+    defaultTabAppliedRef.current = true
+    if (summaries.some((m) => m.isInvite)) {
+      setTab("invited")
+    }
+  }, [loading, summaries])
+
   // Tab → predicate: each tab decides which `MemberSummary` rows
   // belong on it. "members" = human users (active + suspended) that
   // aren't applications and aren't pending invites. "applications"
