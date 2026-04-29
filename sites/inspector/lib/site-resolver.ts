@@ -7,9 +7,17 @@ import { headers } from "next/headers"
 // it matters (x-inspector-site-url). Otherwise we fall back to a default map.
 // ---------------------------------------------------------------------------
 
+const SITE_URL_OVERRIDES: Record<string, string | undefined> = {
+  "shopify-admin": process.env.NEXT_PUBLIC_SITE_URL_SHOPIFY_ADMIN,
+  linear: process.env.NEXT_PUBLIC_SITE_URL_LINEAR,
+  jira: process.env.NEXT_PUBLIC_SITE_URL_JIRA,
+  slack: process.env.NEXT_PUBLIC_SITE_URL_SLACK,
+  zendesk: process.env.NEXT_PUBLIC_SITE_URL_ZENDESK,
+  plain: process.env.NEXT_PUBLIC_SITE_URL_PLAIN,
+}
+
 function siteUrl(id: string, fallback: string): string {
-  const key = `NEXT_PUBLIC_SITE_URL_${id.toUpperCase().replace(/-/g, "_")}`
-  return process.env[key] ?? fallback
+  return SITE_URL_OVERRIDES[id] ?? fallback
 }
 
 export const DEFAULT_PROXY_MAP: Record<string, string> = {

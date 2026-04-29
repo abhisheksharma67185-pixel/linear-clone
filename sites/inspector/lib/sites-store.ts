@@ -11,9 +11,21 @@ import type { SiteConnection, SiteId, EpisodeHistoryEntry } from "./types"
 // builds (set on Vercel so prod points at the corresponding theta-* URLs).
 // ---------------------------------------------------------------------------
 
+// Each NEXT_PUBLIC_* must be a static string literal — Next.js only inlines
+// process.env.NEXT_PUBLIC_FOO at build time when accessed by exact key.
+// Dynamic process.env[key] is NOT replaced and would always read undefined
+// in the browser bundle.
+const SITE_URL_OVERRIDES: Record<string, string | undefined> = {
+  "shopify-admin": process.env.NEXT_PUBLIC_SITE_URL_SHOPIFY_ADMIN,
+  linear: process.env.NEXT_PUBLIC_SITE_URL_LINEAR,
+  jira: process.env.NEXT_PUBLIC_SITE_URL_JIRA,
+  slack: process.env.NEXT_PUBLIC_SITE_URL_SLACK,
+  zendesk: process.env.NEXT_PUBLIC_SITE_URL_ZENDESK,
+  plain: process.env.NEXT_PUBLIC_SITE_URL_PLAIN,
+}
+
 function siteUrl(id: string, fallback: string): string {
-  const key = `NEXT_PUBLIC_SITE_URL_${id.toUpperCase().replace(/-/g, "_")}`
-  return process.env[key] ?? fallback
+  return SITE_URL_OVERRIDES[id] ?? fallback
 }
 
 export const DEFAULT_SITES: SiteConnection[] = [
