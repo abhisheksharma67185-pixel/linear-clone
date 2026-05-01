@@ -1,3 +1,23 @@
+/**
+ * Episode runner (`/episodes/[site]/[episodeId]`)
+ *
+ * PURPOSE  Live observation + step + finish surface for a running
+ *          episode. Tabs:
+ *          - **Observation** — current page, available actions, full
+ *            engine state (auto-refresh every 3s)
+ *          - **Step** — paste an action JSON and POST it to /api/rl
+ *          - **History** — actions taken in this tab (in-memory)
+ *          - **Action space** — schema from /api/rl/action-space
+ *          - **Result** — appears after Finish, shows score / reward /
+ *            judge result / state diff / action log
+ * USAGE    Reached after starting an episode from /episodes/new, or by
+ *          clicking a Live episode on /episodes. Clicking "Diff
+ *          snapshot" jumps to /snapshots/<site>/<episodeId>.
+ * SAFETY   Finish opens a confirmation dialog; for retrieval tasks it
+ *          asks for the agent's final answer (sent as `agent_response`
+ *          to /api/sim/finish so the rubric judge can score it).
+ */
+
 "use client"
 
 import * as React from "react"

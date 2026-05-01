@@ -1,3 +1,16 @@
+/**
+ * <ThemeProvider>
+ *
+ * PURPOSE  Thin wrapper around `next-themes` that sets sensible
+ *          defaults (`attribute="class"`, system theme, no transition
+ *          flash on swap) and registers a global "d" keyboard shortcut
+ *          to toggle light / dark.
+ * USAGE    Mounted by `<Providers>`. The hotkey is suppressed while the
+ *          user is typing into an input/textarea/contenteditable, and
+ *          while modifier keys are held, so it never collides with
+ *          form input.
+ */
+
 "use client"
 
 import * as React from "react"

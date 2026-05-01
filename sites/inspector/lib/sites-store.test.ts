@@ -21,15 +21,17 @@ afterEach(() => {
 const get = () => useSitesStore.getState()
 
 describe("DEFAULT_SITES", () => {
-  it("has the four conventional sites on their conventional ports", () => {
-    expect(DEFAULT_SITES).toHaveLength(4)
+  it("has the six conventional sites on their conventional ports", () => {
+    expect(DEFAULT_SITES).toHaveLength(6)
     const ports = DEFAULT_SITES.map((s) => new URL(s.url).port)
-    expect(ports).toEqual(["3000", "3001", "3002", "3003"])
+    expect(ports).toEqual(["3000", "3001", "3002", "3003", "3004", "3005"])
     expect(DEFAULT_SITES.map((s) => s.id)).toEqual([
       "shopify-admin",
       "linear",
       "jira",
       "slack",
+      "zendesk",
+      "plain",
     ])
   })
 })

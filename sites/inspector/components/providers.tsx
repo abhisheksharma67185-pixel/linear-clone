@@ -1,3 +1,17 @@
+/**
+ * <Providers>
+ *
+ * PURPOSE  Single client-side wrapper that mounts every app-wide
+ *          provider needed by inspector pages: React Query (data
+ *          fetching), next-themes (light / dark / hotkey "d"), and the
+ *          Sonner `<Toaster>` for toasts.
+ * USAGE    Used exactly once by `app/layout.tsx`; do not mount
+ *          additional QueryClients downstream — they'd fragment cache
+ *          state. Adjust the default React Query options here
+ *          (`staleTime`, `retry`) when tuning fetch behaviour for the
+ *          whole app.
+ */
+
 "use client"
 
 import * as React from "react"

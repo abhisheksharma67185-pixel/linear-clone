@@ -104,8 +104,12 @@ export function registerDoctorCommand(program: Command): void {
       command(async (opts: Record<string, string | boolean>) => {
         const baseUrl = resolveBaseUrl(opts.url as string | undefined)
 
-        process.stdout.write(header(`Doctor: ${baseUrl}`))
-        process.stdout.write("\n")
+        // Skip the human header in --json mode so output is pipe-clean
+        // (`theta doctor --json | jq ...` previously broke on the title line).
+        if (!opts.json) {
+          process.stdout.write(header(`Doctor: ${baseUrl}`))
+          process.stdout.write("\n")
+        }
 
         const results = await Promise.all(PROBES.map((p) => probe(baseUrl, p)))
 

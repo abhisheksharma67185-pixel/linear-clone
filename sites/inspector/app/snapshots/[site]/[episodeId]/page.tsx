@@ -1,3 +1,20 @@
+/**
+ * Snapshot diff (`/snapshots/[site]/[episodeId]`)
+ *
+ * PURPOSE  Side-by-side render of an episode's *initial* snapshot
+ *          (`/api/sim/snapshot`) and the *current* state
+ *          (`/api/sim/state`). Each collection (issues, projects,
+ *          cycles, ...) is diffed via `computeDiff` from @thetabench/core
+ *          and grouped into Added / Removed / Modified collapsibles.
+ * USAGE    Reached from /snapshots, from the runner's "Diff snapshot"
+ *          button, or by direct link. Click "Refresh" to re-fetch both
+ *          snapshots without reloading the page.
+ * NOTE     The engine serves one episode at a time per site. If the
+ *          target episode is no longer the active one, the snapshot
+ *          endpoint may 400 — we render an explanatory Alert in that
+ *          case rather than a stack trace.
+ */
+
 "use client"
 
 import * as React from "react"

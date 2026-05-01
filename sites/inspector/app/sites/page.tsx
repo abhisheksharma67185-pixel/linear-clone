@@ -1,3 +1,21 @@
+/**
+ * Sites page (`/sites`)
+ *
+ * PURPOSE  Manage the list of ThetaBench sites the inspector talks to.
+ *          The list is per-browser (localStorage via `useSitesStore`), so
+ *          two devs can point the same inspector at different mixes of
+ *          local + deployed sites without coordinating.
+ * USAGE    - Add: fill name + base URL → "Add site"
+ *          - Edit: pencil icon on any row toggles inline name+URL inputs
+ *            (Save / Cancel)
+ *          - Remove: trash icon (with confirm — history is preserved)
+ *          - Reset to defaults: drops user changes, restores the 6
+ *            built-in sites
+ * DATA     useHealth(site) per row → /api/health (status + task count).
+ *          useSitesStore for the site list + addSite/updateSite/removeSite
+ *          mutations.
+ */
+
 "use client"
 
 import * as React from "react"

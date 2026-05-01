@@ -1,3 +1,18 @@
+/**
+ * Overview page (`/`)
+ *
+ * PURPOSE  Landing page. One <SiteCard> per configured site shows live
+ *          health: task / domain / curriculum-stage counts pulled from
+ *          /api/health, plus quick links to Browse tasks, Start episode,
+ *          and open the site itself.
+ * USAGE    The first place you go after starting a sim site locally.
+ *          Cards turn green when the proxy can reach the site, red when
+ *          the upstream fetch fails. <RecentEpisodes> below lists the
+ *          last 8 episodes started from this browser tab.
+ * DATA     useHealth(site) → /api/health (per-site, refetch every 30s).
+ *          useSitesStore for the configured site list + episode history.
+ */
+
 "use client"
 
 import * as React from "react"

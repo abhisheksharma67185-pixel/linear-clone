@@ -5,16 +5,57 @@ import { persist, createJSONStorage } from "zustand/middleware"
 import type { SiteConnection, SiteId, EpisodeHistoryEntry } from "./types"
 
 // ---------------------------------------------------------------------------
-// Default seed list — matches the port convention in each site's README.
-// (shopify-admin @ 3000, linear @ 3001, jira @ 3002, slack @ 3003.)
-// Inspector itself runs on 3010.
+// Default seed list — six conventional sites on their conventional ports
+// (shopify-admin @ 3000, linear @ 3001, jira @ 3002, slack @ 3003,
+// zendesk @ 3004, plain @ 3005). Inspector itself runs on 3010.
+// NEXT_PUBLIC_SITE_URL_<ID> overrides per-site for deployed builds (set on
+// Vercel so prod points at the corresponding theta-* URLs).
 // ---------------------------------------------------------------------------
 
+// Each NEXT_PUBLIC_* must be a static string literal — Next.js only inlines
+// process.env.NEXT_PUBLIC_FOO at build time when accessed by exact key.
+// Dynamic process.env[key] is NOT replaced and would always read undefined
+// in the browser bundle.
+const SITE_URL_OVERRIDES: Record<string, string | undefined> = {
+  "shopify-admin": process.env.NEXT_PUBLIC_SITE_URL_SHOPIFY_ADMIN,
+  linear: process.env.NEXT_PUBLIC_SITE_URL_LINEAR,
+  jira: process.env.NEXT_PUBLIC_SITE_URL_JIRA,
+  slack: process.env.NEXT_PUBLIC_SITE_URL_SLACK,
+  zendesk: process.env.NEXT_PUBLIC_SITE_URL_ZENDESK,
+  plain: process.env.NEXT_PUBLIC_SITE_URL_PLAIN,
+}
+
+function siteUrl(id: string, fallback: string): string {
+  return SITE_URL_OVERRIDES[id] ?? fallback
+}
+
 export const DEFAULT_SITES: SiteConnection[] = [
-  { id: "shopify-admin", name: "Shopify Admin", url: "http://localhost:3000" },
-  { id: "linear", name: "Linear", url: "http://localhost:3001" },
-  { id: "jira", name: "Jira", url: "http://localhost:3002" },
-  { id: "slack", name: "Slack", url: "http://localhost:3003" },
+  {
+    id: "shopify-admin",
+    name: "Shopify Admin",
+    url: siteUrl("shopify-admin", "http://localhost:3000"),
+  },
+  {
+    id: "linear",
+    name: "Linear",
+    url: siteUrl("linear", "http://localhost:3001"),
+  },
+  { id: "jira", name: "Jira", url: siteUrl("jira", "http://localhost:3002") },
+  {
+    id: "slack",
+    name: "Slack",
+    url: siteUrl("slack", "http://localhost:3003"),
+  },
+  {
+    id: "zendesk",
+    name: "Zendesk",
+    url: siteUrl("zendesk", "http://localhost:3004"),
+  },
+  {
+    id: "plain",
+    name: "Plain",
+    url: siteUrl("plain", "http://localhost:3005"),
+  },
 ]
 
 interface SitesState {
@@ -98,9 +139,23 @@ export const useSitesStore = create<SitesState>()(
     }),
     {
       name: "thetabench-inspector:sites",
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ sites: state.sites, history: state.history }),
+      // v1 → v2: defaults grew from 4 → 6 (added zendesk, plain) and prod URLs
+      // moved to env vars. Re-seed the default ids with current URLs while
+      // preserving any user-added custom sites.
+      migrate: (persisted, version) => {
+        const state = (persisted as Partial<SitesState>) ?? {}
+        if (version < 2) {
+          const defaultIds = new Set(DEFAULT_SITES.map((s) => s.id))
+          const userAdded = (state.sites ?? []).filter(
+            (s) => !defaultIds.has(s.id)
+          )
+          return { ...state, sites: [...DEFAULT_SITES, ...userAdded] }
+        }
+        return state
+      },
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true)
       },

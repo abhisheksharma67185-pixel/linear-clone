@@ -1,3 +1,16 @@
+/**
+ * Curriculum page (`/curriculum`)
+ *
+ * PURPOSE  Visualises the 10-stage ThetaBench curriculum (Navigation
+ *          Basics → Expert Scenarios) and how each running site
+ *          contributes tasks at every stage.
+ * USAGE    Look here to plan training runs / coverage. Each stage card
+ *          shows the global task count and a per-site breakdown so you
+ *          can see where coverage is sparse.
+ * DATA     useQueries hits /api/sim/tasks on every configured site;
+ *          tasks are bucketed by `curriculum_stage` (1-10).
+ */
+
 "use client"
 
 import * as React from "react"

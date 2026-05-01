@@ -1,3 +1,18 @@
+/**
+ * New episode page (`/episodes/new`)
+ *
+ * PURPOSE  Launcher: pick a site, pick a task, optionally fix a seed,
+ *          and POST `/api/sim/config` to start an episode. Redirects to
+ *          the runner on success.
+ * USAGE    URL params pre-fill the form for deep links:
+ *          `/episodes/new?site=linear&task=linear-nav-001`. The task list
+ *          loads after a site is selected; type-to-filter via the search
+ *          input.
+ * SIDE-EFFECT  Each site's engine is single-tenant, so starting an
+ *          episode while one is already active will return a 409 — we
+ *          surface that as a destructive Alert.
+ */
+
 "use client"
 
 import * as React from "react"

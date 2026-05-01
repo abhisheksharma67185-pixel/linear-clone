@@ -17,6 +17,7 @@ describe("DEFAULT_PROXY_MAP", () => {
     expect(DEFAULT_PROXY_MAP.jira).toBe("http://localhost:3002")
     expect(DEFAULT_PROXY_MAP.slack).toBe("http://localhost:3003")
     expect(DEFAULT_PROXY_MAP.zendesk).toBe("http://localhost:3004")
+    expect(DEFAULT_PROXY_MAP.plain).toBe("http://localhost:3005")
   })
 })
 

@@ -1,3 +1,17 @@
+/**
+ * <PageShell>
+ *
+ * PURPOSE  Standard page wrapper used by every top-level inspector
+ *          route. Provides the centered max-w-7xl container, the page
+ *          heading, optional subtitle/description, and an optional
+ *          right-aligned action slot (typically a primary Button).
+ * USAGE    `<PageShell title="Tasks" description="..." actions={...}>
+ *            <YourContent />
+ *          </PageShell>`
+ *          Keep page bodies focused on content; let this component own
+ *          the chrome so the layout stays consistent across routes.
+ */
+
 import * as React from "react"
 import { cn } from "@/lib/utils"
 

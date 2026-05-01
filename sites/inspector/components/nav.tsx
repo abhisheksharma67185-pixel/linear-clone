@@ -1,3 +1,18 @@
+/**
+ * Inspector navigation
+ *
+ * PURPOSE  Renders the sticky desktop sidebar (`<Sidebar>`, md+) and
+ *          the mobile top bar with a Sheet drawer (`<MobileNav>`,
+ *          below md). Both share the same nav-item list and active-
+ *          path matching logic so menus stay in sync.
+ * USAGE    Mounted once by `app/layout.tsx`. To add a new top-level
+ *          route, append to NAV_ITEMS — `match` decides which routes
+ *          highlight the link (use `path.startsWith("/foo")` for
+ *          parents that should match their children too).
+ * EXTRAS   Includes the `<ThemeToggle>` (light / dark, hotkey "d"
+ *          via theme-provider) and a "source" link in the footer.
+ */
+
 "use client"
 
 import * as React from "react"
@@ -165,8 +180,13 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function Sidebar() {
+  // `position: fixed` (not sticky) so the brand + nav stay anchored to the
+  // viewport regardless of body scroll. The sticky-inside-flex-row pattern
+  // we used previously broke once page content exceeded one viewport: the
+  // sidebar scrolled out together with the page header. Width matches the
+  // `md:pl-56` reservation in the layout's main column.
   return (
-    <aside className="sticky top-0 hidden h-svh w-56 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
+    <aside className="fixed inset-y-0 left-0 z-20 hidden h-svh w-56 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
       <SidebarBody />
     </aside>
   )

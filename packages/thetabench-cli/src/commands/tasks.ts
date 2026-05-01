@@ -3,7 +3,8 @@
 // ---------------------------------------------------------------------------
 
 import { Command } from "commander"
-import { fetchTasks, type TaskListItem } from "../client/api.js"
+import { fetchTaskById, fetchTasks, type TaskListItem } from "../client/api.js"
+import { HttpError } from "../client/http.js"
 import { c, muted } from "../render/colors.js"
 import { renderKeyValue, renderTable } from "../render/table.js"
 import {
@@ -119,40 +120,128 @@ export function registerTasksCommand(program: Command): void {
       command(
         async (taskId: string, opts: Record<string, string | boolean>) => {
           const baseUrl = resolveBaseUrl(opts.url as string | undefined)
-          const data = await fetchTasks(baseUrl)
-          const task = data.tasks.find((t) => t.id === taskId)
 
-          if (!task) {
-            throw new Error(
-              `Task not found: ${taskId} (searched ${data.tasks.length} tasks at ${baseUrl})`
-            )
+          // Try the per-id endpoint first (returns full TaskDefinition with
+          // evalChecks). Fall back to scanning the list for older sites that
+          // haven't shipped /api/sim/tasks/[id] yet.
+          let full: Record<string, unknown> | null = null
+          try {
+            const resp = await fetchTaskById(baseUrl, taskId)
+            full =
+              "task" in resp && resp.task && typeof resp.task === "object"
+                ? (resp.task as Record<string, unknown>)
+                : (resp as Record<string, unknown>)
+          } catch (err) {
+            if (!(err instanceof HttpError) || err.status !== 404) {
+              // Network error / 500 — surface to the user.
+              if (err instanceof HttpError && err.status === 404) {
+                full = null
+              } else {
+                throw err
+              }
+            }
+          }
+
+          if (!full) {
+            const data = await fetchTasks(baseUrl)
+            const summary = data.tasks.find((t) => t.id === taskId)
+            if (!summary) {
+              throw new Error(
+                `Task not found: ${taskId} (searched ${data.tasks.length} tasks at ${baseUrl})`
+              )
+            }
+            full = summary as unknown as Record<string, unknown>
           }
 
           if (opts.json) {
-            printJson(task)
+            printJson(full)
             return
           }
 
-          process.stdout.write(header(`Task: ${task.id}`))
+          // Normalize a few fields that vary between summary (snake_case from
+          // /api/sim/tasks) and full TaskDefinition (camelCase from registry).
+          const get = (k: string, fallback?: string) =>
+            (full[k] ?? full[fallback ?? k]) as unknown
+          const title = String(get("title") ?? taskId)
+          const site = String(get("site") ?? "—")
+          const domain = String(get("domain") ?? "—")
+          const difficulty = String(get("difficulty") ?? "—")
+          const type = String(get("type") ?? "—")
+          const stage = String(
+            get("curriculum_stage", "curriculumStage") ?? "—"
+          )
+          const maxSteps = String(get("max_steps", "maxSteps") ?? "—")
+          const tags = (get("tags") as string[] | undefined) ?? []
+          const goal = String(get("goal") ?? "")
+          const evalChecks =
+            (get("evalChecks") as Array<Record<string, unknown>> | undefined) ??
+            (get("eval_checks") as
+              | Array<Record<string, unknown>>
+              | undefined) ??
+            []
+          const retrievalRubric = get("retrievalRubric") as
+            | Record<string, unknown>
+            | undefined
+          const rewardProfile = get("rewardProfile") as
+            | Record<string, unknown>
+            | undefined
+
+          process.stdout.write(header(`Task: ${taskId}`))
           process.stdout.write("\n")
           process.stdout.write(
             renderKeyValue([
-              ["Title", task.title],
-              ["Site", task.site],
-              ["Domain", task.domain],
-              ["Difficulty", task.difficulty],
-              ["Type", task.type],
-              ["Stage", task.curriculum_stage],
-              ["Max steps", task.max_steps],
-              ["Tags", task.tags.length ? task.tags.join(", ") : null],
+              ["Title", title],
+              ["Site", site],
+              ["Domain", domain],
+              ["Difficulty", difficulty],
+              ["Type", type],
+              ["Stage", stage],
+              ["Max steps", maxSteps],
+              ["Tags", tags.length ? tags.join(", ") : null],
             ])
           )
           process.stdout.write("\n\n")
           process.stdout.write(`  ${c.bold("Goal")}\n`)
-          process.stdout.write(`    ${task.goal}\n`)
+          process.stdout.write(`    ${goal}\n\n`)
+
+          if (retrievalRubric) {
+            process.stdout.write(`  ${c.bold("Retrieval rubric")}\n`)
+            const q = retrievalRubric.question as string | undefined
+            const gt = retrievalRubric.groundTruth as string | undefined
+            if (q) process.stdout.write(`    Question:    ${q}\n`)
+            if (gt) process.stdout.write(`    Ground truth: ${gt}\n`)
+            process.stdout.write("\n")
+          }
+
+          if (rewardProfile) {
+            process.stdout.write(`  ${c.bold("Reward profile")}\n`)
+            for (const [k, v] of Object.entries(rewardProfile)) {
+              process.stdout.write(`    ${k}: ${String(v)}\n`)
+            }
+            process.stdout.write("\n")
+          }
+
           process.stdout.write(
-            `\n${muted("(eval_checks are not exposed by /api/sim/tasks; query the source task definition directly to see them)")}\n`
+            `  ${c.bold(`Eval checks (${evalChecks.length})`)}\n`
           )
+          if (evalChecks.length === 0) {
+            process.stdout.write(
+              muted("    (none — judged by retrieval rubric only)\n")
+            )
+          } else {
+            for (const [i, check] of evalChecks.entries()) {
+              process.stdout.write(
+                `    ${i + 1}. ${String(check.predicate ?? check.type ?? "check")}` +
+                  (check.weight ? ` (weight ${check.weight})` : "") +
+                  "\n"
+              )
+              if (check.args) {
+                process.stdout.write(
+                  `       args: ${JSON.stringify(check.args)}\n`
+                )
+              }
+            }
+          }
         }
       )
     )
