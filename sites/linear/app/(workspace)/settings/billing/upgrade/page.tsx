@@ -5,6 +5,7 @@ import { useEffect } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 const PLANS = [
   {
@@ -40,6 +41,14 @@ export default function BillingUpgradePage() {
   useEffect(() => {
     document.title = "Upgrade plan"
   }, [])
+
+  // The clone has no real Stripe checkout flow — surface a toast so the
+  // click is acknowledged instead of being a silent no-op. Mirrors the
+  // pattern used by other "coming soon" actions in Connected accounts
+  // and AI & Agents → Trial.
+  const handleUpgrade = (planName: string) => {
+    toast.info(`${planName} plan checkout coming soon`)
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -84,6 +93,12 @@ export default function BillingUpgradePage() {
               size="sm"
               className="mt-4 w-full"
               disabled={p.name === "Free"}
+              aria-label={
+                p.name === "Free" ? "Current plan" : `Upgrade to ${p.name}`
+              }
+              onClick={
+                p.name === "Free" ? undefined : () => handleUpgrade(p.name)
+              }
             >
               {p.name === "Free" ? "Current plan" : `Upgrade to ${p.name}`}
             </Button>

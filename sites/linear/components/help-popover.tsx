@@ -5,12 +5,17 @@
  * sidebar footer. Mirrors Linear's help menu: search input + ordered items
  * + "What's new" group below.
  *
- * The search input is intentionally UI-only (no backend) — Linear's
- * production help search powers the docs site, but the clone has no
- * docs index to query.
+ * The search input filters the local item list by name. Linear's
+ * production help search also queries the docs site index, but the clone
+ * has no docs index to hit — so the popover items are the only data
+ * source.
+ *
+ * The popover also listens for a custom `linear:open-help` window event so
+ * global keyboard shortcuts (`?`, `⌘/`) can open it without prop drilling
+ * a controlled-open flag through the sidebar.
  */
 
-import { useState, type ReactNode } from "react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
 import {
   Popover,
   PopoverContent,
@@ -89,9 +94,41 @@ const WHATS_NEW: { label: string; href: string }[] = [
   },
 ]
 
+export const OPEN_HELP_EVENT = "linear:open-help"
+
 export function HelpPopover({ trigger }: { trigger: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
+
+  // Global keyboard shortcuts dispatch this event on the window. Each
+  // mounted HelpPopover instance opens itself in response — the app
+  // typically has a single visible instance at a time (sidebar OR
+  // settings footer) so this doesn't double-open in practice.
+  useEffect(() => {
+    const onOpenHelp = () => setOpen(true)
+    window.addEventListener(OPEN_HELP_EVENT, onOpenHelp)
+    return () => window.removeEventListener(OPEN_HELP_EVENT, onOpenHelp)
+  }, [])
+
+  // Case-insensitive substring match against the visible label of each
+  // item. Empty query passes everything through unchanged so the
+  // popover reads exactly the same when the user hasn't typed.
+  const normalised = query.trim().toLowerCase()
+  const filteredItems = useMemo(
+    () =>
+      normalised.length === 0
+        ? HELP_ITEMS
+        : HELP_ITEMS.filter((i) => i.label.toLowerCase().includes(normalised)),
+    [normalised]
+  )
+  const filteredWhatsNew = useMemo(
+    () =>
+      normalised.length === 0
+        ? WHATS_NEW
+        : WHATS_NEW.filter((i) => i.label.toLowerCase().includes(normalised)),
+    [normalised]
+  )
+  const hasResults = filteredItems.length + filteredWhatsNew.length > 0
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -102,7 +139,6 @@ export function HelpPopover({ trigger }: { trigger: ReactNode }) {
         sideOffset={8}
         className="w-72 p-2"
       >
-        {/* Search input — UI-only, no backend index. */}
         <div className="relative mb-1">
           <HugeiconsIcon
             icon={Search01Icon}
@@ -118,31 +154,43 @@ export function HelpPopover({ trigger }: { trigger: ReactNode }) {
           />
         </div>
 
-        <div className="flex flex-col">
-          {HELP_ITEMS.map((item) => (
-            <HelpRow key={item.label} item={item} />
-          ))}
-        </div>
+        {filteredItems.length > 0 && (
+          <div className="flex flex-col">
+            {filteredItems.map((item) => (
+              <HelpRow key={item.label} item={item} />
+            ))}
+          </div>
+        )}
 
-        <div className="text-muted-foreground/70 mt-2 mb-1 px-2 text-[11px] font-semibold tracking-wide uppercase">
-          What&apos;s new
-        </div>
-        <div className="flex flex-col">
-          {WHATS_NEW.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground hover:bg-accent/50 focus-visible:ring-ring flex items-center justify-between rounded-md px-2 py-1.5 text-xs focus-visible:ring-2 focus-visible:outline-none"
-            >
-              <span className="truncate">{item.label}</span>
-              <span aria-hidden="true" className="text-muted-foreground">
-                ↗
-              </span>
-            </a>
-          ))}
-        </div>
+        {filteredWhatsNew.length > 0 && (
+          <>
+            <div className="text-muted-foreground/70 mt-2 mb-1 px-2 text-[11px] font-semibold tracking-wide uppercase">
+              What&apos;s new
+            </div>
+            <div className="flex flex-col">
+              {filteredWhatsNew.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground hover:bg-accent/50 focus-visible:ring-ring flex items-center justify-between rounded-md px-2 py-1.5 text-xs focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <span className="truncate">{item.label}</span>
+                  <span aria-hidden="true" className="text-muted-foreground">
+                    ↗
+                  </span>
+                </a>
+              ))}
+            </div>
+          </>
+        )}
+
+        {!hasResults && (
+          <div className="text-muted-foreground px-2 py-3 text-center text-xs">
+            No results
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   )

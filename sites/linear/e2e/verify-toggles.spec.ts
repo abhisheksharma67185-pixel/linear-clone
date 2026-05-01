@@ -22,7 +22,9 @@ const PAGES = [
 ]
 
 for (const p of PAGES) {
-  test(`${p.name} Enable toggle persists`, async ({ page }) => {
+  test(`${p.name} Enable toggle persists (data-checked + aria-checked)`, async ({
+    page,
+  }) => {
     await page.context().clearCookies()
     await page.goto(`http://localhost:3000/settings?section=${p.section}`)
     await page.evaluate((k) => window.localStorage.removeItem(k), p.storageKey)
@@ -41,12 +43,30 @@ for (const p of PAGES) {
     console.log(`[${p.name}] storage after click: ${JSON.stringify(after)}`)
     expect(after).toBe("true")
 
+    // Full reload, then assert BOTH the data-checked attribute and the
+    // ARIA state. Round-5 verification protocol explicitly demands
+    // `aria-checked="true"` because that's what the user inspects in
+    // the browser console — separate assertion to catch any regression
+    // where data-checked updates but aria-checked lags behind.
     await page.reload()
     const reloadRow = page.locator("div", { hasText: p.nearText }).first()
     const reloadToggle = reloadRow.locator('[data-slot="switch"]').first()
     await expect(reloadToggle).toHaveAttribute("data-checked", "", {
       timeout: 5000,
     })
+    await expect(reloadToggle).toHaveAttribute("aria-checked", "true", {
+      timeout: 5000,
+    })
+
+    // Round-5 protocol: also assert the FIRST `[role="switch"]` on the
+    // page (what `document.querySelector('[role=switch]')` returns in
+    // the user's manual repro) reads aria-checked="true". On all three
+    // sections under test, the Enable-* toggle is the first switch in
+    // DOM order, so this catches the user's exact failure signal.
+    const firstSwitchAria = await page.evaluate(() =>
+      document.querySelector('[role="switch"]')?.getAttribute("aria-checked")
+    )
+    expect(firstSwitchAria).toBe("true")
   })
 }
 

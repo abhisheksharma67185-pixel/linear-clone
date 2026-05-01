@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { RoutePageSkeleton } from "@/components/route-page-skeleton"
 import { TodayProvider } from "@/app/lib/today-context"
 import { AskLinear } from "@/components/ask-linear"
+import { KeyboardShortcuts } from "@/components/keyboard-shortcuts"
 
 export default function WorkspaceLayout({
   children,
@@ -28,12 +29,20 @@ export default function WorkspaceLayout({
 
   if (isSettings) {
     // Settings mounts its own inline Ask Linear + chat-history footer in the
-    // sidebar, so skip the floating variant here.
-    return <TodayProvider>{children}</TodayProvider>
+    // sidebar, so skip the floating variant here. KeyboardShortcuts still
+    // mounts because `g s` should also work from inside settings (e.g. to
+    // bounce back to /settings root from a deep settings sub-page).
+    return (
+      <TodayProvider>
+        <KeyboardShortcuts />
+        {children}
+      </TodayProvider>
+    )
   }
 
   return (
     <TodayProvider>
+      <KeyboardShortcuts />
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
