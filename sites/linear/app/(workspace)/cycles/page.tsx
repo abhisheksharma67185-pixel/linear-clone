@@ -162,7 +162,17 @@ export default function CyclesPage() {
           return (
             <Collapsible key={cycle.id}>
               <Card>
-                <CollapsibleTrigger className="w-full text-left">
+                {/* Splitting the trigger from the action buttons fixes
+                 * the React hydration error: `<CollapsibleTrigger>`
+                 * renders as a native <button>, and the previous code
+                 * nested <Button> children inside it (Complete /
+                 * Start Cycle), which is invalid HTML and triggered
+                 * the Next.js dev error indicator (the "N Issues"
+                 * badge in the bottom-right). The trigger now wraps
+                 * only the title row; action buttons sit beside the
+                 * trigger as siblings so each button has a clean
+                 * single-button DOM ancestry. */}
+                <CollapsibleTrigger className="block w-full text-left">
                   <CardHeader className="pb-2">
                     <div className="flex items-center gap-3">
                       <CardTitle className="text-base font-medium">
@@ -184,39 +194,39 @@ export default function CyclesPage() {
                       </span>
                     </div>
                   </CardHeader>
-                  <CardContent className="pb-3">
-                    <div className="text-muted-foreground flex items-center gap-4 text-xs">
-                      <span>{cycleIssues.length} issues</span>
-                      <span>{totalEstimate} points</span>
-                      {cycle.state === "active" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="ml-auto h-6 text-[10px]"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleComplete(cycle.id)
-                          }}
-                        >
-                          Complete Cycle
-                        </Button>
-                      )}
-                      {cycle.state === "upcoming" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="ml-auto h-6 text-[10px]"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleStart(cycle.id)
-                          }}
-                        >
-                          Start Cycle
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
                 </CollapsibleTrigger>
+                <CardContent className="pb-3">
+                  <div className="text-muted-foreground flex items-center gap-4 text-xs">
+                    <span>{cycleIssues.length} issues</span>
+                    <span>{totalEstimate} points</span>
+                    {cycle.state === "active" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-auto h-6 text-[10px]"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleComplete(cycle.id)
+                        }}
+                      >
+                        Complete Cycle
+                      </Button>
+                    )}
+                    {cycle.state === "upcoming" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-auto h-6 text-[10px]"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleStart(cycle.id)
+                        }}
+                      >
+                        Start Cycle
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
                 <CollapsibleContent>
                   <CardContent className="pt-0">
                     <div className="flex flex-col gap-1 border-t pt-3">

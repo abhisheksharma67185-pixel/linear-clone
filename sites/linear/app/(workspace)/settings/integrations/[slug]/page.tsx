@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import * as React from "react"
-import { use, useEffect, useRef, useState } from "react"
+import { use, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -148,86 +148,6 @@ function BackToIntegrationsLink({
       <HugeiconsIcon icon={ArrowLeft01Icon} className="size-3.5" />
       {label}
     </Link>
-  )
-}
-
-// Horizontal carousel for the per-integration screenshot tiles. Renders
-// children in a snap-scroll row and shows prev/next arrow controls that
-// disable themselves when there's nothing to scroll to in that direction.
-function TileCarousel({ children }: { children: React.ReactNode }) {
-  const scrollerRef = useRef<HTMLDivElement>(null)
-  const [canPrev, setCanPrev] = useState(false)
-  const [canNext, setCanNext] = useState(false)
-
-  const updateButtons = React.useCallback(() => {
-    const el = scrollerRef.current
-    if (!el) return
-    const max = el.scrollWidth - el.clientWidth
-    setCanPrev(el.scrollLeft > 1)
-    setCanNext(el.scrollLeft < max - 1)
-  }, [])
-
-  useEffect(() => {
-    const el = scrollerRef.current
-    if (!el) return
-    updateButtons()
-    el.addEventListener("scroll", updateButtons, { passive: true })
-    const ro = new ResizeObserver(updateButtons)
-    ro.observe(el)
-    return () => {
-      el.removeEventListener("scroll", updateButtons)
-      ro.disconnect()
-    }
-  }, [updateButtons])
-
-  const scroll = (dir: -1 | 1) => {
-    const el = scrollerRef.current
-    if (!el) return
-    // Step by ~one tile width on small screens, two on wider ones.
-    const step = Math.max(el.clientWidth * 0.9, 200)
-    el.scrollBy({ left: dir * step, behavior: "smooth" })
-  }
-
-  const items = React.Children.toArray(children)
-
-  return (
-    <div className="relative">
-      <div
-        ref={scrollerRef}
-        className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {items.map((child, i) => (
-          <div
-            key={i}
-            className="w-[85%] shrink-0 snap-start sm:w-[calc(50%-0.375rem)]"
-          >
-            {child}
-          </div>
-        ))}
-      </div>
-      {(canPrev || canNext) && (
-        <>
-          <button
-            type="button"
-            aria-label="Previous"
-            onClick={() => scroll(-1)}
-            disabled={!canPrev}
-            className="bg-background/90 hover:bg-background absolute top-1/2 left-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition disabled:cursor-default disabled:opacity-0"
-          >
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
-          </button>
-          <button
-            type="button"
-            aria-label="Next"
-            onClick={() => scroll(1)}
-            disabled={!canNext}
-            className="bg-background/90 hover:bg-background absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border shadow-sm transition disabled:cursor-default disabled:opacity-0"
-          >
-            <HugeiconsIcon icon={ArrowRight01Icon} className="size-4" />
-          </button>
-        </>
-      )}
-    </div>
   )
 }
 
@@ -617,24 +537,6 @@ function GitHubIntegrationDetail() {
         </Button>
       </div>
 
-      {/* Screenshot tiles */}
-      <TileCarousel>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://webassets.linear.app/images/ornj730p/production/a4233883974dc2ed75bc41153d95bdda3f38ff25-1500x960.png?q=95&auto=format&dpr=2"
-          alt='Searching "git" in the command menu, with a resulting item "copy git branch name to clipboard".'
-          className="aspect-[1500/960] w-full rounded-lg border object-cover"
-          loading="lazy"
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://webassets.linear.app/images/ornj730p/production/42a296da028e03b3e81462e18d62f4da31a0e730-1500x960.png?q=95&auto=format&dpr=2"
-          alt="A GitHub Pull Request linked to a Linear issue."
-          className="aspect-[1500/960] w-full rounded-lg border object-cover"
-          loading="lazy"
-        />
-      </TileCarousel>
-
       {/* Overview */}
       <section>
         <h2 className="text-sm font-semibold">Overview</h2>
@@ -921,31 +823,6 @@ function SlackIntegrationDetail() {
           Enable
         </Button>
       </div>
-
-      {/* Screenshot tiles */}
-      <TileCarousel>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://webassets.linear.app/images/ornj730p/production/3de20f7c5fc4e6c0b39ba75e8e2d172e8db0a1ae-1500x960.png?q=95&auto=format&dpr=2"
-          alt={`Linear's "Create a new issue" dialog inside Slack with fields for issue metadata`}
-          className="aspect-[1500/960] w-full rounded-lg border object-cover"
-          loading="lazy"
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://webassets.linear.app/images/ornj730p/production/b1b7e6cf3225f7d5a24fe466cc8e955aa7b389b2-1500x960.png?q=95&auto=format&dpr=2"
-          alt={`A Linear issue posted in Slack titled "Snooze for notifications" including its description and status.`}
-          className="aspect-[1500/960] w-full rounded-lg border object-cover"
-          loading="lazy"
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://webassets.linear.app/images/ornj730p/production/425b9ad2462b6f21c1f7ab5852077b5c444d605a-1500x960.png?q=95&auto=format&dpr=2"
-          alt="A Linear comment thread showing synced messages from Slack"
-          className="aspect-[1500/960] w-full rounded-lg border object-cover"
-          loading="lazy"
-        />
-      </TileCarousel>
 
       {/* Overview */}
       <section>

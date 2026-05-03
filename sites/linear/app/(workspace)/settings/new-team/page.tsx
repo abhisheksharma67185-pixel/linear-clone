@@ -56,22 +56,36 @@ export default function NewTeamPage() {
       .catch(() => {})
   }, [])
 
-  const handleNameChange = (v: string) => {
-    setName(v)
-    if (!identifierTouched) {
-      setIdentifier(
-        v
-          .toUpperCase()
-          .replace(/[^A-Z0-9]/g, "")
-          .slice(0, 3)
-      )
-    }
-  }
-
   const usedKeys = useMemo(
     () => new Set(teams.map((t) => t.key.toUpperCase())),
     [teams]
   )
+
+  const handleNameChange = (v: string) => {
+    setName(v)
+    if (!identifierTouched) {
+      const base = v
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "")
+        .slice(0, 3)
+      // Auto-generation defaulted to a 3-char prefix and silently
+      // collided with existing keys (e.g. "QA Test Team" → "QAT" when
+      // a QAT team already exists). Suffix with the next free integer
+      // so the generated key is usable on the first try; users can
+      // still overwrite it manually if they want a different scheme.
+      let candidate = base
+      if (base.length >= 2 && usedKeys.has(candidate)) {
+        for (let i = 2; i < 1000; i++) {
+          const next = (base + String(i)).slice(0, 6)
+          if (!usedKeys.has(next)) {
+            candidate = next
+            break
+          }
+        }
+      }
+      setIdentifier(candidate)
+    }
+  }
 
   const errors = useMemo(
     () => validateNewTeamForm({ name, identifier, usedKeys }),
@@ -79,9 +93,14 @@ export default function NewTeamPage() {
   )
   const canSubmit = !submitting && Object.keys(errors).length === 0
   const showNameError = errors.name && (nameTouched || submitAttempted)
+  // Surface identifier errors as soon as the user has typed something —
+  // including via the auto-populated identifier from name input.
+  // Previously the error was hidden until the user hand-edited the
+  // identifier field or clicked submit, leaving the Create button
+  // mysteriously disabled when auto-gen collided with an existing key.
   const showIdentifierError =
     errors.identifier &&
-    (identifierTouched || submitAttempted) &&
+    (identifierTouched || nameTouched || submitAttempted || name.length > 0) &&
     identifier.length > 0
 
   const onSubmit = async () => {

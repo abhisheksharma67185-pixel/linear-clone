@@ -44,13 +44,15 @@ const SECTION_TITLES: Record<string, string> = {
   "create-team": "Create a team",
 }
 
-// Bare slugs that the client-side resolver in settings-client.tsx
-// rewrites to canonical section keys. Mirror the same aliases here so
-// the SSR `<title>` for `?section=labels` reads "Labels" rather than
-// the generic "Settings" fallback.
+// Bare / alternate slugs that the client-side resolver in
+// settings-client.tsx rewrites to canonical section keys. Mirror the
+// same aliases here so the SSR `<title>` for e.g. `?section=labels`
+// reads "Labels" rather than the generic "Settings" fallback.
 const SECTION_ALIASES: Record<string, string> = {
   labels: "issue-labels",
   templates: "issue-templates",
+  "security-access": "security",
+  "project-statuses": "statuses",
 }
 
 export async function generateMetadata({

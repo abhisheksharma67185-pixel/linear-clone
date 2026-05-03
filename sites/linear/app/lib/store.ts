@@ -845,6 +845,19 @@ export function createTeam(fields: {
     }
   }
 
+  // Reject duplicate names too — the previous code only deduped by key,
+  // which let QA tests stack two "Pre-existing" entries (one as COL,
+  // one as DUPE) in the team list. Rejecting the name on the second
+  // POST keeps the team Select dropdowns elsewhere in the app readable
+  // (real Linear treats team names as workspace-unique anyway).
+  const trimmedName = fields.name.trim()
+  if (_teams.some((t) => t.name.toLowerCase() === trimmedName.toLowerCase())) {
+    return {
+      success: false,
+      error: `Team name already exists: ${trimmedName}`,
+    }
+  }
+
   if (fields.leadId !== undefined) {
     const lead = _members.find((m) => m.id === fields.leadId)
     if (!lead) {

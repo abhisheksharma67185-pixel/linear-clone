@@ -259,14 +259,37 @@ function sectionDisplayLabel(key: SectionKey): string {
     .join(" ")
 }
 
-// Bare slugs that older docs / external links sometimes used. Linear's
-// current sidebar splits these into Issues / Projects variants, so a
-// `?section=labels` deep-link should always land on Issues→Labels and
-// `?section=templates` on Issues→Templates rather than rendering the
-// generic "settings coming soon" stub.
+// Bare / alternate slugs that older docs / external links / sidebar
+// labels sometimes use. Resolve them to the canonical section key the
+// resolver below knows how to render so deep-links don't fall through
+// to the "settings coming soon" stub or get bounced to Preferences.
 const SECTION_ALIASES: Record<string, string> = {
+  // Linear's sidebar splits Templates / Labels into Issues→… and
+  // Projects→… variants; the bare `templates` / `labels` slugs map to
+  // the Issues variant by convention.
   labels: "issue-labels",
   templates: "issue-templates",
+  // Sidebar label is "Security & access"; the section-key it routes to
+  // is `security`, not `security-access`. Accept the dasherised form
+  // for completeness so URL-typing the visible label works.
+  "security-access": "security",
+  // The path-routed Project Statuses page uses the sidebar key
+  // `statuses` internally. A direct `?section=project-statuses`
+  // deep-link should therefore resolve to the same content rather than
+  // bouncing to Preferences.
+  "project-statuses": "statuses",
+}
+
+// Section keys that have been promoted to their own path-based routes
+// (`/settings/<key>`). When the user lands on `?section=<key>`, the
+// SettingsPageInner resolver redirects to the canonical path so the URL
+// bar reflects the actual route — and so a future reload stays on the
+// path-routed page rather than re-entering the query-param resolver.
+const PATH_REDIRECT_SECTIONS: Record<string, string> = {
+  "project-labels": "/settings/project-labels",
+  "project-templates": "/settings/project-templates",
+  statuses: "/settings/project-statuses",
+  "new-team": "/settings/new-team",
 }
 
 // Every section key the resolver below knows how to render. Anything
@@ -335,6 +358,17 @@ function SettingsPageInner() {
   const navScrollRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
+    // Some sections live at their own path route — when the user hits
+    // them via `?section=…`, redirect to the canonical path so the URL
+    // bar reflects the actual location and a subsequent reload stays
+    // on the right page. This catches cases where the user URL-hacks
+    // `?section=project-statuses` etc. instead of clicking through the
+    // sidebar (which uses the path link directly).
+    const pathTarget = PATH_REDIRECT_SECTIONS[section]
+    if (pathTarget) {
+      router.replace(pathTarget, { scroll: false })
+      return
+    }
     // Rewrite alias / unknown-key URLs so a reload lands on the
     // resolved slug instead of the original (potentially stub-routed)
     // value. Skip the rewrite when nothing changed to avoid an infinite
@@ -1279,7 +1313,14 @@ function ProfileSection() {
     "theta.computer01"
   )
   const email = "theta.computer01@gmail.com"
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  // Persist as a base64 data-URI string so the avatar survives F5.
+  // Object URLs (`URL.createObjectURL`) are tied to the page session
+  // and become dead after reload; the same base64 round-trip pattern
+  // already works for `WorkspaceSection`'s logo upload.
+  const [avatarUrl, setAvatarUrl] = usePersistedState<string | null>(
+    "linear:profile:avatar",
+    null
+  )
   const [changeEmailOpen, setChangeEmailOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -1294,8 +1335,19 @@ function ProfileSection() {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const url = URL.createObjectURL(file)
-    setAvatarUrl(url)
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image")
+      e.target.value = ""
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      setAvatarUrl(String(reader.result))
+    }
+    reader.onerror = () => {
+      toast.error("Failed to read image")
+    }
+    reader.readAsDataURL(file)
     e.target.value = ""
   }
 
@@ -2072,9 +2124,28 @@ function SecuritySection() {
         </p>
         <div className="divide-border divide-y rounded-lg border">
           {loading ? (
-            <div className="flex flex-col gap-1 p-3">
-              <Skeleton className="h-9 w-full rounded-md" />
-              <Skeleton className="h-9 w-full rounded-md" />
+            // Skeleton mirrors a SessionRow's actual height (icon +
+            // device label + city/country line + last-seen line +
+            // sign-out button) so there's no card-pop when the data
+            // commits. R11b's Bug 8 introduced this matched-height
+            // skeleton pattern; reusing it here closes the same kind
+            // of "empty grey box → real row" flicker.
+            <div className="divide-border divide-y" aria-busy>
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-4 py-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="size-8 rounded-md" />
+                    <div className="flex flex-col gap-1.5">
+                      <Skeleton className="h-4 w-44" />
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-7 w-20" />
+                </div>
+              ))}
             </div>
           ) : (
             <>
@@ -2103,8 +2174,22 @@ function SecuritySection() {
         </p>
         <div className="rounded-lg border">
           {loading ? (
-            <div className="flex flex-col gap-1 p-3">
-              <Skeleton className="h-9 w-full rounded-md" />
+            // Match a populated passkey row + the trailing "New passkey"
+            // action so the section's height stays stable when data
+            // resolves. The empty-state collapses to one row, but
+            // that's a smaller jump than expanding from a 1-row stub
+            // to a 2+-row populated list.
+            <div className="divide-border divide-y" aria-busy>
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex flex-col gap-1.5">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-44" />
+                </div>
+                <Skeleton className="h-7 w-16" />
+              </div>
+              <div className="flex justify-end px-4 py-2">
+                <Skeleton className="h-7 w-24" />
+              </div>
             </div>
           ) : passkeys.length === 0 ? (
             <div className="flex items-center justify-between px-4 py-3">
@@ -2171,8 +2256,20 @@ function SecuritySection() {
         </p>
         <div className="rounded-lg border">
           {loading ? (
-            <div className="flex flex-col gap-1 p-3">
-              <Skeleton className="h-9 w-full rounded-md" />
+            // Same pattern as the Passkeys skeleton above — one row +
+            // a trailing action — so the loading state's height
+            // matches the populated state.
+            <div className="divide-border divide-y" aria-busy>
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex flex-col gap-1.5">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-56" />
+                </div>
+                <Skeleton className="h-7 w-16" />
+              </div>
+              <div className="flex justify-end px-4 py-2">
+                <Skeleton className="h-7 w-24" />
+              </div>
             </div>
           ) : apiKeys.length === 0 ? (
             <div className="flex items-center justify-between px-4 py-3">
@@ -3033,7 +3130,7 @@ function AgentPersonalizationSection() {
               maxLength={GUIDANCE_MAX_CHARS}
               onChange={(e) => handleGuidanceChange(e.target.value)}
               aria-describedby="guidance-description"
-              placeholder="Enter personal guidance for the Linear Agent (optional)..."
+              placeholder="Enter personal guidance for the Linear Agent (optional)…"
               rows={7}
               className="bg-card text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-primary/50 focus-visible:ring-offset-background w-full resize-none rounded-lg border px-4 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             />
@@ -3170,7 +3267,7 @@ function AgentPersonalizationSection() {
         </section>
 
         <NewSkillDialog
-          key={String(createSkillOpen)}
+          key={`new-skill-${createSkillOpen}`}
           open={createSkillOpen}
           onOpenChange={setCreateSkillOpen}
           onCreate={handleCreateSkill}
@@ -3181,7 +3278,7 @@ function AgentPersonalizationSection() {
           onConfirm={confirmDeleteSkill}
         />
         <AddMcpServerDialog
-          key={String(addServerOpen)}
+          key={`add-mcp-${addServerOpen}`}
           open={addServerOpen}
           onOpenChange={setAddServerOpen}
           onAdd={handleAddServer}
@@ -3651,19 +3748,22 @@ function titleCase(month: string): string {
 }
 
 function WorkspaceSection() {
-  const [loading, setLoading] = useState(true)
-  const [workspace, setWorkspace] = useState<WorkspaceData>({
-    name: "Abhishek",
-    slug: "abhishek2007",
-    logoDataUrl: null,
-    fiscalYearStartMonth: "january",
-  })
+  // `workspace` stays `null` until the GET resolves so we never paint
+  // hardcoded placeholder values into the inputs (the prior code seeded
+  // `{name: "Abhishek", slug: "abhishek2007"}` defaults plus empty
+  // drafts, which (a) flashed an "URL is required" validation error
+  // before the API arrived, and (b) let users type into empty fields
+  // mid-fetch and watch their input get overwritten when the response
+  // landed). The render below shows a skeleton while loading; the
+  // drafts only initialise once we have real data.
+  const [workspace, setWorkspace] = useState<WorkspaceData | null>(null)
   const [nameDraft, setNameDraft] = useState("")
   const [slugDraft, setSlugDraft] = useState("")
   const [nameStatus, setNameStatus] = useState<WorkspaceSaveStatus>("idle")
   const [slugStatus, setSlugStatus] = useState<WorkspaceSaveStatus>("idle")
   const [deleteOpen, setDeleteOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const loading = workspace === null
 
   useEffect(() => {
     let cancelled = false
@@ -3675,9 +3775,19 @@ function WorkspaceSection() {
         setNameDraft(w.name)
         setSlugDraft(w.slug)
       })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false)
+      .catch(() => {
+        // Fall back to a stub so the form still renders if the API
+        // is offline. Real Linear would 5xx here; the clone never does.
+        if (cancelled) return
+        const fallback: WorkspaceData = {
+          name: "Workspace",
+          slug: "workspace",
+          logoDataUrl: null,
+          fiscalYearStartMonth: "january",
+        }
+        setWorkspace(fallback)
+        setNameDraft(fallback.name)
+        setSlugDraft(fallback.slug)
       })
     return () => {
       cancelled = true
@@ -3703,6 +3813,7 @@ function WorkspaceSection() {
   )
 
   const onNameBlur = async () => {
+    if (!workspace) return
     const next = nameDraft.trim()
     if (next === workspace.name) return
     if (next.length === 0) {
@@ -3725,8 +3836,10 @@ function WorkspaceSection() {
   }
 
   // Validate while typing so the user sees errors before blurring. Pure
-  // derived state — no effect needed.
+  // derived state — no effect needed. Returns null while loading so the
+  // skeleton phase doesn't flash an "URL is required" alert.
   const slugError = ((): string | null => {
+    if (!workspace) return null
     const trimmed = slugDraft.trim()
     if (trimmed === workspace.slug) return null
     if (trimmed.length === 0) return "URL is required"
@@ -3737,6 +3850,7 @@ function WorkspaceSection() {
   })()
 
   const onSlugBlur = async () => {
+    if (!workspace) return
     const next = slugDraft.trim().toLowerCase()
     if (next === workspace.slug) return
     if (slugError) return // Block save while invalid.
@@ -3756,6 +3870,7 @@ function WorkspaceSection() {
   }
 
   const onFiscalYearChange = async (month: string) => {
+    if (!workspace) return
     const prev = workspace.fiscalYearStartMonth
     setWorkspace({ ...workspace, fiscalYearStartMonth: month })
     try {
@@ -3782,6 +3897,74 @@ function WorkspaceSection() {
       }
     }
     reader.readAsDataURL(file)
+  }
+
+  if (!workspace) {
+    // Skeleton mirrors the full form layout — Logo/Name/URL card +
+    // Time & region card + Welcome message row + Danger zone — so
+    // when the API resolves and we swap to the real form, no card
+    // pops in below the existing one. Round-7 left out the trailing
+    // sections, which is what made the brief skeleton-to-form
+    // transition feel like a flash on hard reload.
+    return (
+      <div className="flex max-w-2xl flex-col gap-6 p-6">
+        <h1 className="text-xl font-semibold">Workspace</h1>
+
+        <div className="divide-border divide-y overflow-hidden rounded-lg border">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex flex-col gap-1.5">
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-3 w-44" />
+            </div>
+            <Skeleton className="size-10 rounded-lg" />
+          </div>
+          <div className="flex items-center justify-between gap-4 px-4 py-3">
+            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-8 w-52" />
+          </div>
+          <div className="flex items-center justify-between gap-4 px-4 py-3">
+            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-8 w-52" />
+          </div>
+        </div>
+
+        <div>
+          <Skeleton className="mb-2 h-4 w-24" />
+          <div className="divide-border divide-y overflow-hidden rounded-lg border">
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="flex flex-col gap-1.5">
+                <Skeleton className="h-4 w-44" />
+                <Skeleton className="h-3 w-72" />
+              </div>
+              <Skeleton className="h-8 w-32" />
+            </div>
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="flex flex-col gap-1.5">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-3 w-64" />
+              </div>
+              <Skeleton className="h-4 w-24" />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <Skeleton className="mb-2 h-4 w-32" />
+          <div className="bg-muted/20 flex items-center justify-between rounded-lg border px-4 py-3">
+            <Skeleton className="h-4 w-44" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+        </div>
+
+        <div>
+          <Skeleton className="mb-2 h-4 w-24" />
+          <div className="flex items-center justify-between rounded-lg border px-4 py-3">
+            <Skeleton className="h-4 w-44" />
+            <Skeleton className="h-8 w-36" />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const initials = workspace.name.slice(0, 2).toUpperCase() || "WS"
@@ -4338,7 +4521,14 @@ function MembersSection() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState("")
   const debouncedFilter = useDebounced(filter, 150)
-  const [tab, setTab] = useState<MembersTabKey>("all")
+  // Default to "Pending invites" on first render, matching real
+  // Linear's default. The previous "all" → post-load flip-to-"invited"
+  // sequence read like a UI glitch on QA: the tab visibly changed under
+  // the user a few seconds after the page mounted, on a list they
+  // hadn't touched. Picking the default at initialisation keeps the
+  // tab stable across the loading window and removes the side-effect
+  // effect entirely.
+  const [tab, setTab] = useState<MembersTabKey>("invited")
   const [exporting, setExporting] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [confirm, setConfirm] = useState<{
@@ -4376,21 +4566,12 @@ function MembersSection() {
     }
   }, [])
 
-  // After the first load, mirror Linear's behavior: if any pending
-  // invites are in the workspace, open with the "Pending invites"
-  // chip selected; otherwise stay on "All". The ref guard makes this
-  // a one-shot — once the user clicks any chip we never override
-  // their choice on a subsequent re-fetch.
-  const defaultTabAppliedRef = useRef(false)
-  useEffect(() => {
-    if (loading || defaultTabAppliedRef.current) return
-    defaultTabAppliedRef.current = true
-    if (summaries.some((m) => m.isInvite)) {
-      /* eslint-disable react-hooks/set-state-in-effect */
-      setTab("invited")
-      /* eslint-enable react-hooks/set-state-in-effect */
-    }
-  }, [loading, summaries])
+  // The previous code defaulted `tab` to "all" and then flipped it to
+  // "invited" in a post-load effect when pending invites were present.
+  // That effect has been removed: the default ("invited") is set at
+  // initialisation, so the chip never visibly changes under the user
+  // as a side effect of data loading. Manual chip clicks stay
+  // authoritative because they're plain `setTab` calls below.
 
   // Tab → predicate: each tab decides which `MemberSummary` rows
   // belong on it. "members" = human users (active + suspended) that
@@ -7986,6 +8167,58 @@ const BILLING_FEATURES: BillingFeature[] = [
 ]
 
 function BillingSection() {
+  // Read the live workspace plan from /api/billing/plan so the
+  // "Current plan" card matches what the rest of the app sees. Hardcoding
+  // "Free plan" was a copy artefact from the design pass — when the
+  // mock API returned `{plan: "trial", trialDaysRemaining: 30}` (e.g.
+  // after a SLAs / Asks trial-start click), Billing kept showing "Free"
+  // while AI&Agents and SLAs flipped to "Trial active". This widget
+  // is the workspace's source of truth for plan UI; it should reflect
+  // reality.
+  const [planData, setPlanData] = useState<PlanState>({
+    plan: "free",
+    trialDaysRemaining: null,
+  })
+  const [planLoading, setPlanLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch("/api/billing/plan")
+      .then((r) => r.json())
+      .then((p: PlanState) => {
+        if (!cancelled) setPlanData(p)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setPlanLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Plan-specific "Current plan" card content. Trial state shows the
+  // remaining days; paid plans show their plan name. Free is the
+  // default fallback.
+  let planTitle = "Free plan"
+  let planSubtitle = "Free for all users"
+  if (planData.plan === "trial") {
+    planTitle = "Free trial"
+    planSubtitle =
+      planData.trialDaysRemaining !== null
+        ? `${planData.trialDaysRemaining} days remaining`
+        : "Business features unlocked during trial"
+  } else if (planData.plan === "standard") {
+    planTitle = "Standard plan"
+    planSubtitle = "Workspace on the Standard tier"
+  } else if (planData.plan === "business") {
+    planTitle = "Business plan"
+    planSubtitle = "Workspace on the Business tier"
+  } else if (planData.plan === "enterprise") {
+    planTitle = "Enterprise plan"
+    planSubtitle = "Workspace on the Enterprise tier"
+  }
+
   return (
     <TooltipProvider>
       <div className="flex flex-col gap-6 p-6">
@@ -8022,13 +8255,17 @@ function BillingSection() {
         <div className="bg-card flex items-center justify-between rounded-lg border px-4 py-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold">Free plan</span>
+              {planLoading ? (
+                <Skeleton className="h-4 w-24" />
+              ) : (
+                <span className="text-sm font-semibold">{planTitle}</span>
+              )}
               <span className="border-border bg-muted/40 text-muted-foreground rounded-full border px-2 py-0.5 text-[10px] font-medium">
                 Current
               </span>
             </div>
             <div className="text-muted-foreground mt-0.5 text-xs">
-              Free for all users
+              {planLoading ? <Skeleton className="h-3 w-32" /> : planSubtitle}
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -8437,12 +8674,28 @@ function IssueLabelsSection() {
   } | null>(null)
   const [editing, setEditing] = useState<EditTarget>(null)
   const [editingValue, setEditingValue] = useState("")
+  // `loading` gates the empty-state copy so we don't flash "No labels
+  // yet" for the 3+ seconds it takes /api/data/labels to round-trip on
+  // a fresh load. Skeleton rows render in its place until the fetch
+  // resolves; we keep the boolean true until both the data is set AND
+  // React has had a chance to commit the populated rows (matching the
+  // R7→R11b Workspace skeleton pattern so we don't reintroduce a flash).
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
     fetch("/api/data/labels")
       .then((r) => r.json())
-      .then(setLabels)
+      .then((data: LabelType[]) => {
+        if (!cancelled) setLabels(data)
+      })
       .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const visibleLabels = useMemo(() => {
@@ -8626,7 +8879,14 @@ function IssueLabelsSection() {
   // (with description as a smaller secondary line below) / Last applied /
   // Created / row-actions menu. Description and Issues columns were
   // dropped to match Linear.
-  const gridCols = "grid grid-cols-[32px_16px_1fr_120px_96px_32px]"
+  // Grid columns: checkbox | color | name | description | issues |
+  // last applied | created | actions. Linear's labels table shows
+  // Description and Issues as their own columns; the previous layout
+  // collapsed Description into a secondary line under the name and
+  // dropped Issues entirely. `minmax` on the description column keeps
+  // it from squashing the action column at narrower widths.
+  const gridCols =
+    "grid grid-cols-[32px_16px_minmax(140px,1.4fr)_minmax(160px,1.6fr)_64px_120px_96px_32px]"
   const allVisibleSelected =
     visibleLabels.length > 0 && visibleLabels.every((l) => selected.has(l.id))
   const someVisibleSelected = visibleLabels.some((l) => selected.has(l.id))
@@ -8744,6 +9004,8 @@ function IssueLabelsSection() {
             />
           </button>
         </div>
+        <div>Description</div>
+        <div className="text-right tabular-nums">Issues</div>
         <div>Last applied</div>
         <div>Created</div>
         <div />
@@ -8771,7 +9033,10 @@ function IssueLabelsSection() {
             onChange={(c) => setGroupDraft((g) => (g ? { ...g, color: c } : g))}
             ariaLabel="Group color"
           />
-          <div className="col-span-4 pr-2">
+          {/* Group name spans the remaining six columns (name, desc,
+              issues, last applied, created, actions) so the input
+              expands across the row width. */}
+          <div className="col-span-6 pr-2">
             <input
               autoFocus
               value={groupDraft.name}
@@ -8788,11 +9053,11 @@ function IssueLabelsSection() {
               className="placeholder:text-muted-foreground/60 focus-visible:ring-primary/50 focus-visible:ring-offset-background w-full bg-transparent text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             />
           </div>
-          <div />
         </div>
       )}
 
-      {/* Group rows (non-selectable headers) */}
+      {/* Group rows (non-selectable headers) — group label spans the
+          six trailing data columns to mirror the new-group input row. */}
       {groups.map((g) => (
         <div key={g.id} className={`${gridCols} border-b px-2 py-2.5 text-sm`}>
           <div />
@@ -8801,7 +9066,7 @@ function IssueLabelsSection() {
             style={{ backgroundColor: g.color }}
             aria-hidden="true"
           />
-          <div className="text-foreground col-span-4 text-sm font-medium">
+          <div className="text-foreground col-span-6 text-sm font-medium">
             {g.name}
             <span className="text-muted-foreground ml-2 text-xs font-normal">
               group
@@ -8844,7 +9109,7 @@ function IssueLabelsSection() {
               onChange={(c) => applyUpdate(label.id, { color: c })}
               ariaLabel={`Change color of ${label.name}`}
             />
-            <div className="flex min-w-0 flex-col pr-2">
+            <div className="flex min-w-0 items-center pr-2">
               {isEditingName ? (
                 <input
                   autoFocus
@@ -8871,9 +9136,11 @@ function IssueLabelsSection() {
                   {label.name}
                 </button>
               )}
-              {/* Description rendered as inline secondary text under the
-                  name to preserve the field after dropping the dedicated
-                  Description column. */}
+            </div>
+            {/* Description column — editable inline. Empty values render
+                a low-emphasis "Add label description…" placeholder so
+                users can discover the affordance from the row directly. */}
+            <div className="flex min-w-0 items-center pr-2">
               {isEditingDesc ? (
                 <input
                   autoFocus
@@ -8906,6 +9173,16 @@ function IssueLabelsSection() {
                 </button>
               )}
             </div>
+            {/* Issues count column. The clone has no issue→label
+                back-reference so the count is always 0; render an
+                em-dash to communicate "no usage" rather than a literal
+                zero, matching real Linear's empty-cell convention. */}
+            <div className="text-muted-foreground text-right text-xs tabular-nums">
+              —
+            </div>
+            {/* Last applied — placeholder em-dash until issue→label
+                back-references exist. */}
+            <div className="text-muted-foreground text-xs">—</div>
             <div className="text-muted-foreground text-xs">
               {label.createdAt
                 ? new Date(label.createdAt as string).toLocaleDateString()
@@ -8977,7 +9254,31 @@ function IssueLabelsSection() {
         )
       })}
 
-      {visibleLabels.length === 0 && !draft && (
+      {/* Loading skeleton — six rows roughly matching a populated label
+          row's layout so the table doesn't jump when /api/data/labels
+          resolves. Rendered in place of the "No labels yet" copy until
+          the fetch settles. */}
+      {loading && (
+        <>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className={`${gridCols} items-center border-b px-2 py-3 last:border-b-0`}
+            >
+              <div />
+              <Skeleton className="size-2.5 rounded-full" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-44" />
+              <Skeleton className="ml-auto h-3 w-6" />
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-3 w-16" />
+              <div />
+            </div>
+          ))}
+        </>
+      )}
+
+      {!loading && visibleLabels.length === 0 && !draft && (
         <div className="text-muted-foreground py-10 text-center text-sm">
           {scope === "archived"
             ? "No archived labels"
@@ -9081,9 +9382,9 @@ function NewLabelDraftRow({
         onChange={(c) => setDraft((d) => (d ? { ...d, color: c } : d))}
         ariaLabel="Pick label color"
       />
-      {/* Name + description stack in a single column to match the row
-          layout after dropping the standalone Description column. */}
-      <div className="flex flex-col pr-2">
+      {/* Name and description live in their own grid cells now that
+          the table has dedicated Description / Issues columns. */}
+      <div className="flex items-center pr-2">
         <input
           autoFocus
           value={draft.name}
@@ -9100,6 +9401,8 @@ function NewLabelDraftRow({
           aria-label="Label name"
           className="placeholder:text-muted-foreground/60 focus-visible:ring-primary/50 focus-visible:ring-offset-background w-full bg-transparent text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         />
+      </div>
+      <div className="flex items-center pr-2">
         <input
           value={draft.description}
           onChange={(e) =>
@@ -9116,6 +9419,9 @@ function NewLabelDraftRow({
           className="placeholder:text-muted-foreground/60 focus-visible:ring-primary/50 focus-visible:ring-offset-background w-full bg-transparent text-xs outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
         />
       </div>
+      {/* Issues / Last applied / Created / actions placeholders so the
+          grid lines up with the data rows above. */}
+      <div />
       <div />
       <div />
       <div />
@@ -10002,70 +10308,91 @@ function SLAsSection() {
           </section>
         )}
 
-        {/* Automation rules — rendered regardless of plan; Add rule gated. */}
-        <section>
-          <div className="mb-1 flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium">Automation rules</div>
-              <div className="text-muted-foreground text-xs">
-                Use automation rules to automatically add or remove SLAs based
-                on filters.
+        {/* Skeleton placeholders for the plan-gated sections while the
+         * /api/billing/plan + policies + rules fetch is in flight. The
+         * previous render gated the trial banner + policies section on
+         * `!loading` but left the Automation rules section unconditional,
+         * which made the page look like it had only "Title + Add rule"
+         * for the first 100-200ms — and the post-fetch reveal of the
+         * banner + policies looked like a side effect of clicking Add
+         * rule. Showing skeletons of the right size keeps the page
+         * stable from initial paint through hydration. */}
+        {loading && (
+          <>
+            <Skeleton className="h-14 w-full rounded-lg" />
+            <Skeleton className="h-24 w-full rounded-lg" />
+          </>
+        )}
+
+        {/* Automation rules — rendered once plan + rules data is in.
+         * Gating on `!loading` here too prevents the Add-rule button from
+         * appearing as if it were the only interactive element on the
+         * page during the loading window. */}
+        {!loading && (
+          <section>
+            <div className="mb-1 flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium">Automation rules</div>
+                <div className="text-muted-foreground text-xs">
+                  Use automation rules to automatically add or remove SLAs based
+                  on filters.
+                </div>
               </div>
+              <GatedAddRuleButton
+                gated={gated}
+                onClick={() => setEditingRule("new")}
+              />
             </div>
-            <GatedAddRuleButton
-              gated={gated}
-              onClick={() => setEditingRule("new")}
-            />
-          </div>
-          {!gated && rules.length > 0 && (
-            <ul
-              role="list"
-              className="bg-card divide-border mt-3 divide-y rounded-lg border"
-            >
-              {rules.map((r) => (
-                <li
-                  key={r.id}
-                  className="group/rule hover:bg-accent/20 flex items-center gap-3 px-4 py-3"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setEditingRule(r)}
-                    aria-label={`Edit automation rule ${r.name}`}
-                    className="focus-visible:ring-primary/50 focus-visible:ring-offset-background min-w-0 flex-1 rounded-sm text-left focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+            {!gated && rules.length > 0 && (
+              <ul
+                role="list"
+                className="bg-card divide-border mt-3 divide-y rounded-lg border"
+              >
+                {rules.map((r) => (
+                  <li
+                    key={r.id}
+                    className="group/rule hover:bg-accent/20 flex items-center gap-3 px-4 py-3"
                   >
-                    <div className="text-sm font-medium">{r.name}</div>
-                    <div className="text-muted-foreground mt-0.5 truncate text-xs">
-                      {TRIGGER_LABEL[r.trigger]} ·{" "}
-                      {summarizeConditions(r.conditions)} ·{" "}
-                      {r.action === "add-sla" ? "Add SLA" : "Remove SLA"}
-                      {r.slaPolicyId
-                        ? ` (${policies.find((p) => p.id === r.slaPolicyId)?.name ?? "policy"})`
-                        : ""}
-                    </div>
-                  </button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label={`Edit rule ${r.name}`}
-                    onClick={() => setEditingRule(r)}
-                    className="h-7 text-xs opacity-0 transition-opacity group-hover/rule:opacity-100 focus-visible:opacity-100"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label={`Delete rule ${r.name}`}
-                    onClick={() => setConfirmDeleteRule(r)}
-                    className="text-destructive hover:text-destructive h-7 text-xs opacity-0 transition-opacity group-hover/rule:opacity-100 focus-visible:opacity-100"
-                  >
-                    Delete
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                    <button
+                      type="button"
+                      onClick={() => setEditingRule(r)}
+                      aria-label={`Edit automation rule ${r.name}`}
+                      className="focus-visible:ring-primary/50 focus-visible:ring-offset-background min-w-0 flex-1 rounded-sm text-left focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    >
+                      <div className="text-sm font-medium">{r.name}</div>
+                      <div className="text-muted-foreground mt-0.5 truncate text-xs">
+                        {TRIGGER_LABEL[r.trigger]} ·{" "}
+                        {summarizeConditions(r.conditions)} ·{" "}
+                        {r.action === "add-sla" ? "Add SLA" : "Remove SLA"}
+                        {r.slaPolicyId
+                          ? ` (${policies.find((p) => p.id === r.slaPolicyId)?.name ?? "policy"})`
+                          : ""}
+                      </div>
+                    </button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label={`Edit rule ${r.name}`}
+                      onClick={() => setEditingRule(r)}
+                      className="h-7 text-xs opacity-0 transition-opacity group-hover/rule:opacity-100 focus-visible:opacity-100"
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label={`Delete rule ${r.name}`}
+                      onClick={() => setConfirmDeleteRule(r)}
+                      className="text-destructive hover:text-destructive h-7 text-xs opacity-0 transition-opacity group-hover/rule:opacity-100 focus-visible:opacity-100"
+                    >
+                      Delete
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
 
         <StartTrialDialog
           key={`sla-${trialOpen}`}
@@ -10074,10 +10401,17 @@ function SLAsSection() {
           onStarted={onTrialStarted}
         />
         <SlaPolicyDialog
-          // Remount when the editing target changes so local form state is
-          // always seeded fresh from the new policy (or cleared on close).
+          // Remount when the editing target changes so local form state
+          // is always seeded fresh from the new policy (or cleared on
+          // close). Key prefixed with `policy-` so the two sibling
+          // dialogs (this one + AutomationRuleDialog below) don't
+          // collide on the shared `"closed"` sentinel — that triggered
+          // a "two children with the same key" warning, which surfaced
+          // as the round-11d red dev-error indicator.
           key={
-            editingPolicy === "new" ? "new" : (editingPolicy?.id ?? "closed")
+            editingPolicy === "new"
+              ? "policy-new"
+              : `policy-${editingPolicy?.id ?? "closed"}`
           }
           mode={editingPolicy === "new" ? "new" : "edit"}
           policy={
@@ -10088,9 +10422,13 @@ function SLAsSection() {
           onSaved={upsertPolicy}
         />
         <AutomationRuleDialog
-          // Remount when the editing target changes so local form state is
-          // always seeded fresh from the new rule (or cleared on close).
-          key={editingRule === "new" ? "new" : (editingRule?.id ?? "closed")}
+          // Same pattern as SlaPolicyDialog — prefix the key so the two
+          // sibling dialogs have disjoint key spaces.
+          key={
+            editingRule === "new"
+              ? "rule-new"
+              : `rule-${editingRule?.id ?? "closed"}`
+          }
           mode={editingRule === "new" ? "new" : "edit"}
           rule={editingRule && editingRule !== "new" ? editingRule : null}
           policies={policies}
@@ -10627,7 +10965,49 @@ function ConfirmDeleteSlaDialog({
 }
 
 function ProjectLabelsSection() {
+  const router = useRouter()
   const [filter, setFilter] = useState("")
+  // Track in-flight create requests so a user can't double-submit by
+  // hammering "New label" while we're waiting on the POST.
+  const [creating, setCreating] = useState<"label" | "group" | null>(null)
+
+  // Linear's design: clicking "+ New label" reveals an inline editor on
+  // the labels page that lives at `/settings/project-labels`. The inline
+  // editor isn't wired up here yet, so as a stop-gap we POST a
+  // sensible default through the create endpoint and route the user to
+  // the path-routed labels page where the new row will appear. This
+  // matches option (b) in the round-8 bug report and means the button
+  // stops being a silent no-op.
+  const onNewLabel = async () => {
+    if (creating) return
+    setCreating("label")
+    try {
+      const res = await fetch("/api/data/project-labels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "New label", color: "#5E6AD2" }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to create label")
+      }
+      toast.success("Label created")
+      router.push("/settings/project-labels", { scroll: false })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create label")
+    } finally {
+      setCreating(null)
+    }
+  }
+
+  // Project-label *groups* don't have a dedicated create endpoint in
+  // the clone (Linear's grouping is workspace-only metadata), so the
+  // "+ New group" button surfaces a toast acknowledging the click
+  // instead of silently no-op'ing.
+  const onNewGroup = () => {
+    if (creating) return
+    toast.info("Project-label groups coming soon")
+  }
 
   return (
     <div className="flex max-w-4xl flex-col p-6">
@@ -10653,14 +11033,24 @@ function ProjectLabelsSection() {
           Workspace <HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />
         </button>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 text-sm">
+          <Button
+            variant="outline"
+            size="sm"
+            aria-label="New project label group"
+            onClick={onNewGroup}
+            disabled={creating !== null}
+            className="h-8 text-sm"
+          >
             New group
           </Button>
           <Button
             size="sm"
+            aria-label="New project label"
+            onClick={onNewLabel}
+            disabled={creating !== null}
             className="h-8 bg-violet-600 text-sm text-white hover:bg-violet-700"
           >
-            New label
+            {creating === "label" ? "Creating…" : "New label"}
           </Button>
         </div>
       </div>
@@ -10713,6 +11103,14 @@ function ProjectLabelsSection() {
 }
 
 function ProjectTemplatesSection() {
+  const router = useRouter()
+  // The project-template editor already lives at
+  // `/settings/templates/project/new` (mirroring the Issue / Document
+  // template flows). The empty-state button used to be a no-op; just
+  // route to the editor like the Issue templates page does.
+  const onNewTemplate = () =>
+    router.push("/settings/templates/project/new", { scroll: false })
+
   return (
     <div className="flex max-w-2xl flex-col gap-4 p-6">
       <div>
@@ -10733,7 +11131,13 @@ function ProjectTemplatesSection() {
         <span className="text-muted-foreground text-sm">
           No project templates
         </span>
-        <Button variant="ghost" size="sm" className="gap-1 text-sm font-medium">
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="New project template"
+          onClick={onNewTemplate}
+          className="gap-1 text-sm font-medium"
+        >
           <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" /> New
           template
         </Button>
@@ -12038,8 +12442,9 @@ function PulseSection() {
       <div>
         <h1 className="text-xl font-semibold">Pulse</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Pulse centralizes all your project updates into a single feed. Members
-          can choose to receive summary notifications daily or weekly.
+          Pulse centralizes all your project and initiative updates into a
+          single feed. Members can choose to receive summary notifications daily
+          or weekly.
         </p>
       </div>
 
@@ -12150,7 +12555,6 @@ const EXTERNAL_PROVIDERS: { value: ExternalProvider; label: string }[] = [
 ]
 
 function CustomerRequestsSection() {
-  const router = useRouter()
   const [enabled, setEnabled] = usePersistedState(
     "linear:customerRequests:enabled",
     false
@@ -12162,6 +12566,11 @@ function CustomerRequestsSection() {
   const [teams, setTeams] = useState<{ id: string; name: string }[]>([])
   const [provider, setProvider] = useState<ExternalProvider>("none")
   const [providerPickerOpen, setProviderPickerOpen] = useState(false)
+  // "Manage customers" used to navigate to `/customers`, which doesn't
+  // exist as a workspace route in the clone — so the click 404'd. Real
+  // Linear opens a settings-internal panel from this row; the inline
+  // Dialog below mirrors that contract without inventing a new route.
+  const [manageCustomersOpen, setManageCustomersOpen] = useState(false)
 
   const [statuses, setStatuses] = useState<CustomerRequestItem[]>([
     { id: "s-1", name: "Active", color: "#22c55e", isDefault: true },
@@ -12344,7 +12753,7 @@ function CustomerRequestsSection() {
         {/* Manage customers */}
         <button
           type="button"
-          onClick={() => router.push("/customers")}
+          onClick={() => setManageCustomersOpen(true)}
           aria-label="Manage customers"
           disabled={gated}
           className="bg-card border-border/80 hover:bg-accent/30 focus-visible:ring-primary/50 focus-visible:ring-offset-background flex items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -12394,8 +12803,16 @@ function CustomerRequestsSection() {
                   {/* base-ui Select renders the raw `value` (the team's
                    * id) unless a render fn maps it back to a label.
                    * Resolve through `teams` so the trigger displays
-                   * "Platform" rather than "team-1" after selection. */}
-                  {(v) => teams.find((t) => t.id === (v as string))?.name ?? v}
+                   * "Platform" rather than "team-1" after selection.
+                   * When the value is the empty default — i.e. the user
+                   * hasn't picked a team yet — render the placeholder
+                   * text instead of the empty string the SelectValue
+                   * placeholder prop would otherwise be eclipsed by. */}
+                  {(v) => {
+                    const id = (v as string) ?? ""
+                    if (id === "") return "Select a team"
+                    return teams.find((t) => t.id === id)?.name ?? id
+                  }}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -12714,6 +13131,34 @@ function CustomerRequestsSection() {
             <Button
               variant="outline"
               onClick={() => setProviderPickerOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage customers — settings-internal panel. The clone has no
+       * `/customers` route; this Dialog mirrors what real Linear shows
+       * when there are no customers to manage yet. */}
+      <Dialog open={manageCustomersOpen} onOpenChange={setManageCustomersOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage customers</DialogTitle>
+            <DialogDescription>
+              Manage your list of customers and their requests.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-muted/30 text-muted-foreground flex flex-col items-center justify-center gap-1 rounded-md border border-dashed px-4 py-10 text-center text-sm">
+            <span>No customers</span>
+            <span className="text-muted-foreground/70 text-xs">
+              Customers added here will appear in the table.
+            </span>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setManageCustomersOpen(false)}
             >
               Close
             </Button>
@@ -13219,12 +13664,17 @@ function AsksSection() {
           </div>
         )}
         {!loading && planData.plan === "trial" && (
+          // Mirror the SLAs trial banner — same role, same primary-tinted
+          // surface, same "Trial active" header — so the trial UX reads
+          // identically across every Business-gated page (SLAs, Asks,
+          // AI & Agents). Round-9 of QA flagged the inconsistency that
+          // each page had its own visual treatment for trial state.
           <div
             role="status"
-            className="bg-card flex items-center justify-between rounded-lg border px-4 py-3"
+            className="border-primary/40 bg-primary/10 flex items-center justify-between rounded-lg border px-4 py-3"
           >
             <div>
-              <div className="text-sm font-medium">Business trial active</div>
+              <div className="text-sm font-medium">Trial active</div>
               <div className="text-muted-foreground text-xs">
                 {planData.trialDaysRemaining ?? 30} days remaining — Asks intake
                 is fully available.

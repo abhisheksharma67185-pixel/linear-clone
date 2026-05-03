@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import type { Label as LabelType } from "@/app/lib/mock-data"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,12 +86,25 @@ function ProjectLabelsInner() {
   } | null>(null)
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  // Mirror IssueLabelsSection's loading gate so a fresh visit doesn't
+  // flash "No labels yet — create one to get started" for the few
+  // hundred ms /api/data/project-labels takes to round-trip.
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
     fetch("/api/data/project-labels")
       .then((r) => r.json())
-      .then(setLabels)
+      .then((data: LabelType[]) => {
+        if (!cancelled) setLabels(data)
+      })
       .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const setParam = useCallback(
@@ -573,7 +587,27 @@ function ProjectLabelsInner() {
         )
       })}
 
-      {showEmpty && <EmptyState scope={scope} filter={filter} />}
+      {/* Skeleton rows while /api/data/project-labels is in flight —
+          replaces the empty-state copy until the fetch settles. */}
+      {loading && (
+        <>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className={`${gridCols} items-center border-b px-2 py-3 last:border-b-0`}
+            >
+              <div />
+              <Skeleton className="size-2.5 rounded-full" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-3 w-16" />
+              <div />
+            </div>
+          ))}
+        </>
+      )}
+
+      {!loading && showEmpty && <EmptyState scope={scope} filter={filter} />}
     </div>
   )
 }
