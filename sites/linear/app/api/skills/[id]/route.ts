@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
 import { updateSkill, deleteSkill } from "@/lib/agent-mocks"
+import { route } from "@/app/lib/route"
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type Ctx = { params: Promise<{ id: string }> }
+
+export const PATCH = route<Ctx>(async (request, { params }) => {
   const { id } = await params
   let body: {
     name?: string
@@ -22,15 +22,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Skill not found" }, { status: 404 })
   }
   return NextResponse.json(skill)
-}
+})
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = route<Ctx>(async (_request, { params }) => {
   const { id } = await params
   if (!deleteSkill(id)) {
     return NextResponse.json({ error: "Skill not found" }, { status: 404 })
   }
   return NextResponse.json({ deleted: true })
-}
+})

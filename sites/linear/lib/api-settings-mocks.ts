@@ -1,34 +1,12 @@
 // In-memory mocks for the API settings page (OAuth applications + webhooks).
+// State now lives on the per-session LinearStoreState; this is a thin facade.
 
-export type OAuthApp = {
-  id: string
-  name: string
-  description: string
-  redirectUris: string[]
-  scopes: string[]
-  iconDataUrl: string | null
-  clientId: string
-  clientSecret: string
-  createdAt: string
-}
+import { _state } from "@/app/lib/session"
+import type { OAuthApp, Webhook, WebhookResource } from "@/app/lib/state"
 
-export type WebhookResource =
-  | "issues"
-  | "comments"
-  | "projects"
-  | "cycles"
-  | "labels"
-  | "reactions"
-  | "initiatives"
-  | "documents"
-  | "customer-requests"
-  | "issue-attachments"
-  | "project-updates"
+export type { OAuthApp, Webhook, WebhookResource }
 
-export const WEBHOOK_RESOURCES: {
-  value: WebhookResource
-  label: string
-}[] = [
+export const WEBHOOK_RESOURCES: { value: WebhookResource; label: string }[] = [
   { value: "issues", label: "Issues" },
   { value: "comments", label: "Comments" },
   { value: "projects", label: "Projects" },
@@ -51,7 +29,45 @@ export const OAUTH_SCOPES = [
 ] as const
 export type OAuthScope = (typeof OAUTH_SCOPES)[number]
 
-// Cryptographically-random secret, base64 encoded (~32 bytes of entropy).
+type Result<T> = { success: true; data: T } | { success: false; error: string }
+
+const now = () => new Date().toISOString()
+
+// ---------------------------------------------------------------------------
+// Array proxies — same trick as agent-mocks: every read goes through _state(),
+// so consumers that hold the export reference still see the active session.
+// ---------------------------------------------------------------------------
+
+function arrayProxy<T>(getArr: () => T[]): T[] {
+  return new Proxy([] as T[], {
+    get(_t, prop) {
+      const arr = getArr()
+      const value = (arr as unknown as Record<string | symbol, unknown>)[prop]
+      return typeof value === "function"
+        ? (value as (...a: unknown[]) => unknown).bind(arr)
+        : value
+    },
+    set(_t, prop, value) {
+      const arr = getArr() as unknown as Record<string | symbol, unknown>
+      arr[prop] = value
+      return true
+    },
+    has(_t, prop) {
+      return prop in getArr()
+    },
+    ownKeys: () => Object.keys(getArr()),
+    getOwnPropertyDescriptor: (_t, prop) =>
+      Object.getOwnPropertyDescriptor(getArr(), prop),
+  })
+}
+
+export const oauthApps: OAuthApp[] = arrayProxy(() => _state().oauthApps)
+export const webhooks: Webhook[] = arrayProxy(() => _state().webhooks)
+
+// ---------------------------------------------------------------------------
+// Secret + client-id generation
+// ---------------------------------------------------------------------------
+
 export function generateSecret(): string {
   const bytes = new Uint8Array(32)
   if (typeof crypto !== "undefined" && crypto.getRandomValues) {
@@ -63,7 +79,6 @@ export function generateSecret(): string {
   let binary = ""
   for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
   if (typeof btoa === "function") return btoa(binary)
-  // Node.js fallback (test environment)
   return Buffer.from(bytes).toString("base64")
 }
 
@@ -72,33 +87,6 @@ function generateClientId(): string {
     .toString(36)
     .slice(2, 10)}`
 }
-
-export type Webhook = {
-  id: string
-  url: string
-  resources: WebhookResource[]
-  teamId: string | null
-  secret: string
-  createdAt: string
-}
-
-// Store the arrays on `globalThis` so they survive Next.js dev's per-route
-// module re-evaluation. Without this, the list and [id] routes can end up
-// with separate module instances and appear to "lose" records between calls.
-type Global = typeof globalThis & {
-  __linearMock_oauthApps?: OAuthApp[]
-  __linearMock_webhooks?: Webhook[]
-}
-const g = globalThis as Global
-if (!g.__linearMock_oauthApps) g.__linearMock_oauthApps = []
-if (!g.__linearMock_webhooks) g.__linearMock_webhooks = []
-
-export const oauthApps: OAuthApp[] = g.__linearMock_oauthApps
-export const webhooks: Webhook[] = g.__linearMock_webhooks
-
-type Result<T> = { success: true; data: T } | { success: false; error: string }
-
-const now = () => new Date().toISOString()
 
 // ---------------------------------------------------------------------------
 // OAuth apps
@@ -178,12 +166,12 @@ export function createOAuthApp(input: CreateOAuthAppInput): Result<OAuthApp> {
     clientSecret: generateSecret(),
     createdAt: now(),
   }
-  oauthApps.push(app)
+  _state().oauthApps.push(app)
   return { success: true, data: app }
 }
 
 export function rotateOAuthClientSecret(id: string): Result<OAuthApp> {
-  const app = oauthApps.find((a) => a.id === id)
+  const app = _state().oauthApps.find((a) => a.id === id)
   if (!app) return { success: false, error: "OAuth app not found" }
   app.clientSecret = generateSecret()
   return { success: true, data: app }
@@ -199,7 +187,7 @@ export function updateOAuthApp(
     iconDataUrl?: string | null
   }
 ): Result<OAuthApp> {
-  const app = oauthApps.find((a) => a.id === id)
+  const app = _state().oauthApps.find((a) => a.id === id)
   if (!app) return { success: false, error: "OAuth app not found" }
   if (patch.name !== undefined) {
     if (patch.name.trim().length === 0) {
@@ -233,9 +221,10 @@ export function updateOAuthApp(
 }
 
 export function deleteOAuthApp(id: string): Result<{ id: string }> {
-  const idx = oauthApps.findIndex((a) => a.id === id)
+  const arr = _state().oauthApps
+  const idx = arr.findIndex((a) => a.id === id)
   if (idx === -1) return { success: false, error: "OAuth app not found" }
-  oauthApps.splice(idx, 1)
+  arr.splice(idx, 1)
   return { success: true, data: { id } }
 }
 
@@ -296,12 +285,12 @@ export function createWebhook(input: CreateWebhookInput): Result<Webhook> {
     secret,
     createdAt: now(),
   }
-  webhooks.push(webhook)
+  _state().webhooks.push(webhook)
   return { success: true, data: webhook }
 }
 
 export function rotateWebhookSecret(id: string): Result<Webhook> {
-  const webhook = webhooks.find((w) => w.id === id)
+  const webhook = _state().webhooks.find((w) => w.id === id)
   if (!webhook) return { success: false, error: "Webhook not found" }
   webhook.secret = generateSecret()
   return { success: true, data: webhook }
@@ -316,7 +305,7 @@ export function updateWebhook(
     secret?: string
   }
 ): Result<Webhook> {
-  const webhook = webhooks.find((w) => w.id === id)
+  const webhook = _state().webhooks.find((w) => w.id === id)
   if (!webhook) return { success: false, error: "Webhook not found" }
   if (patch.url !== undefined) {
     const url = validateWebhookUrl(patch.url)
@@ -341,8 +330,9 @@ export function updateWebhook(
 }
 
 export function deleteWebhook(id: string): Result<{ id: string }> {
-  const idx = webhooks.findIndex((w) => w.id === id)
+  const arr = _state().webhooks
+  const idx = arr.findIndex((w) => w.id === id)
   if (idx === -1) return { success: false, error: "Webhook not found" }
-  webhooks.splice(idx, 1)
+  arr.splice(idx, 1)
   return { success: true, data: { id } }
 }

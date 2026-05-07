@@ -1,17 +1,37 @@
-// In-memory mock store for Document templates (settings → Documents).
+// In-memory mock store for Document templates.
+// State now lives on the per-session LinearStoreState; this is a thin facade.
 
-export type DocumentTemplate = {
-  id: string
-  name: string
-  iconName: string // "document", "book", "pencil", "sparkle", "folder"
-  body: string // rich-text body stored as plain text for the prototype
-  createdAt: string
-  updatedAt: string
-}
+import { _state } from "@/app/lib/session"
+import type { DocumentTemplate } from "@/app/lib/state"
+
+export type { DocumentTemplate }
 
 const now = () => new Date().toISOString()
 
-export const documentTemplates: DocumentTemplate[] = []
+function arrayProxy<T>(getArr: () => T[]): T[] {
+  return new Proxy([] as T[], {
+    get(_t, prop) {
+      const arr = getArr()
+      const value = (arr as unknown as Record<string | symbol, unknown>)[prop]
+      return typeof value === "function"
+        ? (value as (...a: unknown[]) => unknown).bind(arr)
+        : value
+    },
+    set(_t, prop, value) {
+      const arr = getArr() as unknown as Record<string | symbol, unknown>
+      arr[prop] = value
+      return true
+    },
+    has: (_t, prop) => prop in getArr(),
+    ownKeys: () => Object.keys(getArr()),
+    getOwnPropertyDescriptor: (_t, prop) =>
+      Object.getOwnPropertyDescriptor(getArr(), prop),
+  })
+}
+
+export const documentTemplates: DocumentTemplate[] = arrayProxy(
+  () => _state().documentTemplates
+)
 
 export function createDocumentTemplate(input: {
   name?: string
@@ -30,7 +50,7 @@ export function createDocumentTemplate(input: {
     createdAt: t,
     updatedAt: t,
   }
-  documentTemplates.push(template)
+  _state().documentTemplates.push(template)
   return { success: true as const, data: template }
 }
 
@@ -38,7 +58,7 @@ export function updateDocumentTemplate(
   id: string,
   patch: Partial<Omit<DocumentTemplate, "id" | "createdAt">>
 ) {
-  const t = documentTemplates.find((x) => x.id === id)
+  const t = _state().documentTemplates.find((x) => x.id === id)
   if (!t) return { success: false as const, error: "Template not found" }
   if (patch.name !== undefined) {
     if (!patch.name.trim())
@@ -52,8 +72,9 @@ export function updateDocumentTemplate(
 }
 
 export function deleteDocumentTemplate(id: string) {
-  const idx = documentTemplates.findIndex((t) => t.id === id)
+  const arr = _state().documentTemplates
+  const idx = arr.findIndex((t) => t.id === id)
   if (idx === -1) return { success: false as const, error: "Not found" }
-  documentTemplates.splice(idx, 1)
+  arr.splice(idx, 1)
   return { success: true as const, data: { id } }
 }

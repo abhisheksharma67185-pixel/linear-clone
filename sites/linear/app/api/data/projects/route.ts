@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import * as store from "../../../lib/store"
+import { route } from "../../../lib/route"
 
-export async function GET() {
+export const GET = route(async () => {
   return NextResponse.json(store.getProjects())
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = route(async (request) => {
   let fields
   try {
     fields = await request.json()
@@ -20,4 +21,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: 400 })
   }
   return NextResponse.json(result.data, { status: 201 })
-}
+})

@@ -1,58 +1,46 @@
 // In-memory mock store for the Issue templates settings page.
+// State now lives on the per-session LinearStoreState; this is a thin facade.
 
-export type TemplateType = "standard" | "custom-form"
+import { _state } from "@/app/lib/session"
+import type {
+  CustomFormField,
+  IssueTemplate,
+  TemplateDefaults,
+  TemplateType,
+} from "@/app/lib/state"
 
-export type TemplateDefaults = {
-  teamId: string | null
-  priority: "none" | "low" | "medium" | "high" | "urgent"
-  assigneeId: string | null
-  projectId: string | null
-  labelIds: string[]
-  status?: string | null
-  estimate?: number | null
-  cycleId?: string | null
-  dueDate?: string | null
-  parentId?: string | null
-}
-
-export type CustomFormField = {
-  id: string
-  kind:
-    | "text"
-    | "textarea"
-    | "select"
-    | "multi-select"
-    | "number"
-    | "date"
-    | "toggle"
-  label: string
-  placeholder: string
-  required: boolean
-  options: string[] // used for select / multi-select
-}
-
-export type IssueTemplate = {
-  id: string
-  type: TemplateType
-  name: string
-  description: string
-  issueTitle: string
-  issueBody: string
-  defaults: TemplateDefaults
-  fields: CustomFormField[] // populated for custom-form templates
-  order: number
-  createdAt: string
-  updatedAt: string
-}
+export type { CustomFormField, IssueTemplate, TemplateDefaults, TemplateType }
 
 const now = () => new Date().toISOString()
 
-export const templates: IssueTemplate[] = []
+function arrayProxy<T>(getArr: () => T[]): T[] {
+  return new Proxy([] as T[], {
+    get(_t, prop) {
+      const arr = getArr()
+      const value = (arr as unknown as Record<string | symbol, unknown>)[prop]
+      return typeof value === "function"
+        ? (value as (...a: unknown[]) => unknown).bind(arr)
+        : value
+    },
+    set(_t, prop, value) {
+      const arr = getArr() as unknown as Record<string | symbol, unknown>
+      arr[prop] = value
+      return true
+    },
+    has: (_t, prop) => prop in getArr(),
+    ownKeys: () => Object.keys(getArr()),
+    getOwnPropertyDescriptor: (_t, prop) =>
+      Object.getOwnPropertyDescriptor(getArr(), prop),
+  })
+}
+
+export const templates: IssueTemplate[] = arrayProxy(
+  () => _state().issueTemplates
+)
 
 function nextOrder(): number {
-  return templates.length === 0
-    ? 0
-    : Math.max(...templates.map((t) => t.order)) + 1
+  const arr = _state().issueTemplates
+  return arr.length === 0 ? 0 : Math.max(...arr.map((t) => t.order)) + 1
 }
 
 export function createTemplate(
@@ -89,7 +77,7 @@ export function createTemplate(
     createdAt: t,
     updatedAt: t,
   }
-  templates.push(template)
+  _state().issueTemplates.push(template)
   return { success: true, data: template }
 }
 
@@ -97,7 +85,7 @@ export function updateTemplate(
   id: string,
   patch: Partial<Omit<IssueTemplate, "id" | "createdAt" | "type">>
 ): { success: true; data: IssueTemplate } | { success: false; error: string } {
-  const t = templates.find((x) => x.id === id)
+  const t = _state().issueTemplates.find((x) => x.id === id)
   if (!t) return { success: false, error: "Template not found" }
   if (patch.name !== undefined) {
     if (!patch.name.trim())
@@ -116,14 +104,16 @@ export function updateTemplate(
 }
 
 export function deleteTemplate(id: string) {
-  const idx = templates.findIndex((t) => t.id === id)
+  const arr = _state().issueTemplates
+  const idx = arr.findIndex((t) => t.id === id)
   if (idx === -1) return { success: false as const, error: "Not found" }
-  templates.splice(idx, 1)
+  arr.splice(idx, 1)
   return { success: true as const, data: { id } }
 }
 
 export function duplicateTemplate(id: string) {
-  const src = templates.find((t) => t.id === id)
+  const arr = _state().issueTemplates
+  const src = arr.find((t) => t.id === id)
   if (!src) return { success: false as const, error: "Not found" }
   const copy: IssueTemplate = {
     ...src,
@@ -133,6 +123,6 @@ export function duplicateTemplate(id: string) {
     createdAt: now(),
     updatedAt: now(),
   }
-  templates.push(copy)
+  arr.push(copy)
   return { success: true as const, data: copy }
 }

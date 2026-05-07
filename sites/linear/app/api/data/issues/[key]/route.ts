@@ -1,22 +1,19 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import * as store from "../../../../lib/store"
+import { route } from "../../../../lib/route"
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ key: string }> }
-) {
+type Ctx = { params: Promise<{ key: string }> }
+
+export const GET = route<Ctx>(async (_request, { params }) => {
   const { key } = await params
   const issue = store.getIssueByIdentifier(key) ?? store.getIssueById(key)
   if (!issue) {
     return NextResponse.json({ error: "Issue not found" }, { status: 404 })
   }
   return NextResponse.json(issue)
-}
+})
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ key: string }> }
-) {
+export const PUT = route<Ctx>(async (request, { params }) => {
   const { key } = await params
   const existing = store.getIssueByIdentifier(key) ?? store.getIssueById(key)
   if (!existing) {
@@ -39,12 +36,9 @@ export async function PUT(
     return NextResponse.json({ error: result.error }, { status: 400 })
   }
   return NextResponse.json(result.data)
-}
+})
 
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: Promise<{ key: string }> }
-) {
+export const DELETE = route<Ctx>(async (_request, { params }) => {
   const { key } = await params
   const existing = store.getIssueByIdentifier(key) ?? store.getIssueById(key)
   if (!existing) {
@@ -57,4 +51,4 @@ export async function DELETE(
     return NextResponse.json({ error: result.error }, { status: 404 })
   }
   return NextResponse.json({ deleted: true })
-}
+})

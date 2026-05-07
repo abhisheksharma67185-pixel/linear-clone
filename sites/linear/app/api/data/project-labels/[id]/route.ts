@@ -1,22 +1,19 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import * as store from "../../../../lib/store"
+import { route } from "../../../../lib/route"
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type Ctx = { params: Promise<{ id: string }> }
+
+export const GET = route<Ctx>(async (_request, { params }) => {
   const { id } = await params
   const label = store.getProjectLabelById(id)
   if (!label) {
     return NextResponse.json({ error: "Label not found" }, { status: 404 })
   }
   return NextResponse.json(label)
-}
+})
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const PUT = route<Ctx>(async (request, { params }) => {
   const { id } = await params
   let fields
   try {
@@ -32,23 +29,15 @@ export async function PUT(
     return NextResponse.json({ error: result.error }, { status: 400 })
   }
   return NextResponse.json(result.data)
-}
+})
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  return PUT(request, { params })
-}
+export const PATCH = PUT
 
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = route<Ctx>(async (_request, { params }) => {
   const { id } = await params
   const result = store.deleteProjectLabel(id)
   if (!result.success) {
     return NextResponse.json({ error: result.error }, { status: 404 })
   }
   return NextResponse.json(result.data)
-}
+})

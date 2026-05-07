@@ -1,60 +1,77 @@
 // In-memory mock store for the Security & access page demo.
-// State resets on server restart; that's acceptable for a prototype.
+// State now lives on the per-session LinearStoreState; this is a thin facade.
 
-export type Session = {
-  id: string
-  userAgent: string
-  city: string
-  countryCode: string
-  isCurrent: boolean
-  lastSeenAt: string
-}
+import { _state } from "@/app/lib/session"
+import type {
+  Session,
+  Passkey,
+  ApiKey,
+  IntegrationState,
+  IntegrationStatus,
+} from "@/app/lib/state"
 
-export type Passkey = {
-  id: string
-  name: string
-  createdAt: string
-}
-
-export type ApiKey = {
-  id: string
-  name: string
-  token: string
-  lastFour: string
-  expiresAt: string | null
-  createdAt: string
-}
+export type { Session, Passkey, ApiKey, IntegrationState, IntegrationStatus }
 
 const now = () => new Date().toISOString()
 
-export const sessions: Session[] = [
-  {
-    id: "sess_current",
-    userAgent:
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    city: "San Francisco",
-    countryCode: "US",
-    isCurrent: true,
-    lastSeenAt: now(),
-  },
-  {
-    id: "sess_mobile",
-    userAgent:
-      "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-    city: "San Francisco",
-    countryCode: "US",
-    isCurrent: false,
-    lastSeenAt: "2026-04-22T08:14:00Z",
-  },
-]
+function arrayProxy<T>(getArr: () => T[]): T[] {
+  return new Proxy([] as T[], {
+    get(_t, prop) {
+      const arr = getArr()
+      const value = (arr as unknown as Record<string | symbol, unknown>)[prop]
+      return typeof value === "function"
+        ? (value as (...a: unknown[]) => unknown).bind(arr)
+        : value
+    },
+    set(_t, prop, value) {
+      const arr = getArr() as unknown as Record<string | symbol, unknown>
+      arr[prop] = value
+      return true
+    },
+    has: (_t, prop) => prop in getArr(),
+    ownKeys: () => Object.keys(getArr()),
+    getOwnPropertyDescriptor: (_t, prop) =>
+      Object.getOwnPropertyDescriptor(getArr(), prop),
+  })
+}
 
-export const passkeys: Passkey[] = []
-export const apiKeys: ApiKey[] = []
+export const sessions: Session[] = arrayProxy(() => _state().sessions)
+export const passkeys: Passkey[] = arrayProxy(() => _state().passkeys)
+export const apiKeys: ApiKey[] = arrayProxy(() => _state().apiKeys)
+
+// `integrations` is exposed as a Record<string, IntegrationState>. Like
+// `workspace`, we expose it as a Proxy so direct property access targets the
+// live session.
+export const integrations: Record<string, IntegrationState> = new Proxy(
+  {} as Record<string, IntegrationState>,
+  {
+    get: (_t, prop) =>
+      (_state().integrations as Record<string | symbol, unknown>)[prop],
+    set: (_t, prop, value) => {
+      const map = _state().integrations as unknown as Record<
+        string | symbol,
+        unknown
+      >
+      map[prop] = value
+      return true
+    },
+    has: (_t, prop) => prop in _state().integrations,
+    ownKeys: () => Object.keys(_state().integrations),
+    getOwnPropertyDescriptor: (_t, prop) =>
+      Object.getOwnPropertyDescriptor(_state().integrations, prop),
+    deleteProperty: (_t, prop) => {
+      const map = _state().integrations as Record<string, IntegrationState>
+      delete map[prop as string]
+      return true
+    },
+  }
+)
 
 export function deleteSession(id: string): boolean {
-  const idx = sessions.findIndex((s) => s.id === id)
+  const arr = _state().sessions
+  const idx = arr.findIndex((s) => s.id === id)
   if (idx === -1) return false
-  sessions.splice(idx, 1)
+  arr.splice(idx, 1)
   return true
 }
 
@@ -64,19 +81,19 @@ export function addPasskey(name: string): Passkey {
     name,
     createdAt: now(),
   }
-  passkeys.push(pk)
+  _state().passkeys.push(pk)
   return pk
 }
 
 export function deletePasskey(id: string): boolean {
-  const idx = passkeys.findIndex((p) => p.id === id)
+  const arr = _state().passkeys
+  const idx = arr.findIndex((p) => p.id === id)
   if (idx === -1) return false
-  passkeys.splice(idx, 1)
+  arr.splice(idx, 1)
   return true
 }
 
 export function addApiKey(name: string, expiresAt: string | null): ApiKey {
-  // Generate a realistic-looking token: lin_api_<40 hex chars>
   const rand = Array.from({ length: 40 }, () =>
     Math.floor(Math.random() * 16).toString(16)
   ).join("")
@@ -89,57 +106,21 @@ export function addApiKey(name: string, expiresAt: string | null): ApiKey {
     expiresAt,
     createdAt: now(),
   }
-  apiKeys.push(key)
+  _state().apiKeys.push(key)
   return key
 }
 
 export function deleteApiKey(id: string): boolean {
-  const idx = apiKeys.findIndex((k) => k.id === id)
+  const arr = _state().apiKeys
+  const idx = arr.findIndex((k) => k.id === id)
   if (idx === -1) return false
-  apiKeys.splice(idx, 1)
+  arr.splice(idx, 1)
   return true
 }
 
-// Personal connected accounts / integrations.
-
-export type IntegrationStatus = "disconnected" | "connected"
-
-export type IntegrationState = {
-  provider: string
-  status: IntegrationStatus
-  accountHandle: string | null
-  connectedAt: string | null
-}
-
-export const integrations: Record<string, IntegrationState> = {
-  slack: {
-    provider: "slack",
-    status: "disconnected",
-    accountHandle: null,
-    connectedAt: null,
-  },
-  github: {
-    provider: "github",
-    status: "disconnected",
-    accountHandle: null,
-    connectedAt: null,
-  },
-  gcal: {
-    provider: "gcal",
-    status: "disconnected",
-    accountHandle: null,
-    connectedAt: null,
-  },
-  notion: {
-    provider: "notion",
-    status: "disconnected",
-    accountHandle: null,
-    connectedAt: null,
-  },
-}
-
 export function disconnectIntegration(provider: string): boolean {
-  const current = integrations[provider]
+  const map = _state().integrations
+  const current = map[provider]
   if (!current) return false
   current.status = "disconnected"
   current.accountHandle = null

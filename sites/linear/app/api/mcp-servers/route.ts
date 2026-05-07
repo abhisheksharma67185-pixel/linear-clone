@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server"
 import { mcpServers, createMcpServer } from "@/lib/agent-mocks"
+import { route } from "@/app/lib/route"
 
-export async function GET() {
+export const GET = route(async () => {
   return NextResponse.json(mcpServers)
-}
+})
 
-export async function POST(request: Request) {
+export const POST = route(async (request) => {
   let body: { name?: string; url?: string; authToken?: string }
   try {
     body = await request.json()
@@ -24,4 +25,4 @@ export async function POST(request: Request) {
     authToken: body.authToken,
   })
   return NextResponse.json(server, { status: 201 })
-}
+})

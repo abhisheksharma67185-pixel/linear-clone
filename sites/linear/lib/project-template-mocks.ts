@@ -1,48 +1,53 @@
 // In-memory mock store for the Project templates settings page.
+// State now lives on the per-session LinearStoreState; this is a thin facade.
 
-export type ProjectTemplateVisibility = "private" | "workspace"
-export type ProjectTemplateScope = "workspace" | "team"
+import { _state } from "@/app/lib/session"
+import type {
+  ProjectTemplate,
+  ProjectTemplateAttributes,
+  ProjectTemplateScope,
+  ProjectTemplateVisibility,
+  ProjectMilestone,
+} from "@/app/lib/state"
 
-export type ProjectMilestone = {
-  id: string
-  name: string
-}
-
-export type ProjectTemplateAttributes = {
-  status: string // e.g. "backlog"
-  priority: "none" | "low" | "medium" | "high" | "urgent"
-  leadId: string | null
-  memberIds: string[]
-  teamId: string | null
-  labelIds: string[]
-  dependencies: string[] // simple free-text placeholders for the prototype
-  issuesSeed: number // 0..N — prefilled issues
-}
-
-export type ProjectTemplate = {
-  id: string
-  name: string
-  iconName: string // e.g. "cube", "rocket", "target"
-  projectName: string
-  summary: string
-  description: string
-  attributes: ProjectTemplateAttributes
-  milestones: ProjectMilestone[]
-  visibility: ProjectTemplateVisibility
-  scope: ProjectTemplateScope
-  order: number
-  createdAt: string
-  updatedAt: string
+export type {
+  ProjectTemplate,
+  ProjectTemplateAttributes,
+  ProjectTemplateScope,
+  ProjectTemplateVisibility,
+  ProjectMilestone,
 }
 
 const now = () => new Date().toISOString()
 
-export const projectTemplates: ProjectTemplate[] = []
+function arrayProxy<T>(getArr: () => T[]): T[] {
+  return new Proxy([] as T[], {
+    get(_t, prop) {
+      const arr = getArr()
+      const value = (arr as unknown as Record<string | symbol, unknown>)[prop]
+      return typeof value === "function"
+        ? (value as (...a: unknown[]) => unknown).bind(arr)
+        : value
+    },
+    set(_t, prop, value) {
+      const arr = getArr() as unknown as Record<string | symbol, unknown>
+      arr[prop] = value
+      return true
+    },
+    has: (_t, prop) => prop in getArr(),
+    ownKeys: () => Object.keys(getArr()),
+    getOwnPropertyDescriptor: (_t, prop) =>
+      Object.getOwnPropertyDescriptor(getArr(), prop),
+  })
+}
+
+export const projectTemplates: ProjectTemplate[] = arrayProxy(
+  () => _state().projectTemplates
+)
 
 function nextOrder(): number {
-  return projectTemplates.length === 0
-    ? 0
-    : Math.max(...projectTemplates.map((t) => t.order)) + 1
+  const arr = _state().projectTemplates
+  return arr.length === 0 ? 0 : Math.max(...arr.map((t) => t.order)) + 1
 }
 
 function defaults(): Omit<
@@ -95,7 +100,7 @@ export function createProjectTemplate(
     createdAt: t,
     updatedAt: t,
   }
-  projectTemplates.push(template)
+  _state().projectTemplates.push(template)
   return { success: true as const, data: template }
 }
 
@@ -103,7 +108,7 @@ export function updateProjectTemplate(
   id: string,
   patch: Partial<Omit<ProjectTemplate, "id" | "createdAt">>
 ) {
-  const t = projectTemplates.find((x) => x.id === id)
+  const t = _state().projectTemplates.find((x) => x.id === id)
   if (!t) return { success: false as const, error: "Template not found" }
   if (patch.name !== undefined) {
     if (!patch.name.trim())
@@ -125,14 +130,16 @@ export function updateProjectTemplate(
 }
 
 export function deleteProjectTemplate(id: string) {
-  const idx = projectTemplates.findIndex((t) => t.id === id)
+  const arr = _state().projectTemplates
+  const idx = arr.findIndex((t) => t.id === id)
   if (idx === -1) return { success: false as const, error: "Not found" }
-  projectTemplates.splice(idx, 1)
+  arr.splice(idx, 1)
   return { success: true as const, data: { id } }
 }
 
 export function duplicateProjectTemplate(id: string) {
-  const src = projectTemplates.find((t) => t.id === id)
+  const arr = _state().projectTemplates
+  const src = arr.find((t) => t.id === id)
   if (!src) return { success: false as const, error: "Not found" }
   const copy: ProjectTemplate = {
     ...src,
@@ -142,6 +149,6 @@ export function duplicateProjectTemplate(id: string) {
     createdAt: now(),
     updatedAt: now(),
   }
-  projectTemplates.push(copy)
+  arr.push(copy)
   return { success: true as const, data: copy }
 }

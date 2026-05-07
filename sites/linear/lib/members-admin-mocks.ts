@@ -1,58 +1,35 @@
 // Admin-only view state for the Members settings page.
-// Layers on top of the shared member store (app/lib/store.ts + mock-data.ts)
-// to add workspace-level concerns that don't belong on the core Member type:
-// lifecycle status, invitations, suspension, "last seen", and application bots.
+// State now lives on the per-session LinearStoreState (see app/lib/state.ts);
+// this module is a thin facade preserving the original public shape.
 
 import type { Member } from "@/app/lib/mock-data"
+import { _state } from "@/app/lib/session"
+import type { MemberRole, MemberStatus, ExtraMember } from "@/app/lib/state"
 
-export type MemberRole = "admin" | "member" | "guest"
-export type MemberStatus = "active" | "invited" | "suspended" | "application"
+export type { MemberRole, MemberStatus }
 
-// Shadow state — keeps base member data untouched while letting the page
-// change roles, suspend/resend, etc.
-const _roleOverrides = new Map<string, MemberRole>()
-const _statusOverrides = new Map<string, MemberStatus>()
-const _lastSeenOverrides = new Map<string, string | null>()
-
-// Synthetic records (invites + application bots) live outside the base list.
-type ExtraMember = {
-  id: string
-  name: string
-  email: string
-  avatar: string
-  role: MemberRole
-  status: MemberStatus
-  joinedAt: string
-  lastSeenAt: string | null
-  username: string
-  teamCount?: number
-}
-
-const _extras: ExtraMember[] = []
-
-let _seeded = false
+type Result<T> = { success: true; data: T } | { success: false; error: string }
 
 function now(): string {
   return new Date().toISOString()
 }
 
 export function resetMembersAdminState(): void {
-  _roleOverrides.clear()
-  _statusOverrides.clear()
-  _lastSeenOverrides.clear()
-  _extras.length = 0
-  _seeded = false
+  const m = _state().membersAdmin
+  m.roleOverrides.clear()
+  m.statusOverrides.clear()
+  m.lastSeenOverrides.clear()
+  m.extras.length = 0
+  m.seeded = false
 }
 
 // ---------------------------------------------------------------------------
-// Seed realistic data on first read. Members are pinned by id so the
-// assignment is deterministic across reloads.
+// Default seed data (re-applied on first read of each fresh session)
 // ---------------------------------------------------------------------------
 
 const DEFAULT_ROLE: Record<string, MemberRole> = {
   "usr-1": "admin",
   "usr-2": "admin",
-  // usr-3..usr-13 → members
   "usr-14": "guest",
   "usr-15": "guest",
 }
@@ -66,7 +43,7 @@ function daysAgo(d: number): string {
 }
 
 const DEFAULT_LAST_SEEN: Record<string, string | null> = {
-  "usr-1": hoursAgo(0.02), // ~1 min ago → Online
+  "usr-1": hoursAgo(0.02),
   "usr-2": hoursAgo(2),
   "usr-3": hoursAgo(0.02),
   "usr-4": daysAgo(1),
@@ -76,7 +53,7 @@ const DEFAULT_LAST_SEEN: Record<string, string | null> = {
   "usr-8": daysAgo(7),
   "usr-9": daysAgo(14),
   "usr-10": daysAgo(2),
-  "usr-11": null, // Never
+  "usr-11": null,
   "usr-12": daysAgo(30),
   "usr-13": hoursAgo(18),
   "usr-14": hoursAgo(0.03),
@@ -89,10 +66,10 @@ const DEFAULT_STATUS: Record<string, MemberStatus> = {
 }
 
 function seed(): void {
-  if (_seeded) return
-  _seeded = true
-  // A single Application bot to satisfy the spec.
-  _extras.push({
+  const m = _state().membersAdmin
+  if (m.seeded) return
+  m.seeded = true
+  m.extras.push({
     id: "app-linear",
     name: "Linear",
     email: "linear@theta.internal",
@@ -130,34 +107,35 @@ export function summarizeMembers(args: {
   teamMemberIdsByMember: Record<string, number>
 }): MemberSummary[] {
   seed()
+  const m = _state().membersAdmin
 
-  const baseSummaries: MemberSummary[] = args.members.map((m) => {
+  const baseSummaries: MemberSummary[] = args.members.map((member) => {
     const role: MemberRole =
-      _roleOverrides.get(m.id) ?? DEFAULT_ROLE[m.id] ?? "member"
+      m.roleOverrides.get(member.id) ?? DEFAULT_ROLE[member.id] ?? "member"
     const status: MemberStatus =
-      _statusOverrides.get(m.id) ?? DEFAULT_STATUS[m.id] ?? "active"
-    const lastSeenAt = _lastSeenOverrides.has(m.id)
-      ? (_lastSeenOverrides.get(m.id) ?? null)
-      : (DEFAULT_LAST_SEEN[m.id] ?? null)
+      m.statusOverrides.get(member.id) ?? DEFAULT_STATUS[member.id] ?? "active"
+    const lastSeenAt = m.lastSeenOverrides.has(member.id)
+      ? (m.lastSeenOverrides.get(member.id) ?? null)
+      : (DEFAULT_LAST_SEEN[member.id] ?? null)
     const joinedAt = "2025-09-01T09:00:00.000Z"
-    const username = m.email.split("@")[0].toLowerCase()
+    const username = member.email.split("@")[0].toLowerCase()
     return {
-      id: m.id,
-      name: m.name,
-      email: m.email,
-      avatar: m.avatar,
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      avatar: member.avatar,
       username,
       role,
       status,
       joinedAt,
       lastSeenAt,
-      teamCount: args.teamMemberIdsByMember[m.id] ?? 0,
+      teamCount: args.teamMemberIdsByMember[member.id] ?? 0,
       isApplication: false,
       isInvite: status === "invited",
     }
   })
 
-  const extras: MemberSummary[] = _extras.map((x) => ({
+  const extras: MemberSummary[] = m.extras.map((x) => ({
     id: x.id,
     name: x.name,
     email: x.email,
@@ -179,8 +157,6 @@ export function summarizeMembers(args: {
 // Actions
 // ---------------------------------------------------------------------------
 
-type Result<T> = { success: true; data: T } | { success: false; error: string }
-
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export function validateInviteEmails(raw: unknown): Result<string[]> {
@@ -201,30 +177,17 @@ export function validateInviteEmails(raw: unknown): Result<string[]> {
       error: `Invalid email${invalid.length === 1 ? "" : "s"}: ${invalid.join(", ")}`,
     }
   }
-  // De-dupe
   return {
     success: true,
     data: [...new Set(parts.map((p) => p.toLowerCase()))],
   }
 }
 
-/**
- * Validate the optional `role` field on an invite POST body. We
- * accept the three documented values; everything else (including
- * undefined / missing) falls through to `"member"` — Linear's
- * production default and the spec's required default for new
- * invites. Previously this defaulted to `"admin"`, which is what
- * caused freshly-invited members to land in the workspace as
- * admins regardless of what the user picked in the modal.
- */
 function normalizeInviteRole(raw: unknown): MemberRole {
   if (raw === "admin" || raw === "member" || raw === "guest") return raw
   return "member"
 }
 
-/** Parse an optional `teamIds` array on the invite body. Filters
- *  out anything that isn't a non-empty string so we never persist
- *  garbage. */
 function normalizeTeamIds(raw: unknown): string[] {
   if (!Array.isArray(raw)) return []
   return raw.filter(
@@ -239,6 +202,7 @@ export function inviteMembers(
   const result = validateInviteEmails(emailsRaw)
   if (!result.success) return result
   seed()
+  const m = _state().membersAdmin
   const role = normalizeInviteRole(options.role)
   const teamIds = normalizeTeamIds(options.teamIds)
   const created: MemberSummary[] = []
@@ -250,8 +214,6 @@ export function inviteMembers(
       name: email,
       email,
       avatar: "",
-      // Persist the role chosen in the invite modal — the Status
-      // column reads this back as "Member (Invited)" / "Admin (Invited)".
       role,
       status: "invited",
       joinedAt: now(),
@@ -259,7 +221,7 @@ export function inviteMembers(
       username,
       teamCount: teamIds.length,
     }
-    _extras.push(extra)
+    m.extras.push(extra)
     created.push({
       id,
       name: extra.name,
@@ -285,43 +247,42 @@ export function setMemberRole(
   if (!["admin", "member", "guest"].includes(role)) {
     return { success: false, error: "Invalid role" }
   }
-  _roleOverrides.set(id, role)
-  // Reflect the role change on extras too (invites keep their synthetic role).
-  const extra = _extras.find((x) => x.id === id)
+  const m = _state().membersAdmin
+  m.roleOverrides.set(id, role)
+  const extra = m.extras.find((x) => x.id === id)
   if (extra) extra.role = role
   return { success: true, data: { id, role } }
 }
 
 export function suspendMember(id: string): Result<{ id: string }> {
-  _statusOverrides.set(id, "suspended")
+  _state().membersAdmin.statusOverrides.set(id, "suspended")
   return { success: true, data: { id } }
 }
 
 export function unsuspendMember(id: string): Result<{ id: string }> {
-  _statusOverrides.set(id, "active")
+  _state().membersAdmin.statusOverrides.set(id, "active")
   return { success: true, data: { id } }
 }
 
 export function removeMember(id: string): Result<{ id: string }> {
-  // For base members we mark as suspended (mock: no hard delete); for synthetic
-  // extras we actually remove them.
-  const extraIdx = _extras.findIndex((x) => x.id === id)
+  const m = _state().membersAdmin
+  const extraIdx = m.extras.findIndex((x) => x.id === id)
   if (extraIdx !== -1) {
-    _extras.splice(extraIdx, 1)
+    m.extras.splice(extraIdx, 1)
     return { success: true, data: { id } }
   }
-  _statusOverrides.set(id, "suspended")
+  m.statusOverrides.set(id, "suspended")
   return { success: true, data: { id } }
 }
 
 export function resendInvite(
   id: string
 ): Result<{ id: string; sentAt: string }> {
-  const extra = _extras.find((x) => x.id === id)
+  const m = _state().membersAdmin
+  const extra = m.extras.find((x) => x.id === id)
   if (!extra || extra.status !== "invited") {
-    // Base members flagged as invited in DEFAULT_STATUS also qualify.
     if (
-      _statusOverrides.get(id) !== "invited" &&
+      m.statusOverrides.get(id) !== "invited" &&
       DEFAULT_STATUS[id] !== "invited"
     ) {
       return { success: false, error: "Member is not invited" }
@@ -352,7 +313,6 @@ export function sortMemberSummaries(
   return [...items].sort((a, b) => {
     const av = a[key]
     const bv = b[key]
-    // Nulls sort last regardless of direction.
     if (av == null && bv == null) return 0
     if (av == null) return 1
     if (bv == null) return -1

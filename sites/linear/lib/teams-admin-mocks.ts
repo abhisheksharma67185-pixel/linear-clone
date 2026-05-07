@@ -1,24 +1,22 @@
-// Admin-only view-state for the Teams settings page. The underlying Team
-// records live in app/lib/store.ts; this file only tracks lifecycle state
-// (active / retired / recently-deleted) and per-user membership mutations
-// that don't warrant changing the shared mock data.
+// Admin-only view-state for the Teams settings page.
+// State now lives on the per-session LinearStoreState; this is a thin facade.
 
 import type { Team } from "@/app/lib/mock-data"
+import { _state } from "@/app/lib/session"
+import type { TeamAdminStatus } from "@/app/lib/state"
 
-export type TeamAdminStatus = "active" | "retired" | "recently-deleted"
-
-const _status = new Map<string, TeamAdminStatus>()
-const _leftByCurrentUser = new Set<string>()
+export type { TeamAdminStatus }
 
 export function getTeamStatus(id: string): TeamAdminStatus {
-  return _status.get(id) ?? "active"
+  return _state().teamsAdmin.status.get(id) ?? "active"
 }
 
 export function setTeamStatus(id: string, status: TeamAdminStatus): void {
+  const map = _state().teamsAdmin.status
   if (status === "active") {
-    _status.delete(id)
+    map.delete(id)
   } else {
-    _status.set(id, status)
+    map.set(id, status)
   }
 }
 
@@ -35,16 +33,17 @@ export function restoreTeam(id: string) {
 }
 
 export function leaveTeam(id: string) {
-  _leftByCurrentUser.add(id)
+  _state().teamsAdmin.leftByCurrentUser.add(id)
 }
 
 export function hasLeftTeam(id: string): boolean {
-  return _leftByCurrentUser.has(id)
+  return _state().teamsAdmin.leftByCurrentUser.has(id)
 }
 
 export function resetTeamsAdminState(): void {
-  _status.clear()
-  _leftByCurrentUser.clear()
+  const t = _state().teamsAdmin
+  t.status.clear()
+  t.leftByCurrentUser.clear()
 }
 
 // ---------------------------------------------------------------------------
@@ -89,7 +88,7 @@ export function summarizeTeams(args: {
 }
 
 // ---------------------------------------------------------------------------
-// Filter + sort helpers (exported for testing + reuse)
+// Filter + sort helpers
 // ---------------------------------------------------------------------------
 
 export type TeamsSortKey =

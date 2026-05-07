@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
 import * as store from "@/app/lib/store"
 import { summarizeMembers } from "@/lib/members-admin-mocks"
+import { route } from "@/app/lib/route"
 
-export async function GET() {
+export const GET = route(async () => {
   const members = store.getMembers()
   const teams = store.getTeams()
   const teamMemberIdsByMember: Record<string, number> = {}
@@ -12,4 +13,4 @@ export async function GET() {
     }
   }
   return NextResponse.json(summarizeMembers({ members, teamMemberIdsByMember }))
-}
+})

@@ -16,6 +16,7 @@ import {
 } from "@thetabench/core"
 
 import * as store from "./store"
+import { _state } from "./session"
 
 // Site-specific task definitions
 import { navigationTasks } from "./tasks/navigation"
@@ -33,15 +34,32 @@ import { impossibleTasks } from "./tasks/impossible"
 // ---------------------------------------------------------------------------
 
 const linearAdapter: SiteAdapter = {
-  getState: () => ({
-    issues: store.getIssues(),
-    projects: store.getProjects(),
-    cycles: store.getCycles(),
-    labels: store.getLabels(),
-    teams: store.getTeams(),
-    members: store.getMembers(),
-    views: store.getViews(),
-  }),
+  getState: () => {
+    const s = _state()
+    return {
+      issues: store.getIssues(),
+      projects: store.getProjects(),
+      cycles: store.getCycles(),
+      labels: store.getLabels(),
+      teams: store.getTeams(),
+      members: store.getMembers(),
+      views: store.getViews(),
+      // Settings / admin slots — included so eval predicates and the
+      // orchestrator's snapshot endpoint observe the full session state,
+      // not just the issue/project graph.
+      workspace: { ...s.workspace },
+      agent: {
+        guidance: s.agent.guidance,
+        skills: [...s.agent.skills],
+        mcpServers: [...s.agent.mcpServers],
+      },
+      membersAdmin: {
+        roleOverrides: Object.fromEntries(s.membersAdmin.roleOverrides),
+        statusOverrides: Object.fromEntries(s.membersAdmin.statusOverrides),
+        extras: [...s.membersAdmin.extras],
+      },
+    }
+  },
 
   reset: (seed?: number) => store.reset(seed),
 
@@ -82,7 +100,46 @@ const linearAdapter: SiteAdapter = {
     "members",
     "views",
   ],
-  singletons: [],
+  singletons: ["workspace", "agent"],
+
+  // ---------------------------------------------------------------------
+  // applyConfig — invoked by SimEngine.startEpisode when a task or episode
+  // overrides config. We mirror the relevant universal flags onto the
+  // per-session chaos slot so the chaos middleware (./chaos.ts) can read
+  // them on the hot path without reaching back into core on every request.
+  // ---------------------------------------------------------------------
+  applyConfig: (config: Record<string, unknown>) => {
+    const s = _state()
+    if (typeof config.latency === "number") {
+      s.chaos.latencyMs = Math.max(0, config.latency)
+    }
+    if (typeof config.errorRate === "number") {
+      s.chaos.errorRate = Math.min(1, Math.max(0, config.errorRate))
+    }
+    if (typeof config.rateLimitPerMinute === "number") {
+      s.chaos.rateLimitPerMinute = config.rateLimitPerMinute
+      s.chaos.rateLimitWindowStartMs = Date.now()
+      s.chaos.rateLimitCount = 0
+    } else if (config.rateLimitPerMinute === null) {
+      s.chaos.rateLimitPerMinute = null
+    }
+    if (typeof config.dateOverride === "string") {
+      s.dateOverride = config.dateOverride
+      s.dateCounter = 0
+    } else if (config.dateOverride === null) {
+      s.dateOverride = null
+      s.dateCounter = 0
+    }
+  },
+
+  resetConfig: () => {
+    const s = _state()
+    s.chaos.latencyMs = 0
+    s.chaos.errorRate = 0
+    s.chaos.rateLimitPerMinute = null
+    s.chaos.rateLimitWindowStartMs = 0
+    s.chaos.rateLimitCount = 0
+  },
 }
 
 registerSiteAdapter(linearAdapter)

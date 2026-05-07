@@ -1,4 +1,10 @@
 // In-memory mock store for the Emojis settings page.
+// State now lives on the per-session LinearStoreState; this is a thin facade.
+
+import { _state } from "@/app/lib/session"
+import type { Emoji, EmojiMime } from "@/app/lib/state"
+
+export type { Emoji, EmojiMime }
 
 export const EMOJI_MAX_BYTES = 1_048_576 // 1 MB
 export const EMOJI_ALLOWED_MIME = [
@@ -7,23 +13,33 @@ export const EMOJI_ALLOWED_MIME = [
   "image/gif",
   "image/webp",
 ] as const
-export type EmojiMime = (typeof EMOJI_ALLOWED_MIME)[number]
 
 export const SHORTCODE_PATTERN = /^[a-z0-9_]{2,32}$/
 
-export type Emoji = {
-  id: string
-  shortcode: string
-  dataUrl: string
-  mimeType: EmojiMime
-  sizeBytes: number
-  uploaderId: string
-  createdAt: string
+const now = () => new Date().toISOString()
+
+function arrayProxy<T>(getArr: () => T[]): T[] {
+  return new Proxy([] as T[], {
+    get(_t, prop) {
+      const arr = getArr()
+      const value = (arr as unknown as Record<string | symbol, unknown>)[prop]
+      return typeof value === "function"
+        ? (value as (...a: unknown[]) => unknown).bind(arr)
+        : value
+    },
+    set(_t, prop, value) {
+      const arr = getArr() as unknown as Record<string | symbol, unknown>
+      arr[prop] = value
+      return true
+    },
+    has: (_t, prop) => prop in getArr(),
+    ownKeys: () => Object.keys(getArr()),
+    getOwnPropertyDescriptor: (_t, prop) =>
+      Object.getOwnPropertyDescriptor(getArr(), prop),
+  })
 }
 
-export const emojis: Emoji[] = []
-
-const now = () => new Date().toISOString()
+export const emojis: Emoji[] = arrayProxy(() => _state().emojis)
 
 type CreateInput = {
   shortcode?: string
@@ -53,7 +69,7 @@ export function validateShortcode(raw: unknown): Result<string> {
 function validateMime(raw: unknown): Result<EmojiMime> {
   if (
     typeof raw !== "string" ||
-    !EMOJI_ALLOWED_MIME.includes(raw as EmojiMime)
+    !(EMOJI_ALLOWED_MIME as readonly string[]).includes(raw)
   ) {
     return {
       success: false,
@@ -81,7 +97,7 @@ export function createEmoji(input: CreateInput): Result<Emoji> {
   const size = validateSize(input.sizeBytes)
   if (!size.success) return size
 
-  if (emojis.some((e) => e.shortcode === sc.data)) {
+  if (_state().emojis.some((e) => e.shortcode === sc.data)) {
     return { success: false, error: "Shortcode already in use" }
   }
 
@@ -98,16 +114,17 @@ export function createEmoji(input: CreateInput): Result<Emoji> {
     uploaderId: input.uploaderId?.trim() || "usr-1",
     createdAt: now(),
   }
-  emojis.push(emoji)
+  _state().emojis.push(emoji)
   return { success: true, data: emoji }
 }
 
 export function renameEmoji(id: string, shortcode: unknown): Result<Emoji> {
-  const e = emojis.find((x) => x.id === id)
+  const arr = _state().emojis
+  const e = arr.find((x) => x.id === id)
   if (!e) return { success: false, error: "Emoji not found" }
   const sc = validateShortcode(shortcode)
   if (!sc.success) return sc
-  if (emojis.some((x) => x.id !== id && x.shortcode === sc.data)) {
+  if (arr.some((x) => x.id !== id && x.shortcode === sc.data)) {
     return { success: false, error: "Shortcode already in use" }
   }
   e.shortcode = sc.data
@@ -115,8 +132,9 @@ export function renameEmoji(id: string, shortcode: unknown): Result<Emoji> {
 }
 
 export function deleteEmoji(id: string): Result<{ id: string }> {
-  const idx = emojis.findIndex((e) => e.id === id)
+  const arr = _state().emojis
+  const idx = arr.findIndex((e) => e.id === id)
   if (idx === -1) return { success: false, error: "Emoji not found" }
-  emojis.splice(idx, 1)
+  arr.splice(idx, 1)
   return { success: true, data: { id } }
 }

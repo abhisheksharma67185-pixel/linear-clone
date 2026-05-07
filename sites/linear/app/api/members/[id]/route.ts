@@ -7,16 +7,16 @@ import {
   unsuspendMember,
   type MemberRole,
 } from "@/lib/members-admin-mocks"
+import { route } from "@/app/lib/route"
 
 type PatchBody = {
   action: "set-role" | "suspend" | "unsuspend" | "remove" | "resend-invite"
   role?: MemberRole
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type Ctx = { params: Promise<{ id: string }> }
+
+export const PATCH = route<Ctx>(async (request, { params }) => {
   const { id } = await params
   let body: PatchBody = { action: "set-role" }
   try {
@@ -51,4 +51,4 @@ export async function PATCH(
     return NextResponse.json({ error: result.error }, { status: 400 })
   }
   return NextResponse.json(result.data)
-}
+})

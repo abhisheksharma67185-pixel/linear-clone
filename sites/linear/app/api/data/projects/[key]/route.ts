@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import * as store from "../../../../lib/store"
+import { route } from "../../../../lib/route"
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ key: string }> }
-) {
+type Ctx = { params: Promise<{ key: string }> }
+
+export const GET = route<Ctx>(async (_request, { params }) => {
   const { key } = await params
   const team = store.getTeamByKey(key)
   if (team) {
@@ -15,12 +15,9 @@ export async function GET(
     return NextResponse.json(project)
   }
   return NextResponse.json({ error: "Not found" }, { status: 404 })
-}
+})
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ key: string }> }
-) {
+export const PUT = route<Ctx>(async (request, { params }) => {
   const { key } = await params
   let fields
   try {
@@ -47,4 +44,4 @@ export async function PUT(
     return NextResponse.json({ error: result.error }, { status: 400 })
   }
   return NextResponse.json(result.data)
-}
+})

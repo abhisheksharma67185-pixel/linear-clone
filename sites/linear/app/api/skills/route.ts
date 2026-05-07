@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server"
 import { skills, createSkill } from "@/lib/agent-mocks"
+import { route } from "@/app/lib/route"
 
-export async function GET() {
+export const GET = route(async () => {
   return NextResponse.json(skills)
-}
+})
 
-export async function POST(request: Request) {
+export const POST = route(async (request) => {
   let body: {
     name?: string
     slashCommand?: string
@@ -33,4 +34,4 @@ export async function POST(request: Request) {
     autoSelectRules: body.autoSelectRules,
   })
   return NextResponse.json(skill, { status: 201 })
-}
+})

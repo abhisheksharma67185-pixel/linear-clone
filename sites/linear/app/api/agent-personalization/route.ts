@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server"
 import { agentState, setGuidance, GUIDANCE_MAX_CHARS } from "@/lib/agent-mocks"
+import { route } from "@/app/lib/route"
 
-export async function GET() {
+export const GET = route(async () => {
   return NextResponse.json({ guidance: agentState.guidance })
-}
+})
 
-export async function PATCH(request: Request) {
+export const PATCH = route(async (request) => {
   let body: { guidance?: string }
   try {
     body = await request.json()
@@ -26,4 +27,4 @@ export async function PATCH(request: Request) {
   }
   const next = setGuidance(body.guidance)
   return NextResponse.json({ guidance: next })
-}
+})

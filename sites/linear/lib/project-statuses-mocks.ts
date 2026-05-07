@@ -1,15 +1,13 @@
 // In-memory mock store for the Project statuses settings page.
-// A status is a user-definable workflow step within one of five fixed
-// categories. Default statuses are seeded; users can add/edit/delete their own.
+// State now lives on the per-session LinearStoreState; this is a thin facade.
 
-import { projects } from "@/app/lib/mock-data"
+import { _state } from "@/app/lib/session"
+import type {
+  ProjectStatusRow as ProjectStatus,
+  StatusCategory,
+} from "@/app/lib/state"
 
-export type StatusCategory =
-  | "backlog"
-  | "planned"
-  | "in-progress"
-  | "completed"
-  | "canceled"
+export type { StatusCategory, ProjectStatus }
 
 export const STATUS_CATEGORIES: StatusCategory[] = [
   "backlog",
@@ -27,9 +25,6 @@ export const CATEGORY_LABEL: Record<StatusCategory, string> = {
   canceled: "Canceled",
 }
 
-// Each category has a default color + "enum" used to compute usage counts from
-// the existing `projects` mock data (whose status is one of the Project enum
-// values). Custom user-created statuses inherit their category's enum.
 const CATEGORY_META: Record<
   StatusCategory,
   { defaultColor: string; projectEnum: string | null }
@@ -41,34 +36,37 @@ const CATEGORY_META: Record<
   canceled: { defaultColor: "#6b7280", projectEnum: "cancelled" },
 }
 
-export type ProjectStatus = {
-  id: string
-  name: string
-  description: string
-  color: string
-  category: StatusCategory
-  order: number
-  createdAt: string
-  updatedAt: string
-}
-
 const now = () => new Date().toISOString()
 
-export const projectStatuses: ProjectStatus[] = STATUS_CATEGORIES.map(
-  (category, idx) => ({
-    id: `ps_default_${category.replace("-", "_")}`,
-    name: CATEGORY_LABEL[category],
-    description: "",
-    color: CATEGORY_META[category].defaultColor,
-    category,
-    order: idx * 1000,
-    createdAt: "2026-01-01T00:00:00Z",
-    updatedAt: "2026-01-01T00:00:00Z",
+function arrayProxy<T>(getArr: () => T[]): T[] {
+  return new Proxy([] as T[], {
+    get(_t, prop) {
+      const arr = getArr()
+      const value = (arr as unknown as Record<string | symbol, unknown>)[prop]
+      return typeof value === "function"
+        ? (value as (...a: unknown[]) => unknown).bind(arr)
+        : value
+    },
+    set(_t, prop, value) {
+      const arr = getArr() as unknown as Record<string | symbol, unknown>
+      arr[prop] = value
+      return true
+    },
+    has: (_t, prop) => prop in getArr(),
+    ownKeys: () => Object.keys(getArr()),
+    getOwnPropertyDescriptor: (_t, prop) =>
+      Object.getOwnPropertyDescriptor(getArr(), prop),
   })
+}
+
+export const projectStatuses: ProjectStatus[] = arrayProxy(
+  () => _state().projectStatuses
 )
 
 function nextOrderIn(category: StatusCategory): number {
-  const siblings = projectStatuses.filter((s) => s.category === category)
+  const siblings = _state().projectStatuses.filter(
+    (s) => s.category === category
+  )
   if (siblings.length === 0) return STATUS_CATEGORIES.indexOf(category) * 1000
   return Math.max(...siblings.map((s) => s.order)) + 1
 }
@@ -78,21 +76,17 @@ export function getCategoryDefaultColor(category: StatusCategory): string {
 }
 
 /**
- * Usage count per status. For default statuses we compute from the current
- * `projects` mock data by matching the category's project enum. Custom
- * statuses in the same category share the count proportionally is out of
- * scope — we just report 0 for user-created statuses. Callers use 0 to hide
- * the "N projects" line.
+ * Usage count per status. Reads from the live session's projects array so the
+ * count reflects per-rollout state. Custom (user-created) statuses report 0.
  */
 export function usageCountFor(status: ProjectStatus): number {
   const enumValue = CATEGORY_META[status.category].projectEnum
   if (!enumValue) return 0
-  // Only the first default status in a category "owns" that enum's count —
-  // otherwise duplicating would double-count the same project.
   const ownerId = `ps_default_${status.category.replace("-", "_")}`
   if (status.id !== ownerId) return 0
-  return projects.filter((p) => (p as { status: string }).status === enumValue)
-    .length
+  return _state().projects.filter(
+    (p) => (p as { status: string }).status === enumValue
+  ).length
 }
 
 export function createStatus(input: {
@@ -118,7 +112,7 @@ export function createStatus(input: {
     createdAt: t,
     updatedAt: t,
   }
-  projectStatuses.push(status)
+  _state().projectStatuses.push(status)
   return { success: true as const, data: status }
 }
 
@@ -126,7 +120,7 @@ export function updateStatus(
   id: string,
   patch: Partial<Omit<ProjectStatus, "id" | "createdAt" | "category">>
 ) {
-  const s = projectStatuses.find((x) => x.id === id)
+  const s = _state().projectStatuses.find((x) => x.id === id)
   if (!s) return { success: false as const, error: "Status not found" }
   if (patch.name !== undefined) {
     if (!patch.name.trim())
@@ -141,14 +135,16 @@ export function updateStatus(
 }
 
 export function deleteStatus(id: string) {
-  const idx = projectStatuses.findIndex((s) => s.id === id)
+  const arr = _state().projectStatuses
+  const idx = arr.findIndex((s) => s.id === id)
   if (idx === -1) return { success: false as const, error: "Not found" }
-  projectStatuses.splice(idx, 1)
+  arr.splice(idx, 1)
   return { success: true as const, data: { id } }
 }
 
 export function duplicateStatus(id: string) {
-  const src = projectStatuses.find((s) => s.id === id)
+  const arr = _state().projectStatuses
+  const src = arr.find((s) => s.id === id)
   if (!src) return { success: false as const, error: "Not found" }
   const copy: ProjectStatus = {
     ...src,
@@ -158,6 +154,6 @@ export function duplicateStatus(id: string) {
     createdAt: now(),
     updatedAt: now(),
   }
-  projectStatuses.push(copy)
+  arr.push(copy)
   return { success: true as const, data: copy }
 }

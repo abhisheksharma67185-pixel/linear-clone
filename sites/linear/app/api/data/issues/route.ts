@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import * as store from "../../../lib/store"
+import { route } from "../../../lib/route"
 
-export async function GET() {
+export const GET = route(async () => {
   return NextResponse.json(store.getIssues())
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = route(async (request: Request) => {
   let fields
   try {
-    fields = await request.json()
+    fields = await (request as NextRequest).json()
   } catch {
     return Response.json(
       { error: "Invalid JSON in request body" },
@@ -20,4 +21,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: 400 })
   }
   return NextResponse.json(result.data, { status: 201 })
-}
+})

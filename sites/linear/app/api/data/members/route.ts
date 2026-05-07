@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import * as store from "../../../lib/store"
+import { route } from "../../../lib/route"
 
-export async function GET() {
+export const GET = route(async () => {
   return NextResponse.json(store.getMembers())
-}
+})

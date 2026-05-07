@@ -1,70 +1,83 @@
 // In-memory mock state for the SLAs settings page.
+// State now lives on the per-session LinearStoreState; this is a thin facade.
 
-export type BillingPlan =
-  | "free"
-  | "standard"
-  | "trial"
-  | "business"
-  | "enterprise"
+import { _state } from "@/app/lib/session"
+import type {
+  AutomationAction,
+  AutomationRule,
+  AutomationTrigger,
+  BillingPlan,
+  PlanState,
+  SlaDurationUnit,
+  SlaPolicy,
+} from "@/app/lib/state"
 
-export type PlanState = {
-  plan: BillingPlan
-  trialDaysRemaining: number | null
+export type {
+  AutomationAction,
+  AutomationRule,
+  AutomationTrigger,
+  BillingPlan,
+  PlanState,
+  SlaDurationUnit,
+  SlaPolicy,
 }
-
-export const planState: PlanState = {
-  plan: "free",
-  trialDaysRemaining: null,
-}
-
-export function setPlan(next: BillingPlan, days: number | null = null) {
-  planState.plan = next
-  planState.trialDaysRemaining = days
-}
-
-export type SlaDurationUnit = "minutes" | "hours" | "days" | "business-hours"
-
-export type SlaPolicy = {
-  id: string
-  name: string
-  durationValue: number
-  durationUnit: SlaDurationUnit
-  scopeChips: string[] // e.g. ["Priority: High", "Team: Eng"]
-  pauseConditions: string // freeform for the prototype
-  breachNotify: string // comma-separated recipients
-  createdAt: string
-  updatedAt: string
-}
-
-export type AutomationTrigger =
-  | "issue-created"
-  | "issue-updated"
-  | "label-added"
-
-export type AutomationAction = "add-sla" | "remove-sla"
-
-export type AutomationRule = {
-  id: string
-  name: string
-  trigger: AutomationTrigger
-  conditions: {
-    teamId: string | null
-    labelIds: string[]
-    priority: string | null
-    assigneeId: string | null
-  }
-  action: AutomationAction
-  slaPolicyId: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-export const slaPolicies: SlaPolicy[] = []
-export const automationRules: AutomationRule[] = []
 
 const now = () => new Date().toISOString()
 
-// -- Policies ---------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// planState — exposed as a Proxy so callers that hold the reference still see
+// the active session's plan.
+// ---------------------------------------------------------------------------
+
+export const planState: PlanState = new Proxy({} as PlanState, {
+  get: (_t, prop) =>
+    (_state().planState as unknown as Record<string | symbol, unknown>)[prop],
+  set: (_t, prop, value) => {
+    const ps = _state().planState as unknown as Record<string | symbol, unknown>
+    ps[prop] = value
+    return true
+  },
+  has: (_t, prop) => prop in _state().planState,
+  ownKeys: () => Object.keys(_state().planState),
+  getOwnPropertyDescriptor: (_t, prop) =>
+    Object.getOwnPropertyDescriptor(_state().planState, prop),
+})
+
+export function setPlan(next: BillingPlan, days: number | null = null) {
+  const ps = _state().planState
+  ps.plan = next
+  ps.trialDaysRemaining = days
+}
+
+function arrayProxy<T>(getArr: () => T[]): T[] {
+  return new Proxy([] as T[], {
+    get(_t, prop) {
+      const arr = getArr()
+      const value = (arr as unknown as Record<string | symbol, unknown>)[prop]
+      return typeof value === "function"
+        ? (value as (...a: unknown[]) => unknown).bind(arr)
+        : value
+    },
+    set(_t, prop, value) {
+      const arr = getArr() as unknown as Record<string | symbol, unknown>
+      arr[prop] = value
+      return true
+    },
+    has: (_t, prop) => prop in getArr(),
+    ownKeys: () => Object.keys(getArr()),
+    getOwnPropertyDescriptor: (_t, prop) =>
+      Object.getOwnPropertyDescriptor(getArr(), prop),
+  })
+}
+
+export const slaPolicies: SlaPolicy[] = arrayProxy(() => _state().slaPolicies)
+export const automationRules: AutomationRule[] = arrayProxy(
+  () => _state().automationRules
+)
+
+// ---------------------------------------------------------------------------
+// Policies
+// ---------------------------------------------------------------------------
 
 export function createPolicy(input: {
   name?: string
@@ -92,7 +105,7 @@ export function createPolicy(input: {
     createdAt: t,
     updatedAt: t,
   }
-  slaPolicies.push(policy)
+  _state().slaPolicies.push(policy)
   return { success: true as const, data: policy }
 }
 
@@ -100,7 +113,7 @@ export function updatePolicy(
   id: string,
   patch: Partial<Omit<SlaPolicy, "id" | "createdAt">>
 ) {
-  const policy = slaPolicies.find((p) => p.id === id)
+  const policy = _state().slaPolicies.find((p) => p.id === id)
   if (!policy) return { success: false as const, error: "Policy not found" }
   if (patch.name !== undefined) {
     if (!patch.name.trim())
@@ -125,18 +138,19 @@ export function updatePolicy(
 }
 
 export function deletePolicy(id: string) {
-  const idx = slaPolicies.findIndex((p) => p.id === id)
+  const arr = _state().slaPolicies
+  const idx = arr.findIndex((p) => p.id === id)
   if (idx === -1) return { success: false as const, error: "Not found" }
-  slaPolicies.splice(idx, 1)
-  // Null out any automation rule that referenced this policy so UI doesn't
-  // dangle. We don't delete the rule; the user can re-target it.
-  for (const r of automationRules) {
+  arr.splice(idx, 1)
+  for (const r of _state().automationRules) {
     if (r.slaPolicyId === id) r.slaPolicyId = null
   }
   return { success: true as const, data: { id } }
 }
 
-// -- Automation rules -------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Automation rules
+// ---------------------------------------------------------------------------
 
 export function createRule(input: {
   name?: string
@@ -164,7 +178,7 @@ export function createRule(input: {
     createdAt: t,
     updatedAt: t,
   }
-  automationRules.push(rule)
+  _state().automationRules.push(rule)
   return { success: true as const, data: rule }
 }
 
@@ -172,7 +186,7 @@ export function updateRule(
   id: string,
   patch: Partial<Omit<AutomationRule, "id" | "createdAt">>
 ) {
-  const rule = automationRules.find((r) => r.id === id)
+  const rule = _state().automationRules.find((r) => r.id === id)
   if (!rule) return { success: false as const, error: "Rule not found" }
   if (patch.name !== undefined) {
     if (!patch.name.trim())
@@ -188,8 +202,9 @@ export function updateRule(
 }
 
 export function deleteRule(id: string) {
-  const idx = automationRules.findIndex((r) => r.id === id)
+  const arr = _state().automationRules
+  const idx = arr.findIndex((r) => r.id === id)
   if (idx === -1) return { success: false as const, error: "Not found" }
-  automationRules.splice(idx, 1)
+  arr.splice(idx, 1)
   return { success: true as const, data: { id } }
 }

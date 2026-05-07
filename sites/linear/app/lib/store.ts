@@ -1,11 +1,18 @@
+// ---------------------------------------------------------------------------
+// Linear store — public API for issue / project / cycle / label / team / view
+// CRUD against the in-memory simulator.
+//
+// State now lives on the per-session `LinearStoreState` (see ./state.ts and
+// ./session.ts). Every function below reads + mutates through `_state()`,
+// which resolves to the rollout-scoped store when called inside a request
+// wrapped with `withSession`, and to the shared "default" session otherwise
+// (RSC pages, vitest, etc).
+//
+// The free-function shape of the public API is preserved so existing call
+// sites in components, API routes, and tests keep working unchanged.
+// ---------------------------------------------------------------------------
+
 import {
-  members as initialMembers,
-  teams as initialTeams,
-  projects as initialProjects,
-  cycles as initialCycles,
-  issues as initialIssues,
-  labels as initialLabels,
-  views as initialViews,
   type Member,
   type Team,
   type Project,
@@ -14,6 +21,8 @@ import {
   type Label,
   type View,
 } from "./mock-data"
+import { _state } from "./session"
+import { resetState } from "./state"
 
 // ---------------------------------------------------------------------------
 // Result types
@@ -23,10 +32,6 @@ type Result<T = void> =
   | { success: true; data: T }
   | { success: false; error: string }
 
-// ---------------------------------------------------------------------------
-// Singleton store — deep-cloned from initial data, shared across API routes
-// ---------------------------------------------------------------------------
-
 function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
 }
@@ -35,18 +40,17 @@ function deepClone<T>(obj: T): T {
 // Deterministic timestamps — use dateOverride when set (seeded episodes)
 // ---------------------------------------------------------------------------
 
-let _dateOverride: string | null = null
-let _dateCounter = 0
-
 export function setDateOverride(date: string | null): void {
-  _dateOverride = date
-  _dateCounter = 0
+  const s = _state()
+  s.dateOverride = date
+  s.dateCounter = 0
 }
 
 function now(): string {
-  if (_dateOverride) {
-    const base = new Date(_dateOverride)
-    base.setSeconds(base.getSeconds() + _dateCounter++)
+  const s = _state()
+  if (s.dateOverride) {
+    const base = new Date(s.dateOverride)
+    base.setSeconds(base.getSeconds() + s.dateCounter++)
     return base.toISOString()
   }
   return new Date().toISOString()
@@ -90,45 +94,11 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 }
 
 // ---------------------------------------------------------------------------
-// Module-level state
-// ---------------------------------------------------------------------------
-
-let _members: Member[] = deepClone(initialMembers)
-let _teams: Team[] = deepClone(initialTeams)
-let _projects: Project[] = deepClone(initialProjects)
-let _cycles: Cycle[] = deepClone(initialCycles)
-let _issues: Issue[] = deepClone(initialIssues)
-let _labels: Label[] = deepClone(initialLabels)
-// Project labels are scoped to projects (not issues) and start empty so the
-// settings page renders the "No labels yet" empty state until the user
-// creates one. Issue labels remain in `_labels`.
-const _projectLabels: Label[] = []
-let _views: View[] = deepClone(initialViews)
-
-// Auto-increment counters per team key. Start above spec-defined ranges so
-// newly-created issues don't collide with seed data.
-// Platform uses 3 discrete ranges (100s, 200s, 300s) — new issues go in 400s.
-let _nextIssueCounters: Record<string, number> = {
-  PLT: 400,
-  FE: 55,
-  INF: 1,
-  LEG: 86,
-  ABH: 5,
-}
-let _nextIssueId = 185
-let _nextProjectId = 4
-let _nextCycleId = 15
-let _nextLabelId = 13
-let _nextProjectLabelId = 1
-let _nextTeamId = 5
-let _nextViewId = 5
-
-// ---------------------------------------------------------------------------
 // Issues
 // ---------------------------------------------------------------------------
 
 export function getIssues(): Issue[] {
-  return deepClone(_issues).map(withDerivedSubscribers)
+  return deepClone(_state().issues).map(withDerivedSubscribers)
 }
 
 /**
@@ -144,26 +114,23 @@ function withDerivedSubscribers(issue: Issue): Issue {
   const subs = new Set<string>()
   if (issue.creatorId) subs.add(issue.creatorId)
   if (issue.assigneeId) subs.add(issue.assigneeId)
-  // Stable hash of issue.id → which extra members subscribe.
   let h = 0
   for (let i = 0; i < issue.id.length; i++) {
     h = (h * 31 + issue.id.charCodeAt(i)) | 0
   }
-  // Mix in `usr-1` for ~⅓ of issues so My Issues → Subscribed has content.
   if (Math.abs(h) % 3 === 0) subs.add("usr-1")
-  // Add one rotating member from the roster for variety.
   const extras = ["usr-2", "usr-3", "usr-4", "usr-5", "usr-6"]
   subs.add(extras[Math.abs(h) % extras.length])
   return { ...issue, subscriberIds: Array.from(subs) }
 }
 
 export function getIssueById(id: string): Issue | undefined {
-  const issue = _issues.find((i) => i.id === id)
+  const issue = _state().issues.find((i) => i.id === id)
   return issue ? deepClone(issue) : undefined
 }
 
 export function getIssueByIdentifier(identifier: string): Issue | undefined {
-  const issue = _issues.find((i) => i.identifier === identifier)
+  const issue = _state().issues.find((i) => i.identifier === identifier)
   return issue ? deepClone(issue) : undefined
 }
 
@@ -181,6 +148,8 @@ export function createIssue(fields: {
   estimate?: number | null
   dueDate?: string | null
 }): Result<Issue> {
+  const s = _state()
+
   if (!fields.title || String(fields.title).trim() === "") {
     return { success: false, error: "Title is required" }
   }
@@ -194,41 +163,36 @@ export function createIssue(fields: {
     return { success: false, error: `Invalid priority: ${fields.priority}` }
   }
 
-  // Determine team key for identifier generation
   const teamId = fields.teamId ?? "team-1"
-  const team = _teams.find((t) => t.id === teamId)
+  const team = s.teams.find((t) => t.id === teamId)
   if (!team) {
     return { success: false, error: `Team not found: ${teamId}` }
   }
 
-  // Validate assignee exists if provided
   if (fields.assigneeId !== undefined && fields.assigneeId !== null) {
-    const assignee = _members.find((m) => m.id === fields.assigneeId)
+    const assignee = s.members.find((m) => m.id === fields.assigneeId)
     if (!assignee) {
       return { success: false, error: `Member not found: ${fields.assigneeId}` }
     }
   }
 
-  // Validate project exists if provided
   if (fields.projectId !== undefined && fields.projectId !== null) {
-    const project = _projects.find((p) => p.id === fields.projectId)
+    const project = s.projects.find((p) => p.id === fields.projectId)
     if (!project) {
       return { success: false, error: `Project not found: ${fields.projectId}` }
     }
   }
 
-  // Validate cycle exists if provided
   if (fields.cycleId !== undefined && fields.cycleId !== null) {
-    const cycle = _cycles.find((c) => c.id === fields.cycleId)
+    const cycle = s.cycles.find((c) => c.id === fields.cycleId)
     if (!cycle) {
       return { success: false, error: `Cycle not found: ${fields.cycleId}` }
     }
   }
 
-  // Validate label IDs if provided
   if (fields.labelIds !== undefined) {
     for (const labelId of fields.labelIds) {
-      const label = _labels.find((l) => l.id === labelId)
+      const label = s.labels.find((l) => l.id === labelId)
       if (!label) {
         return { success: false, error: `Label not found: ${labelId}` }
       }
@@ -236,10 +200,10 @@ export function createIssue(fields: {
   }
 
   const teamKey = team.key
-  if (!_nextIssueCounters[teamKey]) {
-    _nextIssueCounters[teamKey] = 1
+  if (!s.nextIssueCounters[teamKey]) {
+    s.nextIssueCounters[teamKey] = 1
   }
-  const identifier = `${teamKey}-${_nextIssueCounters[teamKey]++}`
+  const identifier = `${teamKey}-${s.nextIssueCounters[teamKey]++}`
   const timestamp = now()
 
   const creatorId = fields.creatorId ?? "usr-1"
@@ -247,7 +211,7 @@ export function createIssue(fields: {
   if (fields.assigneeId) initialSubscribers.add(fields.assigneeId)
 
   const issue: Issue = {
-    id: `iss-${_nextIssueId++}`,
+    id: `iss-${s.nextIssueId++}`,
     identifier,
     title: fields.title.trim(),
     description: fields.description ?? "",
@@ -255,8 +219,6 @@ export function createIssue(fields: {
     priority: fields.priority ?? "none",
     assigneeId: fields.assigneeId ?? null,
     creatorId,
-    // Creator (and assignee, if any) is auto-subscribed at create time —
-    // matches Linear's behavior and is what the Subscribed filter expects.
     subscriberIds: Array.from(initialSubscribers),
     teamId,
     projectId: fields.projectId ?? null,
@@ -268,7 +230,7 @@ export function createIssue(fields: {
     updatedAt: timestamp,
   }
 
-  _issues.push(issue)
+  s.issues.push(issue)
   return { success: true, data: deepClone(issue) }
 }
 
@@ -289,7 +251,8 @@ export function updateIssue(
     dueDate?: string | null
   }
 ): Result<Issue> {
-  const issue = _issues.find((i) => i.id === id)
+  const s = _state()
+  const issue = s.issues.find((i) => i.id === id)
   if (!issue) return { success: false, error: "Issue not found" }
 
   if (fields.title !== undefined) {
@@ -313,7 +276,7 @@ export function updateIssue(
   }
   if (fields.assigneeId !== undefined) {
     if (fields.assigneeId !== null) {
-      const assignee = _members.find((m) => m.id === fields.assigneeId)
+      const assignee = s.members.find((m) => m.id === fields.assigneeId)
       if (!assignee) {
         return {
           success: false,
@@ -325,7 +288,7 @@ export function updateIssue(
   }
   if (fields.creatorId !== undefined) issue.creatorId = fields.creatorId
   if (fields.teamId !== undefined) {
-    const team = _teams.find((t) => t.id === fields.teamId)
+    const team = s.teams.find((t) => t.id === fields.teamId)
     if (!team) {
       return { success: false, error: `Team not found: ${fields.teamId}` }
     }
@@ -333,7 +296,7 @@ export function updateIssue(
   }
   if (fields.projectId !== undefined) {
     if (fields.projectId !== null) {
-      const project = _projects.find((p) => p.id === fields.projectId)
+      const project = s.projects.find((p) => p.id === fields.projectId)
       if (!project) {
         return {
           success: false,
@@ -345,7 +308,7 @@ export function updateIssue(
   }
   if (fields.cycleId !== undefined) {
     if (fields.cycleId !== null) {
-      const cycle = _cycles.find((c) => c.id === fields.cycleId)
+      const cycle = s.cycles.find((c) => c.id === fields.cycleId)
       if (!cycle) {
         return { success: false, error: `Cycle not found: ${fields.cycleId}` }
       }
@@ -354,7 +317,7 @@ export function updateIssue(
   }
   if (fields.labelIds !== undefined) {
     for (const labelId of fields.labelIds) {
-      const label = _labels.find((l) => l.id === labelId)
+      const label = s.labels.find((l) => l.id === labelId)
       if (!label) {
         return { success: false, error: `Label not found: ${labelId}` }
       }
@@ -369,14 +332,16 @@ export function updateIssue(
 }
 
 export function deleteIssue(id: string): Result {
-  const idx = _issues.findIndex((i) => i.id === id)
+  const s = _state()
+  const idx = s.issues.findIndex((i) => i.id === id)
   if (idx === -1) return { success: false, error: "Issue not found" }
-  _issues.splice(idx, 1)
+  s.issues.splice(idx, 1)
   return { success: true, data: undefined }
 }
 
 export function transitionIssue(id: string, newStatus: string): Result<Issue> {
-  const issue = _issues.find((i) => i.id === id)
+  const s = _state()
+  const issue = s.issues.find((i) => i.id === id)
   if (!issue) return { success: false, error: "Issue not found" }
 
   if (!VALID_ISSUE_STATUS.has(newStatus)) {
@@ -401,11 +366,11 @@ export function transitionIssue(id: string, newStatus: string): Result<Issue> {
 // ---------------------------------------------------------------------------
 
 export function getProjects(): Project[] {
-  return deepClone(_projects)
+  return deepClone(_state().projects)
 }
 
 export function getProjectById(id: string): Project | undefined {
-  const project = _projects.find((p) => p.id === id)
+  const project = _state().projects.find((p) => p.id === id)
   return project ? deepClone(project) : undefined
 }
 
@@ -417,6 +382,8 @@ export function createProject(fields: {
   teamId?: string
   targetDate?: string | null
 }): Result<Project> {
+  const s = _state()
+
   if (!fields.name || String(fields.name).trim() === "") {
     return { success: false, error: "Name is required" }
   }
@@ -425,20 +392,20 @@ export function createProject(fields: {
   }
 
   const teamId = fields.teamId ?? "team-1"
-  const team = _teams.find((t) => t.id === teamId)
+  const team = s.teams.find((t) => t.id === teamId)
   if (!team) {
     return { success: false, error: `Team not found: ${teamId}` }
   }
 
   if (fields.leadId !== undefined) {
-    const lead = _members.find((m) => m.id === fields.leadId)
+    const lead = s.members.find((m) => m.id === fields.leadId)
     if (!lead) {
       return { success: false, error: `Member not found: ${fields.leadId}` }
     }
   }
 
   const project: Project = {
-    id: `proj-${_nextProjectId++}`,
+    id: `proj-${s.nextProjectId++}`,
     name: fields.name.trim(),
     description: fields.description ?? "",
     status: fields.status ?? "planned",
@@ -448,7 +415,7 @@ export function createProject(fields: {
     createdAt: now(),
   }
 
-  _projects.push(project)
+  s.projects.push(project)
   return { success: true, data: deepClone(project) }
 }
 
@@ -462,7 +429,8 @@ export function updateProject(
     targetDate?: string | null
   }
 ): Result<Project> {
-  const project = _projects.find((p) => p.id === id)
+  const s = _state()
+  const project = s.projects.find((p) => p.id === id)
   if (!project) return { success: false, error: "Project not found" }
 
   if (fields.name !== undefined) {
@@ -479,7 +447,7 @@ export function updateProject(
     project.status = fields.status
   }
   if (fields.leadId !== undefined) {
-    const lead = _members.find((m) => m.id === fields.leadId)
+    const lead = s.members.find((m) => m.id === fields.leadId)
     if (!lead) {
       return { success: false, error: `Member not found: ${fields.leadId}` }
     }
@@ -495,11 +463,11 @@ export function updateProject(
 // ---------------------------------------------------------------------------
 
 export function getCycles(): Cycle[] {
-  return deepClone(_cycles)
+  return deepClone(_state().cycles)
 }
 
 export function getCycleById(id: string): Cycle | undefined {
-  const cycle = _cycles.find((c) => c.id === id)
+  const cycle = _state().cycles.find((c) => c.id === id)
   return cycle ? deepClone(cycle) : undefined
 }
 
@@ -510,16 +478,18 @@ export function createCycle(fields: {
   startDate?: string
   endDate?: string
 }): Result<Cycle> {
+  const s = _state()
+
   if (!fields.name || String(fields.name).trim() === "") {
     return { success: false, error: "Name is required" }
   }
 
   const teamId = fields.teamId ?? "team-1"
-  const team = _teams.find((t) => t.id === teamId)
+  const team = s.teams.find((t) => t.id === teamId)
   if (!team) return { success: false, error: `Team not found: ${teamId}` }
 
   const cycle: Cycle = {
-    id: `cycle-${_nextCycleId++}`,
+    id: `cycle-${s.nextCycleId++}`,
     name: fields.name.trim(),
     description: fields.description ?? "",
     teamId,
@@ -530,12 +500,13 @@ export function createCycle(fields: {
     completedPoints: 0,
   }
 
-  _cycles.push(cycle)
+  s.cycles.push(cycle)
   return { success: true, data: deepClone(cycle) }
 }
 
 export function startCycle(id: string): Result<Cycle> {
-  const cycle = _cycles.find((c) => c.id === id)
+  const s = _state()
+  const cycle = s.cycles.find((c) => c.id === id)
   if (!cycle) return { success: false, error: "Cycle not found" }
 
   if (cycle.state === "completed") {
@@ -545,8 +516,7 @@ export function startCycle(id: string): Result<Cycle> {
     return { success: false, error: "Cycle is already active" }
   }
 
-  // Check only 1 active cycle per team
-  const activeInTeam = _cycles.find(
+  const activeInTeam = s.cycles.find(
     (c) => c.teamId === cycle.teamId && c.state === "active"
   )
   if (activeInTeam) {
@@ -562,7 +532,8 @@ export function startCycle(id: string): Result<Cycle> {
 }
 
 export function completeCycle(id: string): Result<Cycle> {
-  const cycle = _cycles.find((c) => c.id === id)
+  const s = _state()
+  const cycle = s.cycles.find((c) => c.id === id)
   if (!cycle) return { success: false, error: "Cycle not found" }
 
   if (cycle.state === "completed") {
@@ -584,11 +555,12 @@ export function moveIssueToCycle(
   issueId: string,
   cycleId: string | null
 ): Result<Issue> {
-  const issue = _issues.find((i) => i.id === issueId)
+  const s = _state()
+  const issue = s.issues.find((i) => i.id === issueId)
   if (!issue) return { success: false, error: "Issue not found" }
 
   if (cycleId !== null) {
-    const cycle = _cycles.find((c) => c.id === cycleId)
+    const cycle = s.cycles.find((c) => c.id === cycleId)
     if (!cycle) return { success: false, error: "Cycle not found" }
   }
 
@@ -602,11 +574,11 @@ export function moveIssueToCycle(
 // ---------------------------------------------------------------------------
 
 export function getLabels(): Label[] {
-  return deepClone(_labels)
+  return deepClone(_state().labels)
 }
 
 export function getLabelById(id: string): Label | undefined {
-  const label = _labels.find((l) => l.id === id)
+  const label = _state().labels.find((l) => l.id === id)
   return label ? deepClone(label) : undefined
 }
 
@@ -616,6 +588,8 @@ export function createLabel(fields: {
   teamId?: string | null
   description?: string
 }): Result<Label> {
+  const s = _state()
+
   if (!fields.name || String(fields.name).trim() === "") {
     return { success: false, error: "Name is required" }
   }
@@ -623,17 +597,14 @@ export function createLabel(fields: {
     return { success: false, error: "Color is required" }
   }
 
-  // Workspace-level labels (teamId: null) are allowed; only validate team
-  // existence when a non-null teamId is provided.
   const teamId = fields.teamId === undefined ? "team-1" : fields.teamId
   if (teamId !== null) {
-    const team = _teams.find((t) => t.id === teamId)
+    const team = s.teams.find((t) => t.id === teamId)
     if (!team) return { success: false, error: `Team not found: ${teamId}` }
   }
 
-  // Check for duplicate name within same scope (teamId).
   if (
-    _labels.some((l) => l.teamId === teamId && l.name === fields.name!.trim())
+    s.labels.some((l) => l.teamId === teamId && l.name === fields.name!.trim())
   ) {
     return {
       success: false,
@@ -642,7 +613,7 @@ export function createLabel(fields: {
   }
 
   const label: Label = {
-    id: `label-${_nextLabelId++}`,
+    id: `label-${s.nextLabelId++}`,
     name: fields.name.trim(),
     description: fields.description?.trim() ?? "",
     color: fields.color.trim(),
@@ -651,7 +622,7 @@ export function createLabel(fields: {
     archivedAt: null,
   }
 
-  _labels.push(label)
+  s.labels.push(label)
   return { success: true, data: deepClone(label) }
 }
 
@@ -664,16 +635,16 @@ export function updateLabel(
     archivedAt?: string | null
   }
 ): Result<Label> {
-  const label = _labels.find((l) => l.id === id)
+  const s = _state()
+  const label = s.labels.find((l) => l.id === id)
   if (!label) return { success: false, error: "Label not found" }
 
   if (fields.name !== undefined) {
     if (String(fields.name).trim() === "") {
       return { success: false, error: "Name cannot be empty" }
     }
-    // Check for duplicate name within team (excluding self)
     if (
-      _labels.some(
+      s.labels.some(
         (l) =>
           l.id !== id &&
           l.teamId === label.teamId &&
@@ -704,9 +675,10 @@ export function updateLabel(
 }
 
 export function deleteLabel(id: string): Result<{ id: string }> {
-  const idx = _labels.findIndex((l) => l.id === id)
+  const s = _state()
+  const idx = s.labels.findIndex((l) => l.id === id)
   if (idx === -1) return { success: false, error: "Label not found" }
-  _labels.splice(idx, 1)
+  s.labels.splice(idx, 1)
   return { success: true, data: { id } }
 }
 
@@ -720,15 +692,15 @@ export function restoreLabel(id: string): Result<Label> {
 
 // ---------------------------------------------------------------------------
 // Project labels (parallel CRUD on a separate array — issue labels live in
-// `_labels`; this set is scoped to projects and starts empty).
+// `_state().labels`; project labels start empty per session).
 // ---------------------------------------------------------------------------
 
 export function getProjectLabels(): Label[] {
-  return deepClone(_projectLabels)
+  return deepClone(_state().projectLabels)
 }
 
 export function getProjectLabelById(id: string): Label | undefined {
-  const label = _projectLabels.find((l) => l.id === id)
+  const label = _state().projectLabels.find((l) => l.id === id)
   return label ? deepClone(label) : undefined
 }
 
@@ -737,17 +709,19 @@ export function createProjectLabel(fields: {
   color?: string
   description?: string
 }): Result<Label> {
+  const s = _state()
+
   if (!fields.name || String(fields.name).trim() === "") {
     return { success: false, error: "Name is required" }
   }
   if (!fields.color || String(fields.color).trim() === "") {
     return { success: false, error: "Color is required" }
   }
-  if (_projectLabels.some((l) => l.name === fields.name!.trim())) {
+  if (s.projectLabels.some((l) => l.name === fields.name!.trim())) {
     return { success: false, error: `Label already exists: ${fields.name}` }
   }
   const label: Label = {
-    id: `project-label-${_nextProjectLabelId++}`,
+    id: `project-label-${s.nextProjectLabelId++}`,
     name: fields.name.trim(),
     description: fields.description?.trim() ?? "",
     color: fields.color.trim(),
@@ -755,7 +729,7 @@ export function createProjectLabel(fields: {
     group: "Type",
     archivedAt: null,
   }
-  _projectLabels.push(label)
+  s.projectLabels.push(label)
   return { success: true, data: deepClone(label) }
 }
 
@@ -768,7 +742,8 @@ export function updateProjectLabel(
     archivedAt?: string | null
   }
 ): Result<Label> {
-  const label = _projectLabels.find((l) => l.id === id)
+  const s = _state()
+  const label = s.projectLabels.find((l) => l.id === id)
   if (!label) return { success: false, error: "Label not found" }
 
   if (fields.name !== undefined) {
@@ -776,7 +751,7 @@ export function updateProjectLabel(
       return { success: false, error: "Name cannot be empty" }
     }
     if (
-      _projectLabels.some((l) => l.id !== id && l.name === fields.name!.trim())
+      s.projectLabels.some((l) => l.id !== id && l.name === fields.name!.trim())
     ) {
       return { success: false, error: `Label already exists: ${fields.name}` }
     }
@@ -798,9 +773,10 @@ export function updateProjectLabel(
 }
 
 export function deleteProjectLabel(id: string): Result<{ id: string }> {
-  const idx = _projectLabels.findIndex((l) => l.id === id)
+  const s = _state()
+  const idx = s.projectLabels.findIndex((l) => l.id === id)
   if (idx === -1) return { success: false, error: "Label not found" }
-  _projectLabels.splice(idx, 1)
+  s.projectLabels.splice(idx, 1)
   return { success: true, data: { id } }
 }
 
@@ -809,16 +785,16 @@ export function deleteProjectLabel(id: string): Result<{ id: string }> {
 // ---------------------------------------------------------------------------
 
 export function getTeams(): Team[] {
-  return deepClone(_teams)
+  return deepClone(_state().teams)
 }
 
 export function getTeamById(id: string): Team | undefined {
-  const team = _teams.find((t) => t.id === id)
+  const team = _state().teams.find((t) => t.id === id)
   return team ? deepClone(team) : undefined
 }
 
 export function getTeamByKey(key: string): Team | undefined {
-  const team = _teams.find((t) => t.key === key)
+  const team = _state().teams.find((t) => t.key === key)
   return team ? deepClone(team) : undefined
 }
 
@@ -829,6 +805,8 @@ export function createTeam(fields: {
   leadId?: string
   memberIds?: string[]
 }): Result<Team> {
+  const s = _state()
+
   if (!fields.name || String(fields.name).trim() === "") {
     return { success: false, error: "Name is required" }
   }
@@ -836,22 +814,16 @@ export function createTeam(fields: {
     return { success: false, error: "Key is required" }
   }
 
-  // Check for duplicate key
   const normalizedKey = fields.key.trim().toUpperCase()
-  if (_teams.some((t) => t.key === normalizedKey)) {
+  if (s.teams.some((t) => t.key === normalizedKey)) {
     return {
       success: false,
       error: `Team key already exists: ${normalizedKey}`,
     }
   }
 
-  // Reject duplicate names too — the previous code only deduped by key,
-  // which let QA tests stack two "Pre-existing" entries (one as COL,
-  // one as DUPE) in the team list. Rejecting the name on the second
-  // POST keeps the team Select dropdowns elsewhere in the app readable
-  // (real Linear treats team names as workspace-unique anyway).
   const trimmedName = fields.name.trim()
-  if (_teams.some((t) => t.name.toLowerCase() === trimmedName.toLowerCase())) {
+  if (s.teams.some((t) => t.name.toLowerCase() === trimmedName.toLowerCase())) {
     return {
       success: false,
       error: `Team name already exists: ${trimmedName}`,
@@ -859,16 +831,15 @@ export function createTeam(fields: {
   }
 
   if (fields.leadId !== undefined) {
-    const lead = _members.find((m) => m.id === fields.leadId)
+    const lead = s.members.find((m) => m.id === fields.leadId)
     if (!lead) {
       return { success: false, error: `Member not found: ${fields.leadId}` }
     }
   }
 
-  // Validate member IDs if provided
   if (fields.memberIds !== undefined) {
     for (const memberId of fields.memberIds) {
-      const member = _members.find((m) => m.id === memberId)
+      const member = s.members.find((m) => m.id === memberId)
       if (!member) {
         return { success: false, error: `Member not found: ${memberId}` }
       }
@@ -876,7 +847,7 @@ export function createTeam(fields: {
   }
 
   const team: Team = {
-    id: `team-${_nextTeamId++}`,
+    id: `team-${s.nextTeamId++}`,
     name: fields.name.trim(),
     key: normalizedKey,
     description: fields.description ?? "",
@@ -885,9 +856,8 @@ export function createTeam(fields: {
     createdAt: now(),
   }
 
-  _teams.push(team)
-  // Initialize issue counter for new team key
-  _nextIssueCounters[team.key] = 1
+  s.teams.push(team)
+  s.nextIssueCounters[team.key] = 1
   return { success: true, data: deepClone(team) }
 }
 
@@ -900,7 +870,8 @@ export function updateTeam(
     memberIds?: string[]
   }
 ): Result<Team> {
-  const team = _teams.find((t) => t.id === id)
+  const s = _state()
+  const team = s.teams.find((t) => t.id === id)
   if (!team) return { success: false, error: "Team not found" }
 
   if (fields.name !== undefined) {
@@ -911,7 +882,7 @@ export function updateTeam(
   }
   if (fields.description !== undefined) team.description = fields.description
   if (fields.leadId !== undefined) {
-    const lead = _members.find((m) => m.id === fields.leadId)
+    const lead = s.members.find((m) => m.id === fields.leadId)
     if (!lead) {
       return { success: false, error: `Member not found: ${fields.leadId}` }
     }
@@ -919,7 +890,7 @@ export function updateTeam(
   }
   if (fields.memberIds !== undefined) {
     for (const memberId of fields.memberIds) {
-      const member = _members.find((m) => m.id === memberId)
+      const member = s.members.find((m) => m.id === memberId)
       if (!member) {
         return { success: false, error: `Member not found: ${memberId}` }
       }
@@ -935,11 +906,11 @@ export function updateTeam(
 // ---------------------------------------------------------------------------
 
 export function getMembers(): Member[] {
-  return deepClone(_members)
+  return deepClone(_state().members)
 }
 
 export function getMemberById(id: string): Member | undefined {
-  const member = _members.find((m) => m.id === id)
+  const member = _state().members.find((m) => m.id === id)
   return member ? deepClone(member) : undefined
 }
 
@@ -948,11 +919,11 @@ export function getMemberById(id: string): Member | undefined {
 // ---------------------------------------------------------------------------
 
 export function getViews(): View[] {
-  return deepClone(_views)
+  return deepClone(_state().views)
 }
 
 export function getViewById(id: string): View | undefined {
-  const view = _views.find((v) => v.id === id)
+  const view = _state().views.find((v) => v.id === id)
   return view ? deepClone(view) : undefined
 }
 
@@ -963,6 +934,8 @@ export function createView(fields: {
   ownerId?: string
   teamId?: string
 }): Result<View> {
+  const s = _state()
+
   if (!fields.name || String(fields.name).trim() === "") {
     return { success: false, error: "Name is required" }
   }
@@ -971,18 +944,18 @@ export function createView(fields: {
   }
 
   const teamId = fields.teamId ?? "team-1"
-  const team = _teams.find((t) => t.id === teamId)
+  const team = s.teams.find((t) => t.id === teamId)
   if (!team) return { success: false, error: `Team not found: ${teamId}` }
 
   if (fields.ownerId !== undefined) {
-    const owner = _members.find((m) => m.id === fields.ownerId)
+    const owner = s.members.find((m) => m.id === fields.ownerId)
     if (!owner) {
       return { success: false, error: `Member not found: ${fields.ownerId}` }
     }
   }
 
   const view: View = {
-    id: `view-${_nextViewId++}`,
+    id: `view-${s.nextViewId++}`,
     name: fields.name.trim(),
     description: fields.description ?? "",
     filterQuery: fields.filterQuery.trim(),
@@ -991,38 +964,14 @@ export function createView(fields: {
     createdAt: now(),
   }
 
-  _views.push(view)
+  s.views.push(view)
   return { success: true, data: deepClone(view) }
 }
 
 // ---------------------------------------------------------------------------
-// Reset — restores everything to initial state
+// Reset — restores everything in the current session to initial state.
 // ---------------------------------------------------------------------------
 
 export function reset(seed?: number): void {
-  _members = deepClone(initialMembers)
-  _teams = deepClone(initialTeams)
-  _projects = deepClone(initialProjects)
-  _cycles = deepClone(initialCycles)
-  _issues = deepClone(initialIssues)
-  _labels = deepClone(initialLabels)
-  _views = deepClone(initialViews)
-
-  _nextIssueCounters = { ENG: 19, DES: 8 }
-  _nextIssueId = 26
-  _nextProjectId = 3
-  _nextCycleId = 4
-  _nextLabelId = 7
-  _nextTeamId = 3
-  _nextViewId = 4
-
-  // Deterministic timestamps when seed is provided
-  if (seed !== undefined) {
-    const base = new Date("2025-06-01T12:00:00.000Z")
-    base.setMinutes(base.getMinutes() + (seed % 1440))
-    _dateOverride = base.toISOString()
-  } else {
-    _dateOverride = null
-  }
-  _dateCounter = 0
+  resetState(_state(), seed)
 }

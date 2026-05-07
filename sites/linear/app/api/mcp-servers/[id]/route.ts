@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
 import { deleteMcpServer } from "@/lib/agent-mocks"
+import { route } from "@/app/lib/route"
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type Ctx = { params: Promise<{ id: string }> }
+
+export const DELETE = route<Ctx>(async (_req, { params }) => {
   const { id } = await params
   if (!deleteMcpServer(id)) {
     return NextResponse.json({ error: "Server not found" }, { status: 404 })
   }
   return NextResponse.json({ deleted: true })
-}
+})

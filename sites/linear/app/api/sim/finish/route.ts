@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import "../../../lib/init-sim"
 import {
   finishEpisode,
   hasActiveEpisode,
   getActiveEpisode,
 } from "@thetabench/core"
+import { route } from "../../../lib/route"
 
-export async function POST(request: NextRequest) {
+export const POST = route(async (request) => {
   if (!hasActiveEpisode()) {
     return NextResponse.json({ error: "No active episode" }, { status: 400 })
   }
@@ -47,4 +48,4 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     )
   }
-}
+})
