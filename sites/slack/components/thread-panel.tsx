@@ -75,7 +75,10 @@ export function ThreadPanel() {
 
   if (!rootId || !root) return null
 
-  const handleReplySend = async (text: string) => {
+  const handleReplySend = async (
+    text: string,
+    attachments: { localId: string; type: string; name: string; url: string }[]
+  ) => {
     const res = await fetch("/api/data/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -86,6 +89,12 @@ export function ThreadPanel() {
         text,
         threadRootId: rootId,
         broadcastToChannel: broadcast,
+        attachments: attachments.map((a) => ({
+          id: a.localId,
+          type: a.type,
+          name: a.name,
+          url: a.url,
+        })),
       }),
     })
     if (res.ok) {

@@ -1,12 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { useTheme } from "next-themes"
+import { Hash, Lock, Star, X } from "lucide-react"
 import { SimplePageHeader } from "@/components/simple-page-header"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -14,6 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+
+type NotifLevel = "all" | "mentions" | "off"
 
 type Preferences = {
   theme: string
@@ -32,17 +37,33 @@ type Preferences = {
   timezone: string
   keyboardShortcuts: boolean
   markAsReadOnEnter: boolean
+  // Per-channel overrides (set from the channel-header bell + star).
+  starredChannelIds?: string[]
+  channelNotifs?: Record<string, NotifLevel>
+}
+
+type Channel = {
+  id: string
+  name: string
+  type: "public" | "private"
 }
 
 export default function PreferencesPage() {
   const { theme, setTheme } = useTheme()
   const [prefs, setPrefs] = useState<Preferences | null>(null)
+  const [channels, setChannels] = useState<Channel[]>([])
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    fetch("/api/data/preferences")
-      .then((r) => r.json())
-      .then(setPrefs)
+    Promise.all([
+      fetch("/api/data/preferences").then((r) => r.json()),
+      fetch("/api/data/channels").then((r) => r.json()),
+    ]).then(([p, c]) => {
+      setPrefs(p)
+      setChannels(c as Channel[])
+    })
   }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const update = async (key: string, value: unknown) => {
     const res = await fetch("/api/data/preferences", {
@@ -53,7 +74,29 @@ export default function PreferencesPage() {
     if (res.ok) setPrefs(await res.json())
   }
 
+  const channelById = (id: string) => channels.find((c) => c.id === id)
+
+  const clearStar = async (id: string) => {
+    if (!prefs) return
+    const next = (prefs.starredChannelIds ?? []).filter((cid) => cid !== id)
+    await update("starredChannelIds", next)
+  }
+
+  const clearChannelNotif = async (id: string) => {
+    if (!prefs) return
+    const next: Record<string, NotifLevel> = { ...(prefs.channelNotifs ?? {}) }
+    delete next[id]
+    await update("channelNotifs", next)
+  }
+
   if (!prefs) return null
+
+  const starred = (prefs.starredChannelIds ?? [])
+    .map((id) => ({ id, channel: channelById(id) }))
+    .filter((row) => row.channel)
+  const overrides = Object.entries(prefs.channelNotifs ?? {})
+    .map(([id, level]) => ({ id, level, channel: channelById(id) }))
+    .filter((row) => row.channel)
 
   return (
     <>
@@ -122,6 +165,112 @@ export default function PreferencesPage() {
                   }
                 />
               </div>
+
+              {/* Per-channel overrides set from the channel header. */}
+              <section className="mt-4">
+                <h3 className="text-sm font-bold">Channel-specific</h3>
+                <p className="text-xs text-muted-foreground">
+                  Overrides set from the channel header. The bell in any channel
+                  header lets you change these.
+                </p>
+                {overrides.length === 0 ? (
+                  <p className="mt-3 rounded-md border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                    No channel-level overrides yet.
+                  </p>
+                ) : (
+                  <ul className="mt-3 flex flex-col divide-y divide-border rounded-md border border-border">
+                    {overrides.map(({ id, level, channel }) => {
+                      if (!channel) return null
+                      const Icon = channel.type === "private" ? Lock : Hash
+                      return (
+                        <li
+                          key={id}
+                          className="flex items-center gap-2 px-3 py-2 text-sm"
+                        >
+                          <Icon className="size-3.5 text-muted-foreground" />
+                          <Link
+                            href={`/c/${channel.name}`}
+                            className="flex-1 truncate hover:underline"
+                          >
+                            {channel.name}
+                          </Link>
+                          <Select
+                            value={level}
+                            onValueChange={(v) =>
+                              update("channelNotifs", {
+                                ...(prefs.channelNotifs ?? {}),
+                                [id]: v as NotifLevel,
+                              })
+                            }
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="mentions">Mentions</SelectItem>
+                              <SelectItem value="off">Off</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7"
+                            aria-label={`Reset ${channel.name} to default`}
+                            onClick={() => clearChannelNotif(id)}
+                          >
+                            <X className="size-3.5" />
+                          </Button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+              </section>
+
+              <section className="mt-2">
+                <h3 className="text-sm font-bold">Starred channels</h3>
+                <p className="text-xs text-muted-foreground">
+                  Pin channels to the top of your sidebar via the star icon in
+                  the channel header.
+                </p>
+                {starred.length === 0 ? (
+                  <p className="mt-3 rounded-md border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                    No starred channels yet.
+                  </p>
+                ) : (
+                  <ul className="mt-3 flex flex-col divide-y divide-border rounded-md border border-border">
+                    {starred.map(({ id, channel }) => {
+                      if (!channel) return null
+                      const Icon = channel.type === "private" ? Lock : Hash
+                      return (
+                        <li
+                          key={id}
+                          className="flex items-center gap-2 px-3 py-2 text-sm"
+                        >
+                          <Star className="size-3.5 fill-yellow-500 text-yellow-500" />
+                          <Icon className="size-3.5 text-muted-foreground" />
+                          <Link
+                            href={`/c/${channel.name}`}
+                            className="flex-1 truncate hover:underline"
+                          >
+                            {channel.name}
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7"
+                            aria-label={`Unstar ${channel.name}`}
+                            onClick={() => clearStar(id)}
+                          >
+                            <X className="size-3.5" />
+                          </Button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+              </section>
             </div>
           </TabsContent>
           <TabsContent value="sidebar" className="p-6">

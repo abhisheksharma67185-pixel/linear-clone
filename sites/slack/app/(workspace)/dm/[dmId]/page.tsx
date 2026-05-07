@@ -88,7 +88,10 @@ export default function DmPage() {
   }, [load])
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const handleSend = async (text: string) => {
+  const handleSend = async (
+    text: string,
+    attachments: { localId: string; type: string; name: string; url: string }[]
+  ) => {
     if (!dm) return
     const res = await fetch("/api/data/messages", {
       method: "POST",
@@ -97,6 +100,12 @@ export default function DmPage() {
         dmId: dm.id,
         authorId: CURRENT_USER_ID,
         text,
+        attachments: attachments.map((a) => ({
+          id: a.localId,
+          type: a.type,
+          name: a.name,
+          url: a.url,
+        })),
       }),
     })
     if (res.ok) load()

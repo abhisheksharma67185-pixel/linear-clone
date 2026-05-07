@@ -5,6 +5,7 @@ import { UserAvatar } from "./user-avatar"
 import { ReactionBar, emojiFor } from "./reaction-bar"
 import { MessageToolbar } from "./message-toolbar"
 import { useThreadPanel } from "./thread-panel-provider"
+import { useForwardMessage } from "./forward-message-provider"
 import { cn } from "@/lib/utils"
 
 type User = {
@@ -104,11 +105,14 @@ export function MessageItem({
   // from the picker. Pages typically forward to onToggleReaction.
   onAddReaction: (emoji: string) => void
   onSave: () => void
-  onForward: () => void
+  // Optional — when omitted, the toolbar opens the global forward dialog.
+  // Pages can pass a custom handler for special-case behavior.
+  onForward?: () => void
   onEdit: () => void
   onDelete: () => void
 }) {
   const { open } = useThreadPanel()
+  const { openForward } = useForwardMessage()
   if (message.isDeleted) {
     return (
       <div className="group relative flex gap-3 px-5 py-1 text-muted-foreground italic">
@@ -195,7 +199,7 @@ export function MessageItem({
         onReact={onAddReaction}
         onReplyInThread={() => open(message.id)}
         onSave={onSave}
-        onForward={onForward}
+        onForward={onForward ?? (() => openForward(message.id))}
         onEdit={onEdit}
         onDelete={onDelete}
         canEdit={canEdit}

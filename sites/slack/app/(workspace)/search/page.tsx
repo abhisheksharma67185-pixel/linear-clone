@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation"
 import { SimplePageHeader } from "@/components/simple-page-header"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Hash, Lock } from "lucide-react"
+import { FileText, Hash, Image as ImageIcon, Link2, Lock } from "lucide-react"
 
 type Message = {
   id: string
@@ -29,6 +29,13 @@ type User = {
   email: string
   title: string
 }
+type FileResult = {
+  id: string
+  type: "file" | "image" | "link"
+  name: string
+  url: string
+  messageId: string
+}
 
 type Results = {
   query: string
@@ -36,7 +43,7 @@ type Results = {
   messages: Message[]
   channels: Channel[]
   users: User[]
-  files: unknown[]
+  files: FileResult[]
 }
 
 function SearchPageContent() {
@@ -139,9 +146,41 @@ function SearchPageContent() {
             </ScrollArea>
           </TabsContent>
           <TabsContent value="files" className="flex-1">
-            <div className="p-8 text-sm text-muted-foreground">
-              File results coming soon.
-            </div>
+            <ScrollArea className="h-full">
+              {results.files.length === 0 ? (
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  No files match &ldquo;{q}&rdquo;.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-2 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {results.files.map((f) => {
+                    const Icon =
+                      f.type === "image"
+                        ? ImageIcon
+                        : f.type === "link"
+                          ? Link2
+                          : FileText
+                    return (
+                      <a
+                        key={f.id}
+                        href={f.url}
+                        className="flex items-start gap-3 rounded-md border border-border bg-card p-3 hover:bg-muted"
+                      >
+                        <Icon className="size-5 text-muted-foreground" />
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <span className="truncate text-sm font-semibold">
+                            {f.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground uppercase">
+                            {f.type}
+                          </span>
+                        </div>
+                      </a>
+                    )
+                  })}
+                </div>
+              )}
+            </ScrollArea>
           </TabsContent>
         </Tabs>
       ) : (
