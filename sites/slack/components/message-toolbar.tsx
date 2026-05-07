@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   Pencil,
   Share2,
+  Sparkles,
   SmilePlus,
   Trash2,
 } from "lucide-react"
@@ -23,6 +24,17 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { EmojiPicker } from "./emoji-picker"
+import { emojiFor } from "./reaction-bar"
+import { toast } from "sonner"
+
+// Three quick-react buttons that appear before the emoji picker, matching
+// real Slack. Real Slack picks these from the user's frequently-used set;
+// we hardcode three common ones that exist in our emoji catalog.
+const QUICK_REACTIONS = [
+  { code: ":white_check_mark:", label: "Done" },
+  { code: ":eyes:", label: "Eyes on it" },
+  { code: ":raised_hands:", label: "Raised hands" },
+]
 
 export function MessageToolbar({
   onReact,
@@ -44,10 +56,29 @@ export function MessageToolbar({
 }) {
   return (
     <div className="absolute -top-4 right-6 hidden items-center rounded-md border border-border bg-background shadow-sm group-hover:flex">
-      {/* EmojiPicker can't be wrapped in TooltipTrigger render — the
-          double render-prop chain breaks ref forwarding to the inner
-          Popover.Trigger, which then can't anchor and pops in the
-          top-left corner. Use the native title attr instead. */}
+      {/* Quick-react row — three pre-set emojis that fire on click. */}
+      {QUICK_REACTIONS.map((q) => (
+        <Tooltip key={q.code}>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7 rounded-none text-base"
+                onClick={() => onReact(q.code)}
+                aria-label={q.label}
+              >
+                <span className="leading-none">{emojiFor(q.code)}</span>
+              </Button>
+            }
+          />
+          <TooltipContent>{q.label}</TooltipContent>
+        </Tooltip>
+      ))}
+
+      {/* Full emoji picker — can't be wrapped in TooltipTrigger render
+          (double render-prop breaks ref forwarding to Popover.Trigger
+          and the popover loses its anchor). Use a native title attr. */}
       <EmojiPicker onSelect={onReact}>
         <Button
           variant="ghost"
@@ -59,6 +90,7 @@ export function MessageToolbar({
           <SmilePlus className="size-4" />
         </Button>
       </EmojiPicker>
+
       <Tooltip>
         <TooltipTrigger
           render={
@@ -104,6 +136,26 @@ export function MessageToolbar({
         />
         <TooltipContent>Save for later</TooltipContent>
       </Tooltip>
+
+      {/* AI / sparkles — real Slack opens summarize / quick-actions menu.
+          Decorative for our mock; surfaces a toast hint. */}
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 rounded-none"
+              onClick={() => toast.info("AI assist coming soon")}
+              aria-label="AI assist"
+            >
+              <Sparkles className="size-4" />
+            </Button>
+          }
+        />
+        <TooltipContent>AI assist</TooltipContent>
+      </Tooltip>
+
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
