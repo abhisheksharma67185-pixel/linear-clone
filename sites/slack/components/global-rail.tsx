@@ -10,7 +10,6 @@ import {
   Home,
   MessageCircle,
   MoreHorizontal,
-  Plus,
   Settings,
   type LucideIcon,
 } from "lucide-react"
@@ -207,41 +206,43 @@ export function GlobalRail() {
         </button>
       </div>
 
-      <div className="mt-auto flex flex-col items-center gap-2">
-        <button
-          type="button"
-          className="flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white hover:bg-white/20"
-          aria-label="Create new"
-        >
-          <Plus className="size-5" />
-        </button>
-        <Link
-          href="/admin"
-          className={cn(
-            "flex size-8 items-center justify-center rounded-md transition",
-            pathname.startsWith("/admin")
-              ? "bg-white/12 text-white"
-              : "text-white/80 hover:bg-white/8 hover:text-white"
-          )}
-          aria-label="Admin"
-        >
-          <Settings className="size-4" />
-        </Link>
-        <Link href={`/people/${CURRENT_USER_ID}`} aria-label="Your profile">
-          {user ? (
-            <UserAvatar
-              name={user.name}
-              src={user.avatar}
-              presence={user.presence}
-              size="sm"
-              showPresence
-              className="ring-2 ring-white/20"
-            />
-          ) : (
-            <span className="size-7 rounded-md bg-white/10" />
-          )}
-        </Link>
-      </div>
+      {/* Divider between primary nav and bottom utilities — matches the
+          thin horizontal line in real Slack between More and Admin. */}
+      <div className="my-2 h-px w-8 shrink-0 bg-white/15" />
+
+      <Link
+        href="/admin"
+        className={cn(
+          "group relative flex w-14 flex-col items-center gap-0.5 rounded-md py-1.5 text-[10px] font-medium transition",
+          pathname.startsWith("/admin")
+            ? "bg-white/12 text-white"
+            : "text-white/85 hover:bg-white/8 hover:text-white"
+        )}
+        aria-label="Admin"
+      >
+        <span className="flex size-6 items-center justify-center">
+          <Settings className="size-5" />
+        </span>
+        <span className="leading-tight">Admin</span>
+      </Link>
+
+      <Link
+        href={`/people/${CURRENT_USER_ID}`}
+        aria-label="Your profile"
+        className="mt-auto"
+      >
+        {user ? (
+          <UserAvatar
+            name={user.name}
+            src={user.avatar}
+            presence={user.presence}
+            size="md"
+            showPresence
+          />
+        ) : (
+          <span className="size-9 rounded-md bg-white/10" />
+        )}
+      </Link>
 
       {/* Side icons mimic Slack: rendering an aria-only label so screen
           readers still call out the section even though the visible labels
