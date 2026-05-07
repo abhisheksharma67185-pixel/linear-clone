@@ -5,7 +5,7 @@ import {
   hasActiveEpisode,
   getActiveEpisode,
 } from "@thetabench/core"
-import { route } from "../../../lib/route"
+import { route } from "../../../lib/with-route"
 
 export const POST = route(async (request) => {
   if (!hasActiveEpisode()) {

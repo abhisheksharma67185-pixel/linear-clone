@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { mcpServers, createMcpServer } from "@/lib/agent-mocks"
-import { route } from "@/app/lib/route"
+import { route } from "@/app/lib/with-route"
 
 export const GET = route(async () => {
   return NextResponse.json(mcpServers)

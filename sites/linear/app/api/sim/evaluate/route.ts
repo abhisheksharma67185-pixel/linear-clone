@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import "../../../lib/init-sim"
 import { evaluateEpisode, getActiveEpisode } from "@thetabench/core"
-import { route } from "../../../lib/route"
+import { route } from "../../../lib/with-route"
 
 export const POST = route(async () => {
   const episode = getActiveEpisode()

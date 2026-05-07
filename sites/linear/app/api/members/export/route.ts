@@ -1,6 +1,6 @@
 import * as store from "@/app/lib/store"
 import { summarizeMembers, toCsv } from "@/lib/members-admin-mocks"
-import { route } from "@/app/lib/route"
+import { route } from "@/app/lib/with-route"
 
 export const GET = route(async () => {
   const members = store.getMembers()

@@ -9,7 +9,7 @@ import { NextResponse } from "next/server"
 import "../../../lib/init-sim"
 import { startEpisode } from "@thetabench/core"
 import type { EpisodeConfig } from "@thetabench/core"
-import { route } from "../../../lib/route"
+import { route } from "../../../lib/with-route"
 
 export const POST = route(async (request) => {
   let body

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import "../../../../lib/init-sim"
 import { logAction, hasActiveEpisode } from "@thetabench/core"
-import { route } from "../../../../lib/route"
+import { route } from "../../../../lib/with-route"
 
 export const POST = route(async (request) => {
   if (!hasActiveEpisode()) {

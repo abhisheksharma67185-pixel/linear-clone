@@ -7,7 +7,7 @@
 
 import { NextResponse } from "next/server"
 import { getResource } from "../../../../../lib/resources"
-import { route } from "../../../../../lib/route"
+import { route } from "../../../../../lib/with-route"
 
 type Ctx = {
   params: Promise<{ resource: string; id: string; action: string }>

@@ -6,7 +6,7 @@ import {
   getActiveEpisode,
 } from "@thetabench/core"
 import * as store from "../../../lib/store"
-import { route } from "../../../lib/route"
+import { route } from "../../../lib/with-route"
 import { _state } from "../../../lib/session"
 
 const getState = () => {

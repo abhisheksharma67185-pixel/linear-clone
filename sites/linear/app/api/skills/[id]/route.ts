@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { updateSkill, deleteSkill } from "@/lib/agent-mocks"
-import { route } from "@/app/lib/route"
+import { route } from "@/app/lib/with-route"
 
 type Ctx = { params: Promise<{ id: string }> }
 

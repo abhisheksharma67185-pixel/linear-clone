@@ -4,7 +4,7 @@ import {
   sendDeletionCode,
   verifyDeletion,
 } from "@/lib/workspace-mocks"
-import { route } from "@/app/lib/route"
+import { route } from "@/app/lib/with-route"
 
 // POST: send a deletion code to the user's email (mock — returns { sent: true }).
 // The actual code is retrievable in dev via peekDeletionCode; production would

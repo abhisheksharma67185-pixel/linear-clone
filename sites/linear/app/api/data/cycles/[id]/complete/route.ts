@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import * as store from "../../../../../lib/store"
-import { route } from "../../../../../lib/route"
+import { route } from "../../../../../lib/with-route"
 
 type Ctx = { params: Promise<{ id: string }> }
 

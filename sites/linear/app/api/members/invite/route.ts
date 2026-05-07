@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { inviteMembers } from "@/lib/members-admin-mocks"
-import { route } from "@/app/lib/route"
+import { route } from "@/app/lib/with-route"
 
 export const POST = route(async (request) => {
   let body: {

@@ -7,7 +7,7 @@ import {
   unsuspendMember,
   type MemberRole,
 } from "@/lib/members-admin-mocks"
-import { route } from "@/app/lib/route"
+import { route } from "@/app/lib/with-route"
 
 type PatchBody = {
   action: "set-role" | "suspend" | "unsuspend" | "remove" | "resend-invite"

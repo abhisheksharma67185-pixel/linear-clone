@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { agentState, setGuidance, GUIDANCE_MAX_CHARS } from "@/lib/agent-mocks"
-import { route } from "@/app/lib/route"
+import { route } from "@/app/lib/with-route"
 
 export const GET = route(async () => {
   return NextResponse.json({ guidance: agentState.guidance })
