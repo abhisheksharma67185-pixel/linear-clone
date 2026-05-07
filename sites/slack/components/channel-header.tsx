@@ -6,14 +6,21 @@ import { usePathname, useRouter } from "next/navigation"
 import {
   Bell,
   ChevronDown,
+  Columns2,
+  Copy,
+  FilePlus,
   Hash,
   Headphones,
   Info,
   LayoutList,
   Lock,
+  LogOut,
   MoreHorizontal,
+  MoveRight,
   Plus,
   Search,
+  Settings,
+  Sparkles,
   Star,
   Users,
   Volume2,
@@ -100,6 +107,7 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
 
   const [starred, setStarred] = useState(false)
   const [notifLevel, setNotifLevel] = useState<NotifLevel>("all")
+  const [notifOpen, setNotifOpen] = useState(false)
   const [huddleStarting, setHuddleStarting] = useState(false)
 
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -254,7 +262,7 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
             />
             <TooltipContent>Start huddle</TooltipContent>
           </Tooltip>
-          <Popover>
+          <Popover open={notifOpen} onOpenChange={setNotifOpen}>
             <PopoverTrigger
               render={
                 <Button
@@ -327,36 +335,86 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
                 </Button>
               }
             />
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-64">
               <DropdownMenuItem
                 onClick={() => router.push(`/c/${channel.name}/settings`)}
               >
                 <Info className="size-3.5" />
-                Channel details
+                Open channel details
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => router.push(`/c/${channel.name}/pins`)}
+                onClick={() => toast.info("Summarizing channel…")}
+              >
+                <Sparkles className="size-3.5" />
+                Summarize channel
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setNotifOpen(true)}>
+                <Bell className="size-3.5" />
+                Edit notifications
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => toast.success(`Starred #${channel.name}`)}
               >
                 <Star className="size-3.5" />
-                Pinned messages
+                Star channel
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => router.push(`/c/${channel.name}/lists`)}
-              >
-                <LayoutList className="size-3.5" />
-                Lists
+              <DropdownMenuItem onClick={() => toast.info("Move channel…")}>
+                <MoveRight className="size-3.5" />
+                Move channel
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => router.push(`/c/${channel.name}/canvas`)}
+                onClick={() => toast.info("Choose a template…")}
               >
+                <FilePlus className="size-3.5" />
+                Add a template to channel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/workflows")}>
                 <Workflow className="size-3.5" />
-                Open canvas
+                Add a workflow
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => router.push(`/c/${channel.name}/settings`)}
               >
+                <Settings className="size-3.5" />
                 Edit settings
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigator.clipboard
+                    ?.writeText(`${window.location.origin}/c/${channel.name}`)
+                    .then(() => toast.success("Channel link copied"))
+                    .catch(() => toast.error("Copy failed"))
+                }}
+              >
+                <Copy className="size-3.5" />
+                Copy
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  router.push(
+                    `/search?q=in%3A${encodeURIComponent(channel.name)}+`
+                  )
+                }
+              >
+                <Search className="size-3.5" />
+                Search in channel
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => toast.info("Split view coming soon")}
+              >
+                <Columns2 className="size-3.5" />
+                Open in split view
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => toast.success(`Left #${channel.name}`)}
+              >
+                <LogOut className="size-3.5" />
+                Leave channel
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

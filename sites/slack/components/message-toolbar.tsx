@@ -99,12 +99,13 @@ export function MessageToolbar({
               size="icon"
               className="size-7 rounded-none"
               onClick={onReplyInThread}
+              aria-label="Reply to thread"
             >
               <MessageSquare className="size-4" />
             </Button>
           }
         />
-        <TooltipContent>Reply in thread</TooltipContent>
+        <TooltipContent>Reply to thread</TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger

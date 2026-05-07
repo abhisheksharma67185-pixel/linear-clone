@@ -1,6 +1,12 @@
 "use client"
 
-import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react"
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type KeyboardEvent,
+} from "react"
 import {
   AtSign,
   Bold,
@@ -29,7 +35,18 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { EmojiPicker } from "./emoji-picker"
+import { MentionPicker, type MentionItem } from "./mention-picker"
 import { cn } from "@/lib/utils"
+
+type User = {
+  id: string
+  name: string
+  displayName: string
+  avatar: string
+  presence: "active" | "away" | "offline" | "dnd"
+  isBot?: boolean
+  title?: string
+}
 
 export type ComposerAttachment = {
   // Local-only id; the server assigns its own when the message is created.
@@ -61,6 +78,31 @@ export function Composer({
   const [attachments, setAttachments] = useState<ComposerAttachment[]>([])
   const [sending, setSending] = useState(false)
 
+  // Mention state — when set, the picker is open and replacing the partial
+  // `@xyz` chunk between `start` and the current cursor.
+  const [users, setUsers] = useState<User[]>([])
+  const [mention, setMention] = useState<{
+    query: string
+    start: number
+    end: number
+  } | null>(null)
+  // The mention picker registers a listener via this ref so its keyboard
+  // nav (↑/↓/Enter/Tab/Esc) can intercept events the textarea would
+  // otherwise consume. Returning true from the handler means the picker
+  // claimed the key — the textarea's onKeyDown then preventDefault's it.
+  const mentionKeydownRef = useRef<
+    ((e: KeyboardEvent<HTMLTextAreaElement>) => boolean) | null
+  >(null)
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    fetch("/api/data/users")
+      .then((r) => r.json())
+      .then((u: User[]) => setUsers(u))
+      .catch(() => {})
+  }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
+
   const submit = async () => {
     const trimmed = text.trim()
     if (sending || disabled) return
@@ -75,7 +117,55 @@ export function Composer({
     }
   }
 
+  // Detect an in-progress @mention immediately before the cursor.
+  // Matches `@xyz` where x..z are word chars; nothing if the @ is mid-word.
+  const computeMention = (
+    value: string,
+    cursor: number
+  ): { query: string; start: number; end: number } | null => {
+    // Look back from cursor for a "@" preceded by start-of-string or whitespace.
+    let i = cursor - 1
+    while (i >= 0 && /[A-Za-z0-9_]/.test(value[i])) i--
+    if (i < 0 || value[i] !== "@") return null
+    if (i > 0 && !/\s/.test(value[i - 1])) return null
+    return { query: value.slice(i + 1, cursor), start: i, end: cursor }
+  }
+
+  const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    setText(value)
+    const cursor = e.target.selectionStart ?? value.length
+    setMention(computeMention(value, cursor))
+  }
+
+  const handleSelectionChange = () => {
+    const ta = textareaRef.current
+    if (!ta) return
+    const cursor = ta.selectionStart ?? text.length
+    setMention(computeMention(text, cursor))
+  }
+
+  const handleMentionSelect = (item: MentionItem) => {
+    if (!mention) return
+    const insertion = `${item.insert} `
+    const next =
+      text.slice(0, mention.start) + insertion + text.slice(mention.end)
+    setText(next)
+    setMention(null)
+    const ta = textareaRef.current
+    requestAnimationFrame(() => {
+      ta?.focus()
+      const pos = mention.start + insertion.length
+      if (ta) ta.selectionStart = ta.selectionEnd = pos
+    })
+  }
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    // Let the mention picker handle navigation keys first.
+    if (mention && mentionKeydownRef.current?.(e)) {
+      e.preventDefault()
+      return
+    }
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       submit()
@@ -168,12 +258,12 @@ export function Composer({
   const canSend = (text.trim() !== "" || attachments.length > 0) && !sending
 
   return (
-    // shrink-0 keeps the composer pinned to the bottom of its flex parent
-    // even when the message list above it grows. Without this, a long
-    // channel can compress the composer and obscure the toolbar.
+    // `relative` so the absolute mention picker positions against this
+    // wrapper. shrink-0 keeps the composer pinned to the bottom of its
+    // flex parent even when the message list above it grows.
     <div
       className={cn(
-        "m-4 mt-2 flex shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-background shadow-sm focus-within:border-primary/40",
+        "relative m-4 mt-2 flex shrink-0 flex-col overflow-visible rounded-lg border border-border bg-background shadow-sm focus-within:border-primary/40",
         compact && "m-2"
       )}
     >
@@ -286,12 +376,36 @@ export function Composer({
       <Textarea
         ref={textareaRef}
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={handleTextChange}
+        onSelect={handleSelectionChange}
         onKeyDown={handleKeyDown}
+        onBlur={() =>
+          // Defer so a click inside the picker can still register before
+          // the picker is dismissed by the textarea losing focus.
+          setTimeout(() => setMention(null), 100)
+        }
         placeholder={placeholder}
         disabled={disabled}
         className="min-h-[44px] resize-none border-0 px-3 py-2 text-[15px] shadow-none focus-visible:ring-0"
       />
+
+      {mention ? (
+        <MentionPicker
+          query={mention.query}
+          users={users}
+          onSelect={handleMentionSelect}
+          onCancel={() => setMention(null)}
+          registerKeydown={(handler) => {
+            mentionKeydownRef.current = handler as unknown as (
+              e: KeyboardEvent<HTMLTextAreaElement>
+            ) => boolean
+            return () => {
+              if (mentionKeydownRef.current === (handler as unknown))
+                mentionKeydownRef.current = null
+            }
+          }}
+        />
+      ) : null}
 
       {attachments.length > 0 ? (
         <div className="flex flex-wrap gap-2 border-t border-border px-3 py-2">
@@ -365,9 +479,25 @@ export function Composer({
             variant="ghost"
             size="icon"
             className="size-7 text-muted-foreground"
-            onClick={() => insertEmoji("@")}
-            aria-label="Mention"
-            title="Mention"
+            onClick={() => {
+              const ta = textareaRef.current
+              const cursor = ta?.selectionStart ?? text.length
+              // Insert "@" at the cursor and immediately open the mention
+              // picker (mention state computed from the new text).
+              const next = `${text.slice(0, cursor)}@${text.slice(cursor)}`
+              setText(next)
+              setMention({
+                query: "",
+                start: cursor,
+                end: cursor + 1,
+              })
+              requestAnimationFrame(() => {
+                ta?.focus()
+                if (ta) ta.selectionStart = ta.selectionEnd = cursor + 1
+              })
+            }}
+            aria-label="Mention someone"
+            title="Mention someone"
           >
             <AtSign className="size-3.5" />
           </Button>
