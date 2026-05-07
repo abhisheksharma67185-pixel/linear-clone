@@ -1,11 +1,23 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { X } from "lucide-react"
+import { Hash, Lock, MoreHorizontal, Sparkles, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { MessageItem } from "./message-item"
 import { Composer } from "./composer"
 import { useThreadPanel } from "./thread-panel-provider"
@@ -41,6 +53,12 @@ type Message = {
   mentions: string[]
 }
 
+type Channel = {
+  id: string
+  name: string
+  type: "public" | "private"
+}
+
 const CURRENT_USER_ID = "usr-1"
 
 export function ThreadPanel() {
@@ -48,6 +66,7 @@ export function ThreadPanel() {
   const [root, setRoot] = useState<Message | null>(null)
   const [replies, setReplies] = useState<Message[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [channel, setChannel] = useState<Channel | null>(null)
   const [broadcast, setBroadcast] = useState(false)
 
   const load = useCallback(async () => {
@@ -57,9 +76,23 @@ export function ThreadPanel() {
       fetch(`/api/data/messages?threadRootId=${rootId}`),
       fetch("/api/data/users"),
     ])
-    if (rootRes.ok) setRoot(await rootRes.json())
+    let parent: Message | null = null
+    if (rootRes.ok) {
+      parent = (await rootRes.json()) as Message
+      setRoot(parent)
+    }
     if (repliesRes.ok) setReplies(await repliesRes.json())
     if (usersRes.ok) setUsers(await usersRes.json())
+
+    // If the parent message lives in a channel, fetch the channel record
+    // so the header subtitle + "Also send to" label show its real name.
+    if (parent?.channelId) {
+      const all = await fetch("/api/data/channels").then((r) => r.json())
+      const ch = (all as Channel[]).find((c) => c.id === parent!.channelId)
+      setChannel(ch ?? null)
+    } else {
+      setChannel(null)
+    }
   }, [rootId])
 
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -161,22 +194,85 @@ export function ThreadPanel() {
     load()
   }
 
+  const ChannelIcon = channel?.type === "private" ? Lock : Hash
+
   return (
     <aside className="flex w-[400px] shrink-0 flex-col border-l border-border bg-background">
-      <header className="flex h-12 items-center justify-between border-b border-border px-4">
-        <div>
-          <div className="text-sm font-bold">Thread</div>
-          <div className="text-xs text-muted-foreground">#thread</div>
+      <header className="flex h-12 shrink-0 items-center justify-between gap-1 border-b border-border px-3">
+        <div className="flex min-w-0 flex-col">
+          <div className="text-sm leading-none font-bold">Thread</div>
+          {channel ? (
+            <div className="mt-0.5 flex items-center gap-0.5 text-xs text-muted-foreground">
+              <ChannelIcon className="size-3" />
+              <span className="truncate">{channel.name}</span>
+            </div>
+          ) : root.dmId ? (
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              Direct message
+            </div>
+          ) : null}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-7"
-          onClick={close}
-          aria-label="Close thread"
-        >
-          <X className="size-4" />
-        </Button>
+        <div className="flex items-center gap-0.5">
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 text-muted-foreground"
+                  onClick={() => toast.info("AI thread summary coming soon")}
+                  aria-label="Summarize thread"
+                >
+                  <Sparkles className="size-4" />
+                </Button>
+              }
+            />
+            <TooltipContent>Summarize thread</TooltipContent>
+          </Tooltip>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 text-muted-foreground"
+                  aria-label="Thread actions"
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => toast.info("Followed thread")}>
+                Follow thread
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.info("Marked unread")}>
+                Mark unread
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigator.clipboard
+                    ?.writeText(`thread-${root.id}`)
+                    .then(() => toast.success("Link copied"))
+                    .catch(() => toast.error("Copy failed"))
+                }}
+              >
+                Copy link to thread
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={close}>Close thread</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7 text-muted-foreground"
+            onClick={close}
+            aria-label="Close thread"
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
       </header>
       <ScrollArea className="flex-1">
         <div className="py-2">
@@ -217,13 +313,19 @@ export function ThreadPanel() {
       </ScrollArea>
       <div className="shrink-0">
         <Composer placeholder="Reply…" onSend={handleReplySend} compact />
-        {root.channelId ? (
+        {channel ? (
           <label className="mx-4 mb-3 flex items-center gap-2 text-xs text-muted-foreground">
             <Checkbox
               checked={broadcast}
               onCheckedChange={(v) => setBroadcast(v === true)}
             />
-            Also send to channel
+            <span className="flex items-center gap-1">
+              Also send to
+              <ChannelIcon className="size-3" />
+              <span className="font-semibold text-foreground">
+                {channel.name}
+              </span>
+            </span>
           </label>
         ) : null}
       </div>
