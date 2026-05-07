@@ -55,6 +55,7 @@ import { DmListItem } from "./dm-list-item"
 import { UserAvatar } from "./user-avatar"
 import { CreateChannelDialog } from "./create-channel-dialog"
 import { NewDmDialog } from "./new-dm-dialog"
+import { InvitePeopleDialog } from "./invite-people-dialog"
 import { cn } from "@/lib/utils"
 
 type User = {
@@ -130,6 +131,7 @@ export function AppSidebar() {
   const [starredIds, setStarredIds] = useState<string[]>([])
   const [createChannelOpen, setCreateChannelOpen] = useState(false)
   const [newDmOpen, setNewDmOpen] = useState(false)
+  const [inviteOpen, setInviteOpen] = useState(false)
   const [refreshTick, setRefreshTick] = useState(0)
   const currentUser = users.find((u) => u.id === CURRENT_USER_ID)
 
@@ -418,6 +420,18 @@ export function AppSidebar() {
                       New message
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      size="sm"
+                      onClick={() => setInviteOpen(true)}
+                      className="text-sidebar-foreground/70"
+                    >
+                      <span className="flex size-4 items-center justify-center rounded bg-sidebar-accent">
+                        <Plus className="size-3" />
+                      </span>
+                      Invite people
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </CollapsibleContent>
@@ -520,6 +534,7 @@ export function AppSidebar() {
         onOpenChange={setNewDmOpen}
         onCreated={() => setRefreshTick((n) => n + 1)}
       />
+      <InvitePeopleDialog open={inviteOpen} onOpenChange={setInviteOpen} />
     </Sidebar>
   )
 }
