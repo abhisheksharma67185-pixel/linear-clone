@@ -179,7 +179,7 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
   }
 
   return (
-    <header className="flex flex-col border-b border-border bg-background">
+    <header className="flex shrink-0 flex-col border-b border-border bg-background">
       {/* Title row */}
       <div className="flex h-12 shrink-0 items-center justify-between gap-2 px-4">
         <div className="flex min-w-0 items-center gap-1">

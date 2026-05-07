@@ -98,7 +98,7 @@ export function MessageList({
   }
 
   return (
-    <ScrollArea className="flex-1">
+    <ScrollArea className="min-h-0 flex-1">
       <div className="flex flex-col py-4">
         {rows.map((row, i) =>
           row.type === "divider" ? (
