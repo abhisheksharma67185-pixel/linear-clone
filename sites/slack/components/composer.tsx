@@ -3,16 +3,22 @@
 import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react"
 import {
   Bold,
+  Code,
+  FileText,
+  Image as ImageIcon,
   Italic,
   Link as LinkIcon,
+  List,
+  ListOrdered,
+  Mic,
   Paperclip,
+  Quote,
   Send,
   Smile,
   Strikethrough,
-  Code,
+  Underline,
+  Video,
   X,
-  FileText,
-  Image as ImageIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -102,6 +108,20 @@ export function Composer({
     setText(next)
   }
 
+  // For lists / quote — insert a marker at column 0 of the current line(s).
+  const prefixLine = (prefix: string) => {
+    const ta = textareaRef.current
+    if (!ta) return
+    const start = ta.selectionStart ?? text.length
+    const lineStart = text.lastIndexOf("\n", Math.max(0, start - 1)) + 1
+    const next = `${text.slice(0, lineStart)}${prefix}${text.slice(lineStart)}`
+    setText(next)
+    requestAnimationFrame(() => {
+      ta.focus()
+      ta.selectionStart = ta.selectionEnd = start + prefix.length
+    })
+  }
+
   const insertEmoji = (shortcode: string) => {
     const ta = textareaRef.current
     const cursor = ta?.selectionStart ?? text.length
@@ -149,13 +169,14 @@ export function Composer({
         compact && "m-2"
       )}
     >
-      <div className="flex items-center gap-0.5 border-b border-border px-2 py-1">
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1">
         <Button
           variant="ghost"
           size="icon"
           className="size-7"
           onClick={() => wrapSelection("*")}
           aria-label="Bold"
+          title="Bold"
         >
           <Bold className="size-3.5" />
         </Button>
@@ -165,6 +186,7 @@ export function Composer({
           className="size-7"
           onClick={() => wrapSelection("_")}
           aria-label="Italic"
+          title="Italic"
         >
           <Italic className="size-3.5" />
         </Button>
@@ -172,8 +194,19 @@ export function Composer({
           variant="ghost"
           size="icon"
           className="size-7"
+          onClick={() => wrapSelection("__")}
+          aria-label="Underline"
+          title="Underline"
+        >
+          <Underline className="size-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
           onClick={() => wrapSelection("~")}
           aria-label="Strikethrough"
+          title="Strikethrough"
         >
           <Strikethrough className="size-3.5" />
         </Button>
@@ -184,17 +217,61 @@ export function Composer({
           className="size-7"
           onClick={insertLink}
           aria-label="Link"
+          title="Link"
         >
           <LinkIcon className="size-3.5" />
+        </Button>
+        <Separator orientation="vertical" className="mx-1 h-4" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={() => prefixLine("- ")}
+          aria-label="Bulleted list"
+          title="Bulleted list"
+        >
+          <List className="size-3.5" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           className="size-7"
+          onClick={() => prefixLine("1. ")}
+          aria-label="Numbered list"
+          title="Numbered list"
+        >
+          <ListOrdered className="size-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={() => prefixLine("> ")}
+          aria-label="Quote"
+          title="Quote"
+        >
+          <Quote className="size-3.5" />
+        </Button>
+        <Separator orientation="vertical" className="mx-1 h-4" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
           onClick={() => wrapSelection("`")}
-          aria-label="Code"
+          aria-label="Inline code"
+          title="Inline code"
         >
           <Code className="size-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={() => wrapSelection("```\n", "\n```")}
+          aria-label="Code block"
+          title="Code block"
+        >
+          <span className="font-mono text-[10px]">{`{}`}</span>
         </Button>
       </div>
       <Textarea
@@ -267,8 +344,27 @@ export function Composer({
             className="size-7"
             onClick={() => insertEmoji("@")}
             aria-label="Mention"
+            title="Mention"
           >
             @
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            aria-label="Record video"
+            title="Record video"
+          >
+            <Video className="size-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            aria-label="Record audio"
+            title="Record audio"
+          >
+            <Mic className="size-3.5" />
           </Button>
           <Button
             variant="ghost"
@@ -276,6 +372,7 @@ export function Composer({
             className="size-7 font-mono"
             onClick={() => insertEmoji("/")}
             aria-label="Slash command"
+            title="Slash command"
           >
             /
           </Button>

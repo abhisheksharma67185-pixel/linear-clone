@@ -2,15 +2,22 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
 import {
-  Hash,
-  Lock,
-  Star,
-  Headphones,
-  Volume2,
   Bell,
-  Users,
+  ChevronDown,
+  Hash,
+  Headphones,
   Info,
+  LayoutList,
+  Lock,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Star,
+  Users,
+  Volume2,
+  Workflow,
 } from "lucide-react"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -23,6 +30,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
@@ -43,7 +57,44 @@ const NOTIF_LEVELS: { value: NotifLevel; label: string }[] = [
   { value: "off", label: "Nothing" },
 ]
 
+// Tabs that real Slack shows beneath the channel title. Mapped to the
+// existing channel sub-pages we already have.
+type ChannelTab = {
+  label: string
+  href: (name: string) => string
+  // True iff the given pathname should highlight this tab.
+  matches: (pathname: string, name: string) => boolean
+}
+
+const TABS: ChannelTab[] = [
+  {
+    label: "Messages",
+    href: (name) => `/c/${name}`,
+    matches: (p, name) =>
+      p === `/c/${name}` ||
+      p === `/c/${name}/pins` ||
+      p === `/c/${name}/members`,
+  },
+  {
+    label: "Canvas",
+    href: (name) => `/c/${name}/canvas`,
+    matches: (p, name) => p.startsWith(`/c/${name}/canvas`),
+  },
+  {
+    label: "Files",
+    href: (name) => `/c/${name}/files`,
+    matches: (p, name) => p.startsWith(`/c/${name}/files`),
+  },
+  {
+    label: "Lists",
+    href: (name) => `/c/${name}/lists`,
+    matches: (p, name) => p.startsWith(`/c/${name}/lists`),
+  },
+]
+
 export function ChannelHeader({ channel }: { channel: Channel }) {
+  const pathname = usePathname()
+  const router = useRouter()
   const Icon =
     channel.type === "private" ? Lock : channel.isShared ? Volume2 : Hash
 
@@ -51,8 +102,7 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
   const [notifLevel, setNotifLevel] = useState<NotifLevel>("all")
   const [huddleStarting, setHuddleStarting] = useState(false)
 
-  // Pull the per-channel toggles out of preferences. Using a separate
-  // fetch (vs a context) keeps the header self-contained.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     fetch("/api/data/preferences")
       .then((r) => r.json())
@@ -66,6 +116,7 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
       })
       .catch(() => {})
   }, [channel.id])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const persistPrefs = async (patch: Record<string, unknown>) => {
     await fetch("/api/data/preferences", {
@@ -78,7 +129,6 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
   const toggleStar = async () => {
     const next = !starred
     setStarred(next)
-    // Read-modify-write on the prefs slot to avoid clobbering other channels.
     const p = await fetch("/api/data/preferences").then((r) => r.json())
     const current: string[] = Array.isArray(p?.starredChannelIds)
       ? p.starredChannelIds
@@ -121,154 +171,251 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
   }
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-      <div className="flex min-w-0 items-center gap-2">
-        <button
-          type="button"
-          className="flex min-w-0 items-center gap-2 rounded-md px-2 py-1 hover:bg-muted"
-        >
-          <Icon className="size-4 shrink-0" />
-          <span className="truncate font-bold text-foreground">
-            {channel.name}
-          </span>
-        </button>
+    <header className="flex flex-col border-b border-border bg-background">
+      {/* Title row */}
+      <div className="flex h-12 shrink-0 items-center justify-between gap-2 px-4">
+        <div className="flex min-w-0 items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleStar}
+                  className={cn(
+                    "size-7",
+                    starred ? "text-yellow-500" : "text-muted-foreground"
+                  )}
+                  aria-pressed={starred}
+                  aria-label={starred ? "Unstar channel" : "Star channel"}
+                >
+                  <Star
+                    className={cn("size-3.5", starred && "fill-yellow-500")}
+                  />
+                </Button>
+              }
+            />
+            <TooltipContent>
+              {starred ? "Unstar channel" : "Star channel"}
+            </TooltipContent>
+          </Tooltip>
+          <button
+            type="button"
+            className="flex min-w-0 items-center gap-1.5 rounded-md px-1.5 py-1 hover:bg-muted"
+          >
+            <Icon className="size-4 shrink-0" />
+            <span className="truncate text-base font-bold text-foreground">
+              {channel.name}
+            </span>
+            <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+          {channel.isArchived ? (
+            <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground uppercase">
+              Archived
+            </span>
+          ) : null}
+        </div>
+
+        <div className="flex items-center gap-0.5">
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Link
+                  href={`/c/${channel.name}/members`}
+                  aria-label="Members"
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "icon" }),
+                    "size-8 w-auto gap-1 px-2 text-muted-foreground"
+                  )}
+                >
+                  <Users className="size-4" />
+                  <span className="text-xs font-semibold tabular-nums">
+                    {channel.memberIds.length}
+                  </span>
+                </Link>
+              }
+            />
+            <TooltipContent>Members</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground"
+                  onClick={startHuddle}
+                  disabled={channel.isArchived || huddleStarting}
+                  aria-label="Start huddle"
+                >
+                  <Headphones className="size-4" />
+                </Button>
+              }
+            />
+            <TooltipContent>Start huddle</TooltipContent>
+          </Tooltip>
+          <Popover>
+            <PopoverTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "size-8 text-muted-foreground",
+                    notifLevel !== "all" && "text-yellow-500"
+                  )}
+                  aria-label="Notification preferences"
+                >
+                  <Bell className="size-4" />
+                </Button>
+              }
+            />
+            <PopoverContent align="end" className="w-60 p-1">
+              <div className="px-2 py-1.5 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                Notifications for #{channel.name}
+              </div>
+              {NOTIF_LEVELS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setNotif(opt.value)}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent",
+                    notifLevel === opt.value && "font-semibold"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex size-3 items-center justify-center rounded-full border",
+                      notifLevel === opt.value
+                        ? "border-primary bg-primary"
+                        : "border-border"
+                    )}
+                  />
+                  {opt.label}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Link
+                  href={`/search?q=in%3A${encodeURIComponent(channel.name)}+`}
+                  aria-label="Search this channel"
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "icon" }),
+                    "size-8 text-muted-foreground"
+                  )}
+                >
+                  <Search className="size-4" />
+                </Link>
+              }
+            />
+            <TooltipContent>Search this channel</TooltipContent>
+          </Tooltip>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground"
+                  aria-label="More channel actions"
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => router.push(`/c/${channel.name}/settings`)}
+              >
+                <Info className="size-3.5" />
+                Channel details
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push(`/c/${channel.name}/pins`)}
+              >
+                <Star className="size-3.5" />
+                Pinned messages
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push(`/c/${channel.name}/lists`)}
+              >
+                <LayoutList className="size-3.5" />
+                Lists
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push(`/c/${channel.name}/canvas`)}
+              >
+                <Workflow className="size-3.5" />
+                Open canvas
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => router.push(`/c/${channel.name}/settings`)}
+              >
+                Edit settings
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      {/* Tab row — Messages / Canvas / Files / Lists / + */}
+      <nav
+        aria-label="Channel views"
+        className="flex h-9 items-center gap-1 border-t border-border px-3"
+      >
+        {TABS.map((tab) => {
+          const isActive = tab.matches(pathname, channel.name)
+          return (
+            <Link
+              key={tab.label}
+              href={tab.href(channel.name)}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "relative flex h-full items-center gap-1.5 px-3 text-xs font-semibold transition-colors",
+                isActive
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {tab.label === "Canvas" ? (
+                <span className="rounded-sm bg-emerald-500/15 px-1 py-0.5 text-[9px] font-bold text-emerald-700 uppercase">
+                  +
+                </span>
+              ) : null}
+              {tab.label}
+              {isActive ? (
+                <span className="absolute right-2 bottom-0 left-2 h-0.5 rounded-t bg-foreground" />
+              ) : null}
+            </Link>
+          )
+        })}
         <Tooltip>
           <TooltipTrigger
             render={
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={toggleStar}
-                className={cn(
-                  "size-7",
-                  starred ? "text-yellow-500" : "text-muted-foreground"
-                )}
-                aria-pressed={starred}
-                aria-label={starred ? "Unstar channel" : "Star channel"}
+                className="ml-1 size-7 text-muted-foreground"
+                aria-label="Add tab"
               >
-                <Star
-                  className={cn("size-3.5", starred && "fill-yellow-500")}
-                />
+                <Plus className="size-3.5" />
               </Button>
             }
           />
-          <TooltipContent>
-            {starred ? "Unstar channel" : "Star channel"}
-          </TooltipContent>
+          <TooltipContent>Add a tab</TooltipContent>
         </Tooltip>
+
         {channel.topic ? (
-          <span className="ml-1 max-w-xl truncate text-xs text-muted-foreground">
+          <span className="ml-3 max-w-xl truncate text-xs text-muted-foreground">
             {channel.topic}
           </span>
-        ) : (
-          <span className="ml-1 text-xs text-muted-foreground italic">
-            Add a topic
-          </span>
-        )}
-        {channel.isArchived ? (
-          <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground uppercase">
-            Archived
-          </span>
         ) : null}
-      </div>
-      <div className="flex items-center gap-1">
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                onClick={startHuddle}
-                disabled={channel.isArchived || huddleStarting}
-                aria-label="Start huddle"
-              >
-                <Headphones className="size-4" />
-              </Button>
-            }
-          />
-          <TooltipContent>Start huddle</TooltipContent>
-        </Tooltip>
-        <Popover>
-          <PopoverTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "size-8",
-                  notifLevel !== "all" && "text-yellow-500"
-                )}
-                aria-label="Notification preferences"
-              >
-                <Bell className="size-4" />
-              </Button>
-            }
-          />
-          <PopoverContent align="end" className="w-60 p-1">
-            <div className="px-2 py-1.5 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-              Notifications for #{channel.name}
-            </div>
-            {NOTIF_LEVELS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setNotif(opt.value)}
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent",
-                  notifLevel === opt.value && "font-semibold"
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex size-3 items-center justify-center rounded-full border",
-                    notifLevel === opt.value
-                      ? "border-primary bg-primary"
-                      : "border-border"
-                  )}
-                />
-                {opt.label}
-              </button>
-            ))}
-          </PopoverContent>
-        </Popover>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Link
-                href={`/c/${channel.name}/members`}
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "icon" }),
-                  "size-8 w-auto gap-1 px-2"
-                )}
-              >
-                <Users className="size-4" />
-                <span className="text-xs font-semibold">
-                  {channel.memberIds.length}
-                </span>
-              </Link>
-            }
-          />
-          <TooltipContent>Members</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Link
-                href={`/c/${channel.name}/settings`}
-                aria-label="Channel info"
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "icon" }),
-                  "size-8"
-                )}
-              >
-                <Info className="size-4" />
-              </Link>
-            }
-          />
-          <TooltipContent>Channel info</TooltipContent>
-        </Tooltip>
-      </div>
+      </nav>
     </header>
   )
 }
