@@ -195,8 +195,10 @@ export function AppSidebar() {
       collapsible="offcanvas"
       // shadcn's Sidebar inner container is `fixed left-0` which would
       // overlap the GlobalRail. Push it right by the rail's width so the
-      // rail stays visible on the left edge.
-      className="border-r-0 data-[side=left]:!left-[68px]"
+      // rail stays visible on the left edge. The conditional default
+      // `data-[side=left]:border-r` in the primitive needs the bang
+      // override or it leaves a 1px light border at the seam.
+      className="!border-r-0 data-[side=left]:!left-[68px]"
     >
       <SidebarHeader className="gap-0 bg-sidebar px-0 pt-0">
         <div className="flex items-center justify-between gap-1 px-2 pt-2">

@@ -44,22 +44,21 @@ export function MessageToolbar({
 }) {
   return (
     <div className="absolute -top-4 right-6 hidden items-center rounded-md border border-border bg-background shadow-sm group-hover:flex">
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <EmojiPicker onSelect={onReact}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-7 rounded-none"
-              >
-                <SmilePlus className="size-4" />
-              </Button>
-            </EmojiPicker>
-          }
-        />
-        <TooltipContent>Add reaction</TooltipContent>
-      </Tooltip>
+      {/* EmojiPicker can't be wrapped in TooltipTrigger render — the
+          double render-prop chain breaks ref forwarding to the inner
+          Popover.Trigger, which then can't anchor and pops in the
+          top-left corner. Use the native title attr instead. */}
+      <EmojiPicker onSelect={onReact}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 rounded-none"
+          aria-label="Add reaction"
+          title="Add reaction"
+        >
+          <SmilePlus className="size-4" />
+        </Button>
+      </EmojiPicker>
       <Tooltip>
         <TooltipTrigger
           render={

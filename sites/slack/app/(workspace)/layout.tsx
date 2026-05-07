@@ -19,16 +19,18 @@ export default function WorkspaceLayout({
       <ForwardMessageProvider>
         {/* Top bar spans the full viewport (real Slack chrome). Body
             below is rail | sidebar | main, all sharing the aubergine
-            chrome on the left two columns. */}
-        <div className="flex min-h-svh flex-col bg-slack-aubergine">
+            chrome on the left two columns. h-svh + overflow-hidden
+            traps body-level scroll so the only scrollable container is
+            the message list — that's what keeps the composer pinned. */}
+        <div className="flex h-svh flex-col overflow-hidden bg-slack-aubergine">
           <TopSearchBar />
           <div className="flex min-h-0 flex-1">
             <GlobalRail />
-            <SidebarProvider>
+            <SidebarProvider className="!min-h-0 flex-1">
               <AppSidebar />
-              <SidebarInset className="flex min-h-0 flex-1 flex-col bg-background">
-                <div className="flex min-h-0 flex-1">
-                  <main className="flex min-w-0 flex-1 flex-col">
+              <SidebarInset className="relative flex min-h-0 flex-1 flex-col bg-background">
+                <div className="flex min-h-0 flex-1 overflow-hidden">
+                  <main className="flex min-h-0 min-w-0 flex-1 flex-col">
                     {children}
                   </main>
                   <ThreadPanel />
