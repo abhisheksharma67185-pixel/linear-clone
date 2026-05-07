@@ -1,11 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, ArrowRight, Clock, HelpCircle, Search } from "lucide-react"
+import {
+  ArrowLeft,
+  ArrowRight,
+  Clock,
+  HelpCircle,
+  Search,
+  Sparkles,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Kbd } from "@/components/ui/kbd"
 import {
   Tooltip,
   TooltipContent,
@@ -15,16 +21,6 @@ import {
 export function TopSearchBar() {
   const router = useRouter()
   const [query, setQuery] = useState("")
-  const [workspaceName, setWorkspaceName] = useState("Theta HQ")
-
-  useEffect(() => {
-    fetch("/api/data/workspace")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.name) setWorkspaceName(d.name)
-      })
-      .catch(() => {})
-  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -90,12 +86,19 @@ export function TopSearchBar() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search ${workspaceName}`}
-            className="h-7 border-white/20 bg-white/10 pr-14 pl-8 text-sm text-white placeholder:text-white/70 focus-visible:border-white/40 focus-visible:ring-0"
+            placeholder="Describe what you are looking for"
+            className="h-7 border-white/20 bg-white/10 pr-10 pl-8 text-sm text-white placeholder:text-white/70 focus-visible:border-white/40 focus-visible:ring-0"
           />
-          <Kbd className="absolute right-2 bg-white/20 text-[10px] text-white/90">
-            ⌘K
-          </Kbd>
+          {/* Slack AI affordance — opens the assistant on real Slack; here it
+              still submits the form so the search remains functional. */}
+          <button
+            type="submit"
+            aria-label="Slack AI search"
+            title="Slack AI search"
+            className="absolute right-1 flex size-6 items-center justify-center rounded bg-gradient-to-br from-pink-400 to-purple-500 text-white hover:opacity-90"
+          >
+            <Sparkles className="size-3.5" />
+          </button>
         </div>
       </form>
       <div className="flex w-28 shrink-0 justify-end">

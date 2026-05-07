@@ -9,12 +9,15 @@ import {
   Columns2,
   Copy,
   FilePlus,
+  FilePlus2,
+  Folder,
   Hash,
   Headphones,
   Info,
   LayoutList,
   Lock,
   LogOut,
+  MessageSquare,
   MoreHorizontal,
   MoveRight,
   Plus,
@@ -25,6 +28,7 @@ import {
   Users,
   Volume2,
   Workflow,
+  type LucideIcon,
 } from "lucide-react"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -68,6 +72,7 @@ const NOTIF_LEVELS: { value: NotifLevel; label: string }[] = [
 // existing channel sub-pages we already have.
 type ChannelTab = {
   label: string
+  icon: LucideIcon
   href: (name: string) => string
   // True iff the given pathname should highlight this tab.
   matches: (pathname: string, name: string) => boolean
@@ -76,6 +81,7 @@ type ChannelTab = {
 const TABS: ChannelTab[] = [
   {
     label: "Messages",
+    icon: MessageSquare,
     href: (name) => `/c/${name}`,
     matches: (p, name) =>
       p === `/c/${name}` ||
@@ -83,17 +89,23 @@ const TABS: ChannelTab[] = [
       p === `/c/${name}/members`,
   },
   {
-    label: "Canvas",
+    // Slack shows "Add canvas" when the channel has no canvas yet — when
+    // one exists it just says "Canvas". We don't track canvas existence
+    // in channel state yet, so default to the "add" affordance.
+    label: "Add canvas",
+    icon: FilePlus2,
     href: (name) => `/c/${name}/canvas`,
     matches: (p, name) => p.startsWith(`/c/${name}/canvas`),
   },
   {
     label: "Files",
+    icon: Folder,
     href: (name) => `/c/${name}/files`,
     matches: (p, name) => p.startsWith(`/c/${name}/files`),
   },
   {
     label: "Lists",
+    icon: LayoutList,
     href: (name) => `/c/${name}/lists`,
     matches: (p, name) => p.startsWith(`/c/${name}/lists`),
   },
@@ -424,31 +436,30 @@ export function ChannelHeader({ channel }: { channel: Channel }) {
       {/* Tab row — Messages / Canvas / Files / Lists / + */}
       <nav
         aria-label="Channel views"
-        className="flex h-9 items-center gap-1 border-t border-border px-3"
+        className="flex h-10 items-center gap-0.5 border-t border-border px-2"
       >
         {TABS.map((tab) => {
           const isActive = tab.matches(pathname, channel.name)
+          const Icon = tab.icon
           return (
             <Link
               key={tab.label}
               href={tab.href(channel.name)}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "relative flex h-full items-center gap-1.5 px-3 text-xs font-semibold transition-colors",
+                "relative flex h-7 items-center gap-1.5 rounded-md px-2 text-[13px] font-medium transition-colors",
                 isActive
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
               )}
             >
-              {tab.label === "Canvas" ? (
-                <span className="rounded-sm bg-emerald-500/15 px-1 py-0.5 text-[9px] font-bold text-emerald-700 uppercase">
-                  +
-                </span>
-              ) : null}
+              <Icon
+                className={cn(
+                  "size-3.5",
+                  isActive ? "text-foreground" : "text-muted-foreground"
+                )}
+              />
               {tab.label}
-              {isActive ? (
-                <span className="absolute right-2 bottom-0 left-2 h-0.5 rounded-t bg-foreground" />
-              ) : null}
             </Link>
           )
         })}
