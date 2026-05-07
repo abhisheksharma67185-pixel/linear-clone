@@ -10,6 +10,8 @@ import {
   ChevronUp,
   Edit3,
   FileText,
+  Grip,
+  Hash,
   Headphones,
   HelpCircle,
   Hourglass,
@@ -326,14 +328,16 @@ export function AppSidebar() {
             channel header's star is toggled (writes to preferences). */}
         <Collapsible defaultOpen className="group/starred">
           <SidebarGroup className="py-0">
-            <CollapsibleTrigger className="flex w-full items-center gap-1 px-3 py-1 text-xs font-semibold tracking-wide text-sidebar-foreground/70 uppercase hover:text-sidebar-foreground">
-              <ChevronRight className="size-3 transition-transform group-data-[state=open]/starred:rotate-90" />
-              Starred
-            </CollapsibleTrigger>
+            <SectionHeader
+              icon={Star}
+              label="Starred"
+              groupName="starred"
+              iconClassName="fill-none"
+            />
             <CollapsibleContent>
               <SidebarGroupContent>
                 {starredChannels.length === 0 ? (
-                  <p className="px-3 pt-1 pb-2 text-[11px] leading-snug text-sidebar-foreground/55">
+                  <p className="px-3 pt-1 pb-2 text-[13px] leading-snug text-sidebar-foreground/55">
                     Drag and drop important stuff here
                   </p>
                 ) : (
@@ -356,10 +360,13 @@ export function AppSidebar() {
         {/* Channels. */}
         <Collapsible defaultOpen className="group/channels">
           <SidebarGroup className="py-0">
-            <CollapsibleTrigger className="flex w-full items-center gap-1 px-3 py-1 text-xs font-semibold tracking-wide text-sidebar-foreground/70 uppercase hover:text-sidebar-foreground">
-              <ChevronRight className="size-3 transition-transform group-data-[state=open]/channels:rotate-90" />
-              Channels
-            </CollapsibleTrigger>
+            <SectionHeader
+              icon={Hash}
+              label="Channels"
+              groupName="channels"
+              onAdd={() => setCreateChannelOpen(true)}
+              addLabel="Add channels"
+            />
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -392,10 +399,13 @@ export function AppSidebar() {
         {/* Direct messages. */}
         <Collapsible defaultOpen className="group/dms">
           <SidebarGroup className="py-0">
-            <CollapsibleTrigger className="flex w-full items-center gap-1 px-3 py-1 text-xs font-semibold tracking-wide text-sidebar-foreground/70 uppercase hover:text-sidebar-foreground">
-              <ChevronRight className="size-3 transition-transform group-data-[state=open]/dms:rotate-90" />
-              Direct messages
-            </CollapsibleTrigger>
+            <SectionHeader
+              icon={MessageSquare}
+              label="Direct messages"
+              groupName="dms"
+              onAdd={() => setNewDmOpen(true)}
+              addLabel="New message"
+            />
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -408,18 +418,6 @@ export function AppSidebar() {
                       unreadCount={unreadDm(dm.id, readStates)}
                     />
                   ))}
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      size="sm"
-                      onClick={() => setNewDmOpen(true)}
-                      className="text-sidebar-foreground/70"
-                    >
-                      <span className="flex size-4 items-center justify-center rounded bg-sidebar-accent">
-                        <Plus className="size-3" />
-                      </span>
-                      New message
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       size="sm"
@@ -439,12 +437,15 @@ export function AppSidebar() {
         </Collapsible>
 
         {/* Apps — workspace bots only. The app catalog lives at /apps. */}
-        <Collapsible className="group/apps">
+        <Collapsible defaultOpen className="group/apps">
           <SidebarGroup className="py-0">
-            <CollapsibleTrigger className="flex w-full items-center gap-1 px-3 py-1 text-xs font-semibold tracking-wide text-sidebar-foreground/70 uppercase hover:text-sidebar-foreground">
-              <ChevronRight className="size-3 transition-transform group-data-[state=open]/apps:rotate-90" />
-              Apps
-            </CollapsibleTrigger>
+            <SectionHeader
+              icon={Grip}
+              label="Apps"
+              groupName="apps"
+              onAddHref="/apps"
+              addLabel="Add apps"
+            />
             <CollapsibleContent>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -466,22 +467,6 @@ export function AppSidebar() {
                         />
                       </SidebarMenuItem>
                     ))}
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      size="sm"
-                      render={
-                        <Link
-                          href="/apps"
-                          className="text-sidebar-foreground/70"
-                        >
-                          <span className="flex size-4 items-center justify-center rounded bg-sidebar-accent">
-                            <Plus className="size-3" />
-                          </span>
-                          Add apps
-                        </Link>
-                      }
-                    />
-                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </CollapsibleContent>
@@ -554,5 +539,90 @@ function unreadDm(dmId: string, readStates: ReadState[]) {
 // Suppress unused-import warnings from the icon module — these are kept
 // because the previous version referenced them and keeping them lets future
 // menu items add icons without re-importing.
-const _unused = { Edit3, Star, ChevronUp, Video }
+const _unused = { Edit3, ChevronUp, Video, ChevronRight }
 void _unused
+
+// Real Slack section headers show a category icon by default and swap it
+// for a chevron-down on hover. The "+" and overflow buttons only appear
+// while the row is hovered.
+function SectionHeader({
+  icon: Icon,
+  label,
+  iconClassName,
+  onAdd,
+  onAddHref,
+  addLabel,
+}: {
+  icon: LucideIcon
+  label: string
+  groupName?: string
+  iconClassName?: string
+  onAdd?: () => void
+  onAddHref?: string
+  addLabel?: string
+}) {
+  return (
+    <div className="group/section flex w-full items-center gap-1 rounded-md py-0.5 pr-1 pl-2 text-[13px] font-semibold text-sidebar-foreground/85 hover:bg-sidebar-accent/40">
+      <CollapsibleTrigger
+        className={cn(
+          "group/trigger relative flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left",
+          "focus-visible:outline-none"
+        )}
+        aria-label={`Toggle ${label}`}
+      >
+        {/* Icon swap: category icon by default, chevron-down on hover. */}
+        <span className="relative flex size-4 shrink-0 items-center justify-center text-sidebar-foreground/70">
+          <Icon
+            className={cn(
+              "size-3.5 transition-opacity group-hover/section:opacity-0",
+              iconClassName
+            )}
+          />
+          <ChevronDown className="absolute size-3.5 opacity-0 transition-transform group-hover/section:opacity-100 group-data-[state=closed]/trigger:-rotate-90" />
+        </span>
+        <span className="truncate">{label}</span>
+      </CollapsibleTrigger>
+      {onAdd || onAddHref ? (
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              onAddHref ? (
+                <Link
+                  href={onAddHref}
+                  aria-label={addLabel ?? `Add to ${label}`}
+                  className="hidden size-6 items-center justify-center rounded text-sidebar-foreground/80 group-hover/section:inline-flex hover:bg-sidebar-accent"
+                >
+                  <Plus className="size-3.5" />
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onAdd}
+                  aria-label={addLabel ?? `Add to ${label}`}
+                  className="hidden size-6 items-center justify-center rounded text-sidebar-foreground/80 group-hover/section:inline-flex hover:bg-sidebar-accent"
+                >
+                  <Plus className="size-3.5" />
+                </button>
+              )
+            }
+          />
+          <TooltipContent>{addLabel ?? `Add to ${label}`}</TooltipContent>
+        </Tooltip>
+      ) : null}
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <button
+              type="button"
+              aria-label={`${label} options`}
+              className="hidden size-6 items-center justify-center rounded text-sidebar-foreground/80 group-hover/section:inline-flex hover:bg-sidebar-accent"
+            >
+              <MoreHorizontal className="size-3.5" />
+            </button>
+          }
+        />
+        <TooltipContent>More options</TooltipContent>
+      </Tooltip>
+    </div>
+  )
+}
