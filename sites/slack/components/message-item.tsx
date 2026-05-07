@@ -100,7 +100,9 @@ export function MessageItem({
   users: User[]
   compact: boolean
   onToggleReaction: (emoji: string) => void
-  onAddReaction: () => void
+  // Receives the picked emoji shortcode (`:tada:`, `:+1:`, etc.) chosen
+  // from the picker. Pages typically forward to onToggleReaction.
+  onAddReaction: (emoji: string) => void
   onSave: () => void
   onForward: () => void
   onEdit: () => void
@@ -173,7 +175,6 @@ export function MessageItem({
           reactions={message.reactions}
           currentUserId={CURRENT_USER_ID}
           onToggle={onToggleReaction}
-          onAdd={onAddReaction}
         />
         {message.threadReplyCount > 0 ? (
           <button

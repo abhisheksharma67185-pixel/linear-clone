@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { SimplePageHeader } from "@/components/simple-page-header"
 import { MessageItem } from "@/components/message-item"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -12,6 +12,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { MessageSquare } from "lucide-react"
+import { useMessageActions } from "@/hooks/use-message-actions"
 
 type User = {
   id: string
@@ -47,33 +48,43 @@ export default function ThreadsPage() {
   const [threads, setThreads] = useState<Message[]>([])
   const [users, setUsers] = useState<User[]>([])
 
-  useEffect(() => {
-    Promise.all([
+  const load = useCallback(async () => {
+    const [msgs, u]: [Message[], User[]] = await Promise.all([
       fetch("/api/data/messages").then((r) => r.json()),
       fetch("/api/data/users").then((r) => r.json()),
-    ]).then(([msgs, u]: [Message[], User[]]) => {
-      // Threads where viewer has participated (authored a reply or was mentioned in root)
-      const replyRoots = new Set<string>()
-      for (const m of msgs) {
-        if (m.threadRootId && m.authorId === CURRENT_USER_ID) {
-          replyRoots.add(m.threadRootId)
-        }
+    ])
+    // Threads where viewer has participated (authored a reply or was mentioned in root)
+    const replyRoots = new Set<string>()
+    for (const m of msgs) {
+      if (m.threadRootId && m.authorId === CURRENT_USER_ID) {
+        replyRoots.add(m.threadRootId)
       }
-      for (const m of msgs) {
-        if (m.mentions.includes(CURRENT_USER_ID) && m.threadReplyCount > 0) {
-          replyRoots.add(m.id)
-        }
+    }
+    for (const m of msgs) {
+      if (m.mentions.includes(CURRENT_USER_ID) && m.threadReplyCount > 0) {
+        replyRoots.add(m.id)
       }
-      const roots = msgs
-        .filter((m) => replyRoots.has(m.id) && m.threadReplyCount > 0)
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
-      setThreads(roots)
-      setUsers(u)
-    })
+    }
+    const roots = msgs
+      .filter((m) => replyRoots.has(m.id) && m.threadReplyCount > 0)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    setThreads(roots)
+    setUsers(u)
   }, [])
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    load()
+  }, [load])
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const actions = useMessageActions<Message>({
+    getMessages: () => threads,
+    refetch: load,
+  })
 
   return (
     <>
@@ -101,12 +112,14 @@ export default function ThreadsPage() {
                 author={users.find((u) => u.id === t.authorId)}
                 users={users}
                 compact={false}
-                onToggleReaction={() => {}}
-                onAddReaction={() => {}}
-                onSave={() => {}}
-                onForward={() => {}}
-                onEdit={() => {}}
-                onDelete={() => {}}
+                onToggleReaction={(emoji) =>
+                  actions.onToggleReaction(t.id, emoji)
+                }
+                onAddReaction={(emoji) => actions.onToggleReaction(t.id, emoji)}
+                onSave={() => actions.onSave(t.id)}
+                onForward={() => actions.onForward(t.id)}
+                onEdit={() => actions.onEdit(t.id)}
+                onDelete={() => actions.onDelete(t.id)}
               />
             ))}
           </div>

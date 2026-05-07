@@ -22,6 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { EmojiPicker } from "./emoji-picker"
 
 export function MessageToolbar({
   onReact,
@@ -32,7 +33,8 @@ export function MessageToolbar({
   onDelete,
   canEdit,
 }: {
-  onReact: () => void
+  // Now receives the picked emoji shortcode rather than no-arg.
+  onReact: (emoji: string) => void
   onReplyInThread: () => void
   onSave: () => void
   onForward: () => void
@@ -45,14 +47,15 @@ export function MessageToolbar({
       <Tooltip>
         <TooltipTrigger
           render={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 rounded-none"
-              onClick={onReact}
-            >
-              <SmilePlus className="size-4" />
-            </Button>
+            <EmojiPicker onSelect={onReact}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7 rounded-none"
+              >
+                <SmilePlus className="size-4" />
+              </Button>
+            </EmojiPicker>
           }
         />
         <TooltipContent>Add reaction</TooltipContent>

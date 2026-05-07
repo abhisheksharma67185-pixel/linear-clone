@@ -152,10 +152,9 @@ export default function ChannelPage() {
     if (res.ok) loadChannel()
   }
 
-  const handleAddReaction = async (messageId: string) => {
-    // For now just add :+1: as a quick-react default
-    await handleToggleReaction(messageId, ":+1:")
-  }
+  // Picker delegates each pick to toggleReaction so existing reactions are
+  // removed on a second pick (Slack-like behavior).
+  const handleAddReaction = handleToggleReaction
 
   const handleSave = async (messageId: string) => {
     const res = await fetch(`/api/data/messages/${messageId}/save`, {

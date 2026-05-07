@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { SimplePageHeader } from "@/components/simple-page-header"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { MessageItem } from "@/components/message-item"
+import { useMessageActions } from "@/hooks/use-message-actions"
 
 type User = {
   id: string
@@ -42,19 +43,29 @@ export default function ChannelPinsPage() {
   const [users, setUsers] = useState<User[]>([])
   const [channel, setChannel] = useState<Channel | null>(null)
 
-  useEffect(() => {
-    Promise.all([
+  const load = useCallback(async () => {
+    const [c, p, u] = await Promise.all([
       fetch(`/api/data/channels/${params.channelName}`).then((r) => r.json()),
       fetch(`/api/data/channels/${params.channelName}/pins`).then((r) =>
         r.json()
       ),
       fetch("/api/data/users").then((r) => r.json()),
-    ]).then(([c, p, u]) => {
-      setChannel(c)
-      setPins(p.filter(Boolean))
-      setUsers(u)
-    })
+    ])
+    setChannel(c)
+    setPins(p.filter(Boolean))
+    setUsers(u)
   }, [params.channelName])
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    load()
+  }, [load])
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const actions = useMessageActions<Message>({
+    getMessages: () => pins,
+    refetch: load,
+  })
 
   return (
     <>
@@ -76,12 +87,14 @@ export default function ChannelPinsPage() {
                 author={users.find((u) => u.id === m.authorId)}
                 users={users}
                 compact={false}
-                onToggleReaction={() => {}}
-                onAddReaction={() => {}}
-                onSave={() => {}}
-                onForward={() => {}}
-                onEdit={() => {}}
-                onDelete={() => {}}
+                onToggleReaction={(emoji) =>
+                  actions.onToggleReaction(m.id, emoji)
+                }
+                onAddReaction={(emoji) => actions.onToggleReaction(m.id, emoji)}
+                onSave={() => actions.onSave(m.id)}
+                onForward={() => actions.onForward(m.id)}
+                onEdit={() => actions.onEdit(m.id)}
+                onDelete={() => actions.onDelete(m.id)}
               />
             ))}
           </div>

@@ -216,7 +216,7 @@ export default function DmPage() {
         messages={messages}
         users={users}
         onToggleReaction={handleToggleReaction}
-        onAddReaction={(id) => handleToggleReaction(id, ":+1:")}
+        onAddReaction={handleToggleReaction}
         onSaveMessage={async (id) => {
           await fetch(`/api/data/messages/${id}/save`, {
             method: "POST",

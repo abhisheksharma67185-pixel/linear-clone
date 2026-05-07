@@ -50,6 +50,8 @@ import { WorkspaceSwitcher } from "./workspace-switcher"
 import { ChannelListItem } from "./channel-list-item"
 import { DmListItem } from "./dm-list-item"
 import { UserAvatar } from "./user-avatar"
+import { CreateChannelDialog } from "./create-channel-dialog"
+import { NewDmDialog } from "./new-dm-dialog"
 
 type User = {
   id: string
@@ -113,6 +115,10 @@ export function AppSidebar() {
   const [channels, setChannels] = useState<Channel[]>([])
   const [dms, setDms] = useState<DirectMessage[]>([])
   const [readStates, setReadStates] = useState<ReadState[]>([])
+  const [createChannelOpen, setCreateChannelOpen] = useState(false)
+  const [newDmOpen, setNewDmOpen] = useState(false)
+  // Bumped after a dialog creates a channel/DM so the sidebar refetches.
+  const [refreshTick, setRefreshTick] = useState(0)
   const currentUser = users.find((u) => u.id === CURRENT_USER_ID)
 
   useEffect(() => {
@@ -133,7 +139,7 @@ export function AppSidebar() {
         setReadStates(rs)
       })
       .catch(() => {})
-  }, [pathname])
+  }, [pathname, refreshTick])
 
   const visibleChannels = channels.filter((c) => !c.isArchived)
   const channelsByUnread = [...visibleChannels].sort(
@@ -157,6 +163,7 @@ export function AppSidebar() {
                   <Button
                     size="icon"
                     variant="ghost"
+                    onClick={() => setNewDmOpen(true)}
                     className="size-7 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   >
                     <SquarePen className="size-4" />
@@ -254,6 +261,7 @@ export function AppSidebar() {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       size="sm"
+                      onClick={() => setCreateChannelOpen(true)}
                       className="text-sidebar-foreground/70"
                     >
                       <span className="flex size-4 items-center justify-center rounded bg-sidebar-accent">
@@ -289,6 +297,7 @@ export function AppSidebar() {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       size="sm"
+                      onClick={() => setNewDmOpen(true)}
                       className="text-sidebar-foreground/70"
                     >
                       <span className="flex size-4 items-center justify-center rounded bg-sidebar-accent">
@@ -359,6 +368,17 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+
+      <CreateChannelDialog
+        open={createChannelOpen}
+        onOpenChange={setCreateChannelOpen}
+        onCreated={() => setRefreshTick((n) => n + 1)}
+      />
+      <NewDmDialog
+        open={newDmOpen}
+        onOpenChange={setNewDmOpen}
+        onCreated={() => setRefreshTick((n) => n + 1)}
+      />
     </Sidebar>
   )
 }

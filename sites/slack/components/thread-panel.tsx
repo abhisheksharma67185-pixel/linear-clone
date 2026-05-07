@@ -119,9 +119,9 @@ export function ThreadPanel() {
     load()
   }
 
-  const handleAddReaction = async (messageId: string) => {
-    await handleToggleReaction(messageId, ":+1:")
-  }
+  // Picker delegates each pick to toggleReaction so existing reactions are
+  // removed on a second pick (Slack-like behavior).
+  const handleAddReaction = handleToggleReaction
 
   const handleSave = async (messageId: string) => {
     await fetch(`/api/data/messages/${messageId}/save`, {
@@ -177,7 +177,7 @@ export function ThreadPanel() {
             users={users}
             compact={false}
             onToggleReaction={(emoji) => handleToggleReaction(root.id, emoji)}
-            onAddReaction={() => handleAddReaction(root.id)}
+            onAddReaction={(emoji) => handleAddReaction(root.id, emoji)}
             onSave={() => handleSave(root.id)}
             onForward={() => toast.info("Forward — pick destination")}
             onEdit={() => handleEdit(root.id)}
@@ -197,7 +197,7 @@ export function ThreadPanel() {
               onToggleReaction={(emoji) =>
                 handleToggleReaction(reply.id, emoji)
               }
-              onAddReaction={() => handleAddReaction(reply.id)}
+              onAddReaction={(emoji) => handleAddReaction(reply.id, emoji)}
               onSave={() => handleSave(reply.id)}
               onForward={() => toast.info("Forward — pick destination")}
               onEdit={() => handleEdit(reply.id)}

@@ -2,6 +2,7 @@
 
 import { SmilePlus } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { EmojiPicker } from "./emoji-picker"
 
 type Reaction = { emoji: string; userIds: string[] }
 
@@ -37,6 +38,26 @@ const EMOJI_MAP: Record<string, string> = {
   ":notebook:": "📓",
   ":kanban:": "📋",
   ":bookmark:": "🔖",
+  // Extras to match the picker's catalog so reactions render with proper
+  // glyphs even when picked from the popover.
+  ":smile:": "😄",
+  ":sob:": "😭",
+  ":wink:": "😉",
+  ":heart_eyes:": "😍",
+  ":sweat_smile:": "😅",
+  ":100:": "💯",
+  ":pray:": "🙏",
+  ":clap:": "👏",
+  ":muscle:": "💪",
+  ":ok_hand:": "👌",
+  ":point_up:": "☝️",
+  ":bulb:": "💡",
+  ":warning:": "⚠️",
+  ":no_entry:": "⛔",
+  ":x:": "❌",
+  ":sparkles:": "✨",
+  ":sunny:": "☀️",
+  ":zap:": "⚡",
 }
 
 export function emojiFor(shortcode: string): string {
@@ -47,12 +68,10 @@ export function ReactionBar({
   reactions,
   currentUserId,
   onToggle,
-  onAdd,
 }: {
   reactions: Reaction[]
   currentUserId: string
   onToggle: (emoji: string) => void
-  onAdd: () => void
 }) {
   if (reactions.length === 0) return null
   return (
@@ -76,14 +95,15 @@ export function ReactionBar({
           </button>
         )
       })}
-      <button
-        type="button"
-        onClick={onAdd}
-        className="flex size-6 items-center justify-center rounded-full border border-transparent text-muted-foreground hover:border-border hover:bg-secondary"
-        aria-label="Add reaction"
-      >
-        <SmilePlus className="size-3.5" />
-      </button>
+      <EmojiPicker onSelect={onToggle}>
+        <button
+          type="button"
+          className="flex size-6 items-center justify-center rounded-full border border-transparent text-muted-foreground hover:border-border hover:bg-secondary"
+          aria-label="Add reaction"
+        >
+          <SmilePlus className="size-3.5" />
+        </button>
+      </EmojiPicker>
     </div>
   )
 }

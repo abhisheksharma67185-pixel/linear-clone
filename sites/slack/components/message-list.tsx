@@ -49,7 +49,9 @@ export function MessageList({
   messages: Message[]
   users: User[]
   onToggleReaction: (messageId: string, emoji: string) => void
-  onAddReaction: (messageId: string) => void
+  // Receives the picked emoji shortcode chosen from the picker. Pages
+  // typically forward to onToggleReaction.
+  onAddReaction: (messageId: string, emoji: string) => void
   onSaveMessage: (messageId: string) => void
   onForwardMessage: (messageId: string) => void
   onEditMessage: (messageId: string) => void
@@ -109,7 +111,7 @@ export function MessageList({
               users={users}
               compact={row.compact}
               onToggleReaction={(emoji) => onToggleReaction(row.msg.id, emoji)}
-              onAddReaction={() => onAddReaction(row.msg.id)}
+              onAddReaction={(emoji) => onAddReaction(row.msg.id, emoji)}
               onSave={() => onSaveMessage(row.msg.id)}
               onForward={() => onForwardMessage(row.msg.id)}
               onEdit={() => onEditMessage(row.msg.id)}

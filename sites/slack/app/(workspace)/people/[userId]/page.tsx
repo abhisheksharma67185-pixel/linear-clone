@@ -6,6 +6,7 @@ import { SimplePageHeader } from "@/components/simple-page-header"
 import { UserAvatar } from "@/components/user-avatar"
 import { Button } from "@/components/ui/button"
 import { MessageCircle, Headphones, Phone } from "lucide-react"
+import { toast } from "sonner"
 
 type User = {
   id: string
@@ -48,6 +49,35 @@ export default function UserProfilePage() {
     }
   }
 
+  // Both Huddle and Call use the same backend mutation — they differ only
+  // in real Slack's voice/video defaults, which the mock doesn't model.
+  const startHuddle = async () => {
+    const dmRes = await fetch("/api/data/dms", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        participantIds: [CURRENT_USER_ID, params.userId],
+      }),
+    })
+    if (!dmRes.ok) {
+      toast.error("Could not open conversation")
+      return
+    }
+    const dm = await dmRes.json()
+    const huddleRes = await fetch("/api/data/huddles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dmId: dm.id }),
+    })
+    if (huddleRes.ok) {
+      toast.success(`Huddle started with ${user?.name ?? "user"}`)
+      router.push(`/dm/${dm.id}`)
+    } else {
+      const err = await huddleRes.json().catch(() => ({}))
+      toast.error(err.error ?? "Failed to start huddle")
+    }
+  }
+
   if (!user)
     return (
       <div className="flex flex-1 items-center justify-center text-muted-foreground">
@@ -84,11 +114,11 @@ export default function UserProfilePage() {
             <MessageCircle className="size-4" />
             Message
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={startHuddle}>
             <Headphones className="size-4" />
             Huddle
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={startHuddle}>
             <Phone className="size-4" />
             Call
           </Button>
