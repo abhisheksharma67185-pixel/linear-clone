@@ -2,20 +2,25 @@
 
 import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react"
 import {
+  AtSign,
   Bold,
+  ChevronDown,
   Code,
+  Code2,
   FileText,
   Image as ImageIcon,
+  IndentIncrease,
   Italic,
   Link as LinkIcon,
   List,
   ListOrdered,
   Mic,
-  Paperclip,
-  Quote,
+  Plus,
   Send,
   Smile,
+  SquareSlash,
   Strikethrough,
+  Type,
   Underline,
   Video,
   X,
@@ -163,9 +168,12 @@ export function Composer({
   const canSend = (text.trim() !== "" || attachments.length > 0) && !sending
 
   return (
+    // shrink-0 keeps the composer pinned to the bottom of its flex parent
+    // even when the message list above it grows. Without this, a long
+    // channel can compress the composer and obscure the toolbar.
     <div
       className={cn(
-        "m-4 mt-2 flex flex-col rounded-lg border border-border bg-background shadow-sm focus-within:border-primary/40",
+        "m-4 mt-2 flex shrink-0 flex-col overflow-hidden rounded-lg border border-border bg-background shadow-sm focus-within:border-primary/40",
         compact && "m-2"
       )}
     >
@@ -222,16 +230,7 @@ export function Composer({
           <LinkIcon className="size-3.5" />
         </Button>
         <Separator orientation="vertical" className="mx-1 h-4" />
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-7"
-          onClick={() => prefixLine("- ")}
-          aria-label="Bulleted list"
-          title="Bulleted list"
-        >
-          <List className="size-3.5" />
-        </Button>
+        {/* Numbered before bulleted to match real Slack's order. */}
         <Button
           variant="ghost"
           size="icon"
@@ -246,11 +245,21 @@ export function Composer({
           variant="ghost"
           size="icon"
           className="size-7"
-          onClick={() => prefixLine("> ")}
-          aria-label="Quote"
-          title="Quote"
+          onClick={() => prefixLine("- ")}
+          aria-label="Bulleted list"
+          title="Bulleted list"
         >
-          <Quote className="size-3.5" />
+          <List className="size-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={() => prefixLine("    ")}
+          aria-label="Increase indent"
+          title="Increase indent"
+        >
+          <IndentIncrease className="size-3.5" />
         </Button>
         <Separator orientation="vertical" className="mx-1 h-4" />
         <Button
@@ -271,7 +280,7 @@ export function Composer({
           aria-label="Code block"
           title="Code block"
         >
-          <span className="font-mono text-[10px]">{`{}`}</span>
+          <Code2 className="size-3.5" />
         </Button>
       </div>
       <Textarea
@@ -319,21 +328,35 @@ export function Composer({
             className="hidden"
             aria-hidden
           />
+          {/* Plus-in-circle (real Slack's attachment / shortcut menu trigger). */}
           <Button
             variant="ghost"
             size="icon"
-            className="size-7"
+            className="size-7 rounded-full border border-border text-muted-foreground hover:bg-muted"
             onClick={() => fileInputRef.current?.click()}
-            aria-label="Attach file"
+            aria-label="Attach or shortcuts"
+            title="Attach file"
           >
-            <Paperclip className="size-3.5" />
+            <Plus className="size-3.5" />
+          </Button>
+          {/* Aa — toggles the formatting toolbar in real Slack. We always
+              show the toolbar above, so this is decorative for now. */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7 text-muted-foreground"
+            aria-label="Format text"
+            title="Format text"
+          >
+            <Type className="size-3.5" />
           </Button>
           <EmojiPicker onSelect={insertEmoji}>
             <Button
               variant="ghost"
               size="icon"
-              className="size-7"
+              className="size-7 text-muted-foreground"
               aria-label="Insert emoji"
+              title="Emoji"
             >
               <Smile className="size-3.5" />
             </Button>
@@ -341,51 +364,68 @@ export function Composer({
           <Button
             variant="ghost"
             size="icon"
-            className="size-7"
+            className="size-7 text-muted-foreground"
             onClick={() => insertEmoji("@")}
             aria-label="Mention"
             title="Mention"
           >
-            @
+            <AtSign className="size-3.5" />
           </Button>
+          <Separator orientation="vertical" className="mx-1 h-4" />
           <Button
             variant="ghost"
             size="icon"
-            className="size-7"
-            aria-label="Record video"
-            title="Record video"
+            className="size-7 text-muted-foreground"
+            aria-label="Record video clip"
+            title="Record video clip"
           >
             <Video className="size-3.5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="size-7"
-            aria-label="Record audio"
-            title="Record audio"
+            className="size-7 text-muted-foreground"
+            aria-label="Record audio clip"
+            title="Record audio clip"
           >
             <Mic className="size-3.5" />
+          </Button>
+          <Separator orientation="vertical" className="mx-1 h-4" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7 text-muted-foreground"
+            onClick={() => insertEmoji("/")}
+            aria-label="Slash command"
+            title="Shortcuts"
+          >
+            <SquareSlash className="size-3.5" />
+          </Button>
+        </div>
+        {/* Send button — circular, with a small chevron for "schedule send"
+            options. Disabled state hides the chevron in real Slack; we keep
+            it visible because the dropdown is decorative for now. */}
+        <div className="flex items-center">
+          <Button
+            size="icon"
+            onClick={submit}
+            disabled={!canSend || disabled}
+            aria-label={sending ? "Sending" : "Send message"}
+            className="size-7 rounded-md"
+          >
+            <Send className="size-3.5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="size-7 font-mono"
-            onClick={() => insertEmoji("/")}
-            aria-label="Slash command"
-            title="Slash command"
+            disabled={!canSend || disabled}
+            aria-label="Send options"
+            title="Send options"
+            className="size-6 text-muted-foreground"
           >
-            /
+            <ChevronDown className="size-3.5" />
           </Button>
         </div>
-        <Button
-          size="sm"
-          onClick={submit}
-          disabled={!canSend || disabled}
-          className="h-7 gap-1 rounded px-2"
-        >
-          <Send className="size-3.5" />
-          {sending ? "Sending…" : "Send"}
-        </Button>
       </div>
     </div>
   )
