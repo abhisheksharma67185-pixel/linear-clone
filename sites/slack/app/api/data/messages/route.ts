@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import * as store from "../../../lib/store"
+import { withSession } from "../../../lib/session"
 
-export async function GET(request: NextRequest) {
+export const GET = withSession(async (request: NextRequest) => {
   const url = new URL(request.url)
   const channelId = url.searchParams.get("channelId")
   const dmId = url.searchParams.get("dmId")
@@ -17,9 +18,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(store.getMessagesByDm(dmId))
   }
   return NextResponse.json(store.getMessages())
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withSession(async (request: NextRequest) => {
   let body
   try {
     body = await request.json()
@@ -31,4 +32,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: 400 })
   }
   return NextResponse.json(result.data, { status: 201 })
-}
+})

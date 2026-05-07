@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import "../../../../lib/init-sim"
 import { logAction, hasActiveEpisode } from "@thetabench/core"
+import { withSession } from "../../../../lib/session"
 
-export async function POST(request: NextRequest) {
+export const POST = withSession(async (request: NextRequest) => {
   if (!hasActiveEpisode()) {
     return NextResponse.json({ error: "No active episode" }, { status: 400 })
   }
@@ -25,4 +26,4 @@ export async function POST(request: NextRequest) {
   )
 
   return NextResponse.json({ logged: true })
-}
+})

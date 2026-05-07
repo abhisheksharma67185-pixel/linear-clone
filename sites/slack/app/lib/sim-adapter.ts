@@ -17,6 +17,7 @@ import {
 } from "@thetabench/core"
 
 import * as store from "./store"
+import { _state } from "./session"
 
 // Site-specific task definitions
 import { navigationTasks } from "./tasks/navigation"
@@ -137,6 +138,46 @@ const slackAdapter: SiteAdapter = {
     "huddles",
   ],
   singletons: ["workspace", "preferences"],
+
+  // ---------------------------------------------------------------------
+  // applyConfig — invoked by SimEngine.startEpisode when a task or episode
+  // overrides config. Mirrors the linear adapter: writes universal config
+  // values onto the per-session slots so a future chaos middleware can
+  // read them on the hot path. The middleware itself is not yet wired —
+  // these writes are observable via /api/sim/state but not enforced.
+  // ---------------------------------------------------------------------
+  applyConfig: (config: Record<string, unknown>) => {
+    const s = _state()
+    if (typeof config.latency === "number") {
+      s.chaos.latencyMs = Math.max(0, config.latency)
+    }
+    if (typeof config.errorRate === "number") {
+      s.chaos.errorRate = Math.min(1, Math.max(0, config.errorRate))
+    }
+    if (typeof config.rateLimitPerMinute === "number") {
+      s.chaos.rateLimitPerMinute = config.rateLimitPerMinute
+      s.chaos.rateLimitWindowStartMs = Date.now()
+      s.chaos.rateLimitCount = 0
+    } else if (config.rateLimitPerMinute === null) {
+      s.chaos.rateLimitPerMinute = null
+    }
+    if (typeof config.dateOverride === "string") {
+      s.dateOverride = config.dateOverride
+      s.dateCounter = 0
+    } else if (config.dateOverride === null) {
+      s.dateOverride = null
+      s.dateCounter = 0
+    }
+  },
+
+  resetConfig: () => {
+    const s = _state()
+    s.chaos.latencyMs = 0
+    s.chaos.errorRate = 0
+    s.chaos.rateLimitPerMinute = null
+    s.chaos.rateLimitWindowStartMs = 0
+    s.chaos.rateLimitCount = 0
+  },
 }
 
 registerSiteAdapter(slackAdapter)

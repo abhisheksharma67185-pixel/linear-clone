@@ -1,24 +1,19 @@
 // ---------------------------------------------------------------------------
-// Per-rollout state isolation for the Linear site.
+// Per-rollout state isolation for the Slack site.
 //
-// Everything that used to be a module-level `let` (in store.ts and the
-// lib/*-mocks files) now lives on a `LinearStoreState` object, one per
-// rollout session. Sessions are looked up via:
-//
+// Same shape as sites/linear/app/lib/session.ts:
 //   1. AsyncLocalStorage when running inside an API route handler wrapped
 //      with `withSession` (the agent / orchestrator path).
-//   2. The "default" session fallback when running outside a request — this
-//      preserves existing behavior for RSC pages, vitest tests, and any
-//      direct module-level callers that haven't been migrated yet.
+//   2. The "default" session fallback when running outside a request — RSC
+//      pages, vitest tests, and any direct callers that haven't been migrated.
 //
 // Sessions are keyed by the `x-tbench-session` header (or `tbench_session`
-// cookie). The orchestrator (inspector) supplies a fresh ID per rollout and
-// hits POST /api/sim/reset when it wants a clean slate.
+// cookie). The orchestrator (inspector) supplies a fresh ID per rollout.
 // ---------------------------------------------------------------------------
 
 import { AsyncLocalStorage } from "node:async_hooks"
 
-import { createInitialState, resetState, type LinearStoreState } from "./state"
+import { createInitialState, resetState, type SlackStoreState } from "./state"
 
 const SESSION_HEADER = "x-tbench-session"
 const SESSION_COOKIE = "tbench_session"
@@ -30,13 +25,13 @@ const DEFAULT_SESSION = "default"
 
 interface SessionContext {
   id: string
-  state: LinearStoreState
+  state: SlackStoreState
 }
 
-const registry = new Map<string, LinearStoreState>()
+const registry = new Map<string, SlackStoreState>()
 const als = new AsyncLocalStorage<SessionContext>()
 
-function getOrCreate(id: string): LinearStoreState {
+function getOrCreate(id: string): SlackStoreState {
   let s = registry.get(id)
   if (!s) {
     s = createInitialState()
@@ -49,7 +44,7 @@ function getOrCreate(id: string): LinearStoreState {
 // Public state access — sync, callable from anywhere on the server side.
 // ---------------------------------------------------------------------------
 
-export function _state(): LinearStoreState {
+export function _state(): SlackStoreState {
   const ctx = als.getStore()
   if (ctx) return ctx.state
   return getOrCreate(DEFAULT_SESSION)
@@ -60,7 +55,7 @@ export function getCurrentSessionId(): string {
 }
 
 // ---------------------------------------------------------------------------
-// Orchestrator-facing helpers — the inspector's control plane uses these.
+// Orchestrator-facing helpers
 // ---------------------------------------------------------------------------
 
 export function resetSession(id: string, seed?: number): void {
@@ -69,7 +64,6 @@ export function resetSession(id: string, seed?: number): void {
     resetState(existing, seed)
     return
   }
-  // Pre-create with the seed applied so the next call sees fresh state.
   const fresh = createInitialState()
   if (seed !== undefined) {
     resetState(fresh, seed)
@@ -85,13 +79,13 @@ export function listSessions(): string[] {
   return Array.from(registry.keys())
 }
 
-export function snapshotSession(id: string): LinearStoreState | undefined {
+export function snapshotSession(id: string): SlackStoreState | undefined {
   const state = registry.get(id)
   if (!state) return undefined
-  return JSON.parse(JSON.stringify(state)) as LinearStoreState
+  return JSON.parse(JSON.stringify(state)) as SlackStoreState
 }
 
-export function getStateForSession(id: string): LinearStoreState {
+export function getStateForSession(id: string): SlackStoreState {
   return getOrCreate(id)
 }
 
@@ -122,9 +116,6 @@ function resolveSessionId(request: Request): string {
 
 // ---------------------------------------------------------------------------
 // withSession — wrap a route handler so it runs inside an ALS-bound context.
-//
-// The handler's signature is preserved exactly (Next.js typings expect it
-// that way: `(request, context) => Response | Promise<Response>`).
 // ---------------------------------------------------------------------------
 
 // Generic over the request type so handlers can declare `NextRequest`
@@ -145,8 +136,8 @@ export function withSession<TCtx = unknown, TReq extends Request = Request>(
 }
 
 // ---------------------------------------------------------------------------
-// runWithSession — primarily for tests and scripts that want to drive the
-// store from outside a real request.
+// runWithSession — primarily for tests and scripts that drive the store
+// from outside a real request.
 // ---------------------------------------------------------------------------
 
 export function runWithSession<T>(id: string, fn: () => T): T {

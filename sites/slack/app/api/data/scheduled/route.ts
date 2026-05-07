@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import * as store from "../../../lib/store"
+import { withSession } from "../../../lib/session"
 
-export async function GET() {
+export const GET = withSession(async () => {
   const all = store.getMessages()
   return NextResponse.json(all.filter((m) => m.scheduledFor !== null))
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withSession(async (request: NextRequest) => {
   let body
   try {
     body = await request.json()
@@ -24,9 +25,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: 400 })
   }
   return NextResponse.json(result.data, { status: 201 })
-}
+})
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = withSession(async (request: NextRequest) => {
   const url = new URL(request.url)
   const id = url.searchParams.get("id")
   if (!id) {
@@ -40,4 +41,4 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: result.error }, { status: 400 })
   }
   return NextResponse.json(result.data)
-}
+})

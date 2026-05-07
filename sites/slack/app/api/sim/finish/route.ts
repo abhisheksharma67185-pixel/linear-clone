@@ -5,8 +5,9 @@ import {
   hasActiveEpisode,
   getActiveEpisode,
 } from "@thetabench/core"
+import { withSession } from "../../../lib/session"
 
-export async function POST(request: NextRequest) {
+export const POST = withSession(async (request: NextRequest) => {
   if (!hasActiveEpisode()) {
     return NextResponse.json({ error: "No active episode" }, { status: 400 })
   }
@@ -47,4 +48,4 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     )
   }
-}
+})

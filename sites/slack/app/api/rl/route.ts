@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import * as store from "../../lib/store"
 import "../../lib/init-sim"
+import { _state, withSession } from "../../lib/session"
 import {
   getActiveEpisode,
   hasActiveEpisode,
@@ -10,27 +11,29 @@ import {
 } from "@thetabench/core"
 
 // ---------------------------------------------------------------------------
-// Per-episode RL session state
+// Per-episode RL session state — now lives on _state().rl so concurrent
+// rollouts (different x-tbench-session headers) don't clobber each other's
+// currentPage / step counter.
 // ---------------------------------------------------------------------------
 
-interface RLSessionState {
-  currentPage: string
-  lastAction: string | null
-  stepCount: number
-}
-
-let _rlState: RLSessionState = {
-  currentPage: "/c/general",
-  lastAction: null,
-  stepCount: 0,
-}
+const _rlState = new Proxy(
+  {} as { currentPage: string; lastAction: string | null; stepCount: number },
+  {
+    get: (_t, prop) =>
+      (_state().rl as unknown as Record<string | symbol, unknown>)[prop],
+    set: (_t, prop, value) => {
+      const rl = _state().rl as unknown as Record<string | symbol, unknown>
+      rl[prop] = value
+      return true
+    },
+  }
+)
 
 export function resetRLState(): void {
-  _rlState = {
-    currentPage: "/c/general",
-    lastAction: null,
-    stepCount: 0,
-  }
+  const rl = _state().rl
+  rl.currentPage = "/c/general"
+  rl.lastAction = null
+  rl.stepCount = 0
 }
 
 // ---------------------------------------------------------------------------
@@ -640,7 +643,7 @@ function executeAction(action: Record<string, unknown>): {
 // HTTP handlers
 // ---------------------------------------------------------------------------
 
-export async function GET() {
+export const GET = withSession(async () => {
   return NextResponse.json({
     observation: getObservation(),
     info: {
@@ -649,9 +652,9 @@ export async function GET() {
       episodeActive: hasActiveEpisode(),
     },
   })
-}
+})
 
-export async function POST(request: NextRequest) {
+async function postImpl(request: NextRequest) {
   let body
   try {
     body = await request.json()
@@ -711,3 +714,5 @@ export async function POST(request: NextRequest) {
     },
   })
 }
+
+export const POST = withSession((req: Request) => postImpl(req as NextRequest))

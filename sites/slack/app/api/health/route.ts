@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
 import "../../lib/init-sim"
 import { getTaskCount, getAllTasks, getCurriculum } from "@thetabench/core"
+import { withSession } from "../../lib/session"
 
-export async function GET() {
+export const GET = withSession(async () => {
   try {
     const tasks = getAllTasks()
     const domains = [...new Set(tasks.map((t) => t.domain))]
@@ -27,4 +28,4 @@ export async function GET() {
       { status: 500 }
     )
   }
-}
+})

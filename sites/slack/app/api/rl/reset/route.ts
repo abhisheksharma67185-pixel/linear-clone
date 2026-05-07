@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
 import * as store from "../../../lib/store"
+import { withSession } from "../../../lib/session"
 import { resetRLState } from "../route"
 
-export async function POST() {
+export const POST = withSession(async () => {
   store.reset()
   resetRLState()
 
@@ -27,4 +28,4 @@ export async function POST() {
       totalUsers: store.getUsers().length,
     },
   })
-}
+})

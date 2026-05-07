@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import * as store from "../../../lib/store"
+import { withSession } from "../../../lib/session"
 
-export async function GET(request: NextRequest) {
+export const GET = withSession(async (request: NextRequest) => {
   const url = new URL(request.url)
   const q = (url.searchParams.get("q") ?? "").trim().toLowerCase()
   if (!q) {
@@ -54,4 +55,4 @@ export async function GET(request: NextRequest) {
     users,
     files,
   })
-}
+})

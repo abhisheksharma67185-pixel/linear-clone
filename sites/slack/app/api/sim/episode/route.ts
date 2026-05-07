@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
 import "../../../lib/init-sim"
 import { getActiveEpisode } from "@thetabench/core"
+import { withSession } from "../../../lib/session"
 
-export async function GET() {
+export const GET = withSession(async () => {
   const episode = getActiveEpisode()
   if (!episode) {
     return NextResponse.json({ active: false })
@@ -21,4 +22,4 @@ export async function GET() {
       (Date.now() - new Date(episode.startedAt).getTime()) / 1000,
     action_log_length: episode.actionLog.length,
   })
-}
+})

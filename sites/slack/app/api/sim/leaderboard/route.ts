@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getLeaderboard, submitToLeaderboard } from "../../../lib/leaderboard"
+import { withSession } from "../../../lib/session"
 
-export async function GET() {
+export const GET = withSession(async () => {
   const entries = getLeaderboard()
   return NextResponse.json({
     total: entries.length,
@@ -18,9 +19,9 @@ export async function GET() {
       highest_stage: e.results.highestStage,
     })),
   })
-}
+})
 
-export async function POST(request: NextRequest) {
+export const POST = withSession(async (request: NextRequest) => {
   let body
   try {
     body = await request.json()
@@ -95,4 +96,4 @@ export async function POST(request: NextRequest) {
     },
     { status: 201 }
   )
-}
+})

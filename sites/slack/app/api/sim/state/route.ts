@@ -6,6 +6,7 @@ import {
   getActiveEpisode,
 } from "@thetabench/core"
 import * as store from "../../../lib/store"
+import { withSession } from "../../../lib/session"
 
 const COLLECTIONS = [
   "users",
@@ -42,7 +43,7 @@ const getState = () => ({
   huddles: store.getHuddles(),
 })
 
-export async function GET(request: NextRequest) {
+export const GET = withSession(async (request: NextRequest) => {
   const url = new URL(request.url)
   const wantDiff = url.searchParams.get("diff") === "true"
 
@@ -66,4 +67,4 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json(current)
-}
+})

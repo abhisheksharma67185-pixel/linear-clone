@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import "../../../lib/init-sim"
 import { getAllTasks, getTasksByCriteria, getTaskCount } from "@thetabench/core"
 import type { TaskDomain, TaskDifficulty, TaskType } from "@thetabench/core"
+import { withSession } from "../../../lib/session"
 
 const VALID_DOMAINS: TaskDomain[] = [
   "navigation",
@@ -30,7 +31,7 @@ const VALID_TYPES: TaskType[] = [
   "no_action",
 ]
 
-export async function GET(request: NextRequest) {
+export const GET = withSession(async (request: NextRequest) => {
   const url = new URL(request.url)
   const domainRaw = url.searchParams.get("domain")
   const difficultyRaw = url.searchParams.get("difficulty")
@@ -106,4 +107,4 @@ export async function GET(request: NextRequest) {
       tags: t.tags,
     })),
   })
-}
+})

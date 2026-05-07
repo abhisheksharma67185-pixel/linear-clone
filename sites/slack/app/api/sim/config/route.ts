@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from "next/server"
 import "../../../lib/init-sim"
 import { startEpisode } from "@thetabench/core"
 import type { EpisodeConfig } from "@thetabench/core"
+import { withSession } from "../../../lib/session"
 
-export async function POST(request: NextRequest) {
+export const POST = withSession(async (request: NextRequest) => {
   let body
   try {
     body = await request.json()
@@ -68,4 +69,4 @@ export async function POST(request: NextRequest) {
     const status = message.includes("Task not found") ? 404 : 400
     return NextResponse.json({ error: message }, { status })
   }
-}
+})

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import * as store from "../../../lib/store"
+import { withSession } from "../../../lib/session"
 
-export async function GET() {
+export const GET = withSession(async () => {
   return NextResponse.json(store.getPreferences())
-}
+})
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = withSession(async (request: NextRequest) => {
   let body
   try {
     body = await request.json()
@@ -16,4 +17,4 @@ export async function PATCH(request: NextRequest) {
     store.setPreference(key, value)
   }
   return NextResponse.json(store.getPreferences())
-}
+})
