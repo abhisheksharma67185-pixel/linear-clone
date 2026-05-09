@@ -7,7 +7,6 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Cancel01Icon,
   Tick02Icon,
-  PlusSignIcon,
   Link04Icon,
   ArrowDown01Icon,
 } from "@hugeicons/core-free-icons"
@@ -69,12 +68,14 @@ export function InvitePeopleDialog({
 
   useEffect(() => {
     if (!open) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setDraft("")
       setEmails([])
       setRole("Member")
       setSent(null)
       setError(null)
       setLinkCopied(false)
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open])
 
