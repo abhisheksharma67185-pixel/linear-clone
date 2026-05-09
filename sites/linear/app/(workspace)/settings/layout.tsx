@@ -203,7 +203,7 @@ function SettingsShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="absolute inset-0 flex overflow-hidden">
+    <main className="absolute inset-0 flex overflow-hidden">
       <aside className="border-sidebar-border bg-sidebar flex w-56 shrink-0 flex-col border-r">
         <nav
           ref={navScrollRef}
@@ -265,9 +265,9 @@ function SettingsShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto">
+      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         {children}
       </div>
-    </div>
+    </main>
   )
 }

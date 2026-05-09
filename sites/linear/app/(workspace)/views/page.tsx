@@ -79,18 +79,19 @@ export default function ViewsPage() {
           still open the dialog inline for users already scanning the
           list. Both paths land on the same CreateViewDialog.
         */}
-        <Button
-          asChild
-          variant="ghost"
-          size="icon"
-          aria-label="New view"
-          data-testid="views-header-new"
-          className="size-7"
-        >
-          <Link href="/views/new">
-            <HugeiconsIcon icon={PlusSignIcon} className="size-4" />
-          </Link>
-        </Button>
+        <span data-testid="views-header-new">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            aria-label="New view"
+            className="size-7"
+          >
+            <Link href="/views/new">
+              <HugeiconsIcon icon={PlusSignIcon} className="size-4" />
+            </Link>
+          </Button>
+        </span>
       </header>
 
       {/* Tabs + toolbar */}
@@ -336,6 +337,13 @@ function ViewsDisplayPopover({
         data-testid="views-display-popover"
         className="w-72 gap-0 p-0"
       >
+        <div className="flex flex-col px-2.5 py-2">
+          <div className="flex items-center justify-between py-1.5">
+            <span className="text-muted-foreground text-xs">Grouping</span>
+            <span className="text-muted-foreground text-xs">Status</span>
+          </div>
+        </div>
+        <div className="border-border/60 border-t" />
         <div className="flex flex-col px-2.5 py-2">
           <div className="flex items-center justify-between py-1.5">
             <span className="text-muted-foreground text-xs">Ordering</span>

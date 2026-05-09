@@ -17,7 +17,7 @@ import { expect, test, type Page } from "@playwright/test"
 
 const TEAMS_URL = "/teams"
 
-async function gotoTeams(page: Page) {
+async function gotoTeams({ page }: { page: Page }) {
   await page.goto(TEAMS_URL)
   await expect(page.getByRole("heading", { name: /^Teams$/ })).toBeVisible()
   // Wait for the data to resolve so the grid is populated.

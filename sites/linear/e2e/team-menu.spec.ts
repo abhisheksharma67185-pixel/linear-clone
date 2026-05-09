@@ -21,7 +21,7 @@
  */
 import { expect, test, type Page } from "@playwright/test"
 
-async function clearTeamPrefs(page: Page) {
+async function clearTeamPrefs({ page }: { page: Page }) {
   await page.addInitScript(() => {
     try {
       window.localStorage.removeItem("team:preferences:v1")

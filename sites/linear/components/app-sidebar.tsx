@@ -216,9 +216,10 @@ export function AppSidebar() {
                   <DropdownMenuShortcut>G then S</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  render={<Link href="/settings?section=members" />}
+                  data-testid="workspace-menu-invite-people"
+                  onClick={() => setInviteOpen(true)}
                 >
-                  <span>Invite and manage members</span>
+                  <span>Invite people</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setDownloadOpen(true)}>
@@ -626,6 +627,23 @@ export function AppSidebar() {
                                   <DropdownMenuSubContent
                                     className="w-56"
                                     data-testid="team-menu-subscribe-submenu"
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Escape") {
+                                        // Base UI closes the submenu on Escape
+                                        // and returns focus to the subscribe
+                                        // trigger. Dispatch a second Escape
+                                        // there to also close the root menu.
+                                        requestAnimationFrame(() => {
+                                          document.activeElement?.dispatchEvent(
+                                            new KeyboardEvent("keydown", {
+                                              key: "Escape",
+                                              bubbles: true,
+                                              cancelable: true,
+                                            })
+                                          )
+                                        })
+                                      }
+                                    }}
                                   >
                                     {ALL_SUBSCRIBE_EVENTS.map((event) => {
                                       const checked = isSubscribed(
@@ -637,14 +655,8 @@ export function AppSidebar() {
                                         <DropdownMenuItem
                                           key={event}
                                           data-testid={`team-menu-subscribe-${event}`}
-                                          // Manual checkbox semantics:
-                                          // we render a check on the
-                                          // right when subscribed and
-                                          // toggle on click. Multi-
-                                          // select stays open via
-                                          // event.preventDefault.
-                                          onClick={(e) => {
-                                            e.preventDefault()
+                                          closeOnClick={false}
+                                          onClick={() => {
                                             saveTeamPreferences(
                                               toggleSubscribeEvent(
                                                 teamPrefs,
@@ -734,16 +746,15 @@ export function AppSidebar() {
                                     <TooltipTrigger
                                       render={
                                         <DropdownMenuItem
-                                          className="text-muted-foreground/60 gap-2"
-                                          disabled={leaveDisabled}
+                                          className="text-muted-foreground/60 gap-2 opacity-50"
+                                          aria-disabled={
+                                            leaveDisabled ? "true" : undefined
+                                          }
                                           data-testid="team-menu-leave"
-                                          // Even though the item is
-                                          // aria-disabled, we keep it
-                                          // focusable so screen
-                                          // readers announce the
-                                          // tooltip — Base UI's Menu
-                                          // doesn't strip focus from
-                                          // disabled items.
+                                          onClick={(e) => {
+                                            if (leaveDisabled)
+                                              e.preventDefault()
+                                          }}
                                         >
                                           <HugeiconsIcon
                                             icon={Logout01Icon}
