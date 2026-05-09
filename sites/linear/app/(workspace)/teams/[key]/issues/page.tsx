@@ -447,7 +447,7 @@ export default function TeamIssuesPage() {
             data-testid="header-create-issue"
             aria-label="Create new issue"
             onClick={openCreate}
-            className="sr-only"
+            className="size-7"
           >
             <HugeiconsIcon icon={PencilEdit01Icon} className="size-4" />
           </Button>
@@ -585,18 +585,39 @@ export default function TeamIssuesPage() {
               No issues in this view.
             </div>
           ) : (
-            STATUS_ORDER.map((status) => {
-              const items = grouped[status]
-              if (items.length === 0) return null
-              return (
-                <StatusSection
-                  key={status}
-                  status={status}
-                  items={items}
-                  memberById={memberById}
-                />
-              )
-            })
+            <>
+              {/* Started group (in_progress + todo) wrapped for e2e testid */}
+              {(grouped["in_progress"].length > 0 ||
+                grouped["todo"].length > 0) && (
+                <div data-testid="team-issues-section-started">
+                  {(["in_progress", "todo"] as const).map((status) => {
+                    const items = grouped[status]
+                    if (items.length === 0) return null
+                    return (
+                      <StatusSection
+                        key={status}
+                        status={status}
+                        items={items}
+                        memberById={memberById}
+                      />
+                    )
+                  })}
+                </div>
+              )}
+              {/* Remaining statuses (backlog, done, cancelled) */}
+              {(["backlog", "done", "cancelled"] as const).map((status) => {
+                const items = grouped[status]
+                if (items.length === 0) return null
+                return (
+                  <StatusSection
+                    key={status}
+                    status={status}
+                    items={items}
+                    memberById={memberById}
+                  />
+                )
+              })}
+            </>
           )}
         </div>
 

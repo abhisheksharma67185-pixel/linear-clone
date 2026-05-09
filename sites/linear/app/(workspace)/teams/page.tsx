@@ -184,6 +184,45 @@ export default function TeamsPage() {
             />
           </div>
 
+          {/* Standalone sort dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="teams-sort-trigger"
+                  aria-label="Sort order"
+                  className="h-8 gap-2 text-xs"
+                />
+              }
+            >
+              <span>{SORT_LABELS[sort]}</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side="bottom"
+              align="start"
+              sideOffset={4}
+              className="w-48"
+            >
+              {SORT_OPTIONS.map(([value, label]) => (
+                <DropdownMenuItem
+                  key={value}
+                  data-testid={`teams-sort-option-${value}`}
+                  onClick={() => setSort(value)}
+                  className="flex items-center justify-between gap-2 text-xs"
+                >
+                  <span>{label}</span>
+                  {sort === value && (
+                    <span aria-hidden="true" className="text-muted-foreground">
+                      ✓
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Popover open={displayOpen} onOpenChange={setDisplayOpen}>
             <PopoverTrigger
               render={

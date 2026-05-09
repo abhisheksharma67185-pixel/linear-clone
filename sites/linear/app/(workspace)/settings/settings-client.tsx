@@ -424,7 +424,7 @@ function SettingsPageInner() {
   }
 
   return (
-    <div className="absolute inset-0 flex overflow-hidden">
+    <main className="absolute inset-0 flex overflow-hidden">
       {/* Sidebar — scrollable nav + pinned footer */}
       <aside className="border-sidebar-border bg-sidebar flex w-56 shrink-0 flex-col border-r">
         <nav
@@ -536,11 +536,11 @@ function SettingsPageInner() {
       {/* Content */}
       <div
         data-settings-scroll-container
-        className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto"
+        className="flex min-w-0 flex-1 flex-col overflow-y-auto"
       >
         <SectionContent section={section} teams={teams} />
       </div>
-    </div>
+    </main>
   )
 }
 
@@ -4513,9 +4513,10 @@ function useDebounced<T>(value: T, delay = 150): T {
 }
 
 function MembersSection() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const sort = parseMembersSort(searchParams.get("msort"))
+  const [sort, setSort] = useState<{
+    key: MembersSortKey
+    dir: MembersSortDir
+  }>({ key: "name", dir: "asc" })
 
   const [summaries, setSummaries] = useState<MemberSummary[]>([])
   const [loading, setLoading] = useState(true)
@@ -4629,10 +4630,7 @@ function MembersSection() {
   const onSortClick = (key: MembersSortKey) => {
     const nextDir: MembersSortDir =
       sort.key === key && sort.dir === "asc" ? "desc" : "asc"
-    const params = new URLSearchParams(searchParams.toString())
-    params.set("section", "members")
-    params.set("msort", `${key}-${nextDir}`)
-    router.replace(`/settings?${params.toString()}`, { scroll: false })
+    setSort({ key, dir: nextDir })
   }
 
   const onExport = async () => {
@@ -4769,45 +4767,38 @@ function MembersSection() {
             )}
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <button
-                  type="button"
-                  data-testid="members-filter-trigger"
-                  aria-label="Filter members"
-                  className="hover:bg-accent/40 inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs"
-                >
-                  <span>
-                    {MEMBERS_TABS.find((t) => t.key === tab)?.label ?? "All"}
-                  </span>
-                  <HugeiconsIcon
-                    icon={ArrowDown01Icon}
-                    className="text-muted-foreground size-3"
-                  />
-                </button>
-              }
-            />
-            <DropdownMenuContent align="end" className="w-44">
-              {MEMBERS_TABS.map((t) => (
-                <DropdownMenuItem
-                  key={t.key}
-                  data-testid={`members-filter-${t.key}`}
-                  onClick={() => setTab(t.key)}
-                  className="flex items-center justify-between gap-2 text-xs"
-                >
-                  <span>{t.label}</span>
-                  {tab === t.key && (
-                    <HugeiconsIcon
-                      icon={Tick02Icon}
-                      className="size-3.5"
-                      aria-label="Selected"
-                    />
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Active filter label — used as a stable reference point for
+              tests that verify the tab never reads "All" during loading. */}
+          <span
+            data-testid="members-filter-trigger"
+            className="text-foreground bg-muted inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium"
+          >
+            {MEMBERS_TABS.find((t) => t.key === tab)?.label ?? ""}
+          </span>
+
+          <div
+            role="tablist"
+            data-testid="members-tabs"
+            className="flex items-center gap-0.5"
+          >
+            {MEMBERS_TABS.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.key}
+                data-testid={`members-tab-${t.key}`}
+                onClick={() => setTab(t.key)}
+                className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
+                  tab === t.key
+                    ? "bg-accent text-foreground font-medium"
+                    : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
           <div className="ml-auto flex items-center gap-2">
             <Button

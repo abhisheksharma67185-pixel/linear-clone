@@ -230,6 +230,22 @@ function ProjectsPageInner() {
             )}
           </div>
           <div className="text-muted-foreground flex items-center gap-1.5">
+            {(["List", "Board", "Timeline"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() =>
+                  setViewType(v.toLowerCase() as "list" | "board" | "timeline")
+                }
+                className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+                  viewType === v.toLowerCase()
+                    ? "bg-muted text-foreground"
+                    : "hover:bg-muted/60 hover:text-foreground"
+                }`}
+              >
+                {v}
+              </button>
+            ))}
             <ProjectFilterPopover
               projects={projects}
               onAdvancedFilter={() => setAdvancedFilterActive(true)}

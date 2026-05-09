@@ -151,6 +151,7 @@ export default function MyIssuesPage() {
     saveDisplay(next)
   }, [])
 
+  const [activeTab, setActiveTab] = useState("assigned")
   const [filterOpen, setFilterOpen] = useState(false)
   const [displayOpen, setDisplayOpen] = useState(false)
   const [filterInitialKind, setFilterInitialKind] = useState<FilterKind | null>(
@@ -346,7 +347,8 @@ export default function MyIssuesPage() {
 
         <div className="flex min-h-0 flex-1">
           <Tabs
-            defaultValue="assigned"
+            value={activeTab}
+            onValueChange={setActiveTab}
             className="flex min-h-0 min-w-0 flex-1 flex-col gap-0"
           >
             <div className="px-4">
@@ -358,7 +360,11 @@ export default function MyIssuesPage() {
               </TabsList>
             </div>
 
-            <TabsContent value="assigned" className="m-0 flex-1 overflow-auto">
+            <TabsContent
+              value="assigned"
+              data-state={activeTab === "assigned" ? "active" : "inactive"}
+              className="m-0 flex-1 overflow-auto"
+            >
               {loading ? (
                 <LoadingRows />
               ) : filteredAssigned.length === 0 ? (
@@ -384,7 +390,11 @@ export default function MyIssuesPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="created" className="m-0 flex-1 overflow-auto">
+            <TabsContent
+              value="created"
+              data-state={activeTab === "created" ? "active" : "inactive"}
+              className="m-0 flex-1 overflow-auto"
+            >
               {loading ? (
                 <LoadingRows />
               ) : filteredCreated.length === 0 ? (
@@ -413,6 +423,7 @@ export default function MyIssuesPage() {
 
             <TabsContent
               value="subscribed"
+              data-state={activeTab === "subscribed" ? "active" : "inactive"}
               className="m-0 flex-1 overflow-auto"
             >
               {loading ? (
@@ -441,7 +452,11 @@ export default function MyIssuesPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="activity" className="m-0 flex-1 overflow-auto">
+            <TabsContent
+              value="activity"
+              data-state={activeTab === "activity" ? "active" : "inactive"}
+              className="m-0 flex-1 overflow-auto"
+            >
               {loading ? (
                 <LoadingRows />
               ) : filteredCreated.length === 0 ? (
