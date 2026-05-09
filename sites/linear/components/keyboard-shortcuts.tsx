@@ -9,6 +9,9 @@ import { OPEN_HELP_EVENT } from "@/components/help-popover"
 // (~1.5s) for its leader-key sequences.
 const CHORD_WINDOW_MS = 1500
 
+export const OPEN_CREATE_ISSUE_EVENT = "linear:open-create-issue"
+export const OPEN_COMMAND_PALETTE_EVENT = "linear:open-command-palette"
+
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false
   if (target.isContentEditable) return true
@@ -25,6 +28,12 @@ function isTypingTarget(target: EventTarget | null): boolean {
  *                           overlay yet; the Help popover lists the
  *                           same bindings as `Keyboard shortcuts`)
  * - `g` then `s` (≤1.5s)  → navigate to /settings
+ * - `g` then `i` (≤1.5s)  → navigate to /issues
+ * - `g` then `p` (≤1.5s)  → navigate to /projects
+ * - `g` then `t` (≤1.5s)  → navigate to /teams
+ * - `g` then `m` (≤1.5s)  → navigate to /my-issues
+ * - `c`                   → open Create Issue dialog
+ * - `⌘k` / `Ctrl+k`       → open Command Palette
  *
  * All bindings ignore keypresses while focus is in an editable element
  * so typing `s` in a comment doesn't navigate away mid-sentence.
@@ -38,10 +47,18 @@ export function KeyboardShortcuts() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.repeat) return
-      if (isTypingTarget(event.target)) return
 
       const key = event.key
       const cmd = event.metaKey || event.ctrlKey
+
+      // `⌘k` / `Ctrl+k` — open command palette (fires even in typing targets)
+      if (cmd && key === "k" && !event.shiftKey && !event.altKey) {
+        event.preventDefault()
+        window.dispatchEvent(new CustomEvent(OPEN_COMMAND_PALETTE_EVENT))
+        return
+      }
+
+      if (isTypingTarget(event.target)) return
 
       // `⌘/` / `Ctrl+/` — open help. Don't fire if Shift is also held
       // (that's a different conventional binding).
@@ -59,21 +76,54 @@ export function KeyboardShortcuts() {
         return
       }
 
-      // Two-char sequence — `g` arms, `s` within window navigates.
+      // `c` — open Create Issue dialog (only when no dialog is open)
+      if (!cmd && !event.altKey && !event.shiftKey && key === "c") {
+        if (document.querySelector('[role="dialog"][data-open]')) return
+        event.preventDefault()
+        window.dispatchEvent(new CustomEvent(OPEN_CREATE_ISSUE_EVENT))
+        return
+      }
+
+      // Two-char sequence — `g` arms, second key within window navigates.
       if (!cmd && !event.altKey && !event.shiftKey) {
         if (key === "g") {
           lastGAtRef.current = Date.now()
           return
         }
-        if (
-          key === "s" &&
+        const inChord =
           lastGAtRef.current > 0 &&
           Date.now() - lastGAtRef.current <= CHORD_WINDOW_MS
-        ) {
-          lastGAtRef.current = 0
-          event.preventDefault()
-          router.push("/settings")
-          return
+        if (inChord) {
+          if (key === "s") {
+            lastGAtRef.current = 0
+            event.preventDefault()
+            router.push("/settings")
+            return
+          }
+          if (key === "i") {
+            lastGAtRef.current = 0
+            event.preventDefault()
+            router.push("/issues")
+            return
+          }
+          if (key === "p") {
+            lastGAtRef.current = 0
+            event.preventDefault()
+            router.push("/projects")
+            return
+          }
+          if (key === "t") {
+            lastGAtRef.current = 0
+            event.preventDefault()
+            router.push("/teams")
+            return
+          }
+          if (key === "m") {
+            lastGAtRef.current = 0
+            event.preventDefault()
+            router.push("/my-issues")
+            return
+          }
         }
       }
 

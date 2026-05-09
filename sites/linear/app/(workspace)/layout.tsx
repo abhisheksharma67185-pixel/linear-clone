@@ -8,6 +8,7 @@ import { RoutePageSkeleton } from "@/components/route-page-skeleton"
 import { TodayProvider } from "@/app/lib/today-context"
 import { AskLinear } from "@/components/ask-linear"
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts"
+import { CommandPalette } from "@/components/command-palette"
 
 export default function WorkspaceLayout({
   children,
@@ -61,6 +62,7 @@ export default function WorkspaceLayout({
     return (
       <TodayProvider>
         <KeyboardShortcuts />
+        <CommandPalette />
         {children}
       </TodayProvider>
     )
@@ -69,6 +71,7 @@ export default function WorkspaceLayout({
   return (
     <TodayProvider>
       <KeyboardShortcuts />
+      <CommandPalette />
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
