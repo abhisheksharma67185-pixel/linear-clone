@@ -66,8 +66,13 @@ import {
   ViewOffSlashIcon,
   ArrowUpRight01Icon,
   Satellite01Icon,
+  WorkflowCircle01Icon,
+  Sun01Icon,
+  Moon02Icon,
 } from "@hugeicons/core-free-icons"
+import { useTheme } from "next-themes"
 import { CreateIssueDialog } from "@/components/create-issue-dialog"
+import { OPEN_CREATE_ISSUE_EVENT } from "@/components/keyboard-shortcuts"
 import { CreateTeamDialog } from "@/components/create-team-dialog"
 import { InvitePeopleDialog } from "@/components/invite-people-dialog"
 import { DownloadAppDialog } from "@/components/download-app-dialog"
@@ -116,8 +121,17 @@ const TRY_SECTION_DISMISSED_KEY = "sidebar:try-section-dismissed"
 export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
+  const { resolvedTheme, setTheme } = useTheme()
+  const isDark = resolvedTheme !== "light"
   const [createOpen, setCreateOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+
+  // Listen for the keyboard-shortcut `C` event and open the create dialog.
+  useEffect(() => {
+    const handler = () => setCreateOpen(true)
+    window.addEventListener(OPEN_CREATE_ISSUE_EVENT, handler)
+    return () => window.removeEventListener(OPEN_CREATE_ISSUE_EVENT, handler)
+  }, [])
   const [createTeamOpen, setCreateTeamOpen] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
@@ -806,6 +820,17 @@ export function AppSidebar() {
                               </SidebarMenuSubItem>
                               <SidebarMenuSubItem>
                                 <SidebarMenuSubButton
+                                  render={<Link href="/cycles" />}
+                                >
+                                  <HugeiconsIcon
+                                    icon={WorkflowCircle01Icon}
+                                    className="size-3.5"
+                                  />
+                                  <span>Cycles</span>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                              <SidebarMenuSubItem>
+                                <SidebarMenuSubButton
                                   render={<Link href="/projects" />}
                                 >
                                   <HugeiconsIcon
@@ -872,7 +897,7 @@ export function AppSidebar() {
         </SidebarContent>
 
         <SidebarFooter>
-          <div className="flex items-center px-1">
+          <div className="flex items-center gap-1 px-1 py-2">
             <HelpPopover
               trigger={
                 <button
@@ -884,6 +909,82 @@ export function AppSidebar() {
                 </button>
               }
             />
+            <button
+              type="button"
+              aria-label="Toggle theme"
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground flex size-7 items-center justify-center rounded-md"
+            >
+              <HugeiconsIcon
+                icon={isDark ? Sun01Icon : Moon02Icon}
+                className="size-4"
+              />
+            </button>
+            <div className="flex-1" />
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label="User menu"
+                    className="hover:bg-sidebar-accent data-[popup-open]:bg-sidebar-accent flex items-center gap-2 rounded-md px-1.5 py-1 text-left text-sm"
+                  />
+                }
+              >
+                <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-[9px] font-semibold text-white">
+                  AB
+                </div>
+                <span className="text-sm font-medium">Abhishek</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                side="top"
+                sideOffset={6}
+                className="w-52"
+              >
+                <DropdownMenuItem
+                  render={<Link href="/profiles/abhishek" />}
+                  className="gap-2"
+                >
+                  <HugeiconsIcon
+                    icon={UserIcon}
+                    className="size-4 opacity-70"
+                  />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  render={<Link href="/settings?section=account" />}
+                  className="gap-2"
+                >
+                  <HugeiconsIcon
+                    icon={Settings02Icon}
+                    className="size-4 opacity-70"
+                  />
+                  <span>Preferences</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  render={<Link href="/settings?section=notifications" />}
+                  className="gap-2"
+                >
+                  <HugeiconsIcon
+                    icon={Notification01Icon}
+                    className="size-4 opacity-70"
+                  />
+                  <span>Notifications</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => router.push("/")}
+                  className="gap-2"
+                >
+                  <HugeiconsIcon
+                    icon={Logout01Icon}
+                    className="size-4 opacity-70"
+                  />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </SidebarFooter>
       </Sidebar>
