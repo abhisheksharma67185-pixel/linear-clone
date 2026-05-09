@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import type { Issue, Member, Team } from "@/app/lib/mock-data"
+import type { Issue, Label, Member, Team } from "@/app/lib/mock-data"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CreateIssueDialog } from "@/components/create-issue-dialog"
@@ -13,6 +13,7 @@ import {
   UserCircleIcon,
   SlidersHorizontalIcon,
   Layers01Icon,
+  ArrowUpDownIcon,
 } from "@hugeicons/core-free-icons"
 import {
   filterIssuesByTab,
@@ -25,6 +26,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 const TAB_LABELS: Record<IssueTab, string> = {
   all: "All issues",
@@ -48,13 +54,63 @@ const STATUS_LABEL: Record<IssueStatus, string> = {
   cancelled: "Canceled",
 }
 
-type GroupBy = "status" | "team"
+const PRIORITY_ORDER: Array<Issue["priority"]> = [
+  "urgent",
+  "high",
+  "medium",
+  "low",
+  "none",
+]
+
+const PRIORITY_LABEL: Record<Issue["priority"], string> = {
+  urgent: "Urgent",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+  none: "No priority",
+}
+
+type GroupBy = "status" | "team" | "assignee" | "priority"
+type OrderBy = "priority" | "status" | "updated" | "created" | "title"
+
+interface Filters {
+  priorities: string[]
+  assigneeIds: string[]
+  labelIds: string[]
+}
 
 function formatShortDate(iso: string): string {
   if (!iso) return ""
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ""
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
+function prioritySortValue(p: Issue["priority"]): number {
+  return PRIORITY_ORDER.indexOf(p)
+}
+
+function statusSortValue(s: IssueStatus): number {
+  return STATUS_ORDER.indexOf(s)
+}
+
+function sortIssues(issues: Issue[], orderBy: OrderBy): Issue[] {
+  return [...issues].sort((a, b) => {
+    switch (orderBy) {
+      case "priority":
+        return prioritySortValue(a.priority) - prioritySortValue(b.priority)
+      case "status":
+        return statusSortValue(a.status) - statusSortValue(b.status)
+      case "updated":
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      case "created":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      case "title":
+        return a.title.localeCompare(b.title)
+      default:
+        return 0
+    }
+  })
 }
 
 function IssueRow({
@@ -114,14 +170,17 @@ function StatusSection({
   memberById,
   teamById,
   showTeam,
+  orderBy,
 }: {
   status: IssueStatus
   items: Issue[]
   memberById: Map<string, Member>
   teamById: Map<string, Team>
   showTeam: boolean
+  orderBy: OrderBy
 }) {
   const [collapsed, setCollapsed] = useState(false)
+  const sorted = useMemo(() => sortIssues(items, orderBy), [items, orderBy])
   if (items.length === 0) return null
   return (
     <div>
@@ -147,7 +206,7 @@ function StatusSection({
         </button>
       </div>
       {!collapsed &&
-        items.map((issue) => (
+        sorted.map((issue) => (
           <IssueRow
             key={issue.id}
             issue={issue}
@@ -164,14 +223,35 @@ function TeamSection({
   items,
   memberById,
   tab,
+  filters,
+  orderBy,
 }: {
   team: Team
   items: Issue[]
   memberById: Map<string, Member>
   tab: IssueTab
+  filters: Filters
+  orderBy: OrderBy
 }) {
   const [collapsed, setCollapsed] = useState(false)
-  const filtered = useMemo(() => filterIssuesByTab(items, tab), [items, tab])
+  const filtered = useMemo(() => {
+    let result = filterIssuesByTab(items, tab)
+    if (filters.priorities.length > 0) {
+      result = result.filter((i) => filters.priorities.includes(i.priority))
+    }
+    if (filters.assigneeIds.length > 0) {
+      result = result.filter(
+        (i) => i.assigneeId && filters.assigneeIds.includes(i.assigneeId)
+      )
+    }
+    if (filters.labelIds.length > 0) {
+      result = result.filter((i) =>
+        i.labelIds.some((lid) => filters.labelIds.includes(lid))
+      )
+    }
+    return result
+  }, [items, tab, filters])
+
   const grouped = useMemo(() => {
     const out = {} as Record<IssueStatus, Issue[]>
     for (const s of STATUS_ORDER) out[s] = []
@@ -216,9 +296,131 @@ function TeamSection({
               memberById={memberById}
               teamById={new Map([[team.id, team]])}
               showTeam={false}
+              orderBy={orderBy}
             />
           ) : null
         )}
+    </div>
+  )
+}
+
+function AssigneeSection({
+  assignee,
+  items,
+  memberById,
+  teamById,
+  orderBy,
+}: {
+  assignee: Member | null
+  items: Issue[]
+  memberById: Map<string, Member>
+  teamById: Map<string, Team>
+  orderBy: OrderBy
+}) {
+  const [collapsed, setCollapsed] = useState(false)
+  const sorted = useMemo(() => sortIssues(items, orderBy), [items, orderBy])
+  if (items.length === 0) return null
+  return (
+    <div>
+      <div className="group bg-muted/30 flex items-center gap-2 px-5 py-1.5">
+        <button
+          type="button"
+          onClick={() => setCollapsed((v) => !v)}
+          aria-expanded={!collapsed}
+          className="flex items-center gap-2 text-sm font-medium"
+        >
+          <svg
+            viewBox="0 0 8 8"
+            aria-hidden="true"
+            className={`text-muted-foreground/70 size-2 shrink-0 fill-current transition-transform ${collapsed ? "-rotate-90" : ""}`}
+          >
+            <path d="M1 2 L7 2 L4 6 Z" />
+          </svg>
+          {assignee ? (
+            <>
+              <Avatar className="size-4 shrink-0">
+                <AvatarImage src={assignee.avatar} alt={assignee.name} />
+                <AvatarFallback className="bg-violet-600 text-[8px] text-white">
+                  {assignee.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span>{assignee.name}</span>
+            </>
+          ) : (
+            <>
+              <HugeiconsIcon
+                icon={UserCircleIcon}
+                className="text-muted-foreground/60 size-4 shrink-0"
+              />
+              <span>Unassigned</span>
+            </>
+          )}
+          <span className="text-muted-foreground ml-0.5 text-xs font-normal">
+            {items.length}
+          </span>
+        </button>
+      </div>
+      {!collapsed &&
+        sorted.map((issue) => (
+          <IssueRow
+            key={issue.id}
+            issue={issue}
+            assignee={memberById.get(issue.assigneeId ?? "") ?? null}
+            teamKey={teamById.get(issue.teamId)?.key}
+          />
+        ))}
+    </div>
+  )
+}
+
+function PrioritySection({
+  priority,
+  items,
+  memberById,
+  teamById,
+  orderBy,
+}: {
+  priority: Issue["priority"]
+  items: Issue[]
+  memberById: Map<string, Member>
+  teamById: Map<string, Team>
+  orderBy: OrderBy
+}) {
+  const [collapsed, setCollapsed] = useState(false)
+  const sorted = useMemo(() => sortIssues(items, orderBy), [items, orderBy])
+  if (items.length === 0) return null
+  return (
+    <div>
+      <div className="group bg-muted/30 flex items-center gap-2 px-5 py-1.5">
+        <button
+          type="button"
+          onClick={() => setCollapsed((v) => !v)}
+          aria-expanded={!collapsed}
+          className="flex items-center gap-2 text-sm font-medium"
+        >
+          <svg
+            viewBox="0 0 8 8"
+            aria-hidden="true"
+            className={`text-muted-foreground/70 size-2 shrink-0 fill-current transition-transform ${collapsed ? "-rotate-90" : ""}`}
+          >
+            <path d="M1 2 L7 2 L4 6 Z" />
+          </svg>
+          <PriorityIcon priority={priority} className="size-3.5 shrink-0" />
+          <span>{PRIORITY_LABEL[priority]}</span>
+          <span className="text-muted-foreground ml-0.5 text-xs font-normal">
+            {items.length}
+          </span>
+        </button>
+      </div>
+      {!collapsed &&
+        sorted.map((issue) => (
+          <IssueRow
+            key={issue.id}
+            issue={issue}
+            assignee={memberById.get(issue.assigneeId ?? "") ?? null}
+            teamKey={teamById.get(issue.teamId)?.key}
+          />
+        ))}
     </div>
   )
 }
@@ -227,9 +429,16 @@ export default function AllIssuesPage() {
   const [issues, setIssues] = useState<Issue[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [teams, setTeams] = useState<Team[]>([])
+  const [labels, setLabels] = useState<Label[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<IssueTab>("all")
   const [groupBy, setGroupBy] = useState<GroupBy>("status")
+  const [orderBy, setOrderBy] = useState<OrderBy>("priority")
+  const [filters, setFilters] = useState<Filters>({
+    priorities: [],
+    assigneeIds: [],
+    labelIds: [],
+  })
   const [createOpen, setCreateOpen] = useState(false)
 
   useEffect(() => {
@@ -237,10 +446,12 @@ export default function AllIssuesPage() {
       fetch("/api/data/issues").then((r) => r.json()),
       fetch("/api/data/members").then((r) => r.json()),
       fetch("/api/data/teams").then((r) => r.json()),
-    ]).then(([i, m, t]) => {
+      fetch("/api/data/labels").then((r) => r.json()),
+    ]).then(([i, m, t, l]) => {
       setIssues(i)
       setMembers(m)
       setTeams(t)
+      setLabels(l)
       setLoading(false)
     })
   }, [])
@@ -251,10 +462,23 @@ export default function AllIssuesPage() {
   )
   const teamById = useMemo(() => new Map(teams.map((t) => [t.id, t])), [teams])
 
-  const filtered = useMemo(
-    () => filterIssuesByTab(issues, activeTab),
-    [issues, activeTab]
-  )
+  const filtered = useMemo(() => {
+    let result = filterIssuesByTab(issues, activeTab)
+    if (filters.priorities.length > 0) {
+      result = result.filter((i) => filters.priorities.includes(i.priority))
+    }
+    if (filters.assigneeIds.length > 0) {
+      result = result.filter(
+        (i) => i.assigneeId && filters.assigneeIds.includes(i.assigneeId)
+      )
+    }
+    if (filters.labelIds.length > 0) {
+      result = result.filter((i) =>
+        i.labelIds.some((lid) => filters.labelIds.includes(lid))
+      )
+    }
+    return result
+  }, [issues, activeTab, filters])
 
   const grouped = useMemo(() => {
     const out = {} as Record<IssueStatus, Issue[]>
@@ -262,6 +486,33 @@ export default function AllIssuesPage() {
     for (const issue of filtered) out[issue.status].push(issue)
     return out
   }, [filtered])
+
+  const groupedByAssignee = useMemo(() => {
+    const out = new Map<string | null, Issue[]>()
+    out.set(null, [])
+    for (const m of members) out.set(m.id, [])
+    for (const issue of filtered) {
+      const key = issue.assigneeId ?? null
+      if (!out.has(key)) out.set(key, [])
+      out.get(key)!.push(issue)
+    }
+    return out
+  }, [filtered, members])
+
+  const groupedByPriority = useMemo(() => {
+    const out = {} as Record<Issue["priority"], Issue[]>
+    for (const p of PRIORITY_ORDER) out[p] = []
+    for (const issue of filtered) out[issue.priority].push(issue)
+    return out
+  }, [filtered])
+
+  const activeFilterCount = useMemo(
+    () =>
+      filters.priorities.length +
+      filters.assigneeIds.length +
+      filters.labelIds.length,
+    [filters]
+  )
 
   const openCreate = useCallback(() => setCreateOpen(true), [])
 
@@ -278,6 +529,34 @@ export default function AllIssuesPage() {
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
   }, [openCreate])
+
+  function toggleFilter<K extends keyof Filters>(
+    key: K,
+    value: string,
+    current: string[]
+  ): void {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value],
+    }))
+  }
+
+  const GROUP_LABEL: Record<GroupBy, string> = {
+    status: "Status",
+    team: "Team",
+    assignee: "Assignee",
+    priority: "Priority",
+  }
+
+  const ORDER_LABEL: Record<OrderBy, string> = {
+    priority: "Priority",
+    status: "Status",
+    updated: "Updated date",
+    created: "Created date",
+    title: "Title (A→Z)",
+  }
 
   if (loading) {
     return (
@@ -323,7 +602,7 @@ export default function AllIssuesPage() {
                 }
               >
                 <HugeiconsIcon icon={Layers01Icon} className="size-3.5" />
-                Group: {groupBy === "status" ? "Status" : "Team"}
+                Group: {GROUP_LABEL[groupBy]}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-36">
                 <DropdownMenuItem onClick={() => setGroupBy("status")}>
@@ -332,18 +611,181 @@ export default function AllIssuesPage() {
                 <DropdownMenuItem onClick={() => setGroupBy("team")}>
                   By team
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setGroupBy("assignee")}>
+                  By assignee
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setGroupBy("priority")}>
+                  By priority
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <button
-              type="button"
-              className="text-muted-foreground hover:bg-accent hover:text-foreground flex items-center gap-1.5 rounded px-2 py-1 text-xs transition-colors"
-            >
-              <HugeiconsIcon
-                icon={SlidersHorizontalIcon}
-                className="size-3.5"
-              />
-              Filter
-            </button>
+
+            {/* Order by dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    className="text-muted-foreground hover:bg-accent hover:text-foreground flex items-center gap-1.5 rounded px-2 py-1 text-xs transition-colors"
+                  />
+                }
+              >
+                <HugeiconsIcon icon={ArrowUpDownIcon} className="size-3.5" />
+                Order: {ORDER_LABEL[orderBy]}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem onClick={() => setOrderBy("priority")}>
+                  Priority
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOrderBy("status")}>
+                  Status
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOrderBy("updated")}>
+                  Updated date
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOrderBy("created")}>
+                  Created date
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOrderBy("title")}>
+                  Title (A→Z)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Filter popover */}
+            <Popover>
+              <PopoverTrigger
+                render={
+                  <button
+                    type="button"
+                    className="text-muted-foreground hover:bg-accent hover:text-foreground flex items-center gap-1.5 rounded px-2 py-1 text-xs transition-colors"
+                  />
+                }
+              >
+                <HugeiconsIcon
+                  icon={SlidersHorizontalIcon}
+                  className="size-3.5"
+                />
+                {activeFilterCount > 0
+                  ? `Filter · ${activeFilterCount}`
+                  : "Filter"}
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                side="bottom"
+                className="w-64 gap-0 p-3"
+              >
+                {/* Priority */}
+                <div className="mb-3">
+                  <p className="text-muted-foreground mb-1.5 text-[11px] font-medium tracking-wide uppercase">
+                    Priority
+                  </p>
+                  <div className="space-y-1">
+                    {PRIORITY_ORDER.map((p) => (
+                      <label
+                        key={p}
+                        className="hover:bg-accent flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-xs"
+                      >
+                        <input
+                          type="checkbox"
+                          className="accent-primary size-3.5 shrink-0"
+                          checked={filters.priorities.includes(p)}
+                          onChange={() =>
+                            toggleFilter("priorities", p, filters.priorities)
+                          }
+                        />
+                        <PriorityIcon priority={p} className="size-3.5" />
+                        <span>{PRIORITY_LABEL[p]}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Assignee */}
+                <div className="mb-3">
+                  <p className="text-muted-foreground mb-1.5 text-[11px] font-medium tracking-wide uppercase">
+                    Assignee
+                  </p>
+                  <div className="space-y-1">
+                    {members.map((m) => (
+                      <label
+                        key={m.id}
+                        className="hover:bg-accent flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-xs"
+                      >
+                        <input
+                          type="checkbox"
+                          className="accent-primary size-3.5 shrink-0"
+                          checked={filters.assigneeIds.includes(m.id)}
+                          onChange={() =>
+                            toggleFilter(
+                              "assigneeIds",
+                              m.id,
+                              filters.assigneeIds
+                            )
+                          }
+                        />
+                        <Avatar className="size-4 shrink-0">
+                          <AvatarImage src={m.avatar} alt={m.name} />
+                          <AvatarFallback className="bg-violet-600 text-[8px] text-white">
+                            {m.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="truncate">{m.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Labels */}
+                <div className="mb-2">
+                  <p className="text-muted-foreground mb-1.5 text-[11px] font-medium tracking-wide uppercase">
+                    Labels
+                  </p>
+                  <div className="space-y-1">
+                    {labels.map((lbl) => (
+                      <label
+                        key={lbl.id}
+                        className="hover:bg-accent flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-xs"
+                      >
+                        <input
+                          type="checkbox"
+                          className="accent-primary size-3.5 shrink-0"
+                          checked={filters.labelIds.includes(lbl.id)}
+                          onChange={() =>
+                            toggleFilter("labelIds", lbl.id, filters.labelIds)
+                          }
+                        />
+                        <span
+                          className="size-2.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: lbl.color }}
+                        />
+                        <span className="truncate">{lbl.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Clear filters */}
+                {activeFilterCount > 0 && (
+                  <div className="border-t pt-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFilters({
+                          priorities: [],
+                          assigneeIds: [],
+                          labelIds: [],
+                        })
+                      }
+                      className="text-muted-foreground hover:text-foreground w-full text-left text-xs"
+                    >
+                      Clear filters
+                    </button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+
             <button
               type="button"
               onClick={openCreate}
@@ -405,9 +847,10 @@ export default function AllIssuesPage() {
                 memberById={memberById}
                 teamById={teamById}
                 showTeam
+                orderBy={orderBy}
               />
             ))
-          ) : (
+          ) : groupBy === "team" ? (
             teams.map((team) => (
               <TeamSection
                 key={team.id}
@@ -415,6 +858,44 @@ export default function AllIssuesPage() {
                 items={issues.filter((i) => i.teamId === team.id)}
                 memberById={memberById}
                 tab={activeTab}
+                filters={filters}
+                orderBy={orderBy}
+              />
+            ))
+          ) : groupBy === "assignee" ? (
+            <>
+              {members
+                .filter((m) => (groupedByAssignee.get(m.id)?.length ?? 0) > 0)
+                .map((m) => (
+                  <AssigneeSection
+                    key={m.id}
+                    assignee={m}
+                    items={groupedByAssignee.get(m.id) ?? []}
+                    memberById={memberById}
+                    teamById={teamById}
+                    orderBy={orderBy}
+                  />
+                ))}
+              {(groupedByAssignee.get(null)?.length ?? 0) > 0 && (
+                <AssigneeSection
+                  key="unassigned"
+                  assignee={null}
+                  items={groupedByAssignee.get(null) ?? []}
+                  memberById={memberById}
+                  teamById={teamById}
+                  orderBy={orderBy}
+                />
+              )}
+            </>
+          ) : (
+            PRIORITY_ORDER.map((p) => (
+              <PrioritySection
+                key={p}
+                priority={p}
+                items={groupedByPriority[p]}
+                memberById={memberById}
+                teamById={teamById}
+                orderBy={orderBy}
               />
             ))
           )}
