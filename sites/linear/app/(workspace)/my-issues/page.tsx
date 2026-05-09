@@ -210,6 +210,16 @@ export default function MyIssuesPage() {
     () => issues.filter(subscribedQuery(CURRENT_USER_ID).predicate),
     [issues]
   )
+  const mentions = useMemo(
+    () =>
+      issues.filter(
+        (i) =>
+          Array.isArray(i.subscriberIds) &&
+          i.subscriberIds.includes(CURRENT_USER_ID) &&
+          i.assigneeId !== CURRENT_USER_ID
+      ),
+    [issues]
+  )
 
   const filteredAssigned = useMemo(
     () => applyFilters(assigned, filters),
@@ -222,6 +232,10 @@ export default function MyIssuesPage() {
   const filteredSubscribed = useMemo(
     () => applyFilters(subscribed, filters),
     [subscribed, filters]
+  )
+  const filteredMentions = useMemo(
+    () => applyFilters(mentions, filters),
+    [mentions, filters]
   )
 
   const memberById = useMemo(
@@ -356,7 +370,7 @@ export default function MyIssuesPage() {
                 <TabPill value="assigned">Assigned</TabPill>
                 <TabPill value="created">Created</TabPill>
                 <TabPill value="subscribed">Subscribed</TabPill>
-                <TabPill value="activity">Activity</TabPill>
+                <TabPill value="mentions">Mentions</TabPill>
               </TabsList>
             </div>
 
@@ -453,24 +467,32 @@ export default function MyIssuesPage() {
             </TabsContent>
 
             <TabsContent
-              value="activity"
-              data-state={activeTab === "activity" ? "active" : "inactive"}
+              value="mentions"
+              data-state={activeTab === "mentions" ? "active" : "inactive"}
               className="m-0 flex-1 overflow-auto"
             >
               {loading ? (
                 <LoadingRows />
-              ) : filteredCreated.length === 0 ? (
-                <EmptyState label="No recent activity" onCreate={openCreate} />
+              ) : filteredMentions.length === 0 ? (
+                <EmptyState
+                  label={
+                    filterCount > 0
+                      ? "No issues match the current filters"
+                      : "No issues where you're mentioned"
+                  }
+                  onCreate={openCreate}
+                />
               ) : (
                 <IssueListView
-                  issues={filteredCreated}
+                  issues={filteredMentions}
                   display={display}
                   memberById={memberById}
                   labelById={labelById}
                   projectById={projectById}
                   onUpdatePriority={updatePriority}
                   onUpdateStatus={updateStatus}
-                  forceLayout="board"
+                  forceLayout="list"
+                  ungrouped
                 />
               )}
             </TabsContent>

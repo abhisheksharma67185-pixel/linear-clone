@@ -77,6 +77,7 @@ interface CycleCardProps {
   memberById: Map<string, Member>
   team: Team | undefined
   onComplete: (id: string) => void
+  onRequestComplete: (id: string) => void
   onStart: (id: string) => void
 }
 
@@ -86,6 +87,7 @@ function CycleCard({
   memberById,
   team,
   onComplete,
+  onRequestComplete,
   onStart,
 }: CycleCardProps) {
   const [expanded, setExpanded] = useState(false)
@@ -199,7 +201,7 @@ function CycleCard({
                 className="h-7 rounded-full px-3 text-xs"
                 onClick={(e) => {
                   e.stopPropagation()
-                  onComplete(cycle.id)
+                  onRequestComplete(cycle.id)
                 }}
               >
                 Complete cycle
@@ -289,6 +291,7 @@ function CycleSection({
   memberById,
   teamById,
   onComplete,
+  onRequestComplete,
   onStart,
   defaultOpen = true,
 }: {
@@ -298,6 +301,7 @@ function CycleSection({
   memberById: Map<string, Member>
   teamById: Map<string, Team>
   onComplete: (id: string) => void
+  onRequestComplete: (id: string) => void
   onStart: (id: string) => void
   defaultOpen?: boolean
 }) {
@@ -336,6 +340,7 @@ function CycleSection({
             memberById={memberById}
             team={teamById.get(cycle.teamId)}
             onComplete={onComplete}
+            onRequestComplete={onRequestComplete}
             onStart={onStart}
           />
         ))}
@@ -357,6 +362,10 @@ export default function CyclesPage() {
   const [newTeamId, setNewTeamId] = useState("")
   const [newStartDate, setNewStartDate] = useState("")
   const [newEndDate, setNewEndDate] = useState("")
+
+  const [transferModalOpen, setTransferModalOpen] = useState(false)
+  const [cycleToComplete, setCycleToComplete] = useState<string | null>(null)
+  const [transferTargetId, setTransferTargetId] = useState<string>("")
 
   const fetchAll = () => {
     Promise.all([
@@ -442,6 +451,20 @@ export default function CyclesPage() {
         )
       )
     }
+  }
+
+  const handleRequestComplete = (cycleId: string) => {
+    setCycleToComplete(cycleId)
+    setTransferTargetId("")
+    setTransferModalOpen(true)
+  }
+
+  const handleConfirmTransfer = async () => {
+    if (!cycleToComplete) return
+    await handleComplete(cycleToComplete)
+    setTransferModalOpen(false)
+    setCycleToComplete(null)
+    setTransferTargetId("")
   }
 
   const activeCycles = useMemo(
@@ -607,6 +630,7 @@ export default function CyclesPage() {
               memberById={memberById}
               teamById={teamById}
               onComplete={handleComplete}
+              onRequestComplete={handleRequestComplete}
               onStart={handleStart}
               defaultOpen={true}
             />
@@ -617,6 +641,7 @@ export default function CyclesPage() {
               memberById={memberById}
               teamById={teamById}
               onComplete={handleComplete}
+              onRequestComplete={handleRequestComplete}
               onStart={handleStart}
               defaultOpen={true}
             />
@@ -627,12 +652,78 @@ export default function CyclesPage() {
               memberById={memberById}
               teamById={teamById}
               onComplete={handleComplete}
+              onRequestComplete={handleRequestComplete}
               onStart={handleStart}
               defaultOpen={false}
             />
           </>
         )}
       </div>
+
+      {/* Transfer incomplete issues modal */}
+      <Dialog open={transferModalOpen} onOpenChange={setTransferModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Complete cycle</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-2">
+            <p className="text-muted-foreground text-sm">
+              {cycleToComplete
+                ? (() => {
+                    const count = (
+                      cycleIssuesMap.get(cycleToComplete) ?? []
+                    ).filter(
+                      (i) => i.status !== "done" && i.status !== "cancelled"
+                    ).length
+                    return `${count} incomplete ${count === 1 ? "issue" : "issues"} will be moved to:`
+                  })()
+                : "Incomplete issues will be moved to:"}
+            </p>
+            <Select
+              value={transferTargetId}
+              onValueChange={(v) => v && setTransferTargetId(v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select destination cycle" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__backlog__">
+                  No cycle (leave as backlog)
+                </SelectItem>
+                {cycles
+                  .filter(
+                    (c) =>
+                      c.id !== cycleToComplete &&
+                      (c.state === "active" || c.state === "upcoming")
+                  )
+                  .map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <DialogClose
+              render={
+                <Button
+                  variant="outline"
+                  onClick={() => setTransferModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+              }
+            />
+            <Button
+              onClick={handleConfirmTransfer}
+              disabled={!transferTargetId}
+            >
+              Complete &amp; transfer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

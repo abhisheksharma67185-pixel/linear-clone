@@ -407,7 +407,12 @@ export default function TeamIssuesPage() {
           <span className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-pink-500/70 text-pink-500">
             <HugeiconsIcon icon={UserIcon} className="size-2.5" />
           </span>
-          <h1 className="text-sm font-medium">Issues</h1>
+          <h1 className="text-sm font-medium">{team ? team.name : "Issues"}</h1>
+          {team && (
+            <span className="text-muted-foreground/70 ring-border/50 rounded px-1.5 py-0.5 font-mono text-[10px] ring-1">
+              {team.key}
+            </span>
+          )}
           <button
             type="button"
             aria-label={
