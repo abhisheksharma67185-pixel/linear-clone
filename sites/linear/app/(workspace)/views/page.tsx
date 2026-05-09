@@ -29,6 +29,27 @@ import {
 const WORKSPACE_NAME = "Theta Computers"
 const WORKSPACE_INITIALS = "TC"
 
+const DEFAULT_VIEWS = [
+  {
+    key: "all-issues",
+    label: "All issues",
+    href: "/issues",
+    description: "All workspace issues",
+  },
+  {
+    key: "my-issues",
+    label: "My issues",
+    href: "/my-issues",
+    description: "Issues assigned to you",
+  },
+  {
+    key: "active",
+    label: "Active issues",
+    href: "/issues",
+    description: "In progress and todo issues",
+  },
+]
+
 type ViewOrdering = "Created" | "Updated" | "Name" | "Owner"
 type ViewDisplayProp = "Created" | "Updated" | "Owner"
 
@@ -132,6 +153,33 @@ export default function ViewsPage() {
           </div>
         ) : tab === "issues" ? (
           <>
+            {/* Default system views */}
+            <div className="border-b px-5 py-4">
+              <h2 className="text-muted-foreground mb-2 px-1 text-xs font-medium tracking-wide uppercase">
+                Default views
+              </h2>
+              <div className="divide-y rounded-md border">
+                {DEFAULT_VIEWS.map((view) => (
+                  <Link
+                    key={view.key}
+                    href={view.href}
+                    className="hover:bg-accent/40 flex items-center gap-3 px-4 py-3 transition-colors"
+                  >
+                    <ViewsIconSmall />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium">{view.label}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {view.description}
+                      </p>
+                    </div>
+                    <span className="text-muted-foreground/50 text-[10px]">
+                      Default
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
             {/* Column header. data-testid hooks let the regression
                 test for the Display-options popover ghost bug verify
                 the headers aren't covered by a leftover popover layer
@@ -170,7 +218,7 @@ export default function ViewsPage() {
               )}
             </div>
 
-            {/* Personal views section header */}
+            {/* My views section header */}
             <div className="group bg-accent/20 flex items-center gap-2 border-b px-5 py-2">
               <Avatar className="size-5 shrink-0">
                 <AvatarFallback className="bg-violet-600 text-[9px] text-white">
@@ -178,7 +226,7 @@ export default function ViewsPage() {
                 </AvatarFallback>
               </Avatar>
               <span className="text-muted-foreground flex-1 text-xs font-medium">
-                Personal views
+                My views
                 <span className="ml-1.5 font-normal opacity-60">
                   · Only visible to you
                 </span>
@@ -499,5 +547,29 @@ function ViewIconPicker() {
         </svg>
       }
     />
+  )
+}
+
+/** Non-interactive version of the Views icon for the default-views list. */
+function ViewsIconSmall() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 16 16"
+      className="text-muted-foreground size-4 shrink-0"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M6.93213 2.21398C7.66484 1.90793 8.49512 1.93032 9.21389 2.28028L14.28 4.74739C15.2242 5.20709 15.2441 6.55895 14.3138 7.04673L9.2874 9.6826C8.48012 10.1058 7.51988 10.1058 6.7126 9.6826L1.68618 7.04673C0.75589 6.55895 0.775786 5.20709 1.71995 4.74739L6.78611 2.28028L6.93213 2.21398ZM8.55132 3.67054C8.24643 3.52213 7.89768 3.50303 7.58179 3.61428L7.44868 3.67054L2.83947 5.91363L7.41491 8.31243C7.7819 8.50486 8.2181 8.50486 8.58509 8.31243L13.1595 5.91363L8.55132 3.67054Z"
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M13.9045 10.0768C14.272 9.90435 14.7242 10.0333 14.9153 10.365C15.1063 10.6966 14.9634 11.1047 14.5959 11.2772L9.49912 13.6693C8.55934 14.1102 7.44077 14.1102 6.50099 13.6693L1.40417 11.2772L1.33776 11.2428C1.01976 11.0547 0.905685 10.676 1.08483 10.365C1.26402 10.054 1.67295 9.92085 2.02626 10.0477L2.0956 10.0768L7.19241 12.468L7.38675 12.5464C7.84801 12.7022 8.36492 12.6757 8.80769 12.468L13.9045 10.0768Z"
+      />
+    </svg>
   )
 }
