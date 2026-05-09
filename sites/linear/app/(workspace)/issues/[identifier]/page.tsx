@@ -40,7 +40,13 @@ import {
   Delete01Icon,
   SlidersHorizontalIcon,
   Target02Icon,
+  Notification01Icon,
 } from "@hugeicons/core-free-icons"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 type IssueStatus = Issue["status"]
 type IssuePriority = Issue["priority"]
@@ -174,6 +180,9 @@ export default function IssueDetailPage() {
   const [estimate, setEstimate] = useState<number | null>(null)
   const [dueDate, setDueDate] = useState<string | null>(null)
 
+  const [subscribed, setSubscribed] = useState(false)
+  const [branchCopied, setBranchCopied] = useState(false)
+
   const [commentText, setCommentText] = useState("")
   const [comments, setComments] = useState<
     { id: string; author: string; body: string; at: string }[]
@@ -286,6 +295,25 @@ export default function IssueDetailPage() {
     persist({ estimate: v })
   }
 
+  const branchName = issue
+    ? `${issue.identifier.toLowerCase()}-${issue.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 40)}`
+    : ""
+
+  const handleCopyBranch = () => {
+    navigator.clipboard.writeText(branchName).catch(() => {})
+    setBranchCopied(true)
+    setTimeout(() => setBranchCopied(false), 2000)
+  }
+
+  const handleArchive = async () => {
+    if (!issue) return
+    applyStatus("cancelled")
+  }
+
   const handleDelete = async () => {
     await fetch(`/api/data/issues/${identifier}`, { method: "DELETE" })
     router.push("/my-issues")
@@ -382,6 +410,19 @@ export default function IssueDetailPage() {
         <div className="flex items-center gap-0.5">
           <button
             type="button"
+            aria-label={subscribed ? "Unsubscribe" : "Subscribe"}
+            onClick={() => setSubscribed((s) => !s)}
+            className={`flex items-center gap-1.5 rounded px-2 py-1 text-xs transition-colors ${
+              subscribed
+                ? "hover:bg-accent text-violet-500"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+            }`}
+          >
+            <HugeiconsIcon icon={Notification01Icon} className="size-3.5" />
+            <span>{subscribed ? "Subscribed" : "Subscribe"}</span>
+          </button>
+          <button
+            type="button"
             onClick={() =>
               navigator.clipboard
                 .writeText(window.location.href)
@@ -418,7 +459,7 @@ export default function IssueDetailPage() {
                 Open in full page
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleArchive}>
                 <HugeiconsIcon icon={Archive01Icon} className="mr-2 size-3.5" />
                 Archive issue
               </DropdownMenuItem>
@@ -692,9 +733,20 @@ export default function IssueDetailPage() {
                   Create branch
                 </button>
               </div>
-              <p className="text-muted-foreground/50 mt-1.5 text-xs">
-                No branches
-              </p>
+              {branchName && (
+                <div className="bg-muted/30 mt-2 flex items-center gap-2 rounded-md border px-3 py-2 font-mono text-xs">
+                  <span className="text-muted-foreground flex-1 truncate">
+                    {branchName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyBranch}
+                    className="text-muted-foreground hover:text-foreground shrink-0 text-xs"
+                  >
+                    {branchCopied ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+              )}
             </section>
 
             {/* Activity */}
@@ -1165,20 +1217,65 @@ export default function IssueDetailPage() {
 
             {/* Due date */}
             <PropRow label="Due date">
-              <button
-                type="button"
-                className="hover:bg-accent flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-left text-sm transition-colors"
-              >
-                <HugeiconsIcon
-                  icon={Calendar03Icon}
-                  className={`size-3.5 shrink-0 ${dueDate ? "text-muted-foreground" : "text-muted-foreground/50"}`}
-                />
-                {dueDate ? (
-                  <span>{formatShortDate(dueDate)}</span>
-                ) : (
-                  <span className="text-muted-foreground/50">Due date</span>
-                )}
-              </button>
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <button
+                      type="button"
+                      className="hover:bg-accent flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-left text-sm transition-colors"
+                    />
+                  }
+                >
+                  <HugeiconsIcon
+                    icon={Calendar03Icon}
+                    className={`size-3.5 shrink-0 ${dueDate ? "text-muted-foreground" : "text-muted-foreground/50"}`}
+                  />
+                  {dueDate ? (
+                    <span>{formatShortDate(dueDate)}</span>
+                  ) : (
+                    <span className="text-muted-foreground/50">Due date</span>
+                  )}
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-3" align="start">
+                  <div className="space-y-2">
+                    <p className="text-muted-foreground text-xs font-medium">
+                      Due date
+                    </p>
+                    <input
+                      type="date"
+                      value={dueDate ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value || null
+                        setDueDate(val)
+                        if (issueRef.current)
+                          issueRef.current = {
+                            ...issueRef.current,
+                            dueDate: val,
+                          }
+                        persist({ dueDate: val })
+                      }}
+                      className="rounded border bg-transparent px-2 py-1.5 text-sm outline-none focus:ring-1 focus:ring-violet-500"
+                    />
+                    {dueDate && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDueDate(null)
+                          if (issueRef.current)
+                            issueRef.current = {
+                              ...issueRef.current,
+                              dueDate: null,
+                            }
+                          persist({ dueDate: null })
+                        }}
+                        className="text-muted-foreground hover:text-foreground block text-xs"
+                      >
+                        Clear date
+                      </button>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </PropRow>
 
             <div className="mx-4 my-3 border-t" />
