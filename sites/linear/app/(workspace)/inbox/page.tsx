@@ -15,7 +15,8 @@
  * notification is selected; the empty state has no chrome.
  */
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -54,6 +55,7 @@ import {
   StatusIcon,
   Cancel01Icon,
   PlusSignIcon,
+  Archive01Icon,
 } from "@hugeicons/core-free-icons"
 
 // Notification type taxonomy — the 14 options below "System
@@ -127,6 +129,7 @@ type Notification = {
   ageHours: number
   read: boolean
   snoozed: boolean
+  archived: boolean
   /** Optional issue identifier surfaced when the "ID" display property is on. */
   issueId?: string
   /**
@@ -147,6 +150,7 @@ const NOTIFICATIONS: Notification[] = [
     type: "System notifications",
     read: false,
     snoozed: false,
+    archived: false,
   },
 ]
 
@@ -183,6 +187,8 @@ const KEY_FEATURES = [
 ]
 
 export default function InboxPage() {
+  const router = useRouter()
+
   // Filter selections from the FilterPopover — controlled here so the
   // pill bar above the notification list can render and the list can
   // actually be filtered. Keys are `${filterLabel}::${itemLabel}`.
@@ -190,6 +196,23 @@ export default function InboxPage() {
   // Open state for the secondary "+" trigger that lives inside the
   // pill bar. The header trigger uses its own internal open state.
   const [pillFilterOpen, setPillFilterOpen] = useState(false)
+
+  // Local mutable notification state so mark-read and archive work
+  // without a server round-trip.
+  const [notifications, setNotifications] =
+    useState<Notification[]>(NOTIFICATIONS)
+
+  const handleMarkRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    )
+  }
+
+  const handleArchive = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, archived: true } : n))
+    )
+  }
 
   // Display-options state — local-only; matches Linear's inbox where
   // these toggles are user preferences, not URL-shareable. Declared
@@ -217,7 +240,9 @@ export default function InboxPage() {
       if (!grouped.has(filter)) grouped.set(filter, new Set())
       grouped.get(filter)!.add(item)
     }
-    let list = NOTIFICATIONS.filter((n) => {
+    let list = notifications.filter((n) => {
+      // Hide archived notifications from the main list.
+      if (n.archived) return false
       for (const [filter, items] of grouped) {
         if (filter === "Notification type" && !items.has(n.type)) return false
         // Other filters (From / Project / Issue priority / Issue status
@@ -246,12 +271,51 @@ export default function InboxPage() {
       return [...unread, ...read]
     }
     return sorted
-  }, [filterKeys, showSnoozed, showRead, ordering, showUnreadFirst])
+  }, [
+    filterKeys,
+    notifications,
+    showSnoozed,
+    showRead,
+    ordering,
+    showUnreadFirst,
+  ])
 
   const [selectedId, setSelectedId] = useState<string | null>("welcome")
   // If the active filter hides the currently-selected notification,
   // collapse the right pane to the empty state.
   const selected = visibleNotifications.find((n) => n.id === selectedId) ?? null
+
+  // Keyboard-navigable index within the visible list.
+  const [selectedIndex, setSelectedIndex] = useState(0)
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return
+      if (e.key === "j" || e.key === "J") {
+        e.preventDefault()
+        setSelectedIndex((i) =>
+          Math.min(i + 1, visibleNotifications.length - 1)
+        )
+      } else if (e.key === "k" || e.key === "K") {
+        e.preventDefault()
+        setSelectedIndex((i) => Math.max(i - 1, 0))
+      } else if (e.key === "e" || e.key === "E") {
+        e.preventDefault()
+        const notif = visibleNotifications[selectedIndex]
+        if (notif) handleArchive(notif.id)
+      } else if (e.key === "r" || e.key === "R") {
+        e.preventDefault()
+        const notif = visibleNotifications[selectedIndex]
+        if (notif) handleMarkRead(notif.id)
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [visibleNotifications, selectedIndex])
 
   // Notification-type filter starts collapsed (just "System
   // notifications" + a clickable footer summarising the 14 hidden
@@ -443,22 +507,30 @@ export default function InboxPage() {
         <ul className="flex flex-1 flex-col overflow-auto">
           {visibleNotifications.length === 0 ? (
             <li className="text-muted-foreground px-4 py-6 text-center text-xs">
-              No matching notifications
+              <p className="font-medium">You&apos;re all caught up</p>
+              <p className="mt-1 opacity-70">No new notifications</p>
             </li>
           ) : (
-            visibleNotifications.map((n) => {
+            visibleNotifications.map((n, idx) => {
               const active = n.id === selectedId
+              const keyboardFocused = idx === selectedIndex
               const showId = displayProps.has("ID") && n.issueId
               const showStatus = displayProps.has("Status and icon") && n.status
               return (
                 <li key={n.id}>
                   <button
                     type="button"
-                    onClick={() =>
+                    onClick={() => {
                       setSelectedId((cur) => (cur === n.id ? null : n.id))
-                    }
-                    className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors ${
-                      active ? "bg-accent/60" : "hover:bg-accent/40"
+                      setSelectedIndex(idx)
+                      if (n.issueId) router.push(`/issues/${n.issueId}`)
+                    }}
+                    className={`group flex w-full items-start gap-3 px-4 py-3 text-left transition-colors ${
+                      active
+                        ? "bg-accent/60"
+                        : keyboardFocused
+                          ? "bg-accent/30"
+                          : "hover:bg-accent/40"
                     }`}
                   >
                     <LinearMark className="mt-0.5 size-7 shrink-0" />
@@ -486,9 +558,41 @@ export default function InboxPage() {
                           {n.preview}
                         </p>
                       </div>
-                      <span className="text-muted-foreground shrink-0 text-[10px]">
-                        {n.ago}
-                      </span>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                          <button
+                            type="button"
+                            aria-label="Mark as read"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleMarkRead(n.id)
+                            }}
+                            className="text-muted-foreground hover:text-foreground hover:bg-accent flex size-6 items-center justify-center rounded"
+                          >
+                            <HugeiconsIcon
+                              icon={Tick02Icon}
+                              className="size-3.5"
+                            />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Archive"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleArchive(n.id)
+                            }}
+                            className="text-muted-foreground hover:text-foreground hover:bg-accent flex size-6 items-center justify-center rounded"
+                          >
+                            <HugeiconsIcon
+                              icon={Archive01Icon}
+                              className="size-3.5"
+                            />
+                          </button>
+                        </div>
+                        <span className="text-muted-foreground text-[10px]">
+                          {n.ago}
+                        </span>
+                      </div>
                     </div>
                   </button>
                 </li>
@@ -496,6 +600,11 @@ export default function InboxPage() {
             })
           )}
         </ul>
+        {visibleNotifications.length > 0 && (
+          <p className="text-muted-foreground/50 px-4 py-2 text-[10px]">
+            J/K navigate · E archive · R mark read
+          </p>
+        )}
       </aside>
 
       <section className="relative flex flex-1 flex-col">
@@ -683,7 +792,14 @@ function EmptyInbox() {
         <path d="M4 24 L24 24 L30 36 L66 36 L72 24 L92 24 L92 60 C92 63 90 65 87 65 L9 65 C6 65 4 63 4 60 Z" />
         <path d="M4 24 L16 6 L80 6 L92 24" />
       </svg>
-      <p className="text-muted-foreground text-xs">No unread notifications</p>
+      <div className="text-center">
+        <p className="text-muted-foreground text-xs font-medium">
+          You&apos;re all caught up
+        </p>
+        <p className="text-muted-foreground/60 mt-1 text-xs">
+          No new notifications
+        </p>
+      </div>
     </div>
   )
 }

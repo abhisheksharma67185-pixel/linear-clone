@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import type { Project, Member, Issue } from "@/app/lib/mock-data"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Popover,
   PopoverContent,
@@ -58,6 +59,22 @@ import {
   FilterSortIcon,
   VerticalAdjustmentsIcon,
 } from "@/components/circular-icon-toolbar"
+
+const STATUS_BADGE: Record<
+  Project["status"],
+  { label: string; className: string }
+> = {
+  planned: { label: "Planned", className: "bg-gray-500/10 text-gray-500" },
+  in_progress: {
+    label: "In Progress",
+    className: "bg-blue-500/10 text-blue-500",
+  },
+  completed: {
+    label: "Completed",
+    className: "bg-emerald-500/10 text-emerald-600",
+  },
+  cancelled: { label: "Cancelled", className: "bg-red-500/10 text-red-500" },
+}
 
 export default function ProjectsPage() {
   return (
@@ -122,19 +139,16 @@ function ProjectsPageInner() {
   }, [])
 
   const statsByProject = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const project of projects) {
-      const pi = issues.filter((i) => i.projectId === project.id)
-      const done = pi.filter(
-        (i) => i.status === "done" || i.status === "cancelled"
-      ).length
-      map.set(
-        project.id,
-        pi.length > 0 ? Math.round((done / pi.length) * 100) : 0
-      )
+    const map = new Map<string, { total: number; done: number }>()
+    for (const issue of issues) {
+      if (!issue.projectId) continue
+      const s = map.get(issue.projectId) ?? { total: 0, done: 0 }
+      s.total++
+      if (issue.status === "done" || issue.status === "cancelled") s.done++
+      map.set(issue.projectId, s)
     }
     return map
-  }, [projects, issues])
+  }, [issues])
 
   const sortedProjects = useMemo(() => {
     if (!sortBy) return projects
@@ -142,8 +156,10 @@ function ProjectsPageInner() {
       let cmp = 0
       if (sortBy === "name") cmp = a.name.localeCompare(b.name)
       if (sortBy === "status") {
-        const pa = statsByProject.get(a.id) ?? 0
-        const pb = statsByProject.get(b.id) ?? 0
+        const sa = statsByProject.get(a.id) ?? { total: 0, done: 0 }
+        const sb = statsByProject.get(b.id) ?? { total: 0, done: 0 }
+        const pa = sa.total > 0 ? sa.done / sa.total : 0
+        const pb = sb.total > 0 ? sb.done / sb.total : 0
         cmp = pa - pb
       }
       if (sortBy === "date") {
@@ -451,7 +467,14 @@ function ProjectsPageInner() {
                   </div>
                 ) : (
                   sortedProjects.map((project) => {
-                    const pct = statsByProject.get(project.id) ?? 0
+                    const stats = statsByProject.get(project.id) ?? {
+                      total: 0,
+                      done: 0,
+                    }
+                    const pct =
+                      stats.total > 0
+                        ? Math.round((stats.done / stats.total) * 100)
+                        : 0
                     const isSelected = selectedIds.has(project.id)
                     return (
                       <div
@@ -494,6 +517,13 @@ function ProjectsPageInner() {
                           <span className="truncate font-medium">
                             {project.name}
                           </span>
+                          {project.status && STATUS_BADGE[project.status] && (
+                            <span
+                              className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[project.status].className}`}
+                            >
+                              {STATUS_BADGE[project.status].label}
+                            </span>
+                          )}
                         </div>
                         {/* Health */}
                         <div className="text-muted-foreground flex w-36 items-center gap-1.5">
