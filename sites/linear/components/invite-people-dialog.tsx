@@ -4,7 +4,19 @@ import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Cancel01Icon, Tick02Icon } from "@hugeicons/core-free-icons"
+import {
+  Cancel01Icon,
+  Tick02Icon,
+  PlusSignIcon,
+  Link04Icon,
+  ArrowDown01Icon,
+} from "@hugeicons/core-free-icons"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 /**
  * Email validation regex. Stricter than the previous
@@ -38,6 +50,8 @@ export function isValidInviteEmail(value: string): boolean {
   return EMAIL_RE.test(trimmed)
 }
 
+type Role = "Member" | "Admin" | "Guest"
+
 export function InvitePeopleDialog({
   open,
   onOpenChange,
@@ -47,22 +61,20 @@ export function InvitePeopleDialog({
 }) {
   const [draft, setDraft] = useState("")
   const [emails, setEmails] = useState<string[]>([])
+  const [role, setRole] = useState<Role>("Member")
   const [sent, setSent] = useState<number | null>(null)
-  // Last validation error surfaced to the user. Cleared whenever the
-  // user types, so error state never blocks them once they correct
-  // the input. Set on Enter/comma/blur if the draft fails validation.
   const [error, setError] = useState<string | null>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Reset form fields when the dialog closes.
   useEffect(() => {
     if (!open) {
-      /* eslint-disable react-hooks/set-state-in-effect */
       setDraft("")
       setEmails([])
+      setRole("Member")
       setSent(null)
       setError(null)
-      /* eslint-enable react-hooks/set-state-in-effect */
+      setLinkCopied(false)
     }
   }, [open])
 
@@ -105,120 +117,242 @@ export function InvitePeopleDialog({
     setSent(final.length)
   }
 
+  const handleCopyLink = () => {
+    navigator.clipboard
+      .writeText("https://linear.app/theta-eng/join/abc123def456")
+      .catch(() => {})
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2000)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        // Keep "Invite people" as the accessible name so existing
-        // selectors (`getByRole('dialog', { name: /Invite people/i })`)
-        // still match even though the visible heading reads
-        // "Invite to your workspace".
         aria-label="Invite people"
-        className="sm:max-w-[520px]"
+        className="gap-0 overflow-hidden p-0 sm:max-w-[520px]"
       >
         <DialogTitle className="sr-only">Invite people</DialogTitle>
 
         {sent !== null ? (
-          <div className="flex flex-col items-center gap-3 py-6">
-            <HugeiconsIcon
-              icon={Tick02Icon}
-              className="size-8 text-emerald-500"
-            />
-            <p className="text-sm font-medium">
-              {sent} invite{sent === 1 ? "" : "s"} sent
+          <div className="flex flex-col items-center gap-3 px-6 py-10">
+            <div className="flex size-12 items-center justify-center rounded-full bg-emerald-500/10">
+              <HugeiconsIcon
+                icon={Tick02Icon}
+                className="size-6 text-emerald-500"
+              />
+            </div>
+            <p className="text-base font-semibold">
+              {sent} invite{sent === 1 ? "" : "s"} sent!
             </p>
-            <Button onClick={() => onOpenChange(false)}>Done</Button>
+            <p className="text-muted-foreground max-w-xs text-center text-sm">
+              Your teammates will receive an email invitation to join Theta
+              Engineering.
+            </p>
+            <Button
+              onClick={() => onOpenChange(false)}
+              className="mt-2 rounded-full bg-violet-600 px-5 text-white hover:bg-violet-500"
+            >
+              Done
+            </Button>
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-2">
+            {/* Header */}
+            <div className="flex items-center gap-2.5 border-b px-5 py-4">
               <span
                 aria-hidden="true"
-                className="flex size-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-fuchsia-500 to-pink-500 text-[10px] font-semibold text-white"
+                className="flex size-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-fuchsia-500 to-violet-600 text-[11px] font-bold text-white"
               >
-                AB
+                TE
               </span>
-              <h2 className="text-base font-medium">
-                Invite to your workspace
+              <h2 className="flex-1 text-[15px] font-semibold">
+                Invite to Theta Engineering
               </h2>
             </div>
 
-            <div className="mt-4 flex flex-col gap-1.5">
-              <label htmlFor="invite-emails" className="text-sm font-medium">
-                Email
-              </label>
-              <div
-                className="focus-within:ring-ring/40 flex min-h-10 flex-wrap items-center gap-1 rounded-md border bg-transparent px-2.5 py-1.5 focus-within:ring-2"
-                onClick={() => inputRef.current?.focus()}
-              >
-                {emails.map((email) => (
-                  <span
-                    key={email}
-                    className="bg-muted flex items-center gap-1 rounded px-1.5 py-0.5 text-xs"
-                  >
-                    {email}
-                    <button
-                      type="button"
-                      aria-label={`Remove ${email}`}
-                      onClick={() => removeEmail(email)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
-                    </button>
-                  </span>
-                ))}
-                <input
-                  id="invite-emails"
-                  ref={inputRef}
-                  autoFocus
-                  type="email"
-                  multiple
-                  data-testid="invite-emails-input"
-                  aria-invalid={error ? true : undefined}
-                  aria-describedby={error ? "invite-emails-error" : undefined}
-                  value={draft}
-                  onChange={(e) => {
-                    setDraft(e.target.value)
-                    if (error) setError(null)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === ",") {
-                      e.preventDefault()
-                      commitDraft()
-                    } else if (
-                      e.key === "Backspace" &&
-                      !draft &&
-                      emails.length
-                    ) {
-                      setEmails((prev) => prev.slice(0, -1))
-                    }
-                  }}
-                  onBlur={commitDraft}
-                  placeholder={
-                    emails.length ? "" : "email@gmail.com, email2@gmail.com…"
-                  }
-                  className="placeholder:text-muted-foreground/60 flex-1 bg-transparent text-sm outline-none"
-                />
-              </div>
-              {error && (
-                <p
-                  id="invite-emails-error"
-                  data-testid="invite-emails-error"
-                  role="alert"
-                  className="text-destructive text-xs"
+            <div className="space-y-4 px-5 py-4">
+              {/* Invite link */}
+              <div className="bg-muted/40 flex items-center gap-2 rounded-lg border px-3 py-2.5">
+                <div className="bg-background flex size-7 shrink-0 items-center justify-center rounded-md border">
+                  <HugeiconsIcon
+                    icon={Link04Icon}
+                    className="text-muted-foreground size-3.5"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium">Invite link</p>
+                  <p className="text-muted-foreground truncate text-xs">
+                    linear.app/theta-eng/join/abc123def456
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="bg-background hover:bg-accent shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors"
                 >
-                  {error}
-                </p>
-              )}
+                  {linkCopied ? "Copied!" : "Copy link"}
+                </button>
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 border-t" />
+                <span className="text-muted-foreground text-xs">
+                  or invite by email
+                </span>
+                <div className="flex-1 border-t" />
+              </div>
+
+              {/* Email + role row */}
+              <div className="space-y-1.5">
+                <div className="flex items-start gap-2">
+                  {/* Chip input */}
+                  <div
+                    className="focus-within:ring-ring/40 flex min-h-10 flex-1 flex-wrap items-center gap-1 rounded-md border bg-transparent px-2.5 py-1.5 focus-within:ring-2"
+                    onClick={() => inputRef.current?.focus()}
+                  >
+                    {emails.map((email) => (
+                      <span
+                        key={email}
+                        className="bg-muted flex items-center gap-1 rounded px-1.5 py-0.5 text-xs"
+                      >
+                        {email}
+                        <button
+                          type="button"
+                          aria-label={`Remove ${email}`}
+                          onClick={() => removeEmail(email)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <HugeiconsIcon
+                            icon={Cancel01Icon}
+                            className="size-3"
+                          />
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      id="invite-emails"
+                      ref={inputRef}
+                      autoFocus
+                      type="email"
+                      multiple
+                      data-testid="invite-emails-input"
+                      aria-invalid={error ? true : undefined}
+                      aria-describedby={
+                        error ? "invite-emails-error" : undefined
+                      }
+                      value={draft}
+                      onChange={(e) => {
+                        setDraft(e.target.value)
+                        if (error) setError(null)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === ",") {
+                          e.preventDefault()
+                          commitDraft()
+                        } else if (
+                          e.key === "Backspace" &&
+                          !draft &&
+                          emails.length
+                        ) {
+                          setEmails((prev) => prev.slice(0, -1))
+                        }
+                      }}
+                      onBlur={commitDraft}
+                      placeholder={
+                        emails.length
+                          ? ""
+                          : "email@example.com, email2@example.com…"
+                      }
+                      className="placeholder:text-muted-foreground/50 min-w-[120px] flex-1 bg-transparent text-sm outline-none"
+                    />
+                  </div>
+
+                  {/* Role dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <button
+                          type="button"
+                          className="hover:bg-accent flex h-10 shrink-0 items-center gap-1.5 rounded-md border bg-transparent px-3 text-sm font-medium transition-colors"
+                        />
+                      }
+                    >
+                      {role}
+                      <HugeiconsIcon
+                        icon={ArrowDown01Icon}
+                        className="text-muted-foreground size-3.5"
+                      />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <div className="px-2 pt-1.5 pb-1">
+                        <p className="text-muted-foreground/60 text-[11px] font-medium tracking-wider uppercase">
+                          Role
+                        </p>
+                      </div>
+                      {(["Member", "Admin", "Guest"] as Role[]).map((r) => (
+                        <DropdownMenuItem
+                          key={r}
+                          onClick={() => setRole(r)}
+                          className="flex items-center justify-between"
+                        >
+                          <div>
+                            <p className="text-sm">{r}</p>
+                            <p className="text-muted-foreground text-xs">
+                              {r === "Member"
+                                ? "Can view and edit"
+                                : r === "Admin"
+                                  ? "Full access"
+                                  : "View only"}
+                            </p>
+                          </div>
+                          {role === r && (
+                            <HugeiconsIcon
+                              icon={Tick02Icon}
+                              className="size-3.5 shrink-0"
+                            />
+                          )}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {error && (
+                  <p
+                    id="invite-emails-error"
+                    data-testid="invite-emails-error"
+                    role="alert"
+                    className="text-destructive text-xs"
+                  >
+                    {error}
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="mt-6 flex justify-end">
-              <Button
-                onClick={handleSend}
-                disabled={!canSend}
-                className="rounded-full bg-violet-600 px-5 text-white hover:bg-violet-500"
-              >
-                Send invites
-              </Button>
+            {/* Footer */}
+            <div className="flex items-center justify-between border-t px-5 py-3">
+              <p className="text-muted-foreground text-xs">
+                Invitees join as {role.toLowerCase()}s.
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSend}
+                  disabled={!canSend}
+                  className="rounded-full bg-violet-600 px-4 text-white hover:bg-violet-500 disabled:opacity-40"
+                >
+                  Send invites
+                </Button>
+              </div>
             </div>
           </>
         )}
