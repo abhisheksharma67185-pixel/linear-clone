@@ -182,6 +182,7 @@ function ProjectsPageInner() {
             size="icon"
             className="size-7"
             onClick={() => setCreateOpen(true)}
+            aria-label="New project"
           >
             <HugeiconsIcon icon={PlusSignIcon} className="size-4" />
           </Button>
@@ -350,17 +351,27 @@ function ProjectsPageInner() {
 
                 {/* Sub-toolbar */}
                 <div className="flex items-center justify-between border-t px-4 py-2">
-                  {/* Left: filter */}
-                  <button
-                    type="button"
-                    className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
-                  >
-                    <FilterSortIcon />
-                  </button>
+                  {/* Left: filter — wires to the same ProjectFilterPopover
+                      used by the main toolbar so the icon actually opens
+                      the popover. */}
+                  <ProjectFilterPopover
+                    projects={projects}
+                    onAdvancedFilter={() => setAdvancedFilterActive(true)}
+                    triggerRender={
+                      <button
+                        type="button"
+                        aria-label="Filter projects"
+                        className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
+                      >
+                        <FilterSortIcon />
+                      </button>
+                    }
+                  />
                   {/* Right: timeline controls */}
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
+                      aria-label="Jump to today"
                       className="bg-muted text-foreground hover:bg-accent rounded-full px-3 py-1 text-xs font-medium"
                     >
                       Today
@@ -710,7 +721,11 @@ function ProjectsPageInner() {
         </div>
       )}
 
-      <CreateProjectDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateProjectDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(p) => setProjects((prev) => [...prev, p])}
+      />
     </>
   )
 }

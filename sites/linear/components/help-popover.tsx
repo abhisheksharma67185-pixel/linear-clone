@@ -215,9 +215,23 @@ export function HelpPopover({ trigger }: { trigger: ReactNode }) {
                     // open the URL, the link has been torn out of the
                     // DOM and nothing happens. Drive the navigation
                     // explicitly so the click is guaranteed to land.
+                    //
+                    // Open BEFORE closing the popover so the call
+                    // remains inside the user-gesture window (popup
+                    // blockers allow window.open during the original
+                    // click). If the new tab is blocked or fails to
+                    // open (returns null), fall back to same-tab
+                    // navigation so the user still ends up at the URL.
                     event.preventDefault()
+                    const opened = window.open(
+                      item.href,
+                      "_blank",
+                      "noopener,noreferrer"
+                    )
+                    if (!opened) {
+                      window.location.href = item.href
+                    }
                     setOpen(false)
-                    window.open(item.href, "_blank", "noopener,noreferrer")
                   }}
                   className="text-foreground hover:bg-accent/50 focus-visible:ring-ring flex items-center gap-2 rounded-md px-2 py-1.5 text-xs focus-visible:ring-2 focus-visible:outline-none"
                 >

@@ -9,10 +9,22 @@ import {
   Cancel01Icon,
   StatusIcon as StatusFilterIcon,
   UserCircleIcon,
+  UserIcon,
+  PencilEdit01Icon,
   Chart01Icon,
   LabelIcon,
+  Flag03Icon,
+  MagicWand01Icon,
   Calendar03Icon,
+  CubeIcon,
+  Settings01Icon,
+  Target02Icon,
+  Notification01Icon,
+  CancelCircleIcon,
   TextFontIcon,
+  Link04Icon,
+  FileEditIcon,
+  BotIcon,
 } from "@hugeicons/core-free-icons"
 import {
   CircularIconToolbarRoot,
@@ -65,14 +77,6 @@ const TAB_EMPTY_COPY: Record<ArchiveTab, string> = {
   "deleted-documents": "No recently deleted documents",
 }
 
-/**
- * Archive-scoped filter options. Narrower than the team-issues page
- * filter set on purpose: archive flows really only need to slice by
- * the issue's terminal state (status, priority, assignee, label),
- * who archived it (dates), and a content search. Project / Initiative
- * filters and "Auto-closed" don't add value once an issue is in the
- * archive bucket.
- */
 const ARCHIVE_FILTER_OPTIONS: FilterOption[] = [
   {
     label: "Status",
@@ -93,15 +97,27 @@ const ARCHIVE_FILTER_OPTIONS: FilterOption[] = [
     submenu: [{ label: "Abhishek" }, { label: "No assignee" }],
   },
   {
+    label: "Agent",
+    icon: BotIcon,
+    kind: "checkbox",
+    submenu: [],
+  },
+  {
+    label: "Creator",
+    icon: PencilEdit01Icon,
+    kind: "checkbox",
+    submenu: [{ label: "Abhishek" }],
+  },
+  {
     label: "Priority",
     icon: Chart01Icon,
     kind: "checkbox",
     submenu: [
+      { label: "No priority", icon: <PriorityIcon priority="none" /> },
       { label: "Urgent", icon: <PriorityIcon priority="urgent" /> },
       { label: "High", icon: <PriorityIcon priority="high" /> },
       { label: "Medium", icon: <PriorityIcon priority="medium" /> },
       { label: "Low", icon: <PriorityIcon priority="low" /> },
-      { label: "No priority", icon: <PriorityIcon priority="none" /> },
     ],
   },
   {
@@ -111,25 +127,108 @@ const ARCHIVE_FILTER_OPTIONS: FilterOption[] = [
     submenu: [],
   },
   {
-    label: "Archived date",
+    label: "Relations",
+    icon: Flag03Icon,
+    kind: "click",
+    submenu: [
+      {
+        label: "Parent issue",
+        icon: <HugeiconsIcon icon={Flag03Icon} className="size-3.5" />,
+      },
+      {
+        label: "Sub-issues",
+        icon: <HugeiconsIcon icon={Flag03Icon} className="size-3.5" />,
+      },
+      {
+        label: "Blocking issues",
+        icon: <HugeiconsIcon icon={Flag03Icon} className="size-3.5" />,
+      },
+      {
+        label: "Blocked issues",
+        icon: <HugeiconsIcon icon={Flag03Icon} className="size-3.5" />,
+      },
+    ],
+  },
+  {
+    label: "Suggested label",
+    icon: MagicWand01Icon,
+    kind: "checkbox",
+    submenu: [],
+  },
+  {
+    label: "Dates",
     icon: Calendar03Icon,
     kind: "nested",
     submenu: [
       {
-        label: "Last 7 days",
+        label: "Archived date",
         icon: <HugeiconsIcon icon={Calendar03Icon} className="size-3.5" />,
       },
       {
-        label: "Last 30 days",
+        label: "Created date",
         icon: <HugeiconsIcon icon={Calendar03Icon} className="size-3.5" />,
       },
       {
-        label: "Last 90 days",
+        label: "Updated date",
         icon: <HugeiconsIcon icon={Calendar03Icon} className="size-3.5" />,
       },
       {
-        label: "Custom range...",
+        label: "Due date",
         icon: <HugeiconsIcon icon={Calendar03Icon} className="size-3.5" />,
+      },
+      {
+        label: "Completed date",
+        icon: <HugeiconsIcon icon={Calendar03Icon} className="size-3.5" />,
+      },
+    ],
+  },
+  {
+    label: "Project",
+    icon: CubeIcon,
+    kind: "checkbox",
+    submenu: [],
+    groupBreakBefore: true,
+  },
+  {
+    label: "Project properties",
+    icon: Settings01Icon,
+    kind: "nested",
+    submenu: [
+      {
+        label: "Project status",
+        icon: <HugeiconsIcon icon={StatusFilterIcon} className="size-3.5" />,
+      },
+      {
+        label: "Project priority",
+        icon: <HugeiconsIcon icon={Chart01Icon} className="size-3.5" />,
+      },
+      {
+        label: "Project lead",
+        icon: <HugeiconsIcon icon={UserIcon} className="size-3.5" />,
+      },
+    ],
+  },
+  {
+    label: "Initiative",
+    icon: Target02Icon,
+    kind: "checkbox",
+    submenu: [],
+  },
+  {
+    label: "Subscribers",
+    icon: Notification01Icon,
+    kind: "checkbox",
+    submenu: [{ label: "Abhishek" }],
+    groupBreakBefore: true,
+  },
+  {
+    label: "Auto-closed",
+    icon: CancelCircleIcon,
+    kind: "click",
+    submenu: [
+      {
+        label: "Auto-closed",
+        icon: <HugeiconsIcon icon={CancelCircleIcon} className="size-3.5" />,
       },
     ],
   },
@@ -138,6 +237,27 @@ const ARCHIVE_FILTER_OPTIONS: FilterOption[] = [
     icon: TextFontIcon,
     kind: "search",
     searchPlaceholder: "Filter by content...",
+  },
+  {
+    label: "Links",
+    icon: Link04Icon,
+    kind: "click",
+    submenu: [
+      {
+        label: "Has links",
+        icon: <HugeiconsIcon icon={Link04Icon} className="size-3.5" />,
+      },
+      {
+        label: "No links",
+        icon: <HugeiconsIcon icon={Link04Icon} className="size-3.5" />,
+      },
+    ],
+  },
+  {
+    label: "Template",
+    icon: FileEditIcon,
+    kind: "checkbox",
+    submenu: [{ label: "No template" }],
   },
 ]
 

@@ -29,6 +29,7 @@ import type {
   Project,
 } from "@/app/lib/mock-data"
 import { filterIssuesForView } from "@/lib/view-filter"
+import { toggleFavorite, useIsFavorite } from "@/lib/view-favorites"
 import { cn } from "@/lib/utils"
 import { CURRENT_USER_ID } from "@/app/lib/current-user"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -239,7 +240,12 @@ export default function ViewDetailPage() {
   const [labels, setLabels] = useState<Label[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
-  const [favorited, setFavorited] = useState(false)
+  // Favorite state is sourced from `lib/view-favorites` so toggling
+  // here syncs with the workspace sidebar's Favorites section and
+  // persists across reloads. Local-state `useState(false)` was
+  // strictly visual and dropped the favorite on every navigation.
+  const favoriteKey = `view:${viewId}`
+  const favorited = useIsFavorite(favoriteKey)
   const [panelOpen, setPanelOpen] = useState(false)
 
   // Subscribe mode for the view (Notification level the current
@@ -807,7 +813,15 @@ export default function ViewDetailPage() {
                   favorited ? "Remove from favorites" : "Add to favorites"
                 }
                 aria-pressed={favorited}
-                onClick={() => setFavorited((v) => !v)}
+                onClick={() =>
+                  view &&
+                  toggleFavorite({
+                    key: favoriteKey,
+                    label: view.name,
+                    href: `/views/${view.id}`,
+                    icon: "view",
+                  })
+                }
                 data-testid="view-favorite-toggle"
                 className="text-muted-foreground hover:text-foreground ml-1 flex size-5 shrink-0 items-center justify-center rounded"
               >
@@ -1769,7 +1783,15 @@ export default function ViewDetailPage() {
             projects={projects}
             displayed={displayed}
             favorited={favorited}
-            onToggleFavorite={() => setFavorited((v) => !v)}
+            onToggleFavorite={() =>
+              view &&
+              toggleFavorite({
+                key: favoriteKey,
+                label: view.name,
+                href: `/views/${view.id}`,
+                icon: "view",
+              })
+            }
             onClose={() => setPanelOpen(false)}
           />
         )}

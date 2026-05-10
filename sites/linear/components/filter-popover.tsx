@@ -270,6 +270,7 @@ export function FilterPopover({
           render={
             <button
               type="button"
+              aria-label="Filter"
               className="bg-muted text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-full"
             />
           }

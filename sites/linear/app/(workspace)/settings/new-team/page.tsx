@@ -192,7 +192,9 @@ export default function NewTeamPage() {
         </div>
         <div className="flex items-start justify-between gap-4 px-4 py-3">
           <div>
-            <div className="text-sm font-medium">Identifier</div>
+            <label htmlFor="team-identifier" className="text-sm font-medium">
+              Identifier
+            </label>
             <div className="text-muted-foreground text-xs">
               {NEW_TEAM_COPY.identifierHelp}
             </div>

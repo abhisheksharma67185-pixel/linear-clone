@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import type { Project } from "@/app/lib/mock-data"
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Cancel01Icon, PlusSignIcon } from "@hugeicons/core-free-icons"
@@ -8,6 +9,9 @@ import { Cancel01Icon, PlusSignIcon } from "@hugeicons/core-free-icons"
 interface CreateProjectDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Fired after a successful POST /api/data/projects so the parent
+   * can merge the new project into its list without a full refetch. */
+  onCreated?: (project: Project) => void
 }
 
 const PILL_OPTIONS = [
@@ -24,16 +28,58 @@ const PILL_OPTIONS = [
 export function CreateProjectDialog({
   open,
   onOpenChange,
+  onCreated,
 }: CreateProjectDialogProps) {
   const [name, setName] = useState("")
   const [summary, setSummary] = useState("")
   const [desc, setDesc] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function handleClose() {
-    onOpenChange(false)
+  function resetForm() {
     setName("")
     setSummary("")
     setDesc("")
+    setError(null)
+    setSubmitting(false)
+  }
+
+  function handleClose() {
+    onOpenChange(false)
+    resetForm()
+  }
+
+  async function handleCreate() {
+    const trimmed = name.trim()
+    if (!trimmed || submitting) return
+    setSubmitting(true)
+    setError(null)
+    try {
+      const res = await fetch("/api/data/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: trimmed,
+          // The dialog separates a one-line "summary" from the long
+          // description; the API only stores `description`, so we
+          // fold the summary in at the top when both are filled.
+          description: [summary.trim(), desc.trim()]
+            .filter(Boolean)
+            .join("\n\n"),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? "Failed to create project")
+        setSubmitting(false)
+        return
+      }
+      onCreated?.(data as Project)
+      handleClose()
+    } catch {
+      setError("Network error")
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -284,6 +330,11 @@ export function CreateProjectDialog({
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-2 border-t px-5 py-3">
+          {error && (
+            <p className="text-destructive mr-auto text-xs" role="alert">
+              {error}
+            </p>
+          )}
           <button
             type="button"
             onClick={handleClose}
@@ -293,10 +344,11 @@ export function CreateProjectDialog({
           </button>
           <button
             type="button"
-            onClick={handleClose}
-            className="rounded-full bg-violet-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-violet-700"
+            onClick={handleCreate}
+            disabled={!name.trim() || submitting}
+            className="rounded-full bg-violet-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Create project
+            {submitting ? "Creating…" : "Create project"}
           </button>
         </div>
       </DialogContent>

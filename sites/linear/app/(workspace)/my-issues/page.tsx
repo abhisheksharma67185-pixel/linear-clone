@@ -404,7 +404,7 @@ export default function MyIssuesPage() {
                   projectById={projectById}
                   onUpdatePriority={updatePriority}
                   onUpdateStatus={updateStatus}
-                  forceLayout="list"
+                  onAddIssue={openCreate}
                 />
               )}
             </TabsContent>
@@ -434,8 +434,8 @@ export default function MyIssuesPage() {
                   projectById={projectById}
                   onUpdatePriority={updatePriority}
                   onUpdateStatus={updateStatus}
-                  forceLayout="board"
                   ungrouped={false}
+                  onAddIssue={openCreate}
                 />
               )}
             </TabsContent>
@@ -465,8 +465,8 @@ export default function MyIssuesPage() {
                   projectById={projectById}
                   onUpdatePriority={updatePriority}
                   onUpdateStatus={updateStatus}
-                  forceLayout="list"
                   ungrouped
+                  onAddIssue={openCreate}
                 />
               )}
             </TabsContent>
@@ -496,8 +496,8 @@ export default function MyIssuesPage() {
                   projectById={projectById}
                   onUpdatePriority={updatePriority}
                   onUpdateStatus={updateStatus}
-                  forceLayout="list"
                   ungrouped
+                  onAddIssue={openCreate}
                 />
               )}
             </TabsContent>
@@ -528,6 +528,7 @@ function IssueListView({
   onUpdateStatus,
   forceLayout,
   ungrouped,
+  onAddIssue,
 }: {
   issues: Issue[]
   display: DisplayState
@@ -538,6 +539,8 @@ function IssueListView({
   onUpdateStatus: (id: string, status: IssueStatus) => void
   forceLayout?: "list" | "board"
   ungrouped?: boolean
+  /** Fired when a board-column "Add issue" button is clicked. */
+  onAddIssue?: () => void
 }) {
   const sorted = useMemo(
     () => sortIssues(issues, display.ordering),
@@ -563,6 +566,7 @@ function IssueListView({
         groups={groups}
         grouping={effectiveGrouping}
         memberById={memberById}
+        onAddIssue={onAddIssue}
       />
     )
   }
@@ -616,10 +620,12 @@ function BoardView({
   groups,
   grouping,
   memberById,
+  onAddIssue,
 }: {
   groups: GroupSpec[]
   grouping: GroupingKind
   memberById: Map<string, Member>
+  onAddIssue?: () => void
 }) {
   const [hiddenOpen, setHiddenOpen] = useState(true)
   const filledStatusKeys = new Set(groups.map((g) => g.key))
@@ -631,7 +637,12 @@ function BoardView({
   return (
     <div className="flex h-full min-h-0 gap-3 overflow-x-auto px-4 py-3">
       {groups.map((g) => (
-        <BoardColumn key={g.key} group={g} memberById={memberById} />
+        <BoardColumn
+          key={g.key}
+          group={g}
+          memberById={memberById}
+          onAddIssue={onAddIssue}
+        />
       ))}
       {hiddenStatuses.length > 0 && (
         <aside className="flex w-56 shrink-0 flex-col gap-1.5 px-1 pt-1">
@@ -677,9 +688,11 @@ function BoardView({
 function BoardColumn({
   group,
   memberById,
+  onAddIssue,
 }: {
   group: GroupSpec
   memberById: Map<string, Member>
+  onAddIssue?: () => void
 }) {
   return (
     <div className="flex w-72 shrink-0 flex-col gap-2">
@@ -702,6 +715,7 @@ function BoardColumn({
           <button
             type="button"
             aria-label="Add issue"
+            onClick={onAddIssue}
             className="hover:bg-accent rounded px-1.5 py-0.5"
           >
             +
@@ -720,6 +734,7 @@ function BoardColumn({
       <button
         type="button"
         aria-label="Add issue"
+        onClick={onAddIssue}
         className="text-muted-foreground hover:bg-accent/60 hover:text-foreground mt-1 flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs"
       >
         <span aria-hidden="true" className="text-base leading-none">

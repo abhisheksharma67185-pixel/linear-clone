@@ -99,12 +99,36 @@ export default function NewViewPage() {
     [members]
   )
 
+  const [saving, setSaving] = useState(false)
   const onCancel = () => router.push("/views")
-  const onSave = () => {
-    // Persistence not wired up — match the rest of the views mock,
-    // which keeps view CRUD entirely client-side. Routing back
-    // matches the dialog version's behavior.
-    router.push("/views")
+  const onSave = async () => {
+    if (saving) return
+    const trimmed = name.trim() || "All issues"
+    setSaving(true)
+    try {
+      const res = await fetch("/api/data/views", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: trimmed,
+          description: description.trim(),
+          // The store requires a non-empty filterQuery. The editor
+          // doesn't expose one yet — send the same default the
+          // header chip implies ("all issues for the active team").
+          filterQuery: "team:abh",
+          teamId: team?.id,
+        }),
+      })
+      if (!res.ok) {
+        toast.error("Failed to save view")
+        setSaving(false)
+        return
+      }
+      router.push("/views")
+    } catch {
+      toast.error("Failed to save view")
+      setSaving(false)
+    }
   }
 
   return (
@@ -198,9 +222,10 @@ export default function NewViewPage() {
                 type="button"
                 onClick={onSave}
                 data-testid="new-view-save"
-                className="bg-accent text-foreground hover:bg-accent/80 rounded px-3 py-1 text-xs"
+                disabled={saving}
+                className="bg-accent text-foreground hover:bg-accent/80 rounded px-3 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Save
+                {saving ? "Saving…" : "Save"}
               </button>
             </div>
             <input

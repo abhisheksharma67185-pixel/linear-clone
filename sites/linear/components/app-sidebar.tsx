@@ -311,7 +311,7 @@ export function AppSidebar() {
             <button
               type="button"
               aria-label="Search"
-              onClick={() => router.push("/search")}
+              onClick={() => setSearchOpen(true)}
               className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground flex size-7 shrink-0 items-center justify-center rounded-md"
             >
               <HugeiconsIcon icon={Search01Icon} className="size-4" />

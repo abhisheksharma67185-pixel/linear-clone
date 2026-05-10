@@ -436,6 +436,7 @@ export default function IssueDetailPage() {
           <DropdownMenu>
             <DropdownMenuTrigger
               type="button"
+              aria-label="Issue actions"
               className="text-muted-foreground hover:bg-accent hover:text-foreground flex size-7 items-center justify-center rounded transition-colors"
             >
               <HugeiconsIcon icon={MoreHorizontalIcon} className="size-4" />
