@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import type { Issue, Member, Team, Label } from "@/app/lib/mock-data"
+import type { Issue, Member, Team, Label, Project } from "@/app/lib/mock-data"
+import { useDocumentTitle } from "@/lib/use-document-title"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -390,8 +391,16 @@ function DroppableColumn({
 // ── Main Board ───────────────────────────────────────────────────────
 export default function BoardPage() {
   const params = useParams<{ key: string }>()
-  const teamKey = params.key
+  const projectId = params.key
 
+  // The URL slug is a project id (e.g. "proj-1"). Earlier this page
+  // shoved the project response into a `team` state and read
+  // `team.memberIds` / `team.key` — fields that don't exist on
+  // Project, which crashed the page. We now keep both: `project`
+  // for the page subject, `team` (resolved via project.teamId) for
+  // the team key/badge and member roster used by the assignee
+  // filter.
+  const [project, setProject] = useState<Project | null>(null)
   const [team, setTeam] = useState<Team | null>(null)
   const [issues, setIssues] = useState<Issue[]>([])
   const [members, setMembers] = useState<Member[]>([])
@@ -405,20 +414,30 @@ export default function BoardPage() {
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   )
 
+  useDocumentTitle(project ? `${project.name} board` : null)
+
   useEffect(() => {
     Promise.all([
-      fetch(`/api/data/projects/${teamKey}`).then((r) => r.json()),
+      fetch(`/api/data/projects/${projectId}`).then((r) => r.json()),
+      fetch("/api/data/teams").then((r) => r.json()),
       fetch("/api/data/issues").then((r) => r.json()),
       fetch("/api/data/members").then((r) => r.json()),
       fetch("/api/data/labels").then((r) => r.json()),
-    ]).then(([t, i, m, l]) => {
-      setTeam(t)
-      setIssues(i)
-      setMembers(m)
-      setLabels(l)
-      setLoading(false)
-    })
-  }, [teamKey])
+    ])
+      .then(([p, ts, i, m, l]) => {
+        setProject(p)
+        if (p && !(p as Record<string, unknown>).error && Array.isArray(ts)) {
+          setTeam(
+            (ts as Team[]).find((t) => t.id === (p as Project).teamId) ?? null
+          )
+        }
+        setIssues(i)
+        setMembers(m)
+        setLabels(l)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [projectId])
 
   const moveIssue = useCallback(
     (issueId: string, newStatus: StatusKey) => {
@@ -497,25 +516,36 @@ export default function BoardPage() {
     )
   }
 
-  if (!team || (team as Record<string, unknown>).error) {
+  if (!project || (project as Record<string, unknown>).error) {
     return (
       <div className="flex items-center justify-center p-12">
         <Card className="max-w-sm text-center">
           <CardContent className="pt-6">
-            <p className="text-muted-foreground text-sm">Team not found.</p>
+            <p className="text-muted-foreground text-sm">Project not found.</p>
           </CardContent>
         </Card>
       </div>
     )
   }
 
-  const teamIssues = issues
-    .filter((i) => i.teamId === team.id)
+  // Board issues are scoped to the *project*. The earlier code
+  // filtered by `i.teamId === team.id`, which shows every issue
+  // on the project's owning team — including issues that don't
+  // belong to this project — and crashed when team was undefined.
+  const projectIssues = issues
+    .filter((i) => i.projectId === project.id)
     .filter((i) => !filterPriority || i.priority === filterPriority)
     .filter((i) => !filterAssignee || i.assigneeId === filterAssignee)
 
   const hasFilters = filterPriority || filterAssignee
-  const teamMembers = members.filter((m) => team.memberIds.includes(m.id))
+  // The assignee filter still uses the owning team's member roster
+  // (so it matches Linear's behaviour: a project board shows team
+  // members even when the project itself has no contributors yet).
+  // If we can't resolve the team — e.g. project.teamId points at a
+  // team that's been removed — fall back to all members.
+  const teamMembers = team
+    ? members.filter((m) => team.memberIds.includes(m.id))
+    : members
   const activeIssue = activeId ? issues.find((i) => i.id === activeId) : null
 
   return (
@@ -524,13 +554,15 @@ export default function BoardPage() {
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-3">
           <div className="flex items-center gap-3">
-            <h1 className="text-base font-semibold">{team.name}</h1>
-            <Badge variant="outline" className="font-mono text-[10px]">
-              {team.key}
-            </Badge>
+            <h1 className="text-base font-semibold">{project.name}</h1>
+            {team ? (
+              <Badge variant="outline" className="font-mono text-[10px]">
+                {team.key}
+              </Badge>
+            ) : null}
             <Separator orientation="vertical" className="h-4" />
             <span className="text-muted-foreground text-xs">
-              {teamIssues.length} issues
+              {projectIssues.length} issues
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -628,7 +660,9 @@ export default function BoardPage() {
         >
           <div className="flex min-h-0 flex-1 overflow-x-auto">
             {STATUS_COLUMNS.map((col, colIdx) => {
-              const colIssues = teamIssues.filter((i) => i.status === col.key)
+              const colIssues = projectIssues.filter(
+                (i) => i.status === col.key
+              )
               return (
                 <DroppableColumn
                   key={col.key}

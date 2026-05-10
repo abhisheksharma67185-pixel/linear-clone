@@ -64,11 +64,24 @@ function Button({
       ? (children as React.ReactElement)
       : undefined
 
+  // base-ui keeps `nativeButton: true` by default and console-errors
+  // when the rendered element isn't a real <button>. Most asChild
+  // call sites pass <Link>/<a> for navigation rows (e.g. team card
+  // dropdown items, the New view trigger), which is correct HTML —
+  // but it tripped the Base UI guard on every render and surfaced
+  // as the persistent dev "1 Issue" badge on /teams and /views. If
+  // asChild is used and the child isn't a <button>, opt out of the
+  // native-button assertion so Base UI honors the supplied element.
+  const renderType = renderProp?.type
+  const isRenderingButton = renderType === "button"
+  const nativeButton = !asChild || !renderProp ? undefined : isRenderingButton
+
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       {...(renderProp ? { render: renderProp } : {})}
+      {...(nativeButton === false ? { nativeButton: false } : {})}
       {...props}
     >
       {asChild && renderProp ? undefined : children}

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import type { Issue, Member, Team, Cycle } from "@/app/lib/mock-data"
+import type { Issue, Member, Team, Cycle, Project } from "@/app/lib/mock-data"
+import { useDocumentTitle } from "@/lib/use-document-title"
 import {
   statusStyle,
   priorityStyle,
@@ -73,28 +74,46 @@ function IssueRow({ issue, members }: { issue: Issue; members: Member[] }) {
 
 export default function BacklogPage() {
   const params = useParams<{ key: string }>()
-  const teamKey = params.key
+  const projectId = params.key
 
+  // The URL slug here is a project id (e.g. "proj-1"). The earlier
+  // version stored the project response in `team` state and then
+  // filtered issues by `i.teamId === team.id` — wrong scope (showed
+  // every team issue, not project issues) and never resolved when
+  // team-shaped fields were missing. We now keep both: `project` is
+  // the page subject, `team` (resolved via project.teamId) supplies
+  // the cycle list, since cycles are owned by teams in the schema.
+  const [project, setProject] = useState<Project | null>(null)
   const [team, setTeam] = useState<Team | null>(null)
   const [issues, setIssues] = useState<Issue[]>([])
   const [cycles, setCycles] = useState<Cycle[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
 
+  useDocumentTitle(project ? `${project.name} backlog` : null)
+
   useEffect(() => {
     Promise.all([
-      fetch(`/api/data/projects/${teamKey}`).then((r) => r.json()),
+      fetch(`/api/data/projects/${projectId}`).then((r) => r.json()),
+      fetch("/api/data/teams").then((r) => r.json()),
       fetch("/api/data/issues").then((r) => r.json()),
       fetch("/api/data/cycles").then((r) => r.json()),
       fetch("/api/data/members").then((r) => r.json()),
-    ]).then(([t, i, c, m]) => {
-      setTeam(t)
-      setIssues(i)
-      setCycles(c)
-      setMembers(m)
-      setLoading(false)
-    })
-  }, [teamKey])
+    ])
+      .then(([p, ts, i, c, m]) => {
+        setProject(p)
+        if (p && !(p as Record<string, unknown>).error && Array.isArray(ts)) {
+          setTeam(
+            (ts as Team[]).find((t) => t.id === (p as Project).teamId) ?? null
+          )
+        }
+        setIssues(i)
+        setCycles(c)
+        setMembers(m)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [projectId])
 
   if (loading) {
     return (
@@ -112,24 +131,26 @@ export default function BacklogPage() {
     )
   }
 
-  if (!team || (team as Record<string, unknown>).error) {
+  if (!project || (project as Record<string, unknown>).error) {
     return (
       <div className="text-muted-foreground flex items-center justify-center p-12 text-sm">
-        Team not found.
+        Project not found.
       </div>
     )
   }
 
-  const teamIssues = issues.filter((i) => i.teamId === team.id)
-  const teamCycles = cycles.filter((c) => c.teamId === team.id)
+  // Issues are scoped to the project; cycles belong to its team
+  // (and we only render this section when we resolved the team).
+  const projectIssues = issues.filter((i) => i.projectId === project.id)
+  const teamCycles = team ? cycles.filter((c) => c.teamId === team.id) : []
 
   const activeCycles = teamCycles.filter((c) => c.state === "active")
   const upcomingCycles = teamCycles.filter((c) => c.state === "upcoming")
 
   const scheduledIssueIds = new Set(
-    teamIssues.filter((i) => i.cycleId != null).map((i) => i.id)
+    projectIssues.filter((i) => i.cycleId != null).map((i) => i.id)
   )
-  const unscheduledIssues = teamIssues.filter(
+  const unscheduledIssues = projectIssues.filter(
     (i) => !scheduledIssueIds.has(i.id)
   )
 
@@ -137,15 +158,17 @@ export default function BacklogPage() {
     <TooltipProvider>
       <div className="flex flex-col gap-6 p-6">
         <div>
-          <h1 className="text-xl font-semibold">{team.name} Backlog</h1>
+          <h1 className="text-xl font-semibold">{project.name} Backlog</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Cycles and unscheduled issues for {team.name}.
+            Cycles and unscheduled issues for {project.name}.
           </p>
         </div>
 
         {/* Active Cycles */}
         {activeCycles.map((cycle) => {
-          const cycleIssues = teamIssues.filter((i) => i.cycleId === cycle.id)
+          const cycleIssues = projectIssues.filter(
+            (i) => i.cycleId === cycle.id
+          )
           return (
             <Collapsible key={cycle.id} defaultOpen>
               <CollapsibleTrigger className="hover:bg-accent/50 flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors">
@@ -186,7 +209,9 @@ export default function BacklogPage() {
 
         {/* Upcoming Cycles */}
         {upcomingCycles.map((cycle) => {
-          const cycleIssues = teamIssues.filter((i) => i.cycleId === cycle.id)
+          const cycleIssues = projectIssues.filter(
+            (i) => i.cycleId === cycle.id
+          )
           return (
             <Collapsible key={cycle.id} defaultOpen>
               <CollapsibleTrigger className="hover:bg-accent/50 flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors">

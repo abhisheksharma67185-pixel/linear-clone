@@ -63,6 +63,7 @@ import {
   type IssueTab,
 } from "@/lib/issue-status-types"
 import { toggleFavorite, useIsFavorite } from "@/lib/view-favorites"
+import { useDocumentTitle } from "@/lib/use-document-title"
 
 const TAB_LABELS: Record<IssueTab, string> = {
   all: "All issues",
@@ -349,6 +350,12 @@ export default function TeamIssuesPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<IssueTab>("all")
   const [createOpen, setCreateOpen] = useState(false)
+
+  // Set the tab title from the resolved team. We can't compute it
+  // from the URL alone because Linear shows team name (e.g.
+  // "Platform issues"), and `teamKeyParam` is just the short key.
+  const matchedTeam = teams.find((t) => t.key === teamKeyParam)
+  useDocumentTitle(matchedTeam ? `${matchedTeam.name} issues` : null)
   const [createStatus, setCreateStatus] = useState<IssueStatus | undefined>(
     undefined
   )

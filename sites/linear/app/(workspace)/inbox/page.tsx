@@ -891,9 +891,17 @@ function ResourceItem({
  *
  * Source: Linear's CDN-hosted welcome clip. Pulled from the actual
  * Linear web app's "Welcome to Linear" notification (4K MP4, 16:9).
- * `crossOrigin="use-credentials"` matches the Linear app's request
- * mode so the response's Access-Control-Allow-Credentials header is
- * honoured. The Linear mark renders as a poster while metadata loads.
+ *
+ * Loading behaviour: `preload="none"` keeps the element idle until the
+ * user clicks play — the previous `preload="metadata"` + `crossOrigin
+ * ="use-credentials"` combination tried to fetch metadata immediately
+ * with cookie-mode CORS, which Linear's CDN won't honour for a
+ * different origin. That left the element pinned on the browser's
+ * loading spinner forever (visible in the QA pass). Anonymous request
+ * mode is the safe default for cross-origin video on a clone like
+ * this. The Linear mark renders behind the player as a poster while
+ * the video is unloaded; once the user clicks play, the standard
+ * browser chrome takes over.
  */
 const WELCOME_VIDEO_SRC =
   "https://uploads.linear.app/fe63b3e2-bf87-46c0-8784-cd7d639287c8/a044fb03-9b84-470c-ab6f-8eae613e2529/98d7274d-de7f-4910-b3f3-f72e8e286a98"
@@ -905,9 +913,8 @@ function VideoBlock() {
         <video
           className="absolute inset-0 size-full"
           controls
-          preload="metadata"
+          preload="none"
           playsInline
-          crossOrigin="use-credentials"
         >
           <source src={WELCOME_VIDEO_SRC} type="video/mp4" />
         </video>

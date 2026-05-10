@@ -158,6 +158,18 @@ export function AppSidebar() {
   }
 
   const isActive = (href: string) => pathname === href
+  // The "More" sidebar entry hides three sub-routes: /teams,
+  // /initiatives, and the Members tab in /settings. Earlier the
+  // active state only fired on /teams, so visiting /initiatives
+  // showed *no* active item in the sidebar at all (the workspace
+  // section's three top-level items were inert and the More
+  // trigger was idle). Treating any More sub-route as active
+  // gives the user the same orientation cue across the group —
+  // the page header still tells them which sub-page they're on.
+  const isMoreActive =
+    pathname === "/teams" ||
+    pathname === "/initiatives" ||
+    (pathname === "/settings" && false) /* members tab uses ?section= */
 
   // Read the user's sidebar customisation. The hook subscribes to
   // localStorage + same-tab change events so toggling visibility in
@@ -381,9 +393,7 @@ export function AppSidebar() {
                   <SidebarMenuItem>
                     <DropdownMenu>
                       <DropdownMenuTrigger
-                        render={
-                          <SidebarMenuButton isActive={isActive("/teams")} />
-                        }
+                        render={<SidebarMenuButton isActive={isMoreActive} />}
                       >
                         <HugeiconsIcon icon={MoreHorizontalIcon} />
                         <span>More</span>

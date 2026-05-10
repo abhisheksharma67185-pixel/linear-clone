@@ -22,6 +22,7 @@ import {
 } from "@/components/notifications-popover"
 import { InitialsAvatar } from "@/components/initials-avatar"
 import { buildProjectBreadcrumb } from "@/lib/project-breadcrumb"
+import { useDocumentTitle } from "@/lib/use-document-title"
 
 type Tab = "overview" | "activity" | "issues"
 
@@ -63,6 +64,8 @@ export default function ProjectDetailPage() {
   const [notFound, setNotFound] = useState(false)
   const [tab, setTab] = useState<Tab>("overview")
   const [createOpen, setCreateOpen] = useState(false)
+
+  useDocumentTitle(project ? project.name : null)
   // Right Properties panel — collapsible. Width animates via CSS
   // grid-template-columns transition so toggling expands/shrinks
   // the main column smoothly instead of snapping.

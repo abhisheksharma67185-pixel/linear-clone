@@ -642,7 +642,19 @@ function TeamMoreDropdown({ team }: { team: Team }) {
         <TooltipContent>More actions</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="end" className="w-44">
+        {/*
+          These three menu rows are navigational — clicking them moves
+          the user to a route, never fires a button-style action. We
+          render them as <Link>/<a>, which is the right HTML, but Base
+          UI's DropdownMenuItem defaults to nativeButton=true and was
+          warning that an <a> doesn't carry button semantics. Setting
+          nativeButton=false tells Base UI: yes, this is intentional,
+          render the trigger as the supplied element. Suppresses the
+          long-running console error that drove the dev "1 Issue"
+          overlay badge on /teams.
+        */}
         <DropdownMenuItem
+          nativeButton={false}
           render={<Link href={`/teams/${team.key.toLowerCase()}/issues`} />}
           data-testid="teams-card-more-issues"
         >
@@ -650,6 +662,7 @@ function TeamMoreDropdown({ team }: { team: Team }) {
           <span>View issues</span>
         </DropdownMenuItem>
         <DropdownMenuItem
+          nativeButton={false}
           render={<Link href={`/projects/${team.key.toLowerCase()}/board`} />}
           data-testid="teams-card-more-projects"
         >
@@ -658,6 +671,7 @@ function TeamMoreDropdown({ team }: { team: Team }) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
+          nativeButton={false}
           render={<Link href={`/settings/teams/${team.key}`} />}
           data-testid="teams-card-more-settings"
         >

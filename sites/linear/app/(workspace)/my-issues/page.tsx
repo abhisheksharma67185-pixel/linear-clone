@@ -51,6 +51,7 @@ import {
 } from "@/components/my-issues-filter-popover"
 import { MyIssuesDisplayPopover } from "@/components/my-issues-display-popover"
 import { MyIssuesFilterChips } from "@/components/my-issues-filter-chips"
+import { useDocumentTitle } from "@/lib/use-document-title"
 
 type IssueStatus = Issue["status"]
 type IssuePriority = Issue["priority"]
@@ -119,6 +120,8 @@ export default function MyIssuesPage() {
   const [loading, setLoading] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
   const [panelOpen, setPanelOpen] = useState(true)
+
+  useDocumentTitle("My issues")
 
   const searchParams = useSearchParams()
   const router = useRouter()
