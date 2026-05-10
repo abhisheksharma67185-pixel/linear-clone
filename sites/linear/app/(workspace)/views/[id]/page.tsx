@@ -283,11 +283,6 @@ export default function ViewDetailPage() {
             <div className="flex flex-col">
               {STATUS_ORDER.map((status) => {
                 const items = grouped.get(status) ?? []
-                // Hide empty buckets in the view detail page — saved
-                // views are typically narrow (e.g. "Unassigned Backlog"
-                // hits one or two statuses), and empty Todo/Backlog/etc.
-                // headers visually overwhelm the actual results.
-                if (items.length === 0) return null
                 return (
                   <Collapsible key={status} defaultOpen>
                     <CollapsibleTrigger

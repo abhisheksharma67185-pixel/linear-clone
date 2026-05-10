@@ -16,7 +16,7 @@ import { expect, test, type Page } from "@playwright/test"
 
 const PROJECTS_URL = "/projects"
 
-async function gotoTimeline(page: Page) {
+async function gotoTimeline({ page }: { page: Page }) {
   await page.goto(PROJECTS_URL)
   // Switch to the Timeline view via the view-type controls.
   await page

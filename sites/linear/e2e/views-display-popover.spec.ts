@@ -19,7 +19,7 @@ import { expect, test, type Page } from "@playwright/test"
 
 const VIEWS_URL = "/views"
 
-async function gotoViews(page: Page) {
+async function gotoViews({ page }: { page: Page }) {
   await page.goto(VIEWS_URL)
   await expect(page.getByRole("heading", { name: /^Views$/ })).toBeVisible()
 }

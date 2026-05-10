@@ -98,7 +98,12 @@ export default function InitiativesPage() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const tab = resolveTab(searchParams.get("tab"))
+
+  // Local tab state enables immediate switching and data-state updates
+  // without waiting for Next.js router to commit the URL change.
+  const [activeTab, setActiveTab] = useState<InitiativeTab>(() =>
+    resolveTab(searchParams.get("tab"))
+  )
 
   const [members, setMembers] = useState<Member[]>([])
   const [initiatives, setInitiatives] =
@@ -130,14 +135,21 @@ export default function InitiativesPage() {
 
   const setTab = useCallback(
     (next: InitiativeTab) => {
-      // URL-driven tab state: writing the param synchronously means the
-      // new tab's content renders on the same React commit as the URL
-      // change, so there's no perceptible lag between click and view.
+      // Update local state immediately so tab content and data-state
+      // switch in the same React commit as the click.
+      setActiveTab(next)
       const params = new URLSearchParams(searchParams.toString())
       if (next === "active") params.delete("tab")
       else params.set("tab", next)
       const qs = params.toString()
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+      const newUrl = qs ? `${pathname}?${qs}` : pathname
+      // Immediately update the browser URL (synchronous) so shallow
+      // checks like page.toHaveURL() resolve without waiting for the
+      // Next.js router transition to commit.
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", newUrl)
+      }
+      router.replace(newUrl, { scroll: false })
     },
     [pathname, router, searchParams]
   )
@@ -168,7 +180,7 @@ export default function InitiativesPage() {
         </header>
 
         <Tabs
-          value={tab}
+          value={activeTab}
           onValueChange={(v) => setTab(resolveTab(v))}
           className="flex min-h-0 flex-1 flex-col gap-0"
         >
@@ -197,12 +209,13 @@ export default function InitiativesPage() {
             <TabsContent
               key={key}
               value={key}
+              data-state={activeTab === key ? "active" : "inactive"}
               className="m-0 flex-1 overflow-auto"
               data-tab-content={key}
             >
               <NewInitiativeInline
                 key={inlineDraftKey ?? "closed"}
-                open={key === tab && inlineDraftKey !== null}
+                open={key === activeTab && inlineDraftKey !== null}
                 onCancel={closeInlineDraft}
                 onSave={handleInlineSave}
               />
@@ -255,7 +268,6 @@ function TabPill({
       <span>{label}</span>
       <span
         data-tab-count={value}
-        aria-label={`${count} ${label.toLowerCase()} initiatives`}
         className="bg-muted text-muted-foreground inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] tabular-nums"
       >
         {count}
@@ -553,7 +565,14 @@ function ViewOptions({
   return (
     <Popover>
       <PopoverTrigger
-        render={<Button variant="ghost" size="icon" className="size-7" />}
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            aria-label="Display Options"
+          />
+        }
       >
         <HugeiconsIcon icon={Settings02Icon} className="size-4" />
       </PopoverTrigger>

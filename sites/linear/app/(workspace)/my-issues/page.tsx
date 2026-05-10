@@ -151,6 +151,7 @@ export default function MyIssuesPage() {
     saveDisplay(next)
   }, [])
 
+  const [activeTab, setActiveTab] = useState("assigned")
   const [filterOpen, setFilterOpen] = useState(false)
   const [displayOpen, setDisplayOpen] = useState(false)
   const [filterInitialKind, setFilterInitialKind] = useState<FilterKind | null>(
@@ -209,6 +210,16 @@ export default function MyIssuesPage() {
     () => issues.filter(subscribedQuery(CURRENT_USER_ID).predicate),
     [issues]
   )
+  const mentions = useMemo(
+    () =>
+      issues.filter(
+        (i) =>
+          Array.isArray(i.subscriberIds) &&
+          i.subscriberIds.includes(CURRENT_USER_ID) &&
+          i.assigneeId !== CURRENT_USER_ID
+      ),
+    [issues]
+  )
 
   const filteredAssigned = useMemo(
     () => applyFilters(assigned, filters),
@@ -221,6 +232,10 @@ export default function MyIssuesPage() {
   const filteredSubscribed = useMemo(
     () => applyFilters(subscribed, filters),
     [subscribed, filters]
+  )
+  const filteredMentions = useMemo(
+    () => applyFilters(mentions, filters),
+    [mentions, filters]
   )
 
   const memberById = useMemo(
@@ -346,7 +361,8 @@ export default function MyIssuesPage() {
 
         <div className="flex min-h-0 flex-1">
           <Tabs
-            defaultValue="assigned"
+            value={activeTab}
+            onValueChange={setActiveTab}
             className="flex min-h-0 min-w-0 flex-1 flex-col gap-0"
           >
             <div className="px-4">
@@ -354,11 +370,15 @@ export default function MyIssuesPage() {
                 <TabPill value="assigned">Assigned</TabPill>
                 <TabPill value="created">Created</TabPill>
                 <TabPill value="subscribed">Subscribed</TabPill>
-                <TabPill value="activity">Activity</TabPill>
+                <TabPill value="mentions">Mentions</TabPill>
               </TabsList>
             </div>
 
-            <TabsContent value="assigned" className="m-0 flex-1 overflow-auto">
+            <TabsContent
+              value="assigned"
+              data-state={activeTab === "assigned" ? "active" : "inactive"}
+              className="m-0 flex-1 overflow-auto"
+            >
               {loading ? (
                 <LoadingRows />
               ) : filteredAssigned.length === 0 ? (
@@ -384,7 +404,11 @@ export default function MyIssuesPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="created" className="m-0 flex-1 overflow-auto">
+            <TabsContent
+              value="created"
+              data-state={activeTab === "created" ? "active" : "inactive"}
+              className="m-0 flex-1 overflow-auto"
+            >
               {loading ? (
                 <LoadingRows />
               ) : filteredCreated.length === 0 ? (
@@ -413,6 +437,7 @@ export default function MyIssuesPage() {
 
             <TabsContent
               value="subscribed"
+              data-state={activeTab === "subscribed" ? "active" : "inactive"}
               className="m-0 flex-1 overflow-auto"
             >
               {loading ? (
@@ -441,21 +466,33 @@ export default function MyIssuesPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="activity" className="m-0 flex-1 overflow-auto">
+            <TabsContent
+              value="mentions"
+              data-state={activeTab === "mentions" ? "active" : "inactive"}
+              className="m-0 flex-1 overflow-auto"
+            >
               {loading ? (
                 <LoadingRows />
-              ) : filteredCreated.length === 0 ? (
-                <EmptyState label="No recent activity" onCreate={openCreate} />
+              ) : filteredMentions.length === 0 ? (
+                <EmptyState
+                  label={
+                    filterCount > 0
+                      ? "No issues match the current filters"
+                      : "No issues where you're mentioned"
+                  }
+                  onCreate={openCreate}
+                />
               ) : (
                 <IssueListView
-                  issues={filteredCreated}
+                  issues={filteredMentions}
                   display={display}
                   memberById={memberById}
                   labelById={labelById}
                   projectById={projectById}
                   onUpdatePriority={updatePriority}
                   onUpdateStatus={updateStatus}
-                  forceLayout="board"
+                  forceLayout="list"
+                  ungrouped
                 />
               )}
             </TabsContent>

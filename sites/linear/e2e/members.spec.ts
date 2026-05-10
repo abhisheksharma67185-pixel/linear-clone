@@ -26,7 +26,7 @@ import { expect, test, type Page } from "@playwright/test"
 
 const MEMBERS_URL = "/settings?section=members"
 
-async function gotoMembers(page: Page) {
+async function gotoMembers({ page }: { page: Page }) {
   await page.goto(MEMBERS_URL)
   await expect(page.getByRole("heading", { name: /^Members$/ })).toBeVisible()
   // Wait for either the empty-state banner or the rows container.

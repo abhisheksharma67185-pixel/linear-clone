@@ -11,7 +11,7 @@
  */
 import { expect, test, type Page } from "@playwright/test"
 
-async function gotoInitiatives(page: Page) {
+async function gotoInitiatives({ page }: { page: Page }) {
   await page.goto("/initiatives")
   await expect(
     page.getByRole("heading", { name: /^Initiatives$/ })

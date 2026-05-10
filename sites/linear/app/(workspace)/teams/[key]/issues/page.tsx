@@ -407,7 +407,12 @@ export default function TeamIssuesPage() {
           <span className="flex size-4 shrink-0 items-center justify-center rounded-sm border border-pink-500/70 text-pink-500">
             <HugeiconsIcon icon={UserIcon} className="size-2.5" />
           </span>
-          <h1 className="text-sm font-medium">Issues</h1>
+          <h1 className="text-sm font-medium">{team ? team.name : "Issues"}</h1>
+          {team && (
+            <span className="text-muted-foreground/70 ring-border/50 rounded px-1.5 py-0.5 font-mono text-[10px] ring-1">
+              {team.key}
+            </span>
+          )}
           <button
             type="button"
             aria-label={
@@ -447,7 +452,7 @@ export default function TeamIssuesPage() {
             data-testid="header-create-issue"
             aria-label="Create new issue"
             onClick={openCreate}
-            className="sr-only"
+            className="size-7"
           >
             <HugeiconsIcon icon={PencilEdit01Icon} className="size-4" />
           </Button>
@@ -585,18 +590,39 @@ export default function TeamIssuesPage() {
               No issues in this view.
             </div>
           ) : (
-            STATUS_ORDER.map((status) => {
-              const items = grouped[status]
-              if (items.length === 0) return null
-              return (
-                <StatusSection
-                  key={status}
-                  status={status}
-                  items={items}
-                  memberById={memberById}
-                />
-              )
-            })
+            <>
+              {/* Started group (in_progress + todo) wrapped for e2e testid */}
+              {(grouped["in_progress"].length > 0 ||
+                grouped["todo"].length > 0) && (
+                <div data-testid="team-issues-section-started">
+                  {(["in_progress", "todo"] as const).map((status) => {
+                    const items = grouped[status]
+                    if (items.length === 0) return null
+                    return (
+                      <StatusSection
+                        key={status}
+                        status={status}
+                        items={items}
+                        memberById={memberById}
+                      />
+                    )
+                  })}
+                </div>
+              )}
+              {/* Remaining statuses (backlog, done, cancelled) */}
+              {(["backlog", "done", "cancelled"] as const).map((status) => {
+                const items = grouped[status]
+                if (items.length === 0) return null
+                return (
+                  <StatusSection
+                    key={status}
+                    status={status}
+                    items={items}
+                    memberById={memberById}
+                  />
+                )
+              })}
+            </>
           )}
         </div>
 

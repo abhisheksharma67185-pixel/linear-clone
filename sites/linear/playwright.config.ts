@@ -8,6 +8,7 @@ import { defineConfig, devices } from "@playwright/test"
  */
 export default defineConfig({
   testDir: "./e2e",
+  globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -19,7 +20,16 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        // Disable CSS transitions/animations so Playwright's element-stability
+        // check completes quickly. Without this, sidebar items with
+        // `transition: opacity/max-height` delay locator.click() by 500–700 ms,
+        // causing the workspace-regressions:39 URL-change budget to be exceeded.
+        // The globals.css @media(prefers-reduced-motion) rule already sets
+        // `transition: none` for `.sidebar-item-animated` elements.
+        reducedMotion: "reduce",
+      },
     },
   ],
   webServer: {

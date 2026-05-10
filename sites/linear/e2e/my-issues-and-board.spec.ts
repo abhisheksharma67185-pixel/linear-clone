@@ -34,10 +34,15 @@ test.describe("My Issues + board regressions", () => {
     await page.goto("/views/view-1")
     // Wait until either the empty-view message or at least one section
     // has rendered.
-    await page.waitForSelector(
-      '[data-status], text="No issues match this view."',
-      { timeout: 5000 }
-    )
+    await Promise.race([
+      page
+        .locator("[data-status]")
+        .first()
+        .waitFor({ state: "visible", timeout: 5000 }),
+      page
+        .getByText("No issues match this view.")
+        .waitFor({ state: "visible", timeout: 5000 }),
+    ])
 
     // If the view has no issues at all, that's a different code path —
     // skip the per-status assertion. Otherwise, every workflow state

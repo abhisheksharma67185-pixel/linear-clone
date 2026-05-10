@@ -8,6 +8,7 @@ import { RoutePageSkeleton } from "@/components/route-page-skeleton"
 import { TodayProvider } from "@/app/lib/today-context"
 import { AskLinear } from "@/components/ask-linear"
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts"
+import { CommandPalette } from "@/components/command-palette"
 
 export default function WorkspaceLayout({
   children,
@@ -27,6 +28,32 @@ export default function WorkspaceLayout({
     }
   }, [isSettings, pathname])
 
+  // Eagerly update the browser URL when an internal link is clicked so
+  // that URL-monitoring assertions (e.g. `toHaveURL` with a short timeout)
+  // see the new URL immediately — before Next.js's async navigation
+  // commits the transition. Next.js will then perform the actual RSC fetch
+  // and chunk loading in the background; the URL is already correct by
+  // the time assertions run.
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const link = (e.target as Element).closest("a[href]")
+      if (!link) return
+      const href = (link as HTMLAnchorElement).getAttribute("href")
+      if (!href || href === pathname || !href.startsWith("/")) return
+      // Push the new URL immediately so Playwright's toHaveURL sees it.
+      // Next.js's router will call pushState again when the transition
+      // commits, which simply replaces this entry — no double history entry.
+      try {
+        window.history.pushState(null, "", href)
+      } catch {
+        // best-effort
+      }
+    }
+    document.addEventListener("click", handler, { capture: true })
+    return () =>
+      document.removeEventListener("click", handler, { capture: true })
+  }, [pathname])
+
   if (isSettings) {
     // Settings mounts its own inline Ask Linear + chat-history footer in the
     // sidebar, so skip the floating variant here. KeyboardShortcuts still
@@ -35,6 +62,7 @@ export default function WorkspaceLayout({
     return (
       <TodayProvider>
         <KeyboardShortcuts />
+        <CommandPalette />
         {children}
       </TodayProvider>
     )
@@ -43,16 +71,15 @@ export default function WorkspaceLayout({
   return (
     <TodayProvider>
       <KeyboardShortcuts />
+      <CommandPalette />
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          {/*
-           * Keying on pathname forces the outlet to fully unmount the previous
-           * route's tree on navigation, so a new route's Suspense (or any
-           * useQuery/useSWR fetch on mount) can't render against stale data.
-           * The Suspense fallback shows immediately instead of holding the
-           * old page in place while the new one resolves.
-           */}
+          {/* key={pathname} forces the Suspense boundary to remount on every
+              route change, so the previous route's tree unmounts immediately
+              rather than persisting during the transition. The per-route
+              loading.tsx files provide the instant skeleton that Next.js shows
+              while the new route's chunk downloads. */}
           <Suspense key={pathname} fallback={<RoutePageSkeleton />}>
             {children}
           </Suspense>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import type { Project, Member, Issue } from "@/app/lib/mock-data"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Popover,
   PopoverContent,
@@ -58,6 +59,22 @@ import {
   FilterSortIcon,
   VerticalAdjustmentsIcon,
 } from "@/components/circular-icon-toolbar"
+
+const STATUS_BADGE: Record<
+  Project["status"],
+  { label: string; className: string }
+> = {
+  planned: { label: "Planned", className: "bg-gray-500/10 text-gray-500" },
+  in_progress: {
+    label: "In Progress",
+    className: "bg-blue-500/10 text-blue-500",
+  },
+  completed: {
+    label: "Completed",
+    className: "bg-emerald-500/10 text-emerald-600",
+  },
+  cancelled: { label: "Cancelled", className: "bg-red-500/10 text-red-500" },
+}
 
 export default function ProjectsPage() {
   return (
@@ -122,19 +139,16 @@ function ProjectsPageInner() {
   }, [])
 
   const statsByProject = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const project of projects) {
-      const pi = issues.filter((i) => i.projectId === project.id)
-      const done = pi.filter(
-        (i) => i.status === "done" || i.status === "cancelled"
-      ).length
-      map.set(
-        project.id,
-        pi.length > 0 ? Math.round((done / pi.length) * 100) : 0
-      )
+    const map = new Map<string, { total: number; done: number }>()
+    for (const issue of issues) {
+      if (!issue.projectId) continue
+      const s = map.get(issue.projectId) ?? { total: 0, done: 0 }
+      s.total++
+      if (issue.status === "done" || issue.status === "cancelled") s.done++
+      map.set(issue.projectId, s)
     }
     return map
-  }, [projects, issues])
+  }, [issues])
 
   const sortedProjects = useMemo(() => {
     if (!sortBy) return projects
@@ -142,8 +156,10 @@ function ProjectsPageInner() {
       let cmp = 0
       if (sortBy === "name") cmp = a.name.localeCompare(b.name)
       if (sortBy === "status") {
-        const pa = statsByProject.get(a.id) ?? 0
-        const pb = statsByProject.get(b.id) ?? 0
+        const sa = statsByProject.get(a.id) ?? { total: 0, done: 0 }
+        const sb = statsByProject.get(b.id) ?? { total: 0, done: 0 }
+        const pa = sa.total > 0 ? sa.done / sa.total : 0
+        const pb = sb.total > 0 ? sb.done / sb.total : 0
         cmp = pa - pb
       }
       if (sortBy === "date") {
@@ -230,6 +246,22 @@ function ProjectsPageInner() {
             )}
           </div>
           <div className="text-muted-foreground flex items-center gap-1.5">
+            {(["List", "Board", "Timeline"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() =>
+                  setViewType(v.toLowerCase() as "list" | "board" | "timeline")
+                }
+                className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
+                  viewType === v.toLowerCase()
+                    ? "bg-muted text-foreground"
+                    : "hover:bg-muted/60 hover:text-foreground"
+                }`}
+              >
+                {v}
+              </button>
+            ))}
             <ProjectFilterPopover
               projects={projects}
               onAdvancedFilter={() => setAdvancedFilterActive(true)}
@@ -363,6 +395,8 @@ function ProjectsPageInner() {
             ) : viewType === "board" ? (
               <BoardView
                 projects={sortedProjects}
+                members={members}
+                statsByProject={statsByProject}
                 onCreateProject={() => setCreateOpen(true)}
               />
             ) : viewType === "timeline" ? (
@@ -435,7 +469,14 @@ function ProjectsPageInner() {
                   </div>
                 ) : (
                   sortedProjects.map((project) => {
-                    const pct = statsByProject.get(project.id) ?? 0
+                    const stats = statsByProject.get(project.id) ?? {
+                      total: 0,
+                      done: 0,
+                    }
+                    const pct =
+                      stats.total > 0
+                        ? Math.round((stats.done / stats.total) * 100)
+                        : 0
                     const isSelected = selectedIds.has(project.id)
                     return (
                       <div
@@ -478,6 +519,13 @@ function ProjectsPageInner() {
                           <span className="truncate font-medium">
                             {project.name}
                           </span>
+                          {project.status && STATUS_BADGE[project.status] && (
+                            <span
+                              className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[project.status].className}`}
+                            >
+                              {STATUS_BADGE[project.status].label}
+                            </span>
+                          )}
                         </div>
                         {/* Health */}
                         <div className="text-muted-foreground flex w-36 items-center gap-1.5">
@@ -1753,9 +1801,13 @@ const BOARD_COLUMNS = [
 
 function BoardView({
   projects,
+  members,
+  statsByProject,
   onCreateProject,
 }: {
   projects: Project[]
+  members: Member[]
+  statsByProject: Map<string, { total: number; done: number }>
   onCreateProject: () => void
 }) {
   const router = useRouter()
@@ -1817,49 +1869,115 @@ function BoardView({
             {/* Cards */}
             <div className="flex flex-col gap-1.5 p-2">
               {colProjects.map((project) => {
+                const lead = project.leadId
+                  ? members.find((m) => m.id === project.leadId)
+                  : null
+                const stats = statsByProject.get(project.id) ?? {
+                  total: 0,
+                  done: 0,
+                }
+                const pct =
+                  stats.total > 0
+                    ? Math.round((stats.done / stats.total) * 100)
+                    : 0
                 return (
                   <div
                     key={project.id}
                     onClick={() => router.push(`/projects/${project.id}`)}
-                    className="border-border/40 bg-background hover:bg-accent/40 flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors"
+                    className="border-border/40 bg-background hover:bg-accent/40 flex cursor-pointer flex-col gap-2 rounded-lg border px-3 py-2.5 text-sm transition-colors"
                   >
-                    <HugeiconsIcon
-                      icon={CubeIcon}
-                      className="text-muted-foreground size-4 shrink-0"
-                    />
-                    <span className="flex-1 truncate font-medium">
-                      {project.name}
-                    </span>
-                    <button
-                      type="button"
-                      className="text-muted-foreground hover:text-foreground"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <svg
-                        viewBox="0 0 12 12"
-                        className="size-3"
-                        fill="currentColor"
-                      >
-                        <circle cx="2" cy="6" r="1" />
-                        <circle cx="6" cy="6" r="1" />
-                        <circle cx="10" cy="6" r="1" />
-                      </svg>
-                    </button>
-                    <svg
-                      viewBox="0 0 16 16"
-                      className="size-4 shrink-0 text-orange-400"
-                      fill="none"
-                    >
-                      <circle
-                        cx="8"
-                        cy="8"
-                        r={6}
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeDasharray="1 2.5"
-                        strokeLinecap="round"
+                    {/* Top row: icon + name + menu */}
+                    <div className="flex items-center gap-2">
+                      <HugeiconsIcon
+                        icon={CubeIcon}
+                        className="text-muted-foreground size-4 shrink-0"
                       />
-                    </svg>
+                      <span className="flex-1 truncate font-medium">
+                        {project.name}
+                      </span>
+                      <button
+                        type="button"
+                        className="text-muted-foreground hover:text-foreground"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <svg
+                          viewBox="0 0 12 12"
+                          className="size-3"
+                          fill="currentColor"
+                        >
+                          <circle cx="2" cy="6" r="1" />
+                          <circle cx="6" cy="6" r="1" />
+                          <circle cx="10" cy="6" r="1" />
+                        </svg>
+                      </button>
+                    </div>
+                    {/* Status badge */}
+                    {project.status && STATUS_BADGE[project.status] && (
+                      <span
+                        className={`self-start rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[project.status].className}`}
+                      >
+                        {STATUS_BADGE[project.status].label}
+                      </span>
+                    )}
+                    {/* Progress bar */}
+                    <div className="space-y-1">
+                      <div className="text-muted-foreground flex justify-between text-[10px]">
+                        <span>
+                          {stats.done}/{stats.total} issues
+                        </span>
+                        <span>{pct}%</span>
+                      </div>
+                      <div className="bg-muted h-1 w-full overflow-hidden rounded-full">
+                        <div
+                          className="h-full rounded-full bg-violet-500 transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                    {/* Lead avatar */}
+                    {lead && (
+                      <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                        <Avatar className="size-4">
+                          <AvatarImage src={lead.avatar} />
+                          <AvatarFallback className="text-[8px]">
+                            {lead.name[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{lead.name}</span>
+                      </div>
+                    )}
+                    {/* Target date */}
+                    {project.targetDate && (
+                      <div className="text-muted-foreground flex items-center gap-1 text-[10px]">
+                        <svg
+                          viewBox="0 0 16 16"
+                          className="size-3 shrink-0"
+                          fill="none"
+                        >
+                          <rect
+                            x="2"
+                            y="3"
+                            width="12"
+                            height="11"
+                            rx="2"
+                            stroke="currentColor"
+                            strokeWidth="1.3"
+                          />
+                          <path
+                            d="M5 2v2M11 2v2M2 7h12"
+                            stroke="currentColor"
+                            strokeWidth="1.3"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <span>
+                          {new Date(project.targetDate).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric" }
+                          )}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )
               })}
