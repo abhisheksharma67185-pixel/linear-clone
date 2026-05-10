@@ -249,6 +249,7 @@ export function updateIssue(
     labelIds?: string[]
     estimate?: number | null
     dueDate?: string | null
+    subscriberIds?: string[]
   }
 ): Result<Issue> {
   const s = _state()
@@ -326,6 +327,15 @@ export function updateIssue(
   }
   if (fields.estimate !== undefined) issue.estimate = fields.estimate
   if (fields.dueDate !== undefined) issue.dueDate = fields.dueDate
+  if (fields.subscriberIds !== undefined) {
+    for (const subId of fields.subscriberIds) {
+      const m = s.members.find((mem) => mem.id === subId)
+      if (!m) {
+        return { success: false, error: `Member not found: ${subId}` }
+      }
+    }
+    issue.subscriberIds = fields.subscriberIds
+  }
 
   issue.updatedAt = now()
   return { success: true, data: deepClone(issue) }
@@ -966,6 +976,67 @@ export function createView(fields: {
 
   s.views.push(view)
   return { success: true, data: deepClone(view) }
+}
+
+// updateView — partial update of an existing view by id. Allowed
+// fields mirror the createView body except `createdAt` / `id`,
+// which are immutable. Validates ownerId / teamId references when
+// they're being changed so a typo can't leave a dangling pointer.
+export function updateView(
+  id: string,
+  fields: {
+    name?: string
+    description?: string
+    filterQuery?: string
+    ownerId?: string
+    teamId?: string
+  }
+): Result<View> {
+  const s = _state()
+  const view = s.views.find((v) => v.id === id)
+  if (!view) return { success: false, error: "View not found" }
+
+  if (fields.name !== undefined) {
+    if (typeof fields.name !== "string" || fields.name.trim() === "") {
+      return { success: false, error: "Name cannot be empty" }
+    }
+    view.name = fields.name.trim()
+  }
+  if (fields.description !== undefined) {
+    view.description = String(fields.description)
+  }
+  if (fields.filterQuery !== undefined) {
+    if (
+      typeof fields.filterQuery !== "string" ||
+      fields.filterQuery.trim() === ""
+    ) {
+      return { success: false, error: "Filter query cannot be empty" }
+    }
+    view.filterQuery = fields.filterQuery.trim()
+  }
+  if (fields.ownerId !== undefined) {
+    const owner = s.members.find((m) => m.id === fields.ownerId)
+    if (!owner) {
+      return { success: false, error: `Member not found: ${fields.ownerId}` }
+    }
+    view.ownerId = fields.ownerId
+  }
+  if (fields.teamId !== undefined) {
+    const team = s.teams.find((t) => t.id === fields.teamId)
+    if (!team) {
+      return { success: false, error: `Team not found: ${fields.teamId}` }
+    }
+    view.teamId = fields.teamId
+  }
+  return { success: true, data: deepClone(view) }
+}
+
+export function deleteView(id: string): Result {
+  const s = _state()
+  const idx = s.views.findIndex((v) => v.id === id)
+  if (idx === -1) return { success: false, error: "View not found" }
+  s.views.splice(idx, 1)
+  return { success: true, data: undefined }
 }
 
 // ---------------------------------------------------------------------------

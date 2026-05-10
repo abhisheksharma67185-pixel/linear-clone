@@ -11,7 +11,7 @@ import { test, expect } from "@playwright/test"
 test("Manage customers opens a Dialog, no longer 404s on /customers", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=customer-requests", {
+  await page.goto("/settings?section=customer-requests", {
     waitUntil: "load",
   })
   // The downstream rows are gated behind the Enable toggle, so flip it
@@ -38,7 +38,7 @@ test("Manage customers opens a Dialog, no longer 404s on /customers", async ({
 test("Issue Labels table headers include Description and Issues", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=issue-labels", {
+  await page.goto("/settings?section=issue-labels", {
     waitUntil: "load",
   })
   await page.waitForTimeout(400)
@@ -55,10 +55,9 @@ test("Issue Labels table headers include Description and Issues", async ({
 test("Agent personalization guidance textarea exposes a placeholder", async ({
   page,
 }) => {
-  await page.goto(
-    "http://localhost:3000/settings?section=agent-personalization",
-    { waitUntil: "load" }
-  )
+  await page.goto("/settings?section=agent-personalization", {
+    waitUntil: "load",
+  })
   await page.waitForLoadState("networkidle")
   await page.waitForTimeout(300)
 
@@ -75,10 +74,9 @@ test("Agent personalization guidance textarea exposes a placeholder", async ({
 test("Agent personalization Skills empty state has Create skill CTA", async ({
   page,
 }) => {
-  await page.goto(
-    "http://localhost:3000/settings?section=agent-personalization",
-    { waitUntil: "load" }
-  )
+  await page.goto("/settings?section=agent-personalization", {
+    waitUntil: "load",
+  })
   await page.waitForLoadState("networkidle")
   await page.waitForTimeout(300)
 
@@ -95,7 +93,7 @@ test("Agent personalization Skills empty state has Create skill CTA", async ({
 test("CR Default team Select shows 'Select a team' placeholder", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=customer-requests", {
+  await page.goto("/settings?section=customer-requests", {
     waitUntil: "load",
   })
   await page.locator('[aria-label="Enable Customer requests"]').click()
@@ -114,7 +112,7 @@ test("CR Default team Select shows 'Select a team' placeholder", async ({
 test("Pulse description mentions 'project and initiative updates'", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=pulse", {
+  await page.goto("/settings?section=pulse", {
     waitUntil: "load",
   })
   await expect(

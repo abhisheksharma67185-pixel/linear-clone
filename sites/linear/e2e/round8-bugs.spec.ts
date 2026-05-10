@@ -9,11 +9,11 @@ test("Create-team auto-deduplicates identifier and shows conflict error", async 
 }) => {
   // Seed a team that will collide with the auto-generated key for
   // "Collision Team" → "COL".
-  await page.request.post("http://localhost:3000/api/data/teams", {
+  await page.request.post("/api/data/teams", {
     data: { name: "Pre-existing", key: "COL" },
   })
 
-  await page.goto("http://localhost:3000/settings/new-team", {
+  await page.goto("/settings/new-team", {
     waitUntil: "load",
   })
   // Wait for /api/data/teams to settle so `usedKeys` is populated by
@@ -47,11 +47,11 @@ test("Create-team surfaces identifier-conflict error before submit", async ({
   // names too — round 8's previous "Pre-existing"/"DUPE" pair would
   // have failed the seed POST against the prior test's seed).
   const seedName = `R8 Conflict ${Date.now()}`
-  await page.request.post("http://localhost:3000/api/data/teams", {
+  await page.request.post("/api/data/teams", {
     data: { name: seedName, key: "DUPE" },
   })
 
-  await page.goto("http://localhost:3000/settings/new-team", {
+  await page.goto("/settings/new-team", {
     waitUntil: "load",
   })
   await page.locator('input[id="team-name"]').fill("Different name")
@@ -69,10 +69,10 @@ test("Create-team surfaces identifier-conflict error before submit", async ({
 test("?section=security-access resolves to Security & access", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=security-access", {
+  await page.goto("/settings?section=security-access", {
     waitUntil: "load",
   })
-  await page.waitForURL("http://localhost:3000/settings?section=security", {
+  await page.waitForURL("/settings?section=security", {
     timeout: 5000,
   })
   await expect(page.locator('h1:has-text("Security")')).toBeVisible()
@@ -83,10 +83,10 @@ test("?section=security-access resolves to Security & access", async ({
 test("?section=project-statuses redirects to /settings/project-statuses", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=project-statuses", {
+  await page.goto("/settings?section=project-statuses", {
     waitUntil: "load",
   })
-  await page.waitForURL("http://localhost:3000/settings/project-statuses", {
+  await page.waitForURL("/settings/project-statuses", {
     timeout: 5000,
   })
 })
@@ -99,10 +99,10 @@ test("?section=project-statuses redirects to /settings/project-statuses", async 
 test('?section=project-labels redirects + "+ New label" works', async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=project-labels", {
+  await page.goto("/settings?section=project-labels", {
     waitUntil: "load",
   })
-  await page.waitForURL("http://localhost:3000/settings/project-labels", {
+  await page.waitForURL("/settings/project-labels", {
     timeout: 5000,
   })
 
@@ -122,18 +122,15 @@ test('?section=project-labels redirects + "+ New label" works', async ({
 test('Project templates "+ New template" navigates to editor', async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=project-templates", {
+  await page.goto("/settings?section=project-templates", {
     waitUntil: "load",
   })
   // Same query→path redirect as project-labels.
-  await page.waitForURL("http://localhost:3000/settings/project-templates", {
+  await page.waitForURL("/settings/project-templates", {
     timeout: 5000,
   })
   await page.locator('button[aria-label="New project template"]').click()
-  await page.waitForURL(
-    "http://localhost:3000/settings/templates/project/new",
-    { timeout: 5000 }
-  )
+  await page.waitForURL("/settings/templates/project/new", { timeout: 5000 })
 })
 
 // Bug 10 — Tab title for top-level workspace routes reads the route
@@ -150,7 +147,7 @@ for (const { path, expected } of [
   { path: "/pulse", expected: "Pulse" },
 ]) {
   test(`tab title for ${path} reads "${expected}"`, async ({ page }) => {
-    const response = await page.goto(`http://localhost:3000${path}`, {
+    const response = await page.goto(`${path}`, {
       waitUntil: "commit",
     })
     expect(response?.ok()).toBeTruthy()

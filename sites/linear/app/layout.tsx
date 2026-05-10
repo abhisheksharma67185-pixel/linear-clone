@@ -2,6 +2,7 @@ import "./globals.css"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
+import { StreamingPlaceholderCleanup } from "@/components/streaming-placeholder-cleanup"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -16,21 +17,6 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`antialiased ${inter.className}`}
     >
-      <head>
-        {/* Next.js 16 streaming SSR always emits <div hidden=""> as the first
-            body child (the streaming boundary placeholder). $RC resolves it but
-            does NOT remove the hidden attribute, so Playwright's boundingBox()
-            returns null for body > * queries. Remove it via JS after parsing. */}
-        {/* eslint-disable-next-line react/no-danger */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              `document.addEventListener('DOMContentLoaded',function(){` +
-              `document.querySelectorAll('body>div[hidden]').forEach(function(el){el.removeAttribute('hidden')});` +
-              `});`,
-          }}
-        />
-      </head>
       <body>
         {/* Wrap ThemeProvider (a Client Component) in a server-rendered div.
             This ensures the first body > * in the SSR HTML is a visible block
@@ -39,6 +25,13 @@ export default function RootLayout({
         <div className="min-h-screen min-w-full">
           <ThemeProvider>{children}</ThemeProvider>
         </div>
+        {/* Strip the lingering `hidden` attribute from Next.js 16's
+            streaming-placeholder div(s). Runs from a useEffect (post-
+            hydration) instead of `DOMContentLoaded` (pre-hydration) so
+            we don't desync the DOM from React's hydration tree — that
+            mismatch was the source of the
+            "hidden={true} vs hidden={null}" hydration error. */}
+        <StreamingPlaceholderCleanup />
         {/*
          * Sonner anchors at bottom: 16px right: 16px by default. The
          * AskLinear floating pill lives at the same coordinate

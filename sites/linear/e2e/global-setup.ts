@@ -10,8 +10,10 @@ import { request, chromium } from "@playwright/test"
  * warming, the first navigation to /inbox (etc.) triggers a fresh compile
  * that can exceed the 500ms budget checked by workspace-regressions:39.
  */
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000"
+
 async function globalSetup() {
-  const ctx = await request.newContext({ baseURL: "http://localhost:3000" })
+  const ctx = await request.newContext({ baseURL: BASE_URL })
   try {
     await ctx.post("/api/sim/reset")
   } catch {
@@ -30,7 +32,7 @@ async function globalSetup() {
     const page = await browser.newPage()
     for (const route of routesToWarm) {
       try {
-        await page.goto(`http://localhost:3000${route}`, {
+        await page.goto(`${BASE_URL}${route}`, {
           waitUntil: "networkidle",
           timeout: 30_000,
         })

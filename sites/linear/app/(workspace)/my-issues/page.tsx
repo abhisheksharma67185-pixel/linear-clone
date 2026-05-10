@@ -185,10 +185,12 @@ export default function MyIssuesPage() {
       }
       if (document.querySelector('[data-state="open"][role="dialog"]')) return
       if (document.querySelector('[data-slot="popover-content"]')) return
-      if (event.key === "c" || event.key === "C") {
-        event.preventDefault()
-        openCreate()
-      } else if (event.key === "f" || event.key === "F") {
+      // `c` is owned by the global keyboard-shortcuts dispatcher (it
+      // fires OPEN_CREATE_ISSUE_EVENT and the sidebar's CreateIssueDialog
+      // listens). Handling it here too would mount a *second* dialog on
+      // top of the sidebar's, which the e2e suite catches as two
+      // `[data-slot="dialog-overlay"]` elements.
+      if (event.key === "f" || event.key === "F") {
         event.preventDefault()
         setFilterInitialKind(null)
         setFilterOpen(true)

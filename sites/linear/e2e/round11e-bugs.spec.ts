@@ -62,13 +62,13 @@ for (const { path, postLoadMarkers } of PAGES) {
   }) => {
     const failed404s: string[] = []
     page.on("response", (resp) => {
-      const url = resp.url().replace("http://localhost:3000", "")
+      const url = resp.url().replace("/", "")
       if (url.startsWith("/api/data/") && resp.status() === 404) {
         failed404s.push(`${resp.status()} ${url}`)
       }
     })
 
-    await page.goto(`http://localhost:3000${path}`, {
+    await page.goto(`${path}`, {
       waitUntil: "domcontentloaded",
     })
 
@@ -125,10 +125,9 @@ test("Agent personalization: no React/hydration/key console errors", async ({
   })
   page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`))
 
-  await page.goto(
-    "http://localhost:3000/settings?section=agent-personalization",
-    { waitUntil: "domcontentloaded" }
-  )
+  await page.goto("/settings?section=agent-personalization", {
+    waitUntil: "domcontentloaded",
+  })
   // Allow the section's slow ~6s hydration to complete.
   await page.waitForTimeout(6000)
 

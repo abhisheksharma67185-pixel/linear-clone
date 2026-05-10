@@ -46,14 +46,22 @@ test.describe("Submenu does not overlap parent popover", () => {
     }
 
     await subTrigger.first().hover()
-    // Wait for the submenu popup to mount.
-    const submenus = page.locator('[data-slot="dropdown-menu-content"]')
+    // Wait for the submenu popup to mount. The sub-content uses a
+    // different data-slot value than the parent (so consumers can
+    // style the two differently), so we have to match both
+    // "dropdown-menu-content" and "dropdown-menu-sub-content".
+    const popups = page.locator(
+      '[data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"]'
+    )
     await expect(async () => {
-      expect(await submenus.count()).toBeGreaterThanOrEqual(2)
+      expect(await popups.count()).toBeGreaterThanOrEqual(2)
     }).toPass({ timeout: 1000 })
+    const submenu = page
+      .locator('[data-slot="dropdown-menu-sub-content"]')
+      .first()
 
     const parentBox = await parent.boundingBox()
-    const submenuBox = await submenus.nth(1).boundingBox()
+    const submenuBox = await submenu.boundingBox()
     expect(parentBox).not.toBeNull()
     expect(submenuBox).not.toBeNull()
     if (parentBox && submenuBox) {

@@ -17,11 +17,16 @@ for (const section of [
   test(`/settings/${section} redirects to ?section=${section}`, async ({
     page,
   }) => {
-    const response = await page.goto(
-      `http://localhost:3000/settings/${section}`
-    )
+    const response = await page.goto(`/settings/${section}`)
     expect(response?.ok()).toBeTruthy()
-    expect(page.url()).toBe(`http://localhost:3000/settings?section=${section}`)
+    // page.url() returns the absolute URL, so resolve the expected
+    // path against the configured baseURL instead of comparing to a
+    // bare path (which would only match if baseURL were "").
+    const expected = new URL(
+      `/settings?section=${section}`,
+      page.url()
+    ).toString()
+    expect(page.url()).toBe(expected)
   })
 }
 
@@ -39,7 +44,7 @@ for (const { path, marker } of [
   test(`${path} resolves data into UI (no permanent skeleton)`, async ({
     page,
   }) => {
-    await page.goto(`http://localhost:3000${path}`, {
+    await page.goto(`${path}`, {
       waitUntil: "networkidle",
     })
     await page.waitForTimeout(300)
@@ -67,7 +72,7 @@ for (const { path, label } of [
   },
 ]) {
   test(`${path} disables Create until fields are valid`, async ({ page }) => {
-    await page.goto(`http://localhost:3000${path}`, {
+    await page.goto(`${path}`, {
       waitUntil: "networkidle",
     })
     await page.waitForTimeout(300)
@@ -86,7 +91,7 @@ for (const slug of ["slack", "github"]) {
   test(`/settings/integrations/${slug} has no empty image tiles`, async ({
     page,
   }) => {
-    await page.goto(`http://localhost:3000/settings/integrations/${slug}`, {
+    await page.goto(`/settings/integrations/${slug}`, {
       waitUntil: "networkidle",
     })
     await page.waitForTimeout(300)
@@ -111,7 +116,7 @@ test("/cycles renders without nested-button hydration error", async ({
   page.on("console", (msg) => {
     if (msg.type() === "error") errors.push(msg.text())
   })
-  await page.goto("http://localhost:3000/cycles", { waitUntil: "networkidle" })
+  await page.goto("/cycles", { waitUntil: "networkidle" })
   await page.waitForTimeout(500)
   // The previous code put `<Button>` (a native <button>) inside a
   // `<CollapsibleTrigger>` (also a native <button>); that's invalid
@@ -133,7 +138,7 @@ test("/settings?section=slas has no duplicate-key warnings", async ({
   page.on("console", (msg) => {
     if (msg.type() === "error") errors.push(msg.text())
   })
-  await page.goto("http://localhost:3000/settings?section=slas", {
+  await page.goto("/settings?section=slas", {
     waitUntil: "networkidle",
   })
   await page.waitForTimeout(500)
@@ -158,7 +163,7 @@ test("/settings?section=slas has no duplicate-key warnings", async ({
 test("Team seed list has no duplicate or QA-artefact entries", async ({
   request,
 }) => {
-  const res = await request.get("http://localhost:3000/api/data/teams")
+  const res = await request.get("/api/data/teams")
   expect(res.ok()).toBeTruthy()
   const teams = (await res.json()) as Array<{ id: string; name: string }>
   const names = teams.map((t) => t.name.toLowerCase())
@@ -173,7 +178,7 @@ test("Team seed list has no duplicate or QA-artefact entries", async ({
 
 test("createTeam rejects duplicate name", async ({ request }) => {
   // Pick a known seed name and try to recreate it under a fresh key.
-  const res = await request.post("http://localhost:3000/api/data/teams", {
+  const res = await request.post("/api/data/teams", {
     data: { name: "Platform", key: "PLT2" },
   })
   expect(res.status()).toBe(400)
@@ -185,8 +190,8 @@ test("createTeam rejects duplicate name", async ({ request }) => {
 // plan title. On trial the title reads "Free trial" + "{n} days
 // remaining"; the previous code hardcoded "Free plan".
 test("Billing page reflects live plan API on trial", async ({ page }) => {
-  await page.request.post("http://localhost:3000/api/billing/trial")
-  await page.goto("http://localhost:3000/settings?section=billing", {
+  await page.request.post("/api/billing/trial")
+  await page.goto("/settings?section=billing", {
     waitUntil: "networkidle",
   })
   await page.waitForTimeout(300)

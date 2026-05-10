@@ -65,12 +65,20 @@ const PRIORITY_OPTIONS: { value: Priority; label: string; shortcut: string }[] =
 export function CreateIssueDialog({
   open,
   onOpenChange,
+  onCreated,
   defaultAssigneeId,
   defaultTeamId,
   defaultStatus,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /**
+   * Fired after a successful POST /api/data/issues, with the freshly
+   * created issue. Consumers should optimistically merge this into
+   * their local issue list (or refetch) so the new row appears
+   * without a hard refresh.
+   */
+  onCreated?: (issue: unknown) => void
   /**
    * Per-context override for the Assignee dropdown's initial value.
    * Pass this when the dialog is opened from a place that has an
@@ -243,6 +251,17 @@ export function CreateIssueDialog({
     })
     setCreating(false)
     if (res.ok) {
+      // Hand the freshly-created issue to the parent so it can merge
+      // it into its local list (e.g. so the new row shows up in a
+      // saved view immediately, without a hard reload).
+      try {
+        const created = await res.clone().json()
+        onCreated?.(created)
+      } catch {
+        // Body wasn't JSON or already consumed — non-fatal; the
+        // parent can fall back to a refetch on next render.
+        onCreated?.(null)
+      }
       if (createMore) {
         // Stay open and clear the form for the next entry.
         resetForm()

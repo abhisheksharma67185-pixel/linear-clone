@@ -17,10 +17,9 @@ for (const { section, title } of SECTIONS) {
     // hydrates — that's the title the browser tab shows during the F5 →
     // JS-load gap. If this comes back as the URL or "localhost", the bug
     // (round 5 regression) is back.
-    const response = await page.goto(
-      `http://localhost:3000/settings?section=${section}`,
-      { waitUntil: "commit" }
-    )
+    const response = await page.goto(`/settings?section=${section}`, {
+      waitUntil: "commit",
+    })
     expect(response?.ok()).toBeTruthy()
     const html = await response!.text()
     const match = html.match(/<title[^>]*>([^<]*)<\/title>/)

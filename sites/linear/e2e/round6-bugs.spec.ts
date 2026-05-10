@@ -5,10 +5,9 @@ import { test, expect } from "@playwright/test"
 test('Linear Agent → "Manage allowed MCP servers" navigates to admin', async ({
   page,
 }) => {
-  await page.goto(
-    "http://localhost:3000/settings?section=ai-agents&sub=linear-agent",
-    { waitUntil: "load" }
-  )
+  await page.goto("/settings?section=ai-agents&sub=linear-agent", {
+    waitUntil: "load",
+  })
   await page.locator('a[aria-label="Manage allowed MCP servers"]').click()
   // Workspace-scoped policy lives under Administration → Security.
   await page.waitForURL(/\/settings\?section=admin-security/, {
@@ -21,7 +20,7 @@ test('Linear Agent → "Manage allowed MCP servers" navigates to admin', async (
 test("Billing upgrade buttons surface a toast (no silent no-op)", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings/billing/upgrade", {
+  await page.goto("/settings/billing/upgrade", {
     waitUntil: "load",
   })
   await page.locator('button[aria-label="Upgrade to Basic"]').click()
@@ -32,7 +31,7 @@ test("Billing upgrade buttons surface a toast (no silent no-op)", async ({
 
 // Bug 3 — Help popover search input filters items live by name.
 test("Help popover search filters items by name", async ({ page }) => {
-  await page.goto("http://localhost:3000/settings?section=preferences", {
+  await page.goto("/settings?section=preferences", {
     waitUntil: "load",
   })
   // Open the help popover via the bottom-left "?" trigger.
@@ -52,7 +51,7 @@ test("Help popover search filters items by name", async ({ page }) => {
 test("`?` opens the Help popover from anywhere in the app", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/", { waitUntil: "load" })
+  await page.goto("/", { waitUntil: "load" })
   // Ensure no popover open initially.
   await expect(page.locator('input[aria-label="Search help"]')).toHaveCount(0)
   await page.keyboard.press("Shift+/")
@@ -62,7 +61,7 @@ test("`?` opens the Help popover from anywhere in the app", async ({
 })
 
 test("`Cmd+/` opens the Help popover", async ({ page }) => {
-  await page.goto("http://localhost:3000/", { waitUntil: "load" })
+  await page.goto("/", { waitUntil: "load" })
   await page.keyboard.press("Meta+/")
   await expect(page.locator('input[aria-label="Search help"]')).toBeVisible({
     timeout: 5000,
@@ -70,14 +69,14 @@ test("`Cmd+/` opens the Help popover", async ({ page }) => {
 })
 
 test("`g s` navigates to /settings", async ({ page }) => {
-  await page.goto("http://localhost:3000/", { waitUntil: "load" })
+  await page.goto("/", { waitUntil: "load" })
   await page.keyboard.press("g")
   await page.keyboard.press("s")
   await page.waitForURL(/\/settings/, { timeout: 5000 })
 })
 
 test("Shortcuts ignored while focus is in an input", async ({ page }) => {
-  await page.goto("http://localhost:3000/settings?section=profile", {
+  await page.goto("/settings?section=profile", {
     waitUntil: "load",
   })
   // Profile mounts a hidden <input type="file"> first (avatar upload),
@@ -102,8 +101,8 @@ test("AI & Agents shows trial-aware status (not always-on stub CTA)", async ({
 }) => {
   // Force the mock plan to "trial" via the trial endpoint, then verify
   // the page renders the trial banner instead of the upsell CTA.
-  await page.request.post("http://localhost:3000/api/billing/trial")
-  await page.goto("http://localhost:3000/settings?section=ai-agents", {
+  await page.request.post("/api/billing/trial")
+  await page.goto("/settings?section=ai-agents", {
     waitUntil: "networkidle",
   })
   await page.waitForTimeout(400)

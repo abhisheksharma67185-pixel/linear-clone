@@ -33,8 +33,21 @@ interface SessionContext {
   state: LinearStoreState
 }
 
-const registry = new Map<string, LinearStoreState>()
-const als = new AsyncLocalStorage<SessionContext>()
+// Pin the session registry + ALS instance to a globalThis slot so a
+// hot reload (or two route handlers loading the module in separate
+// chunks under Turbopack) doesn't end up with two competing registries
+// — that produced the "POST /api/billing/trial" → "GET /api/billing/plan"
+// state-loss bug, where the trial mutation went to one Map and the
+// plan read fell through to a freshly-created `default` state in
+// another Map.
+const G = globalThis as typeof globalThis & {
+  __linearSessionRegistry?: Map<string, LinearStoreState>
+  __linearSessionALS?: AsyncLocalStorage<SessionContext>
+}
+const registry: Map<string, LinearStoreState> =
+  G.__linearSessionRegistry ?? (G.__linearSessionRegistry = new Map())
+const als: AsyncLocalStorage<SessionContext> =
+  G.__linearSessionALS ?? (G.__linearSessionALS = new AsyncLocalStorage())
 
 function getOrCreate(id: string): LinearStoreState {
   let s = registry.get(id)

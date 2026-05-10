@@ -5,7 +5,6 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import type { Issue, Member, Team } from "@/app/lib/mock-data"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CreateIssueDialog } from "@/components/create-issue-dialog"
 import {
@@ -49,6 +48,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
 import { ArrowDown01Icon } from "@hugeicons/core-free-icons"
 import {
@@ -85,6 +90,18 @@ const STATUS_LABEL: Record<IssueStatus, string> = {
   done: "Done",
   cancelled: "Canceled",
 }
+
+// Priority pick-list shown in the inline priority dropdown on each
+// issue row. Order matches Linear's "no priority → urgent → high
+// → medium → low" convention.
+type IssuePriority = Issue["priority"]
+const PRIORITY_OPTIONS: { value: IssuePriority; label: string }[] = [
+  { value: "none", label: "No priority" },
+  { value: "urgent", label: "Urgent" },
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
+]
 
 // Static seed for the notifications popover. A real implementation
 // would derive this from /api/notifications; the mock keeps it
@@ -307,6 +324,28 @@ export default function TeamIssuesPage() {
   const [issues, setIssues] = useState<Issue[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [teams, setTeams] = useState<Team[]>([])
+
+  // Optimistic priority updater used by the inline priority menu
+  // on each row. Patches local state immediately so the row's icon
+  // re-renders, then PUTs the change to the API. Errors are
+  // intentionally swallowed — the local state has already been
+  // applied and the next refresh will reconcile if the server
+  // disagrees.
+  const updateIssuePriority = useCallback(
+    (id: string, priority: IssuePriority) => {
+      const target = issues.find((i) => i.id === id)
+      if (!target) return
+      setIssues((prev) =>
+        prev.map((it) => (it.id === id ? { ...it, priority } : it))
+      )
+      fetch(`/api/data/issues/${target.identifier}`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ priority }),
+      }).catch(() => {})
+    },
+    [issues]
+  )
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<IssueTab>("all")
   const [createOpen, setCreateOpen] = useState(false)
@@ -442,20 +481,6 @@ export default function TeamIssuesPage() {
           </button>
         </div>
         <div className="text-muted-foreground flex items-center gap-1">
-          {/* Kept as a sr-only-friendly button so the "c" shortcut
-              and the e2e header-create test still work, without
-              cluttering the visual header. */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            data-testid="header-create-issue"
-            aria-label="Create new issue"
-            onClick={openCreate}
-            className="size-7"
-          >
-            <HugeiconsIcon icon={PencilEdit01Icon} className="size-4" />
-          </Button>
           <NotificationsPopover items={SEED_NOTIFICATIONS} />
         </div>
       </header>
@@ -604,6 +629,7 @@ export default function TeamIssuesPage() {
                         status={status}
                         items={items}
                         memberById={memberById}
+                        onUpdatePriority={updateIssuePriority}
                       />
                     )
                   })}
@@ -619,6 +645,7 @@ export default function TeamIssuesPage() {
                     status={status}
                     items={items}
                     memberById={memberById}
+                    onUpdatePriority={updateIssuePriority}
                   />
                 )
               })}
@@ -650,10 +677,12 @@ function StatusSection({
   status,
   items,
   memberById,
+  onUpdatePriority,
 }: {
   status: IssueStatus
   items: Issue[]
   memberById: Map<string, Member>
+  onUpdatePriority: (id: string, priority: IssuePriority) => void
 }) {
   const [collapsed, setCollapsed] = useState(false)
   return (
@@ -697,6 +726,7 @@ function StatusSection({
             key={issue.id}
             issue={issue}
             assignee={memberById.get(issue.assigneeId ?? "") ?? null}
+            onUpdatePriority={onUpdatePriority}
           />
         ))}
     </div>
@@ -706,13 +736,22 @@ function StatusSection({
 function IssueRowLink({
   issue,
   assignee,
+  onUpdatePriority,
 }: {
   issue: Issue
   assignee: Member | null
+  onUpdatePriority: (id: string, priority: IssuePriority) => void
 }) {
+  // The row is a <div>, NOT an <a> — nesting a <button> inside an
+  // <a> is invalid HTML and Chrome/Firefox react to it differently
+  // (sometimes opening the link, sometimes flickering the
+  // dropdown). The interactive priority menu stays at the row
+  // level as a sibling, and a single <Link className="contents">
+  // wraps only the non-interactive cells (identifier, status,
+  // title, assignee, date). `display: contents` keeps those cells
+  // participating in the row's flex layout exactly as before.
   return (
-    <Link
-      href={`/issues/${issue.identifier}`}
+    <div
       data-testid="team-issues-row"
       data-issue-identifier={issue.identifier}
       data-status-type={STATUS_TO_TYPE[issue.status]}
@@ -724,31 +763,90 @@ function IssueRowLink({
         aria-hidden="true"
         className="border-muted-foreground/40 size-3.5 shrink-0 rounded-[3px] border opacity-0 transition-opacity group-hover:opacity-100"
       />
-      <PriorityIcon priority={issue.priority} className="size-3.5 shrink-0" />
-      <span className="text-muted-foreground w-14 shrink-0 font-mono text-xs">
-        {issue.identifier}
-      </span>
-      <StatusIcon status={issue.status} className="size-3.5 shrink-0" />
-      <span className="flex-1 truncate text-sm">{issue.title}</span>
-      {assignee ? (
-        <Avatar className="size-5 shrink-0">
-          <AvatarImage src={assignee.avatar} alt={assignee.name} />
-          <AvatarFallback className="bg-violet-600 text-[9px] text-white">
-            {assignee.name.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      ) : (
-        <span
-          aria-label="Unassigned"
-          className="text-muted-foreground/60 flex size-5 shrink-0 items-center justify-center"
-        >
-          <HugeiconsIcon icon={UserCircleIcon} className="size-4" />
+      <RowPriorityMenu
+        priority={issue.priority}
+        identifier={issue.identifier}
+        onChange={(p) => onUpdatePriority(issue.id, p)}
+      />
+      <Link
+        href={`/issues/${issue.identifier}`}
+        className="contents cursor-pointer"
+      >
+        <span className="text-muted-foreground w-14 shrink-0 font-mono text-xs">
+          {issue.identifier}
         </span>
-      )}
-      <span className="text-muted-foreground w-12 shrink-0 text-right font-mono text-xs">
-        {formatShortDate(issue.createdAt)}
-      </span>
-    </Link>
+        <StatusIcon status={issue.status} className="size-3.5 shrink-0" />
+        <span className="flex-1 truncate text-sm">{issue.title}</span>
+        {assignee ? (
+          <Avatar className="size-5 shrink-0">
+            <AvatarImage src={assignee.avatar} alt={assignee.name} />
+            <AvatarFallback className="bg-violet-600 text-[9px] text-white">
+              {assignee.name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <span
+            aria-label="Unassigned"
+            className="text-muted-foreground/60 flex size-5 shrink-0 items-center justify-center"
+          >
+            <HugeiconsIcon icon={UserCircleIcon} className="size-4" />
+          </span>
+        )}
+        <span className="text-muted-foreground w-12 shrink-0 text-right font-mono text-xs">
+          {formatShortDate(issue.createdAt)}
+        </span>
+      </Link>
+    </div>
+  )
+}
+
+/**
+ * Inline priority menu rendered inside each issue row. The button
+ * sits as a sibling of the row's `<Link>` (not inside it), so
+ * regular click handling works without propagation hacks.
+ */
+function RowPriorityMenu({
+  priority,
+  identifier,
+  onChange,
+}: {
+  priority: IssuePriority
+  identifier: string
+  onChange: (next: IssuePriority) => void
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            aria-label={`Set priority for ${identifier}`}
+            data-testid={`row-priority-trigger-${identifier}`}
+            className="hover:bg-accent flex size-5 shrink-0 items-center justify-center rounded"
+          />
+        }
+      >
+        <PriorityIcon priority={priority} className="size-3.5 shrink-0" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-44 p-1">
+        {PRIORITY_OPTIONS.map((opt) => (
+          <DropdownMenuItem
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className="flex items-center gap-2 text-sm"
+          >
+            <PriorityIcon
+              priority={opt.value}
+              className="text-muted-foreground/80 size-3.5"
+            />
+            <span className="flex-1">{opt.label}</span>
+            {opt.value === priority && (
+              <span className="text-muted-foreground text-[10px]">✓</span>
+            )}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

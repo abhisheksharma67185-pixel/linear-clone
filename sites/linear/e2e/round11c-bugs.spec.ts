@@ -14,7 +14,7 @@ import { test, expect } from "@playwright/test"
 test("Issue Labels: no transient 'No labels yet' before data hydrates", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=issue-labels", {
+  await page.goto("/settings?section=issue-labels", {
     waitUntil: "commit",
   })
   // From `commit` (HTML received) through hydration, the empty-state
@@ -47,7 +47,7 @@ test("Project Labels: skeleton (not empty state) renders while data is in flight
     await route.continue()
   })
 
-  await page.goto("http://localhost:3000/settings/project-labels", {
+  await page.goto("/settings/project-labels", {
     waitUntil: "commit",
   })
 
@@ -73,7 +73,7 @@ test("Project Labels: skeleton (not empty state) renders while data is in flight
 test("Members: filter trigger shows 'Pending invites' on initial render", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=members", {
+  await page.goto("/settings?section=members", {
     waitUntil: "load",
   })
   await page.waitForLoadState("networkidle")
@@ -92,7 +92,7 @@ test("Members: filter trigger shows 'Pending invites' on initial render", async 
 test("Members: filter trigger never reads 'All' during the loading window", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=members", {
+  await page.goto("/settings?section=members", {
     waitUntil: "domcontentloaded",
   })
   const seen: string[] = []
@@ -118,7 +118,7 @@ test("Members: filter trigger never reads 'All' during the loading window", asyn
 test("Security: skeleton rows match populated layout (no card-pop)", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=security", {
+  await page.goto("/settings?section=security", {
     waitUntil: "domcontentloaded",
   })
   // While loading, each of Sessions / Passkeys / Personal API keys
@@ -134,7 +134,7 @@ test("Security: skeleton rows match populated layout (no card-pop)", async ({
 test("Security: Sessions section populates after hydration", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=security", {
+  await page.goto("/settings?section=security", {
     waitUntil: "networkidle",
   })
   await page.waitForTimeout(300)

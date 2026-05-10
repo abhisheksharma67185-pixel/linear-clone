@@ -26,7 +26,7 @@ for (const p of PAGES) {
     page,
   }) => {
     await page.context().clearCookies()
-    await page.goto(`http://localhost:3000/settings?section=${p.section}`)
+    await page.goto(`/settings?section=${p.section}`)
     await page.evaluate((k) => window.localStorage.removeItem(k), p.storageKey)
     await page.reload()
 
@@ -71,7 +71,7 @@ for (const p of PAGES) {
 }
 
 test("Profile Full name input persists", async ({ page }) => {
-  await page.goto("http://localhost:3000/settings?section=profile")
+  await page.goto("/settings?section=profile")
   await page.evaluate(() =>
     window.localStorage.removeItem("linear:profile:name")
   )

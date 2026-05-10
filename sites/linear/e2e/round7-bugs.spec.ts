@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test"
 // implementation used `URL.createObjectURL` (an in-memory blob URL)
 // without writing to localStorage, so reloading lost the avatar.
 test("Profile picture upload persists across F5", async ({ page }) => {
-  await page.goto("http://localhost:3000/settings?section=profile", {
+  await page.goto("/settings?section=profile", {
     waitUntil: "load",
   })
   await page.evaluate(() =>
@@ -46,7 +46,7 @@ test("Profile picture upload persists across F5", async ({ page }) => {
 test("Workspace name+URL hydrate from API; no validation flash", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=workspace", {
+  await page.goto("/settings?section=workspace", {
     waitUntil: "domcontentloaded",
   })
   // Sample early — the loading skeleton must NOT show "URL is required".
@@ -85,10 +85,9 @@ for (const { slug, expected } of [
   test(`tab title for /settings/integrations/${slug} reads "${expected}"`, async ({
     page,
   }) => {
-    const response = await page.goto(
-      `http://localhost:3000/settings/integrations/${slug}`,
-      { waitUntil: "commit" }
-    )
+    const response = await page.goto(`/settings/integrations/${slug}`, {
+      waitUntil: "commit",
+    })
     expect(response?.ok()).toBeTruthy()
     const html = await response!.text()
     const m = html.match(/<title[^>]*>([^<]*)<\/title>/)

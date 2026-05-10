@@ -5,18 +5,38 @@ import { defineConfig, devices } from "@playwright/test"
  * Vitest unit tests so the two can be run independently.
  *
  * Install once: pnpm add -D @playwright/test && pnpm exec playwright install
+ *
+ * Targeting an already-running dev server: set `PLAYWRIGHT_BASE_URL`
+ * (e.g. `PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test`).
+ * When set, the harness skips spawning its own `pnpm dev` and just
+ * points at the existing server.
  */
+const EXTERNAL_BASE_URL = process.env.PLAYWRIGHT_BASE_URL
+const BASE_URL = EXTERNAL_BASE_URL ?? "http://localhost:3000"
+
 export default defineConfig({
   testDir: "./e2e",
   globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
+  // When pointing at an existing dev server (Turbopack JIT), 5 parallel
+  // workers oversubscribe the single Next.js process and a lot of
+  // navigation timeouts surface as "test failures" that pass cleanly
+  // when run in isolation. Cap to 2 in that mode; CI / production
+  // builds keep the default.
+  workers: EXTERNAL_BASE_URL ? 2 : undefined,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 2 : EXTERNAL_BASE_URL ? 1 : 0,
   reporter: "list",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: BASE_URL,
     trace: "retain-on-failure",
+    // Slightly longer expect window when the dev server is the target —
+    // Turbopack's first compile of a route can blow past the 5s default.
+    ...(EXTERNAL_BASE_URL ? { actionTimeout: 10_000 } : {}),
   },
+  ...(EXTERNAL_BASE_URL
+    ? { expect: { timeout: 10_000 }, timeout: 60_000 }
+    : {}),
   projects: [
     {
       name: "chromium",
@@ -32,10 +52,12 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: "pnpm dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: EXTERNAL_BASE_URL
+    ? undefined
+    : {
+        command: "pnpm dev",
+        url: BASE_URL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
 })

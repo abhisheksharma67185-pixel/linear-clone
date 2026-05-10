@@ -44,7 +44,7 @@ const ROUTES: Array<{ path: string; expected: string }> = [
 
 for (const { path, expected } of ROUTES) {
   test(`tab title for ${path} reads "${expected}"`, async ({ page }) => {
-    const response = await page.goto(`http://localhost:3000${path}`, {
+    const response = await page.goto(`${path}`, {
       waitUntil: "commit",
     })
     expect(response?.ok()).toBeTruthy()

@@ -1281,6 +1281,12 @@ function TimelineView({
               <button
                 key={opt}
                 type="button"
+                // Pin the accessible name to the zoom level only —
+                // without this, the trailing <kbd> shortcut text
+                // (e.g. "Y") is folded into the AT name, producing
+                // "Year Y" which breaks role-based selectors that
+                // expect the bare label.
+                aria-label={opt}
                 onClick={() => {
                   setZoom(opt)
                   setZoomOpen(false)
@@ -1293,6 +1299,7 @@ function TimelineView({
                     viewBox="0 0 12 12"
                     className="text-foreground size-3 shrink-0"
                     fill="none"
+                    aria-hidden="true"
                   >
                     <path
                       d="M2 6l3 3 5-5"
@@ -1303,7 +1310,10 @@ function TimelineView({
                     />
                   </svg>
                 )}
-                <kbd className="bg-muted/80 text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[10px]">
+                <kbd
+                  aria-hidden="true"
+                  className="bg-muted/80 text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[10px]"
+                >
                   {["Y", "Q", "M", "W"][i]}
                 </kbd>
               </button>
@@ -1364,7 +1374,7 @@ function TimelineView({
           >
             {ticks.map((t, i) => {
               const hideTickLabel =
-                !t.isToday && Math.abs(t.x - todayX) < TODAY_PILL_HALF_WIDTH
+                Math.abs(t.x - todayX) < TODAY_PILL_HALF_WIDTH
               if (hideTickLabel) return null
               return (
                 <div
@@ -1372,21 +1382,28 @@ function TimelineView({
                   className="absolute top-0 flex h-full items-center"
                   style={{ left: t.x }}
                 >
-                  {t.isToday ? (
-                    <span
-                      data-testid="today-pill"
-                      className="flex h-5 -translate-x-1/2 items-center rounded bg-blue-600 px-1.5 text-[11px] font-semibold text-white"
-                    >
-                      {todayPillLabel}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground -translate-x-1/2 text-[11px]">
-                      {t.label}
-                    </span>
-                  )}
+                  <span className="text-muted-foreground -translate-x-1/2 text-[11px]">
+                    {t.label}
+                  </span>
                 </div>
               )
             })}
+            {/* Today pill — always rendered at today's exact x, not
+                only when today happens to fall on a half-month tick.
+                The earlier implementation gated this on `tick.isToday`,
+                so on the 11 days of any half-month with no tick the
+                pill simply disappeared. */}
+            <div
+              className="absolute top-0 flex h-full items-center"
+              style={{ left: todayX }}
+            >
+              <span
+                data-testid="today-pill"
+                className="flex h-5 -translate-x-1/2 items-center rounded bg-blue-600 px-1.5 text-[11px] font-semibold text-white"
+              >
+                {todayPillLabel}
+              </span>
+            </div>
           </div>
         </div>
       </div>

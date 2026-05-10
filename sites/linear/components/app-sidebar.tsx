@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import type { Team } from "@/app/lib/mock-data"
+import { toast } from "sonner"
 import { usePathname, useRouter } from "next/navigation"
 import {
   Sidebar,
@@ -55,7 +55,6 @@ import {
   Settings02Icon,
   PlusSignIcon,
   Tick02Icon,
-  UserIcon,
   CopyLinkIcon,
   Archive01Icon,
   Notification01Icon,
@@ -63,14 +62,8 @@ import {
   Logout01Icon,
   Cancel01Icon,
   StarIcon,
-  ViewOffSlashIcon,
-  ArrowUpRight01Icon,
   Satellite01Icon,
-  WorkflowCircle01Icon,
-  Sun01Icon,
-  Moon02Icon,
 } from "@hugeicons/core-free-icons"
-import { useTheme } from "next-themes"
 import { CreateIssueDialog } from "@/components/create-issue-dialog"
 import { OPEN_CREATE_ISSUE_EVENT } from "@/components/keyboard-shortcuts"
 import { CreateTeamDialog } from "@/components/create-team-dialog"
@@ -91,7 +84,6 @@ import {
   isSubscribed,
   isTeamHidden,
   saveTeamPreferences,
-  setTeamHidden,
   SUBSCRIBE_EVENT_LABELS,
   toggleFavoriteTeam,
   toggleSubscribeEvent,
@@ -121,8 +113,6 @@ const TRY_SECTION_DISMISSED_KEY = "sidebar:try-section-dismissed"
 export function AppSidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { resolvedTheme, setTheme } = useTheme()
-  const isDark = resolvedTheme !== "light"
   const [createOpen, setCreateOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -136,13 +126,6 @@ export function AppSidebar() {
   const [inviteOpen, setInviteOpen] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const [customizeOpen, setCustomizeOpen] = useState(false)
-  const [apiTeams, setApiTeams] = useState<Team[]>([])
-  useEffect(() => {
-    fetch("/api/data/teams")
-      .then((r) => r.json())
-      .then((t: Team[]) => setApiTeams(t))
-      .catch(() => {})
-  }, [])
   // Try-section dismiss state. Read from localStorage on mount so
   // the section stays hidden across page reloads, then write on
   // every change. SSR-safe: starts as `false` (visible) on the
@@ -489,371 +472,405 @@ export function AppSidebar() {
 
           <SidebarGroup>
             <Collapsible defaultOpen className="group/label">
-              <div className="flex items-center">
+              {/* `group/teams-header` scopes the hover-reveal to
+                  the header row only — the `+` Add team link is
+                  invisible at rest and fades in when the user
+                  hovers anywhere on this row, matching Linear's
+                  sidebar UX. The link also stays visible while
+                  it's keyboard-focused so it remains reachable
+                  via Tab. */}
+              <div className="group/teams-header flex items-center">
                 <SectionLabel>Your teams</SectionLabel>
-                <button
-                  type="button"
+                {/* "Add team" — navigates to the full
+                    `/settings/new-team` form rather than the
+                    in-page CreateTeamDialog. The full page
+                    matches Linear's UX (icon + identifier + team
+                    hierarchy + copy-settings-from-existing-team +
+                    timezone) and gives the user room to fill in
+                    the longer set of fields the dialog can't fit. */}
+                <Link
+                  href="/settings/new-team"
                   aria-label="Add team"
-                  className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground ml-auto flex size-5 shrink-0 items-center justify-center rounded-md"
+                  data-testid="sidebar-add-team"
+                  className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground ml-auto flex size-5 shrink-0 items-center justify-center rounded-md opacity-0 transition-opacity group-hover/teams-header:opacity-100 focus-visible:opacity-100"
                 >
                   <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" />
-                </button>
+                </Link>
               </div>
               <CollapsibleContent>
                 <SidebarMenu>
-                  {[
-                    { id: "abhishek", name: "Abhishek", key: "ABH" },
-                    ...apiTeams
-                      .filter((t) => t.key !== "ABH")
-                      .map((t) => ({ id: t.id, name: t.name, key: t.key })),
-                  ].map((team) => {
-                    const teamHidden = isTeamHidden(teamPrefs, team.id)
-                    const teamFavorited = isFavoriteTeam(teamPrefs, team.id)
-                    // Mock-only: there's only one team in the
-                    // sidebar, so "you're the only admin" is
-                    // always true and Leave team... is disabled.
-                    // Real app would derive from member-count.
-                    const leaveDisabled = true
-                    const leaveDisabledReason =
-                      "You're the only admin — you can't leave this team"
-                    return (
-                      <Collapsible
-                        key={team.id}
-                        defaultOpen
-                        className="group/team"
-                      >
-                        <SidebarMenuItem
-                          data-team-id={team.id}
-                          data-collapsed={teamHidden}
-                          className="sidebar-item-animated"
+                  {[{ id: "abhishek", name: "Abhishek", key: "ABH" }].map(
+                    (team) => {
+                      const teamHidden = isTeamHidden(teamPrefs, team.id)
+                      const teamFavorited = isFavoriteTeam(teamPrefs, team.id)
+                      // Mock-only: there's only one team in the
+                      // sidebar, so "you're the only admin" is
+                      // always true and Leave team... is disabled.
+                      // Real app would derive from member-count.
+                      const leaveDisabled = true
+                      const leaveDisabledReason =
+                        "You're the only admin — you can't leave this team"
+                      return (
+                        <Collapsible
+                          key={team.id}
+                          defaultOpen
+                          className="group/team"
                         >
-                          <SidebarMenuButton render={<CollapsibleTrigger />}>
-                            <span className="flex size-3.5 shrink-0 items-center justify-center rounded-sm border border-pink-500/70 text-pink-500">
-                              <HugeiconsIcon
-                                icon={UserIcon}
-                                className="size-2.5"
-                              />
-                            </span>
-                            <span className="truncate">{team.name}</span>
-                            {teamFavorited && (
-                              <HugeiconsIcon
-                                icon={StarIcon}
-                                className="size-3 text-amber-400"
-                                aria-label="Favorited"
-                              />
-                            )}
-                            <TriangleCaret className="transition-transform group-data-[closed]/team:-rotate-90" />
-                          </SidebarMenuButton>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <SidebarMenuAction
-                                  showOnHover
-                                  aria-label={`${team.name} options`}
-                                  data-testid={`team-menu-trigger-${team.id}`}
-                                  // stopPropagation prevents the
-                                  // CollapsibleTrigger above from
-                                  // toggling open/closed when the
-                                  // user clicks the "..." button.
-                                  // Base UI's Menu uses pointer-down
-                                  // semantics that already win the
-                                  // race against an outside-click
-                                  // listener — this stop is purely
-                                  // for the Collapsible parent.
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                  }}
-                                />
-                              }
-                            >
-                              <HugeiconsIcon
-                                icon={MoreHorizontalIcon}
-                                className="size-3.5"
-                              />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              side="bottom"
-                              align="start"
-                              sideOffset={4}
-                              data-testid={`team-menu-${team.id}`}
-                              className="w-64"
-                            >
-                              <DropdownMenuItem
-                                className="gap-2"
-                                render={<Link href="/settings" />}
-                                data-testid="team-menu-settings"
-                              >
-                                <HugeiconsIcon
-                                  icon={Settings02Icon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>Team settings</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="gap-2">
-                                <HugeiconsIcon
-                                  icon={CopyLinkIcon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>Copy link</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="gap-2">
-                                <HugeiconsIcon
-                                  icon={Archive01Icon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>Open archive</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="gap-2"
-                                data-testid="team-menu-new-issue"
-                                onClick={() => setCreateOpen(true)}
-                              >
-                                <HugeiconsIcon
-                                  icon={PencilEdit01Icon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>New issue</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="gap-2"
-                                data-testid="team-menu-favorite"
-                                onClick={() => {
-                                  saveTeamPreferences(
-                                    toggleFavoriteTeam(teamPrefs, team.id)
-                                  )
-                                }}
-                              >
+                          <SidebarMenuItem
+                            data-team-id={team.id}
+                            data-collapsed={teamHidden}
+                            className="sidebar-item-animated"
+                          >
+                            <SidebarMenuButton render={<CollapsibleTrigger />}>
+                              <span className="flex size-4 shrink-0 items-center justify-center rounded-[4px] bg-pink-500 text-[10px] font-semibold text-white">
+                                {team.name.charAt(0).toUpperCase()}
+                              </span>
+                              <span className="truncate">{team.name}</span>
+                              {teamFavorited && (
                                 <HugeiconsIcon
                                   icon={StarIcon}
-                                  className={`size-4 ${
-                                    teamFavorited
-                                      ? "text-amber-400"
-                                      : "opacity-70"
-                                  }`}
+                                  className="size-3 text-amber-400"
+                                  aria-label="Favorited"
                                 />
-                                <span>
-                                  {teamFavorited
-                                    ? "Remove from favorites"
-                                    : "Add to favorites"}
-                                </span>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuSub>
-                                <DropdownMenuSubTrigger
+                              )}
+                              <TriangleCaret className="transition-transform group-data-[closed]/team:-rotate-90" />
+                            </SidebarMenuButton>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
+                                render={
+                                  <SidebarMenuAction
+                                    showOnHover
+                                    aria-label={`${team.name} options`}
+                                    data-testid={`team-menu-trigger-${team.id}`}
+                                    // stopPropagation prevents the
+                                    // CollapsibleTrigger above from
+                                    // toggling open/closed when the
+                                    // user clicks the "..." button.
+                                    // Base UI's Menu uses pointer-down
+                                    // semantics that already win the
+                                    // race against an outside-click
+                                    // listener — this stop is purely
+                                    // for the Collapsible parent.
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                    }}
+                                  />
+                                }
+                              >
+                                <HugeiconsIcon
+                                  icon={MoreHorizontalIcon}
+                                  className="size-3.5"
+                                />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                side="bottom"
+                                align="start"
+                                sideOffset={4}
+                                data-testid={`team-menu-${team.id}`}
+                                className="w-64"
+                                onKeyDown={(e) => {
+                                  // Fire the menu's displayed
+                                  // shortcuts (⌥F / ⌘⇧,) while the
+                                  // menu has focus. Activating from
+                                  // here keeps the shortcut scoped to
+                                  // the team this dropdown is for —
+                                  // we don't have to maintain a
+                                  // "current team" notion at the
+                                  // global keyboard layer.
+                                  const k = e.key.toLowerCase()
+                                  if (
+                                    e.altKey &&
+                                    !e.metaKey &&
+                                    !e.ctrlKey &&
+                                    k === "f"
+                                  ) {
+                                    e.preventDefault()
+                                    saveTeamPreferences(
+                                      toggleFavoriteTeam(teamPrefs, team.id)
+                                    )
+                                    return
+                                  }
+                                  if (
+                                    (e.metaKey || e.ctrlKey) &&
+                                    e.shiftKey &&
+                                    k === ","
+                                  ) {
+                                    e.preventDefault()
+                                    if (
+                                      typeof window !== "undefined" &&
+                                      typeof navigator !== "undefined" &&
+                                      navigator.clipboard
+                                    ) {
+                                      navigator.clipboard
+                                        .writeText(
+                                          `${window.location.origin}/teams/${team.key.toLowerCase()}/issues`
+                                        )
+                                        .catch(() => {})
+                                      toast(`Copied ${team.name} URL`)
+                                    }
+                                  }
+                                }}
+                              >
+                                {/* Section 1 — Favorite. Promoted to
+                                  the top with the ⌥F shortcut so it
+                                  matches Linear's own team menu. */}
+                                <DropdownMenuItem
                                   className="gap-2"
-                                  data-testid="team-menu-subscribe"
+                                  data-testid="team-menu-favorite"
+                                  onClick={() => {
+                                    saveTeamPreferences(
+                                      toggleFavoriteTeam(teamPrefs, team.id)
+                                    )
+                                    toast(
+                                      teamFavorited
+                                        ? `Removed ${team.name} from favorites`
+                                        : `Added ${team.name} to favorites`
+                                    )
+                                  }}
                                 >
                                   <HugeiconsIcon
-                                    icon={Notification01Icon}
+                                    icon={StarIcon}
+                                    className={`size-4 ${
+                                      teamFavorited
+                                        ? "text-amber-400"
+                                        : "opacity-70"
+                                    }`}
+                                  />
+                                  <span className="flex-1">
+                                    {teamFavorited ? "Unfavorite" : "Favorite"}
+                                  </span>
+                                  <DropdownMenuShortcut>
+                                    ⌥F
+                                  </DropdownMenuShortcut>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+
+                                {/* Section 2 — view actions. */}
+                                <DropdownMenuItem
+                                  className="gap-2"
+                                  render={<Link href="/settings" />}
+                                  data-testid="team-menu-settings"
+                                >
+                                  <HugeiconsIcon
+                                    icon={Settings02Icon}
                                     className="size-4 opacity-70"
                                   />
-                                  <span>Subscribe</span>
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent
-                                  className="w-56"
-                                  data-testid="team-menu-subscribe-submenu"
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Escape") {
-                                      // Base UI closes the submenu on Escape
-                                      // and returns focus to the subscribe
-                                      // trigger. Dispatch a second Escape
-                                      // there to also close the root menu.
-                                      requestAnimationFrame(() => {
-                                        document.activeElement?.dispatchEvent(
-                                          new KeyboardEvent("keydown", {
-                                            key: "Escape",
-                                            bubbles: true,
-                                            cancelable: true,
-                                          })
+                                  <span>Team settings</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="gap-2"
+                                  data-testid="team-menu-copy-url"
+                                  onClick={() => {
+                                    if (
+                                      typeof window !== "undefined" &&
+                                      typeof navigator !== "undefined" &&
+                                      navigator.clipboard
+                                    ) {
+                                      navigator.clipboard
+                                        .writeText(
+                                          `${window.location.origin}/teams/${team.key.toLowerCase()}/issues`
                                         )
-                                      })
+                                        .catch(() => {})
+                                      toast(`Copied ${team.name} URL`)
                                     }
                                   }}
                                 >
-                                  {ALL_SUBSCRIBE_EVENTS.map((event) => {
-                                    const checked = isSubscribed(
-                                      teamPrefs,
-                                      team.id,
-                                      event
-                                    )
-                                    return (
-                                      <DropdownMenuItem
-                                        key={event}
-                                        data-testid={`team-menu-subscribe-${event}`}
-                                        closeOnClick={false}
-                                        onClick={() => {
-                                          saveTeamPreferences(
-                                            toggleSubscribeEvent(
-                                              teamPrefs,
-                                              team.id,
-                                              event as TeamSubscribeEvent
-                                            )
-                                          )
-                                        }}
-                                        className="flex items-center justify-between gap-2"
-                                      >
-                                        <span>
-                                          {SUBSCRIBE_EVENT_LABELS[event]}
-                                        </span>
-                                        {checked && (
-                                          <HugeiconsIcon
-                                            icon={Tick02Icon}
-                                            className="size-3.5 shrink-0"
-                                            aria-label="Subscribed"
-                                          />
-                                        )}
-                                      </DropdownMenuItem>
-                                    )
-                                  })}
-                                </DropdownMenuSubContent>
-                              </DropdownMenuSub>
-                              <DropdownMenuItem
-                                className="gap-2"
-                                render={
-                                  <Link href="/settings?section=integrations" />
-                                }
-                                data-testid="team-menu-slack"
-                              >
-                                <HugeiconsIcon
-                                  icon={SlackIcon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span className="flex-1">
-                                  Configure Slack notifications...
-                                </span>
-                                {/* External-link arrow — matches
-                                    Linear's convention of marking
-                                    items that leave the current
-                                    view (here: navigates to
-                                    integrations settings). */}
-                                <HugeiconsIcon
-                                  icon={ArrowUpRight01Icon}
-                                  className="text-muted-foreground size-3 shrink-0 opacity-70"
-                                  aria-hidden="true"
-                                />
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="gap-2"
-                                data-testid="team-menu-invite"
-                                onClick={() => setInviteOpen(true)}
-                              >
-                                <HugeiconsIcon
-                                  icon={UserMultiple02Icon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>Invite members...</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="gap-2"
-                                data-testid="team-menu-hide"
-                                onClick={() => {
-                                  saveTeamPreferences(
-                                    setTeamHidden(teamPrefs, team.id, true)
-                                  )
-                                }}
-                              >
-                                <HugeiconsIcon
-                                  icon={ViewOffSlashIcon}
-                                  className="size-4 opacity-70"
-                                />
-                                <span>Hide team from sidebar</span>
-                              </DropdownMenuItem>
-                              {/* "Leave team..." carries an
-                                  explanatory tooltip when disabled
-                                  — Tooltip wraps the menu item via
-                                  TooltipTrigger render so the
-                                  trigger's role/keyboard semantics
-                                  are preserved. 500ms delay matches
-                                  Linear's other long-form tooltips. */}
-                              <TooltipProvider delay={500}>
-                                <Tooltip>
-                                  <TooltipTrigger
-                                    render={
-                                      <DropdownMenuItem
-                                        className="text-muted-foreground/60 gap-2 opacity-50"
-                                        aria-disabled={
-                                          leaveDisabled ? "true" : undefined
-                                        }
-                                        data-testid="team-menu-leave"
-                                        onClick={(e) => {
-                                          if (leaveDisabled) e.preventDefault()
-                                        }}
-                                      >
-                                        <HugeiconsIcon
-                                          icon={Logout01Icon}
-                                          className="size-4 opacity-70"
-                                        />
-                                        <span>Leave team...</span>
-                                      </DropdownMenuItem>
-                                    }
+                                  <HugeiconsIcon
+                                    icon={CopyLinkIcon}
+                                    className="size-4 opacity-70"
                                   />
-                                  {leaveDisabled && (
-                                    <TooltipContent
-                                      side="right"
-                                      data-testid="team-menu-leave-tooltip"
-                                    >
-                                      {leaveDisabledReason}
-                                    </TooltipContent>
-                                  )}
-                                </Tooltip>
-                              </TooltipProvider>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <CollapsibleContent>
-                            <SidebarMenuSub>
-                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton
-                                  render={
-                                    <Link
-                                      href={`/teams/${team.key.toLowerCase()}/issues`}
+                                  <span className="flex-1">Copy URL</span>
+                                  <DropdownMenuShortcut>
+                                    ⌘⇧,
+                                  </DropdownMenuShortcut>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="gap-2"
+                                  data-testid="team-menu-archive"
+                                  onClick={() => {
+                                    // Navigate to the team's archive
+                                    // page. The page itself handles
+                                    // the empty-state copy when there
+                                    // are no archived items yet.
+                                    router.push(
+                                      `/teams/${team.key.toLowerCase()}/archive`
+                                    )
+                                  }}
+                                >
+                                  <HugeiconsIcon
+                                    icon={Archive01Icon}
+                                    className="size-4 opacity-70"
+                                  />
+                                  <span>Open archive</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+
+                                {/* Section 3 — notifications cluster. */}
+                                <DropdownMenuSub>
+                                  <DropdownMenuSubTrigger
+                                    className="gap-2"
+                                    data-testid="team-menu-subscribe"
+                                  >
+                                    <HugeiconsIcon
+                                      icon={Notification01Icon}
+                                      className="size-4 opacity-70"
                                     />
+                                    <span>Subscribe</span>
+                                  </DropdownMenuSubTrigger>
+                                  <DropdownMenuSubContent
+                                    className="w-56"
+                                    data-testid="team-menu-subscribe-submenu"
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Escape") {
+                                        // Base UI closes the submenu on Escape
+                                        // and returns focus to the subscribe
+                                        // trigger. Dispatch a second Escape
+                                        // there to also close the root menu.
+                                        requestAnimationFrame(() => {
+                                          document.activeElement?.dispatchEvent(
+                                            new KeyboardEvent("keydown", {
+                                              key: "Escape",
+                                              bubbles: true,
+                                              cancelable: true,
+                                            })
+                                          )
+                                        })
+                                      }
+                                    }}
+                                  >
+                                    {ALL_SUBSCRIBE_EVENTS.map((event) => {
+                                      const checked = isSubscribed(
+                                        teamPrefs,
+                                        team.id,
+                                        event
+                                      )
+                                      return (
+                                        <DropdownMenuItem
+                                          key={event}
+                                          data-testid={`team-menu-subscribe-${event}`}
+                                          closeOnClick={false}
+                                          onClick={() => {
+                                            saveTeamPreferences(
+                                              toggleSubscribeEvent(
+                                                teamPrefs,
+                                                team.id,
+                                                event as TeamSubscribeEvent
+                                              )
+                                            )
+                                          }}
+                                          className="flex items-center justify-between gap-2"
+                                        >
+                                          <span>
+                                            {SUBSCRIBE_EVENT_LABELS[event]}
+                                          </span>
+                                          {checked && (
+                                            <HugeiconsIcon
+                                              icon={Tick02Icon}
+                                              className="size-3.5 shrink-0"
+                                              aria-label="Subscribed"
+                                            />
+                                          )}
+                                        </DropdownMenuItem>
+                                      )
+                                    })}
+                                  </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                                <DropdownMenuItem
+                                  className="gap-2"
+                                  render={
+                                    <Link href="/settings?section=integrations" />
                                   }
+                                  data-testid="team-menu-slack"
                                 >
                                   <HugeiconsIcon
-                                    icon={TaskEdit01Icon}
-                                    className="size-3.5"
+                                    icon={SlackIcon}
+                                    className="size-4 opacity-70"
                                   />
-                                  <span>Issues</span>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton
-                                  render={<Link href="/cycles" />}
-                                >
-                                  <HugeiconsIcon
-                                    icon={WorkflowCircle01Icon}
-                                    className="size-3.5"
-                                  />
-                                  <span>Cycles</span>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton
-                                  render={<Link href="/projects" />}
-                                >
-                                  <HugeiconsIcon
-                                    icon={CubeIcon}
-                                    className="size-3.5"
-                                  />
-                                  <span>Projects</span>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                              <SidebarMenuSubItem>
-                                <SidebarMenuSubButton
-                                  render={<Link href="/views" />}
-                                >
-                                  <ViewsIcon className="size-3.5" />
-                                  <span>Views</span>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            </SidebarMenuSub>
-                          </CollapsibleContent>
-                        </SidebarMenuItem>
-                      </Collapsible>
-                    )
-                  })}
+                                  <span>Configure Slack notifications…</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+
+                                {/* Section 4 — destructive (disabled
+                                  here because the user is the only
+                                  admin; tooltip explains why). */}
+                                <TooltipProvider delay={500}>
+                                  <Tooltip>
+                                    <TooltipTrigger
+                                      render={
+                                        <DropdownMenuItem
+                                          className="text-muted-foreground/60 gap-2 opacity-50"
+                                          aria-disabled={
+                                            leaveDisabled ? "true" : undefined
+                                          }
+                                          data-testid="team-menu-leave"
+                                          onClick={(e) => {
+                                            if (leaveDisabled)
+                                              e.preventDefault()
+                                          }}
+                                        >
+                                          <HugeiconsIcon
+                                            icon={Logout01Icon}
+                                            className="size-4 opacity-70"
+                                          />
+                                          <span>Leave team…</span>
+                                        </DropdownMenuItem>
+                                      }
+                                    />
+                                    {leaveDisabled && (
+                                      <TooltipContent
+                                        side="right"
+                                        data-testid="team-menu-leave-tooltip"
+                                      >
+                                        {leaveDisabledReason}
+                                      </TooltipContent>
+                                    )}
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            <CollapsibleContent>
+                              <SidebarMenuSub>
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    render={
+                                      <Link
+                                        href={`/teams/${team.key.toLowerCase()}/issues`}
+                                      />
+                                    }
+                                  >
+                                    <HugeiconsIcon
+                                      icon={TaskEdit01Icon}
+                                      className="size-3.5"
+                                    />
+                                    <span>Issues</span>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    render={<Link href="/projects" />}
+                                  >
+                                    <HugeiconsIcon
+                                      icon={CubeIcon}
+                                      className="size-3.5"
+                                    />
+                                    <span>Projects</span>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                                <SidebarMenuSubItem>
+                                  <SidebarMenuSubButton
+                                    render={<Link href="/views" />}
+                                  >
+                                    <ViewsIcon className="size-3.5" />
+                                    <span>Views</span>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              </SidebarMenuSub>
+                            </CollapsibleContent>
+                          </SidebarMenuItem>
+                        </Collapsible>
+                      )
+                    }
+                  )}
                 </SidebarMenu>
               </CollapsibleContent>
             </Collapsible>
@@ -882,8 +899,21 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                       <SidebarMenuButton
                         render={
-                          <Link href="/settings?section=integrations&provider=github" />
+                          // Route directly into the GitHub
+                          // integration detail page
+                          // (`/settings/integrations/[slug]`),
+                          // which renders the rich GitHub config
+                          // surface — Built by / Docs / Enable
+                          // button, screenshots, Overview,
+                          // Connected organizations, and the
+                          // personal-account row. The previous
+                          // `?section=integrations&provider=…`
+                          // query went to the integrations list,
+                          // one click short of the page the user
+                          // actually wants.
+                          <Link href="/settings/integrations/github" />
                         }
+                        data-testid="sidebar-connect-github"
                       >
                         <HugeiconsIcon icon={Github01Icon} />
                         <span>Connect GitHub</span>
@@ -897,7 +927,7 @@ export function AppSidebar() {
         </SidebarContent>
 
         <SidebarFooter>
-          <div className="flex items-center gap-1 px-1 py-2">
+          <div className="flex items-center px-1 py-2">
             <HelpPopover
               trigger={
                 <button
@@ -909,82 +939,6 @@ export function AppSidebar() {
                 </button>
               }
             />
-            <button
-              type="button"
-              aria-label="Toggle theme"
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              className="text-muted-foreground hover:bg-sidebar-accent hover:text-foreground flex size-7 items-center justify-center rounded-md"
-            >
-              <HugeiconsIcon
-                icon={isDark ? Sun01Icon : Moon02Icon}
-                className="size-4"
-              />
-            </button>
-            <div className="flex-1" />
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <button
-                    type="button"
-                    aria-label="User menu"
-                    className="hover:bg-sidebar-accent data-[popup-open]:bg-sidebar-accent flex items-center gap-2 rounded-md px-1.5 py-1 text-left text-sm"
-                  />
-                }
-              >
-                <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-[9px] font-semibold text-white">
-                  AB
-                </div>
-                <span className="text-sm font-medium">Abhishek</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                side="top"
-                sideOffset={6}
-                className="w-52"
-              >
-                <DropdownMenuItem
-                  render={<Link href="/profiles/abhishek" />}
-                  className="gap-2"
-                >
-                  <HugeiconsIcon
-                    icon={UserIcon}
-                    className="size-4 opacity-70"
-                  />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  render={<Link href="/settings?section=account" />}
-                  className="gap-2"
-                >
-                  <HugeiconsIcon
-                    icon={Settings02Icon}
-                    className="size-4 opacity-70"
-                  />
-                  <span>Preferences</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  render={<Link href="/settings?section=notifications" />}
-                  className="gap-2"
-                >
-                  <HugeiconsIcon
-                    icon={Notification01Icon}
-                    className="size-4 opacity-70"
-                  />
-                  <span>Notifications</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => router.push("/")}
-                  className="gap-2"
-                >
-                  <HugeiconsIcon
-                    icon={Logout01Icon}
-                    className="size-4 opacity-70"
-                  />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </SidebarFooter>
       </Sidebar>

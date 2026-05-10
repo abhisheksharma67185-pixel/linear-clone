@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { OPEN_HELP_EVENT } from "@/components/help-popover"
+import { OPEN_KEYBOARD_SHORTCUTS_EVENT } from "@/components/keyboard-shortcuts-panel"
 
 // Two-char sequences (e.g. `g s` → /settings) only count when the
 // second key arrives within this window. Linear uses a similar timeout
@@ -60,11 +61,13 @@ export function KeyboardShortcuts() {
 
       if (isTypingTarget(event.target)) return
 
-      // `⌘/` / `Ctrl+/` — open help. Don't fire if Shift is also held
-      // (that's a different conventional binding).
+      // `⌘/` / `Ctrl+/` — open the Keyboard Shortcuts panel. The panel
+      // lists this binding under "View keyboard shortcuts" so the
+      // hotkey self-documents. `?` (handled below) opens the help
+      // popover, which is a separate surface.
       if (cmd && key === "/" && !event.shiftKey) {
         event.preventDefault()
-        window.dispatchEvent(new CustomEvent(OPEN_HELP_EVENT))
+        window.dispatchEvent(new CustomEvent(OPEN_KEYBOARD_SHORTCUTS_EVENT))
         return
       }
 

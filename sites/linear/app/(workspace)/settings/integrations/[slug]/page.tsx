@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import * as React from "react"
 import { use, useState } from "react"
 import { toast } from "sonner"
@@ -110,38 +109,23 @@ function titleFromSlug(slug: string): string {
     .join(" ")
 }
 
-// Back link that uses browser history when available so the previous
-// settings scroll position is preserved. Falls back to the integrations
-// route on direct navigation (e.g. opened in a new tab).
+// Back link that always navigates to the integrations list. We
+// previously preferred `router.back()` to preserve the prior scroll
+// position, but that breaks for any entry path where the previous
+// page wasn't the integrations list (e.g. clicking the sidebar's
+// "Connect GitHub" entry, which routes here directly). A
+// deterministic forward navigation to `/settings?section=integrations`
+// is more important than scroll-preservation for the small fraction
+// of users who reached this page via the integrations index.
 function BackToIntegrationsLink({
   label = "Integrations",
 }: {
   label?: string
 }) {
-  const router = useRouter()
   return (
     <Link
       href="/settings?section=integrations"
-      scroll={false}
-      onClick={(e) => {
-        if (
-          e.metaKey ||
-          e.ctrlKey ||
-          e.shiftKey ||
-          e.altKey ||
-          e.button !== 0
-        ) {
-          return
-        }
-        // Go back via browser history when possible so the previous
-        // settings scroll position is restored. Falls through to the href
-        // (full client-side navigation to /settings?section=integrations)
-        // on direct loads / new-tab opens.
-        if (typeof window !== "undefined" && window.history.length > 1) {
-          e.preventDefault()
-          router.back()
-        }
-      }}
+      data-testid="integration-back-to-list"
       className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs"
       aria-label="Back to integrations"
     >

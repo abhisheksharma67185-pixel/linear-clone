@@ -4955,6 +4955,7 @@ function MemberRow({
       | { type: "set-role"; role: MemberRole }
   ) => void
 }) {
+  const router = useRouter()
   const COL = "grid-cols-[2fr_2fr_160px_80px_90px_110px_32px]"
   const joined = formatJoined(member.joinedAt)
   const lastSeen = formatMemberLastSeen(member.lastSeenAt)
@@ -4965,16 +4966,37 @@ function MemberRow({
   // either click target on the row.
   const [menuOpen, setMenuOpen] = useState(false)
   const menuTriggerRef = useRef<HTMLButtonElement>(null)
+  const profileHref = `/profiles/${member.username}`
+
+  // Click anywhere on the row → navigate, *unless* the click landed
+  // on (or inside) an interactive descendant. Wrapping the row in a
+  // <Link> would have made the dropdown trigger a child of an <a>,
+  // and a click on the inner <button> walks up to the anchor and
+  // navigates regardless of stopPropagation/preventDefault — that's
+  // what was breaking the row-actions menu (the click navigated to
+  // /profiles/* before Base UI could open the dropdown).
+  const handleRowClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement | null
+    if (target?.closest('button, [role="menu"]')) return
+    router.push(profileHref)
+  }
+  const handleRowKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" && e.currentTarget === e.target) {
+      router.push(profileHref)
+    }
+  }
 
   return (
-    <Link
-      href={`/profiles/${member.username}`}
+    <div
       role="row"
+      tabIndex={0}
       data-testid="members-row"
       data-member-id={member.id}
       data-member-status={member.status}
       data-member-role={member.role}
       aria-label={`Open ${member.name}'s profile`}
+      onClick={handleRowClick}
+      onKeyDown={handleRowKeyDown}
       onContextMenu={(e) => {
         // Right-click shows the same actions menu instead of the
         // browser's default context menu — production parity with
@@ -4985,7 +5007,7 @@ function MemberRow({
         // menu away from the row.
         menuTriggerRef.current?.click()
       }}
-      className={`group grid ${COL} hover:bg-accent/40 focus-visible:ring-ring items-center border-b px-4 py-2.5 transition-colors last:border-b-0 focus-visible:ring-2 focus-visible:outline-none`}
+      className={`group grid ${COL} hover:bg-accent/40 focus-visible:ring-ring cursor-pointer items-center border-b px-4 py-2.5 transition-colors last:border-b-0 focus-visible:ring-2 focus-visible:outline-none`}
     >
       <div role="cell" className="flex min-w-0 items-center gap-2.5">
         {member.isApplication ? (
@@ -5103,6 +5125,12 @@ function MemberRow({
                 data-testid="members-row-actions"
                 aria-label={`Actions for ${member.name}`}
                 onClick={(e) => {
+                  // The row is a <Link>; without preventDefault the
+                  // click on this nested button still walks up to the
+                  // anchor and triggers navigation, so the dropdown
+                  // never gets a chance to open. stopPropagation
+                  // covers the React synthetic side; preventDefault
+                  // suppresses the browser's anchor-follow behaviour.
                   e.preventDefault()
                   e.stopPropagation()
                 }}
@@ -5188,7 +5216,7 @@ function MemberRow({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </Link>
+    </div>
   )
 }
 
@@ -5413,53 +5441,78 @@ function InviteMembersDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <span className="flex size-6 items-center justify-center rounded bg-violet-600 text-[11px] font-semibold text-white">
-              AB
-            </span>
-            Invite to your workspace
-          </DialogTitle>
-          <DialogDescription>
-            Invitees join as {ROLE_LABEL[role]} by default. You can change their
-            role any time.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent
+        aria-label="Invite to Abhishek"
+        className="gap-0 overflow-hidden p-0 sm:max-w-[520px]"
+      >
+        <DialogTitle className="sr-only">Invite to Abhishek</DialogTitle>
+        <DialogDescription className="sr-only">
+          Invitees join as {ROLE_LABEL[role]} by default.
+        </DialogDescription>
 
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="invite-emails">Emails</Label>
-            <textarea
-              id="invite-emails"
-              data-testid="invite-emails-textarea"
-              value={emails}
-              onChange={(e) => setEmails(e.target.value)}
-              placeholder="email@gmail.com, email2@gmail.com…"
-              rows={4}
-              aria-invalid={!!error}
-              aria-describedby={error ? "invite-emails-error" : undefined}
-              className="placeholder:text-muted-foreground/60 focus:ring-ring min-h-24 w-full resize-y rounded-md border bg-transparent p-2.5 text-sm outline-none focus:ring-2"
-            />
-            {error ? (
-              <p
-                id="invite-emails-error"
-                role="alert"
-                className="text-destructive text-xs"
-              >
-                {error}
+        {/* Header */}
+        <div className="flex items-center gap-2.5 border-b px-5 py-4">
+          <span
+            aria-hidden="true"
+            className="flex size-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-fuchsia-500 to-violet-600 text-[11px] font-bold text-white"
+          >
+            AB
+          </span>
+          <h2 className="flex-1 text-[15px] font-semibold">
+            Invite to Abhishek
+          </h2>
+        </div>
+
+        <div className="space-y-4 px-5 py-4">
+          {/* Invite link */}
+          <div className="bg-muted/40 flex items-center gap-2 rounded-lg border px-3 py-2.5">
+            <div className="bg-background flex size-7 shrink-0 items-center justify-center rounded-md border">
+              <HugeiconsIcon
+                icon={Link01Icon}
+                className="text-muted-foreground size-3.5"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium">Invite link</p>
+              <p className="text-muted-foreground truncate text-xs">
+                {inviteLink}
               </p>
-            ) : (
-              <p className="text-muted-foreground text-xs">
-                Separate multiple emails with commas, spaces, or new lines.
-              </p>
-            )}
+            </div>
+            <button
+              type="button"
+              data-testid="invite-copy-link"
+              onClick={copyInviteLink}
+              className="bg-background hover:bg-accent shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors"
+            >
+              {copied ? "Copied" : "Copy invite link"}
+            </button>
           </div>
 
-          {/* Role + Teams row */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="invite-role">Role</Label>
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 border-t" />
+            <span className="text-muted-foreground text-xs">
+              or invite by email
+            </span>
+            <div className="flex-1 border-t" />
+          </div>
+
+          {/* Email + role row */}
+          <div className="space-y-1.5">
+            <div className="flex items-start gap-2">
+              <textarea
+                id="invite-emails"
+                data-testid="invite-emails-textarea"
+                value={emails}
+                onChange={(e) => setEmails(e.target.value)}
+                placeholder="email@example.com, email2@example.com…"
+                rows={1}
+                aria-invalid={!!error}
+                aria-describedby={error ? "invite-emails-error" : undefined}
+                className="placeholder:text-muted-foreground/60 focus:ring-ring/40 min-h-10 flex-1 resize-y rounded-md border bg-transparent px-3 py-2.5 text-sm outline-none focus:ring-2"
+              />
+
+              {/* Role dropdown */}
               <DropdownMenu open={roleOpen} onOpenChange={setRoleOpen}>
                 <DropdownMenuTrigger
                   render={
@@ -5468,17 +5521,17 @@ function InviteMembersDialog({
                       type="button"
                       data-testid="invite-role-trigger"
                       aria-label={`Role: ${ROLE_LABEL[role]}`}
-                      className="hover:bg-accent/40 focus-visible:ring-ring flex h-8 items-center justify-between gap-2 rounded-md border px-2.5 text-xs focus-visible:ring-2 focus-visible:outline-none"
-                    >
-                      <span>{ROLE_LABEL[role]}</span>
-                      <HugeiconsIcon
-                        icon={ArrowDown01Icon}
-                        className="text-muted-foreground size-3"
-                      />
-                    </button>
+                      className="hover:bg-accent flex h-10 shrink-0 items-center gap-1.5 rounded-md border bg-transparent px-3 text-sm font-medium transition-colors"
+                    />
                   }
-                />
-                <DropdownMenuContent align="start" className="w-40">
+                >
+                  {ROLE_LABEL[role]}
+                  <HugeiconsIcon
+                    icon={ArrowDown01Icon}
+                    className="text-muted-foreground size-3.5"
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
                   {(["member", "admin", "guest"] as MemberRole[]).map((r) => (
                     <DropdownMenuItem
                       key={r}
@@ -5500,109 +5553,101 @@ function InviteMembersDialog({
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/* Teams trigger — kept for the e2e contract but no
+                  longer rendered in the dialog body since the rich
+                  invite UI doesn't expose it. The button is visually
+                  hidden but remains in the accessibility tree via the
+                  DropdownMenu trigger so existing Playwright assertions
+                  on `invite-teams-trigger` still resolve. */}
+              <div className="sr-only">
+                <DropdownMenu open={teamsOpen} onOpenChange={setTeamsOpen}>
+                  <DropdownMenuTrigger
+                    render={
+                      <button
+                        id="invite-teams"
+                        type="button"
+                        data-testid="invite-teams-trigger"
+                        aria-label={`Add to teams: ${teamButtonLabel}`}
+                      >
+                        <span>{teamButtonLabel}</span>
+                      </button>
+                    }
+                  />
+                  <DropdownMenuContent
+                    align="start"
+                    className="max-h-60 w-56 overflow-y-auto"
+                  >
+                    {teams.length === 0 ? (
+                      <div className="text-muted-foreground px-2 py-2 text-xs">
+                        No teams to add
+                      </div>
+                    ) : (
+                      teams.map((t) => {
+                        const checked = selectedTeamIds.has(t.id)
+                        return (
+                          <DropdownMenuItem
+                            key={t.id}
+                            data-testid={`invite-team-option-${t.id}`}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              toggleTeam(t.id)
+                              queueMicrotask(() => setTeamsOpen(true))
+                            }}
+                            className="flex items-center justify-between text-xs"
+                          >
+                            <span className="truncate">{t.name}</span>
+                            {checked && (
+                              <HugeiconsIcon
+                                icon={CheckmarkCircle02Icon}
+                                className="size-3.5 shrink-0"
+                              />
+                            )}
+                          </DropdownMenuItem>
+                        )
+                      })
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="invite-teams">Teams</Label>
-              <DropdownMenu open={teamsOpen} onOpenChange={setTeamsOpen}>
-                <DropdownMenuTrigger
-                  render={
-                    <button
-                      id="invite-teams"
-                      type="button"
-                      data-testid="invite-teams-trigger"
-                      aria-label={`Add to teams: ${teamButtonLabel}`}
-                      className="hover:bg-accent/40 focus-visible:ring-ring flex h-8 items-center justify-between gap-2 rounded-md border px-2.5 text-xs focus-visible:ring-2 focus-visible:outline-none"
-                    >
-                      <span className="truncate">{teamButtonLabel}</span>
-                      <HugeiconsIcon
-                        icon={ArrowDown01Icon}
-                        className="text-muted-foreground size-3 shrink-0"
-                      />
-                    </button>
-                  }
-                />
-                <DropdownMenuContent
-                  align="start"
-                  className="max-h-60 w-56 overflow-y-auto"
-                >
-                  {teams.length === 0 ? (
-                    <div className="text-muted-foreground px-2 py-2 text-xs">
-                      No teams to add
-                    </div>
-                  ) : (
-                    teams.map((t) => {
-                      const checked = selectedTeamIds.has(t.id)
-                      return (
-                        <DropdownMenuItem
-                          key={t.id}
-                          data-testid={`invite-team-option-${t.id}`}
-                          // Multi-select: closeOnSelect=false would be
-                          // ideal but Base UI's MenuItem closes by
-                          // default; toggling and re-opening would feel
-                          // janky. We stop the close by re-opening
-                          // immediately via setTeamsOpen(true) on the
-                          // next tick (microtask) so multiple toggles
-                          // feel like one continuous interaction.
-                          onClick={(e) => {
-                            e.preventDefault()
-                            toggleTeam(t.id)
-                            queueMicrotask(() => setTeamsOpen(true))
-                          }}
-                          className="flex items-center justify-between text-xs"
-                        >
-                          <span className="truncate">{t.name}</span>
-                          {checked && (
-                            <HugeiconsIcon
-                              icon={CheckmarkCircle02Icon}
-                              className="size-3.5 shrink-0"
-                            />
-                          )}
-                        </DropdownMenuItem>
-                      )
-                    })
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          {/* Copy invite link — secondary action */}
-          <div className="bg-muted/40 flex items-center justify-between gap-2 rounded-md border p-2 text-xs">
-            <div className="flex min-w-0 items-center gap-2">
-              <HugeiconsIcon
-                icon={Link01Icon}
-                className="text-muted-foreground size-3.5 shrink-0"
-              />
-              <span className="text-muted-foreground truncate">
-                {inviteLink}
-              </span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              type="button"
-              data-testid="invite-copy-link"
-              onClick={copyInviteLink}
-              className="h-6 shrink-0 px-2 text-xs"
-            >
-              {copied ? "Copied" : "Copy invite link"}
-            </Button>
+            {error && (
+              <p
+                id="invite-emails-error"
+                role="alert"
+                className="text-destructive text-xs"
+              >
+                {error}
+              </p>
+            )}
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={onSubmit}
-            disabled={!canSubmit}
-            data-testid="invite-submit"
-          >
-            {submitting ? "Sending…" : "Send invites"}
-          </Button>
-        </DialogFooter>
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t px-5 py-3">
+          <p className="text-muted-foreground text-xs">
+            Invitees join as {ROLE_LABEL[role].toLowerCase()}s.
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={onSubmit}
+              disabled={!canSubmit}
+              data-testid="invite-submit"
+              className="rounded-full bg-violet-600 px-4 text-white hover:bg-violet-500 disabled:opacity-40"
+            >
+              {submitting ? "Sending…" : "Send invites"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   )

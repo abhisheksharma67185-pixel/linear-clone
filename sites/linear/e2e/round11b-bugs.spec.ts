@@ -16,9 +16,9 @@ test("SLAs initial load shows Trial banner + SLA policies + Automation rules", a
   page,
 }) => {
   // Force trial plan so the Trial banner is the expected state.
-  await page.request.post("http://localhost:3000/api/billing/trial")
+  await page.request.post("/api/billing/trial")
 
-  await page.goto("http://localhost:3000/settings?section=slas", {
+  await page.goto("/settings?section=slas", {
     waitUntil: "load",
   })
   await page.waitForLoadState("networkidle")
@@ -45,7 +45,7 @@ test("SLAs initial load shows Trial banner + SLA policies + Automation rules", a
 test("Workspace skeleton has matching layout — no card-pop on hydration", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=workspace", {
+  await page.goto("/settings?section=workspace", {
     waitUntil: "domcontentloaded",
   })
   // The skeleton renders ≥4 card containers; the original was 1 card.
@@ -64,9 +64,9 @@ test("Workspace skeleton has matching layout — no card-pop on hydration", asyn
 test("Asks shows the same Trial active banner styling as SLAs on trial plan", async ({
   page,
 }) => {
-  await page.request.post("http://localhost:3000/api/billing/trial")
+  await page.request.post("/api/billing/trial")
 
-  await page.goto("http://localhost:3000/settings?section=asks", {
+  await page.goto("/settings?section=asks", {
     waitUntil: "load",
   })
   await page.waitForLoadState("networkidle")
@@ -90,16 +90,16 @@ test("Asks shows the same Trial active banner styling as SLAs on trial plan", as
 test("SLAs and Asks both show Trial active banner on trial plan", async ({
   page,
 }) => {
-  await page.request.post("http://localhost:3000/api/billing/trial")
+  await page.request.post("/api/billing/trial")
 
-  await page.goto("http://localhost:3000/settings?section=slas", {
+  await page.goto("/settings?section=slas", {
     waitUntil: "networkidle",
   })
   await expect(
     page.locator('[role="status"]').filter({ hasText: "Trial active" })
   ).toBeVisible()
 
-  await page.goto("http://localhost:3000/settings?section=asks", {
+  await page.goto("/settings?section=asks", {
     waitUntil: "networkidle",
   })
   await expect(
@@ -124,7 +124,7 @@ test("Asks shows the gate card (not feature-only UI) when plan === 'free'", asyn
     })
   )
 
-  await page.goto("http://localhost:3000/settings?section=asks", {
+  await page.goto("/settings?section=asks", {
     waitUntil: "networkidle",
   })
   await page.waitForTimeout(300)

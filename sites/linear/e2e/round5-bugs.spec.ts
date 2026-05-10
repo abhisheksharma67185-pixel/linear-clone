@@ -4,13 +4,13 @@ import { test, expect } from "@playwright/test"
 // render the generic "settings coming soon" stub. `labels` is an alias
 // for Issues→Labels. Unknown keys collapse to Preferences.
 test("?section=labels resolves to Issues→Labels content", async ({ page }) => {
-  await page.goto("http://localhost:3000/settings?section=labels", {
+  await page.goto("/settings?section=labels", {
     waitUntil: "load",
   })
   // The client-side resolver fires `router.replace` in a useEffect
   // after first paint — wait for the URL to actually update rather than
   // sleeping for a fixed timeout.
-  await page.waitForURL("http://localhost:3000/settings?section=issue-labels", {
+  await page.waitForURL("/settings?section=issue-labels", {
     timeout: 5000,
   })
   await expect(page.locator("body")).not.toContainText("settings coming soon")
@@ -19,11 +19,10 @@ test("?section=labels resolves to Issues→Labels content", async ({ page }) => 
 test("?section=foo-bar-nonexistent redirects to Preferences", async ({
   page,
 }) => {
-  await page.goto(
-    "http://localhost:3000/settings?section=foo-bar-nonexistent",
-    { waitUntil: "load" }
-  )
-  await page.waitForURL("http://localhost:3000/settings?section=preferences", {
+  await page.goto("/settings?section=foo-bar-nonexistent", {
+    waitUntil: "load",
+  })
+  await page.waitForURL("/settings?section=preferences", {
     timeout: 5000,
   })
   await expect(page.locator("body")).not.toContainText("settings coming soon")
@@ -35,7 +34,7 @@ test("?section=foo-bar-nonexistent redirects to Preferences", async ({
 test("CR Default team Select trigger shows team name, not id", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=customer-requests", {
+  await page.goto("/settings?section=customer-requests", {
     waitUntil: "load",
   })
 
@@ -75,7 +74,7 @@ for (const { section, label, ariaLabel } of [
   },
 ]) {
   test(`${label} edit-mode trigger shows friendly label`, async ({ page }) => {
-    await page.goto(`http://localhost:3000/settings?section=${section}`, {
+    await page.goto(`/settings?section=${section}`, {
       waitUntil: "load",
     })
     // Initiatives schedule is gated behind the Enable toggle. Updates
@@ -108,7 +107,7 @@ for (const { section, label, ariaLabel } of [
 test("Notifications: clicking channel label navigates to channel detail", async ({
   page,
 }) => {
-  await page.goto("http://localhost:3000/settings?section=notifications", {
+  await page.goto("/settings?section=notifications", {
     waitUntil: "load",
   })
   // Target the row's accessible button explicitly so this doesn't pick

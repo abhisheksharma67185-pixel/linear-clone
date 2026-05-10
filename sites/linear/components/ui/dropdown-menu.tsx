@@ -139,9 +139,20 @@ function DropdownMenuSubTrigger({
 
 function DropdownMenuSubContent({
   align = "start",
-  alignOffset = -3,
+  // The previous default was -3, which painted the submenu 3px on
+  // top of the parent popup so the two surfaces appeared seamlessly
+  // joined. The submenu-overlap regression test fails against that
+  // (it expects ≤4px² of intersection), and visually a 0-offset
+  // submenu still reads as connected — Base UI's collision logic
+  // only kicks in when `alignOffset` cannot satisfy the bounds, so
+  // keeping the offset at 0 is the safer default.
+  alignOffset = 0,
   side = "inline-end",
-  sideOffset = 0,
+  // sideOffset 4 pushes the submenu past the parent's padding /
+  // border so its bounding box doesn't visibly overlap the
+  // parent's. Without this, the box-model intersection is ~4px
+  // wide × full submenu height and the regression test fails.
+  sideOffset = 4,
   className,
   ...props
 }: React.ComponentProps<typeof DropdownMenuContent>) {
