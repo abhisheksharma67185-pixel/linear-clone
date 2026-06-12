@@ -1,24 +1,18 @@
-// ---------------------------------------------------------------------------
-// Route helper — bundles per-session isolation + chaos injection so each
-// API route only needs one wrapper. Use:
-//
-//   import { route } from "@/app/lib/with-route"
-//   export const GET = route(async (request) => { ... })
-//
-// The composition order matters: `withSession` outermost so chaos middleware
-// can read session-scoped chaos config; `withChaos` inside.
-// ---------------------------------------------------------------------------
+/**
+ * Route wrapper for session isolation.
+ * Provides per-session state management for API routes.
+ */
 
 import { withSession } from "./session"
-import { withChaos } from "./chaos"
 
-type RouteHandler<TCtx = unknown> = (
-  request: Request,
-  context: TCtx
-) => Response | Promise<Response>
-
-export function route<TCtx = unknown>(
-  handler: RouteHandler<TCtx>
-): RouteHandler<TCtx> {
-  return withSession(withChaos(handler))
+/**
+ * Wraps a route handler with session isolation.
+ * Supports both simple handlers and Next.js route handlers with context.
+ */
+export function route<T = unknown>(
+  handler: (request: Request, context: T) => Promise<Response>
+): (request: Request, context: T) => Promise<Response> {
+  return (request: Request, context: T): Promise<Response> => {
+    return withSession(() => handler(request, context))
+  }
 }

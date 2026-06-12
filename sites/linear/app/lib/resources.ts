@@ -1,92 +1,176 @@
-// ---------------------------------------------------------------------------
-// Resource registry — single source of truth for the generic /api/v2 dispatcher.
-//
-// Each resource declares how to list, fetch one, create, update, and delete
-// items, plus an optional `actions` map for operations that don't fit CRUD
-// (e.g. `cycles.start`, `cycles.complete`). The dispatcher in
-// app/api/v2/[resource]/route.ts and [resource]/[id]/[action]?/route.ts uses
-// this registry to serve all of /api/v2/* without per-route boilerplate.
-//
-// Existing /api/data/* routes still work — this is additive.
-// ---------------------------------------------------------------------------
+/**
+ * Resource registry for /api/v2 endpoints.
+ * Maps resource names to handler objects with CRUD operations.
+ */
 
 import * as store from "./store"
 
-type Result<T> = { success: true; data: T } | { success: false; error: string }
-
-export interface ResourceDefinition<TItem = unknown> {
-  list: () => TItem[]
-  getById: (id: string) => TItem | undefined
-  // Optional: support fetch by alternate key (e.g. issue identifier "PLT-104"),
-  // tried before getById.
-  getByKey?: (key: string) => TItem | undefined
-  create?: (fields: Record<string, unknown>) => Result<TItem>
-  update?: (id: string, fields: Record<string, unknown>) => Result<TItem>
-  remove?: (id: string) => Result<unknown>
-  // Per-resource named actions: cycles.start(id), labels.archive(id), etc.
-  actions?: Record<string, (id: string) => Result<unknown>>
+export interface ResourceDef {
+  list(): unknown
+  getById?(id: string): unknown
+  getByKey?(key: string): unknown
+  create?(data: unknown): unknown
+  update?(id: string, data: unknown): unknown
+  remove?(id: string): unknown
+  actions?: Record<string, (id: string, data: unknown) => unknown>
 }
 
-export const resources: Record<string, ResourceDefinition> = {
-  issues: {
-    list: () => store.getIssues(),
-    getById: (id) => store.getIssueById(id),
-    getByKey: (key) => store.getIssueByIdentifier(key),
-    create: (f) => store.createIssue(f),
-    update: (id, f) => store.updateIssue(id, f),
-    remove: (id) => store.deleteIssue(id),
-  },
+const resources: Record<string, ResourceDef> = {
   projects: {
     list: () => store.getProjects(),
     getById: (id) => store.getProjectById(id),
-    create: (f) => store.createProject(f),
-    update: (id, f) => store.updateProject(id, f),
+    create: (data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.createProject({
+        name: String(d.name || ""),
+        description: d.description ? String(d.description) : undefined,
+        teamId: d.teamId ? String(d.teamId) : undefined,
+        status: d.status as
+          | "planned"
+          | "in_progress"
+          | "completed"
+          | "cancelled"
+          | undefined,
+      })
+    },
+    update: (id, data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.updateProject(id, {
+        name: d.name ? String(d.name) : undefined,
+        description: d.description ? String(d.description) : undefined,
+        status: d.status as
+          | "planned"
+          | "in_progress"
+          | "completed"
+          | "cancelled"
+          | undefined,
+      })
+    },
+  },
+  issues: {
+    list: () => store.getIssues(),
+    getById: (id) => store.getIssueById(id),
+    create: (data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.createIssue({
+        title: String(d.title || ""),
+        description: d.description ? String(d.description) : undefined,
+        projectId: d.projectId ? String(d.projectId) : undefined,
+        assigneeId: d.assigneeId ? String(d.assigneeId) : undefined,
+        priority: d.priority as
+          | "urgent"
+          | "high"
+          | "medium"
+          | "low"
+          | "none"
+          | undefined,
+      })
+    },
+    update: (id, data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.updateIssue(id, {
+        title: d.title ? String(d.title) : undefined,
+        description: d.description ? String(d.description) : undefined,
+        assigneeId: d.assigneeId ? String(d.assigneeId) : undefined,
+        priority: d.priority as
+          | "urgent"
+          | "high"
+          | "medium"
+          | "low"
+          | "none"
+          | undefined,
+      })
+    },
+    remove: (id) => store.deleteIssue(id),
   },
   cycles: {
     list: () => store.getCycles(),
     getById: (id) => store.getCycleById(id),
-    create: (f) => store.createCycle(f),
-    actions: {
-      start: (id) => store.startCycle(id),
-      complete: (id) => store.completeCycle(id),
+    create: (data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.createCycle({
+        name: String(d.name || ""),
+        description: d.description ? String(d.description) : undefined,
+        startDate: d.startDate ? String(d.startDate) : undefined,
+        endDate: d.endDate ? String(d.endDate) : undefined,
+      })
     },
   },
   labels: {
     list: () => store.getLabels(),
     getById: (id) => store.getLabelById(id),
-    create: (f) => store.createLabel(f),
-    update: (id, f) => store.updateLabel(id, f),
-    remove: (id) => store.deleteLabel(id),
-    actions: {
-      archive: (id) => store.archiveLabel(id),
-      restore: (id) => store.restoreLabel(id),
+    create: (data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.createLabel({
+        name: String(d.name || ""),
+        color: d.color ? String(d.color) : "blue",
+      })
     },
-  },
-  "project-labels": {
-    list: () => store.getProjectLabels(),
-    getById: (id) => store.getProjectLabelById(id),
-    create: (f) => store.createProjectLabel(f),
-    update: (id, f) => store.updateProjectLabel(id, f),
-    remove: (id) => store.deleteProjectLabel(id),
-  },
-  teams: {
-    list: () => store.getTeams(),
-    getById: (id) => store.getTeamById(id),
-    getByKey: (key) => store.getTeamByKey(key),
-    create: (f) => store.createTeam(f),
-    update: (id, f) => store.updateTeam(id, f),
+    update: (id, data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.updateLabel(id, {
+        name: d.name ? String(d.name) : undefined,
+        color: d.color ? String(d.color) : undefined,
+      })
+    },
+    remove: (id) => store.deleteLabel(id),
   },
   members: {
     list: () => store.getMembers(),
     getById: (id) => store.getMemberById(id),
   },
+  teams: {
+    list: () => store.getTeams(),
+    getById: (id) => store.getTeamById(id),
+    getByKey: (key) => store.getTeamByKey(key),
+    create: (data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.createTeam({
+        name: String(d.name || ""),
+        description: d.description ? String(d.description) : undefined,
+      })
+    },
+    update: (id, data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.updateTeam(id, {
+        name: d.name ? String(d.name) : undefined,
+        description: d.description ? String(d.description) : undefined,
+      })
+    },
+  },
   views: {
     list: () => store.getViews(),
     getById: (id) => store.getViewById(id),
-    create: (f) => store.createView(f),
+    create: (data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.createView({
+        name: String(d.name || ""),
+        description: d.description ? String(d.description) : undefined,
+        filterQuery: d.filterQuery ? String(d.filterQuery) : undefined,
+      })
+    },
+    update: (id, data: unknown) => {
+      const d = data as Record<string, unknown>
+      return store.updateView(id, {
+        name: d.name ? String(d.name) : undefined,
+        description: d.description ? String(d.description) : undefined,
+        filterQuery: d.filterQuery ? String(d.filterQuery) : undefined,
+      })
+    },
+    remove: (id) => store.deleteView(id),
   },
 }
 
-export function getResource(name: string): ResourceDefinition | undefined {
-  return resources[name]
+/**
+ * Get a resource definition by name
+ */
+export function getResource(resourceName: string): ResourceDef | undefined {
+  return resources[resourceName]
+}
+
+/**
+ * List all available resources
+ */
+export function listResources(): string[] {
+  return Object.keys(resources)
 }

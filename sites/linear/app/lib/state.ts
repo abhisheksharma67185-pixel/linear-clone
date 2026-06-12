@@ -385,14 +385,6 @@ export interface IssueTemplate {
 // core boundary on every request.
 // ---------------------------------------------------------------------------
 
-export interface ChaosState {
-  latencyMs: number
-  errorRate: number
-  rateLimitPerMinute: number | null
-  rateLimitWindowStartMs: number
-  rateLimitCount: number
-}
-
 // ---------------------------------------------------------------------------
 // LinearStoreState
 // ---------------------------------------------------------------------------
@@ -440,8 +432,6 @@ export interface LinearStoreState {
   apiKeys: ApiKey[]
   integrations: Record<string, IntegrationState>
   teamsAdmin: TeamsAdminState
-
-  chaos: ChaosState
 }
 
 function deepClone<T>(obj: T): T {
@@ -511,14 +501,6 @@ export function createInitialState(): LinearStoreState {
       status: new Map(),
       leftByCurrentUser: new Set(),
     },
-
-    chaos: {
-      latencyMs: 0,
-      errorRate: 0,
-      rateLimitPerMinute: null,
-      rateLimitWindowStartMs: 0,
-      rateLimitCount: 0,
-    },
   }
 }
 
@@ -534,7 +516,6 @@ export function resetState(state: LinearStoreState, seed?: number): void {
   state.workspace = fresh.workspace
   state.membersAdmin = fresh.membersAdmin
   state.agent = fresh.agent
-  state.chaos = fresh.chaos
 
   if (seed !== undefined) {
     const base = new Date("2025-06-01T12:00:00.000Z")
