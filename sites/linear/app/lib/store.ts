@@ -28,7 +28,7 @@ import { resetState } from "./state"
 // Result types
 // ---------------------------------------------------------------------------
 
-type Result<T = void> =
+export type Result<T = void> =
   | { success: true; data: T }
   | { success: false; error: string }
 

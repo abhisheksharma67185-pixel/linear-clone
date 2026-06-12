@@ -23,7 +23,7 @@ function resolveItem(
       resolvedId: (byKey as Record<string, unknown>).id as string,
     }
   }
-  const byId = def.getById(id)
+  const byId = def.getById?.(id)
   if (byId) return { item: byId, resolvedId: id }
   return null
 }

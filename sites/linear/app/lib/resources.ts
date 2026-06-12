@@ -4,15 +4,16 @@
  */
 
 import * as store from "./store"
+import type { Result } from "./store"
 
 export interface ResourceDef {
   list(): unknown
   getById?(id: string): unknown
   getByKey?(key: string): unknown
-  create?(data: unknown): unknown
-  update?(id: string, data: unknown): unknown
-  remove?(id: string): unknown
-  actions?: Record<string, (id: string, data: unknown) => unknown>
+  create?(data: unknown): Result<unknown>
+  update?(id: string, data: unknown): Result<unknown>
+  remove?(id: string): Result<unknown>
+  actions?: Record<string, (id: string, data?: unknown) => Result<unknown>>
 }
 
 const resources: Record<string, ResourceDef> = {
