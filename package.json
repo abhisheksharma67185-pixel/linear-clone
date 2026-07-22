@@ -1,0 +1,11 @@
+{
+  "name": "linear-clone",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix sites/linear run dev",
+    "build": "npm --prefix sites/linear run build",
+    "start": "npm --prefix sites/linear run start",
+    "lint": "npm --prefix sites/linear run lint"
+  }
+}
